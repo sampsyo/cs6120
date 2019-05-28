@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{{ config.title }}{% if page.title %}: {{ page.title }}{% endif %}</title>
+
+  <link href="{{ get_url(path="main.css", trailing_slash=false) }}" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <h1>
+        <a href="./">{{ config.title }}</a>
+      </h1>
+    </nav>
+  </header>
+  <main>
+    {% if page.title %}<h1>{{ page.title }}</h1>{% endif %}
+    {% block main %}
+    Hello, world!
+    {% endblock main %}
+  </main>
+  <footer>
+    <p><a href="https://www.cornell.edu">Cornell University</a>
+    &mdash;
+    <a href="https://www.cs.cornell.edu">Department of Computer Science</a></p>
+  </footer>
+</body>
+</html>

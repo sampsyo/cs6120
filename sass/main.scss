@@ -1,0 +1,135 @@
+$main-color: rgb(179, 27, 27);
+$disabled-color: #666;
+$exception-color: #ccc;
+$max-width: 40rem;
+
+
+// Layout.
+body {
+  margin: 0;
+}
+
+header {
+  width: 100%;
+  padding: 0.5rem 0;
+  nav {
+    display: block;
+    margin: 0.5rem auto;
+    max-width: $max-width;
+    padding: 0 1rem;
+  }
+}
+
+main {
+  margin: 1rem auto;
+  max-width: $max-width;
+
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+// On wide pages, do not constrain.
+body.wide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  main {
+    margin: 1rem;
+    max-width: none;
+  }
+}
+
+
+// Fonts.
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  line-height: 140%;
+}
+
+a {
+  color: $main-color;
+}
+
+h1 {
+  line-height: 110%;
+  margin-top: 0;
+}
+
+
+// Header links.
+header {
+  background: $main-color;
+  color: white;
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  h1 {
+    font-size: inherit;
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+  nav {
+    h1 {
+      display: inline-block;
+    }
+    p {
+      display: inline-block;
+    }
+    h1, p {
+      margin: 0 1rem 0 0;
+    }
+  }
+}
+
+
+// Footer links.
+footer {
+  text-align: center;
+  margin: 1rem;
+  color: $disabled-color;
+  font-size: 80%;
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+
+// Schedule table.
+table {
+  border-collapse: collapse;
+  th {
+    text-align: left;
+  }
+  td, th {
+    padding: 0 0.5rem;
+  }
+}
+
+
+// Course schedule.
+.schedule {
+  .canceled {
+    background: $exception-color;
+  }
+  .event {
+    font-weight: bold;
+  }
+  .mon > td {
+    // Spacing between weeks.
+    border-top: 0.6rem solid white;
+  }
+}
+
+
+// Logo.
+img.logo {
+  width: 40%;
+  height: auto;
+  float: right;
+
+  margin-left: 0.5rem;
+  margin-bottom: 0.5rem;
+}
