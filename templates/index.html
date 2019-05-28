@@ -13,8 +13,14 @@
   <header>
     <nav>
       <h1>
-        <a href="./">{{ config.title }}</a>
+          <a href="{{ get_url(path="/") }}">{{ config.title }}</a>
       </h1>
+      {% set pages = get_section(path="_index.md") %}
+      {% for page in pages.pages %}
+      <p><a href="{{ page.permalink }}">
+        {{ page.title }}
+      </a></p>
+      {% endfor %}
     </nav>
   </header>
   <main>
