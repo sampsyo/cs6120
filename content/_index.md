@@ -17,9 +17,9 @@ the guides to [discussion leading][discussion] and [implementation projects][pro
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [ives]: https://www.cornell.edu/about/maps/?loc=Ives%20Hall
 [slack]: https://cs6120-2019fa.slack.com/
-[blog]: /blog/
-[rss]: /rss.xml
+[blog]: @/blog/_index.md
+[rss]: rss.xml
 [gh]: https://github.com/sampsyo/cs6120
-[discussion]: /discussion/
-[project]: /project/
-[syllabus]: /syllabus/
+[discussion]: @/discussion.md
+[project]: @/project/_index.md
+[syllabus]: @/syllabus.md

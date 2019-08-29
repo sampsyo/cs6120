@@ -19,13 +19,13 @@
       {% set pages = get_section(path="_index.md") %}
       {% for page in pages.pages %}
       {% if not page.extra.hide %}
-      <p><a href="{{ page.permalink }}">
+      <p><a href="{{ page.permalink | safe }}">
         {{ page.title }}
       </a></p>
       {% endif %}
       {% endfor %}
       {% for link in config.extra.links %}
-      <p><a href="{{link.url}}">{{link.name}}</a></p>
+      <p><a href="{{link.url | safe}}">{{link.name}}</a></p>
       {% endfor %}
       {% set blog = get_section(path="blog/_index.md") %}
       <p><a href="{{ blog.permalink }}">

@@ -6,7 +6,7 @@ extra.hide = true
 
 When you are designated as the discussion leader for a class, you need to do two things: write a post about the reading for our [course blog][blog] and facilitate the in-class discussion for the day.
 
-[blog]: /blog/
+[blog]: @/blog/_index.md
 
 
 ## Paper Perspective Post

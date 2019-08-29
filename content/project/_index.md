@@ -13,7 +13,7 @@ Here’s what you do for each one:
 * Write a report as a post on our [course blog][blog].
 * Do an in-class presentation and collect feedback from your peers.
 
-[blog]: /blog/
+[blog]: @/blog/_index.md
 
 - They are *all* open ended.
     - We provide a list of possibilities; you can pick one or make up your own. You can do things that we cover in class or go far beyond and make up something totally new.

@@ -49,7 +49,7 @@ A merely acceptable blog post or discussion will receive no stars, and extraordi
 Read more about [leading discussions][discussion].
 
 [michelin]: https://en.wikipedia.org/wiki/Michelin_Guide
-[discussion]: /discussion/
+[discussion]: @/discussion.md
 
 ## Implementation Projects
 
@@ -60,7 +60,7 @@ I will grade your blog post and in-class presentation using the same [Michelin s
 
 Read more details on [how projects work][project].
 
-[project]: /project/
+[project]: @/project/_index.md
 
 
 ## Policies
