@@ -1,7 +1,12 @@
 ---
+name: 
+about: 
 title: Project Proposal
-label: proposal
+labels: 
+assignees: 
+
 ---
+
 **What will you do?**
 
 **How will you do it?**
