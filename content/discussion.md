@@ -24,8 +24,13 @@ Here is what the post must contain:
 Work hard on these posts and make them good.
 Their quality will not only shape the discussions we have in class but will also determine most of your grade for the reading component.
 
-When you finish the first draft of your perspective post, announce it on Slack.
+Add new blog posts to the [course GitHub repository][gh].
+The repository README has instructions.
+When you finish the first draft of your perspective post, announce it on [Slack][].
 The instructor will provide feedback on your blog posts to help you improve them, and other students are invited to do so too.
+
+[gh]: https://github.com/sampsyo/cs6120
+[slack]: https://cs6120-2019fa.slack.com/
 
 
 ## In-Class Discussion
