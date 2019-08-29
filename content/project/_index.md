@@ -1,7 +1,10 @@
 +++
 title = "Projects"
 +++
-For each project, you must do these things:
+# Language Implementation Projects
+
+There are several implementation projects in this course.
+Here’s what you do for each one:
 
 * Propose a project and submit a short description of your plan.
 * Implement something, according to the project description.
