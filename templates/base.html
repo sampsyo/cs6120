@@ -18,9 +18,11 @@
       </h1>
       {% set pages = get_section(path="_index.md") %}
       {% for page in pages.pages %}
+      {% if not page.extra.hide %}
       <p><a href="{{ page.permalink }}">
         {{ page.title }}
       </a></p>
+      {% endif %}
       {% endfor %}
       {% for name, link in config.extra.links %}
       <p><a href="{{link}}">{{name}}</a></p>

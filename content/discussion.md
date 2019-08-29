@@ -1,5 +1,6 @@
 +++
 title = "Guide to Leading Discussions"
+extra.hide = true
 +++
 # Guide for Discussion Leaders
 

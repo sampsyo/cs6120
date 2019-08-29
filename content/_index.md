@@ -11,9 +11,15 @@ title = "Advanced Compilers β"
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
 
+If you're enrolled in 6120, I implore you to read the [syllabus][syllabus] and
+the guides to [discussion leading][discussion] and [implementation projects][project] for the course.
+
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [ives]: https://www.cornell.edu/about/maps/?loc=Ives%20Hall
 [slack]: https://cs6120-2019fa.slack.com/
 [blog]: /blog/
 [rss]: /rss.xml
 [gh]: https://github.com/sampsyo/cs6120
+[discussion]: /discussion/
+[project]: /project/
+[syllabus]: /syllabus/
