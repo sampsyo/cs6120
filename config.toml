@@ -2,6 +2,7 @@ base_url = "http://www.cs.cornell.edu/courses/cs6120/2019fa"
 compile_sass = true
 highlight_code = false
 build_search_index = false
+generate_rss = true
 
 title = "CS 6120"
 

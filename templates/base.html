@@ -7,7 +7,8 @@
 
   <title>{{ config.title }}{% if page.title %}: {{ page.title }}{% endif %}</title>
 
-  <link href="{{ get_url(path="main.css", trailing_slash=false) }}" rel="stylesheet">
+  <link href="{{ get_url(path="main.css", trailing_slash=false) | safe }}" rel="stylesheet">
+  <link rel="alternate" type="application/rss+xml" href="{{ get_url(path="rss.xml", trailing_slash=false) | safe }}">
 </head>
 <body>
   <header>
