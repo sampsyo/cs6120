@@ -31,7 +31,7 @@ TK
 
 ### Academic Integrity
 
-Absolute integrity is expected of all Cornell students in every academic undertaking. The course staff will prosecute violations aggressively using automatic detection tools.
+Absolute integrity is expected of all Cornell students in every academic undertaking. The course staff will prosecute violations aggressively.
 
 You are responsible for understanding these policies:
 
@@ -42,20 +42,11 @@ You can also read about the [protocol for prosecution of violations][aiproceedin
 
 [aiproceedings]: http://www.theuniversityfaculty.cornell.edu/AcadInteg/index.html
 
-On **assignments**, everything you turn in must be 100% completely your own work (with your partner, if you have one). You may discuss with other students about requirements for the assignment, programming in OCaml, etc. But when it comes to developing specific answers or coding, you may not talk to other students except for your partner or anyone else. Specifically:
+Everything you turn in must be ether 100% completely your own work or clearly attributed to someone else.
+You may discuss your work with other students, look for help online, get writing feedback from the instructor, ask your friend to help debug something, or anything else that doesn't involve someone else doing your work for you.
+You may not turn in any writing that you did not do yourself or misrepresent existing implementation work as your own.
 
-* Do not show any partial solution to another student or give any hints.
-* Never share code. (Shared code is surprisingly easy to detect.)
-* Do not search the Internet for solutions. Don't look anything relevant up on Wikipedia. Don't search on Stack Overflow or anywhere else.
-* *Do* ask someone if you're confused about what the assignment is asking for.
-* *Definitely* ask the course staff if you're not sure whether or not something is OK.
-
-Here's the policy for **exams**: outside of the course staff, you may not talk to anyone about any exam content at all until the exam is graded.
-Don't even tell anyone how you're feeling about the exam or what you found challenging: you must pretend that you have never seen the exam.
-You can use notes from the class, including both your own notes and our notes from the website, but not outside resources.
-
-You may not give any hints or post any code that might be part of a solution on Slack (except in a private message with course staff).
-On both assignments and exams, the web is always off limits: you may not Google anything or look anything up on Wikipedia to get help, for example.
+The projects in this course are open source, and you may use existing code in your implementation—including code written by other students in this course. You must, however, make it clear which code is yours and which code is borrowed from where.
 
 ### Respect in Class
 
