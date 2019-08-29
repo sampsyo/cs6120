@@ -1,0 +1,10 @@
+[[days]]
+date = "August 30"
+
+[[days]]
+date = "September 2"
+canceled = true
+event = "Labor Day"
+
+[[days]]
+date = "September 4"

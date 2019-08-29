@@ -106,6 +106,10 @@ table {
   border-collapse: collapse;
   th {
     text-align: left;
+    font-weight: normal;
+  }
+  thead th {
+    font-weight: bold;
   }
   td, th {
     padding: 0 0.5rem;

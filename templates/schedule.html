@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block main %}
+{% set schedule = load_data(path="../data/schedule.toml") %}
+{% set content = load_data(path="../data/content.toml") %}
+
+<h1>{{ page.title }}</h1>
+
+{% set count = schedule.days | length %}
+{% set class_count = content.classes | length %}
+<table class="schedule">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Topic</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for idx in range(end=count) %}
+    {% set day = schedule.days[idx] %}
+    <tr class="{% if day.canceled %}canceled{% endif %} {% if day.mon %}mon{% endif %}">
+      <th scope="row">{{ day.date }}</th>
+      {% if idx < class_count %}
+      {% set class = content.classes[idx] %}
+      <td>{{ class.title }}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock main %}
