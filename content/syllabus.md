@@ -38,40 +38,18 @@ If 9am repeatedly doesn’t work for you, I will ask you to drop the course.
 ## Paper Reading, Perspectives, and Presentations
 
 Half of the “work” in CS 6120 is about reading and understanding research papers.
-For some small subset of the classes, you will be the discussion leader.
+For some small subset of the classes, you will be the [discussion leader][discussion].
 The discussion leader has two main responsibilities: writing a blog post and facilitating the in-class discussion.
 
-**Paper perspective post.**
-When you are the leader for a discussion, you write a post for our [course blog][blog].
-The deadline for the post is *the class before the one where you present*,
-so you will need to open the pull request by the 9:05am for that one-prior class period.
-Here is what the post must contain:
-
-* A detailed summary of the main contributions in the work.
-* Critical thinking about the merits and shortcomings of the work.
-* Discussion of the work's role in history and its connections to the current computing landscape.
-* Questions that you have about the work, including its technical content, its "marketing," its evaluation, and its context in the research landscape.
-
-Work hard on these posts and make them good.
-Their quality will not only shape the discussions we have in class but will also determine most of your grade for the reading component.
-I will provide feedback on your blog posts to help you improve them.
-
-[blog]: /blog/
-
-**In-class discussion.**
-With your blog post in hand, the discussion leader is in charge of the 50-minute discussion that the class will have on a given paper.
-Plan to spend the first chunk of class, about 20 minutes, talking through the content of the paper and helping the class answer one another's questions about the reading.
-With the remaining time, your job is to facilitate a balanced and free-ranging discussion about the paper.
-If the conversation lags, it's your responsibility to drive it forward using your prepared discussion questions from your post.
-You can use whatever style you like to lead the discussion (with or without slides, for example).
-
-**Grading.**
 I will grade both your blog post and your in-class discussion facilitation.
 Each one will use a [Michelin star][michelin] system:
 you should shoot for one star, indicating a remarkably insightful exploration of the research.
 A merely acceptable blog post or discussion will receive no stars, and extraordinary work can receive multiple stars.
 
+Read more about [leading discussions][discussion].
+
 [michelin]: https://en.wikipedia.org/wiki/Michelin_Guide
+[discussion]: /discussion/
 
 ## Implementation Projects
 
