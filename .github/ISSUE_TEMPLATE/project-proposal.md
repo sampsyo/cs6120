@@ -2,9 +2,7 @@
 name: Project Proposal
 about: Fill this out for every course project.
 title: 'Project [NUMBER] Proposal: [TITLE]'
-labels: ''
-assignees: ''
-
+labels: 'proposal'
 ---
 
 **What will you do?**
