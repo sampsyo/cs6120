@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>{{ section.title }}</h1>
+{% for post in section.pages %}
+<article>
+  <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
+  <p class="details">
+    <span class="author">by {{ post.extra.author }}</span>
+    <time datetime="{{ post.date }}">
+      {{ post.date | date(format="%B %e, %Y") }}
+    </time>
+  </p>
+</article>
+{% endfor %}
+{% endblock main %}
