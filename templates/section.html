@@ -3,7 +3,7 @@
 <h1>
   {{ section.title }}
   <a href="{{ get_url(path="rss.xml", trailing_slash=false) | safe }}">
-    <img src="https://cdnjs.cloudflare.com/ajax/libs/octicons/8.5.0/svg/rss.svg"class="rss">
+    <img src="../img/rss.svg" class="rss">
   </a>
 </h1>
 {% for post in section.pages %}

@@ -6,6 +6,7 @@ title = "Syllabus"
 This is a research-oriented PhD course about programming language implementation.
 The class focuses on reading and discussing research papers and independent hacking on open-source projects.
 
+
 ## This Course is in Beta
 
 <p class="ornament">
@@ -15,12 +16,14 @@ The class focuses on reading and discussing research papers and independent hack
   Nothing is certain.
 </p>
 
+
 ## Slack
 
 [Sign up for the course Slack.](https://cs6120-2019fa.slack.com/signup)
 All course communication will happen there.
 I’m absolutely serious about this; there won’t be email about this course.
 You *have* to pay attention to Slack.
+
 
 ## Discussion & the Time
 
@@ -29,13 +32,16 @@ To get the value out of the course, you need to show up and participate.
 I know that the 9am start time might be hard for some people—I encourage you to see it as an opportunity to become a morning person.
 If 9am repeatedly doesn’t work for you, I will ask you to drop the course.
 
+
 ## Paper Reading & Presentations
 
 TK
 
+
 ## Implementation Projects
 
 TK
+
 
 ## Policies
 
