@@ -51,12 +51,13 @@ Read more about [leading discussions][discussion].
 [michelin]: https://en.wikipedia.org/wiki/Michelin_Guide
 [discussion]: @/discussion.md
 
-## Implementation Projects
+## Implementation Projects and Design Reviews
 
 The other half of the course “work” consists of [language implementation projects][project].
 These are all open-ended (to varying degrees) and open-source projects—even when you implement a well-known technique, *how* you approach the design and implementation are up to you and will inevitably end up being unique.
+Each project culminates in an experience report on the [course blog][blog] and an in-class design review.
 
-I will grade your blog post and in-class presentation using the same [Michelin star][michelin] system as for paper discussion leading.
+I will grade your blog post and design review using the same [Michelin star][michelin] system as for paper discussion leading.
 
 Read more details on [how projects work][project].
 
