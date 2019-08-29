@@ -4,7 +4,7 @@ title = "Syllabus"
 # CS 6120: Advanced Compilers β Syllabus
 
 This is a research-oriented PhD course about programming language implementation.
-The class focuses on reading and discussing research papers and independent hacking on open-source projects.
+The class focuses on reading and [discussing][discussion] research papers and independent hacking on [open-source projects][project].
 
 
 ## This Course is in Beta
