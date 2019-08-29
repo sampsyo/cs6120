@@ -63,6 +63,7 @@ With your blog post in hand, the discussion leader is in charge of the 50-minute
 Plan to spend the first chunk of class, about 20 minutes, talking through the content of the paper and helping the class answer one another's questions about the reading.
 With the remaining time, your job is to facilitate a balanced and free-ranging discussion about the paper.
 If the conversation lags, it's your responsibility to drive it forward using your prepared discussion questions from your post.
+You can use whatever style you like to lead the discussion (with or without slides, for example).
 
 **Grading.**
 I will grade both your blog post and your in-class discussion facilitation.
@@ -74,7 +75,17 @@ A merely acceptable blog post or discussion will receive no stars, and extraordi
 
 ## Implementation Projects
 
-TK
+The other half of the course “work” consists of language implementation projects.
+These are all open-ended (to varying degrees) and open-source projects—even when you implement a well-known technique, *how* you approach the design and implementation are up to you and will inevitably end up being unique.
+
+For each project, you must do these things:
+
+* Propose a project and submit a short description of your plan.
+* Implement something, according to the project description.
+* Release your code as open-source software.
+* Measure your implementation empirically and draw rigorous conclusions. (Negative results are OK! But flimsy evaluation is not.)
+* Write a report as a post on our [course blog][blog].
+* Do an in-class presentation and collect feedback from your peers.
 
 
 ## Policies
