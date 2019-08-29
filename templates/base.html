@@ -22,6 +22,10 @@
         {{ page.title }}
       </a></p>
       {% endfor %}
+      {% set blog = get_section(path="blog/_index.md") %}
+      <p><a href="{{ blog.permalink }}">
+        Blog
+      </a></p>
     </nav>
   </header>
   <main>
