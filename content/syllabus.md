@@ -75,17 +75,14 @@ A merely acceptable blog post or discussion will receive no stars, and extraordi
 
 ## Implementation Projects
 
-The other half of the course “work” consists of language implementation projects.
+The other half of the course “work” consists of [language implementation projects][project].
 These are all open-ended (to varying degrees) and open-source projects—even when you implement a well-known technique, *how* you approach the design and implementation are up to you and will inevitably end up being unique.
 
-For each project, you must do these things:
+I will grade your blog post and in-class presentation using the same [Michelin star][michelin] system as for paper discussion leading.
 
-* Propose a project and submit a short description of your plan.
-* Implement something, according to the project description.
-* Release your code as open-source software.
-* Measure your implementation empirically and draw rigorous conclusions. (Negative results are OK! But flimsy evaluation is not.)
-* Write a report as a post on our [course blog][blog].
-* Do an in-class presentation and collect feedback from your peers.
+Read more details on [how projects work][project].
+
+[project]: /project/
 
 
 ## Policies

@@ -1,6 +1,17 @@
 +++
 title = "Projects"
 +++
+For each project, you must do these things:
+
+* Propose a project and submit a short description of your plan.
+* Implement something, according to the project description.
+* Release your code as open-source software.
+* Measure your implementation empirically and draw rigorous conclusions. (Negative results are OK! But flimsy evaluation is not.)
+* Write a report as a post on our [course blog][blog].
+* Do an in-class presentation and collect feedback from your peers.
+
+[blog]: /blog/
+
 - They are *all* open ended.
     - We provide a list of possibilities; you can pick one or make up your own. You can do things that we cover in class or go far beyond and make up something totally new.
     - Commit to exactly what it will be up front.
