@@ -17,7 +17,9 @@ The class focuses on reading and discussing research papers and independent hack
 
 ## Slack
 
-TK
+[Sign up for the course Slack.](https://cs6120-2019fa.slack.com/signup)
+All course communication will happen there.
+I’m absolutely serious about this; there won’t be email about this course.
 
 ## Paper Reading & Discussion
 
