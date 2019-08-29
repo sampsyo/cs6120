@@ -15,13 +15,19 @@
     </tr>
   </thead>
   <tbody>
+    {% set_global class_idx = 0 %}
     {% for idx in range(end=count) %}
     {% set day = schedule.days[idx] %}
     <tr class="{% if day.canceled %}canceled{% endif %} {% if day.mon %}mon{% endif %}">
       <th scope="row">{{ day.date }}</th>
-      {% if idx < class_count %}
-      {% set class = content.classes[idx] %}
+      {% if day.event %}
+      <td><strong>{{ day.event }}</strong></td>
+      {% else %}
+      {% if class_idx < class_count %}
+      {% set class = content.classes[class_idx] %}
+      {% set_global class_idx = class_idx + 1 %}
       <td>{{ class.title }}</td>
+      {% endif %}
       {% endif %}
     </tr>
     {% endfor %}
