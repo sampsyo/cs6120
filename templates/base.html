@@ -24,8 +24,8 @@
       </a></p>
       {% endif %}
       {% endfor %}
-      {% for name, link in config.extra.links %}
-      <p><a href="{{link}}">{{name}}</a></p>
+      {% for link in config.extra.links %}
+      <p><a href="{{link.url}}">{{link.name}}</a></p>
       {% endfor %}
       {% set blog = get_section(path="blog/_index.md") %}
       <p><a href="{{ blog.permalink }}">

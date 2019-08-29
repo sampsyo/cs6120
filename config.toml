@@ -6,7 +6,10 @@ generate_rss = true
 
 title = "CS 6120"
 
-[extra]
-[extra.links]
-Slack = "https://cs6120-2019fa.slack.com/"
-GitHub = "https://github.com/sampsyo/cs6120"
+[[extra.links]]
+name = "Slack"
+url = "https://cs6120-2019fa.slack.com/"
+
+[[extra.links]]
+name = "GitHub"
+url = "https://github.com/sampsyo/cs6120"
