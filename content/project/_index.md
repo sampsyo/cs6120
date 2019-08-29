@@ -30,7 +30,7 @@ To propose a project, [open a GitHub issue][proposal] answering these three ques
 The instructor may have feedback for your or just tacitly approve your idea.
 
 [hc]: https://www.darpa.mil/work-with-us/heilmeier-catechism
-[proposal]: https://github.com/sampsyo/cs6120/issues/new?template=project-proposal.md&title=Project+%5BNUMBER%5D+Proposal%3A+%5BTITLE%5D
+[proposal]: https://github.com/sampsyo/cs6120/issues/new?labels=proposal&template=project-proposal.md&title=Project+%5BNUMBER%5D+Proposal%3A+%5BTITLE%5D
 
 
 ## Implementation
