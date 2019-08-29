@@ -63,6 +63,19 @@ Read more details on [how projects work][project].
 [project]: @/project/_index.md
 
 
+## Non-PhD Students
+
+CS 6120 is for PhD students at Cornell.
+If that doesn’t describe you, you need to apply to take the course.
+Write answers to these two questions:
+
+* What is CS 6120 about?
+* Why do you want to take the course?
+
+Submit your responses as a one-page PDF to Adrian via Slack.
+The deadline is Friday, September 6.
+
+
 ## Policies
 
 ### Academic Integrity
