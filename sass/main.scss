@@ -106,10 +106,9 @@ table {
   border-collapse: collapse;
   th {
     text-align: left;
-    font-weight: normal;
+    font-weight: bold;
   }
   thead th {
-    font-weight: bold;
     padding: 0 0.5rem;
   }
   td, th {
@@ -134,6 +133,9 @@ table {
     margin: 0;
     padding-left: 1em;
     list-style: square;
+  }
+  .short {
+    white-space: nowrap;
   }
 }
 

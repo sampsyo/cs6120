@@ -1,5 +1,6 @@
 [[classes]]
 title = "Welcome & Overview"
+leader = "Adrian"
 [[classes.readings]]
 name = "On Proebsting’s Law"
 link = "https://pdfs.semanticscholar.org/0a2b/1aa8bb63fb545f7f41233e5d6c0206486ccc.pdf"
@@ -7,6 +8,7 @@ details = "Kevin Scott"
 
 [[classes]]
 title = "Performance and Measurement"
+leader = "Adrian"
 [[classes.readings]]
 name = "Producing Wrong Data Without Doing Anything Obviously Wrong!"
 link = "https://users.cs.northwestern.edu/~robby/courses/322-2013-spring/mytkowicz-wrong-data.pdf"
