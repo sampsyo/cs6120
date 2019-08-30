@@ -86,9 +86,12 @@ The repository README has instructions.
 
 ## Design Review
 
-- Rotating in-class *design reviews* following the same structure.
-    - Everyone will do N of these. There's some flexibility in which project you do the design review for.
-    - Everyone submits (grade-free) paragraphs on the design review from the day. (Do this in class.)
+The culmination of a project is an in-class design review.
+You'll describe your idea, implementation decisions, and measurements to the rest of the class.
+The point is less about informing us about what you did and more about facilitating a discussion to get critical opinions from your peers.
+Based on the feedback you get, you may optionally decide to improve your implementation or report.
+(Your grade will incorporate the improvements you make.)
+
 - Grading is based on:
     - ambition
     - clarity
