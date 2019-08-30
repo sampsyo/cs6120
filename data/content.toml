@@ -13,3 +13,6 @@ leader = "Adrian"
 name = "Producing Wrong Data Without Doing Anything Obviously Wrong!"
 link = "https://users.cs.northwestern.edu/~robby/courses/322-2013-spring/mytkowicz-wrong-data.pdf"
 details = "Todd Mytkowicz, Amer Diwan, Matthias Hauswirth, and Peter F. Sweeney. ASPLOS 2009."
+[[classes.readings]]
+name = "SIGPLAN Empirical Evaluation Guidelines"
+link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
