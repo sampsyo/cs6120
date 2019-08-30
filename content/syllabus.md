@@ -67,17 +67,25 @@ Read more details on [how projects work][project].
 [project]: @/project/_index.md
 
 
-## Non-PhD Students
+## Preliminaries
 
+These are things we'll do in the first week of classes.
+The deadline for both is Friday, September 6.
+
+**Introductions.**
+Post an introductory message on Slack.
+Give the name you like people to refer to you with
+and mention one thing you’re interested in learning about in CS 6120.
+This suggestion can be as general as an entire topic or as specific as a particular paper.
+(There are no guarantees that we’ll actually cover your idea.)
+
+**Non-PhD students.**
 CS 6120 is for PhD students at Cornell.
 If that doesn’t describe you, you need to apply to take the course.
 Write answers to these two questions:
-
-* What is CS 6120 about?
-* Why do you want to take the course?
-
+(1) What is CS 6120 about?
+(2) Why do you want to take the course?
 Submit your responses as a one-page PDF to Adrian via Slack.
-The deadline is Friday, September 6.
 
 
 ## Policies
