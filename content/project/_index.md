@@ -91,8 +91,3 @@ You'll describe your idea, implementation decisions, and measurements to the res
 The point is less about informing us about what you did and more about facilitating a discussion to get critical opinions from your peers.
 Based on the feedback you get, you may optionally decide to improve your implementation or report.
 (Your grade will incorporate the improvements you make.)
-
-- Grading is based on:
-    - ambition
-    - clarity
-    - rigor

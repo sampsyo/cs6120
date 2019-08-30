@@ -58,6 +58,9 @@ These are all open-ended (to varying degrees) and open-source projects—even wh
 Each project culminates in an experience report on the [course blog][blog] and an in-class design review.
 
 I will grade your blog post and design review using the same [Michelin star][michelin] system as for paper discussion leading.
+Your grade will depend on the ambition of the project,
+the clarity of your report and design review,
+and the rigor of your empirical evaluation---but not on the success of your idea (negative results are OK).
 
 Read more details on [how projects work][project].
 
