@@ -31,7 +31,12 @@
         {% if class.readings %}
         <ul>
         {% for reading in class.readings %}
-          <li><a href="{{reading.link}}">{{reading.name}}</a></li>
+          <li>
+            <a href="{{reading.link}}">{{reading.name}}</a>
+            {% if reading.details %}
+            <br>{{reading.details}}
+            {% endif %}
+          </li>
         {% endfor %}
         </ul>
         {% endif %}
