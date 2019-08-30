@@ -110,9 +110,10 @@ table {
   }
   thead th {
     font-weight: bold;
+    padding: 0 0.5rem;
   }
   td, th {
-    padding: 0 0.5rem;
+    padding: 0.5rem 0.5rem;
   }
 }
 
@@ -128,6 +129,11 @@ table {
   .mon > td {
     // Spacing between weeks.
     border-top: 0.6rem solid white;
+  }
+  ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: square inside;
   }
 }
 
