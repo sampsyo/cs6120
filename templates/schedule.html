@@ -27,7 +27,7 @@
       {% if class_idx < class_count %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
-      <td>{{ class.leader }}</td>
+      <td>{% if class.leader %}{{ class.leader }}{% endif %}</td>
       <td>
         {{ class.title }}
         {% if class.readings %}
