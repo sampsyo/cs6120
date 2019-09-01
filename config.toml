@@ -6,6 +6,9 @@ generate_rss = true
 
 title = "CS 6120"
 
+[extra]
+favicon = "/img/favicon.ico"
+
 [[extra.links]]
 name = "Slack"
 url = "https://cs6120-2019fa.slack.com/"
