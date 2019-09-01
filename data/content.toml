@@ -239,6 +239,14 @@ name = "Provably correct peephole optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
 details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
 
+[[classes]]
+title = "Interactive Verification"
+leader = "TBD"
+[[classes.readings]]
+name = "Formal verification of a realistic compiler."
+link = "https://dl.acm.org/citation.cfm?id=1538814"
+details = "Xavier Leroy. CACM in 2009."
+
 
 # Potpourri
 
