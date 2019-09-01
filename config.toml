@@ -8,6 +8,7 @@ title = "CS 6120"
 
 [extra]
 favicon = "/img/favicon.ico"
+bigicon = "/img/favicon152.png"
 
 [[extra.links]]
 name = "Slack"
