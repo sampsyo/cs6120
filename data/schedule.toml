@@ -5,6 +5,160 @@ date = "August 30"
 date = "September 2"
 canceled = true
 event = "Labor Day"
+mon = true
 
 [[days]]
 date = "September 4"
+
+[[days]]
+date = "September 6"
+
+[[days]]
+date = "September 9"
+canceled = true
+event = "PL retreat"
+mon = true
+
+[[days]]
+date = "September 11"
+
+[[days]]
+date = "September 13"
+
+[[days]]
+date = "September 16"
+mon = true
+
+[[days]]
+date = "September 18"
+
+[[days]]
+date = "September 20"
+canceled = true
+event = "Adrian out of town"
+
+[[days]]
+date = "September 23"
+mon = true
+
+[[days]]
+date = "September 25"
+
+[[days]]
+date = "September 27"
+
+[[days]]
+date = "September 30"
+mon = true
+
+[[days]]
+date = "October 2"
+canceled = true
+event = "CIS 20th Anniversary Celebration"
+
+[[days]]
+date = "October 4"
+
+[[days]]
+date = "October 7"
+mon = true
+
+[[days]]
+date = "October 9"
+
+[[days]]
+date = "October 11"
+canceled = true
+event = "Adrian out of town"
+
+[[days]]
+date = "October 14"
+mon = true
+canceled = true
+event = "Fall break"
+
+[[days]]
+date = "October 16"
+
+[[days]]
+date = "October 18"
+
+[[days]]
+date = "October 21"
+mon = true
+
+[[days]]
+date = "October 23"
+
+[[days]]
+date = "October 25"
+
+[[days]]
+date = "October 28"
+mon = true
+
+[[days]]
+date = "October 30"
+
+[[days]]
+date = "November 1"
+
+[[days]]
+date = "November 4"
+mon = true
+
+[[days]]
+date = "November 6"
+
+[[days]]
+date = "November 8"
+
+[[days]]
+date = "November 11"
+mon = true
+
+[[days]]
+date = "November 13"
+
+[[days]]
+date = "November 15"
+canceled = true
+event = "Adrian probably out of town"
+
+[[days]]
+date = "November 18"
+mon = true
+
+[[days]]
+date = "November 20"
+
+[[days]]
+date = "November 22"
+
+[[days]]
+date = "November 25"
+mon = true
+
+[[days]]
+date = "November 27"
+canceled = true
+event = "Thanksgiving break"
+
+[[days]]
+date = "November 29"
+canceled = true
+event = "Thanksgiving break"
+
+[[days]]
+date = "December 2"
+mon = true
+
+[[days]]
+date = "December 4"
+
+[[days]]
+date = "December 6"
+
+[[days]]
+date = "December 9"
+mon = true

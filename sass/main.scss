@@ -125,9 +125,9 @@ table {
   .event {
     font-weight: bold;
   }
-  .mon > td {
+  .mon > td, .mon > th {
     // Spacing between weeks.
-    border-top: 0.6rem solid white;
+    border-top: 1.5rem solid white;
   }
   ul {
     margin: 0;
