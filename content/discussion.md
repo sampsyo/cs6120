@@ -19,7 +19,11 @@ Here is what the post must contain:
 * A detailed summary of the main contributions in the work.
 * Critical thinking about the merits and shortcomings of the work.
 * Discussion of the work's role in history and its connections to the current computing landscape.
-* Questions that you have about the work, including its technical content, its "marketing," its evaluation, and its context in the research landscape.
+* Questions that you have about the work, including its technical content, its “marketing,” its evaluation, and its context in the research landscape.
+
+If you need inspiration for the style of post to write, read [*The Morning Paper*,][tmp] a blog that highlights CS research papers.
+The posts on that blog there are detailed but concise and help highlight the most important insights without sacrificing their nuances.
+Your post should do the same.
 
 Work hard on these posts and make them good.
 Their quality will not only shape the discussions we have in class but will also determine most of your grade for the reading component.
@@ -31,6 +35,7 @@ The instructor will provide feedback on your blog posts to help you improve them
 
 [gh]: https://github.com/sampsyo/cs6120
 [slack]: https://cs6120-2019fa.slack.com/
+[tmp]: https://blog.acolyer.org
 
 
 ## In-Class Discussion
