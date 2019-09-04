@@ -12,7 +12,7 @@ title = "Performance and Measurement"
 leader = "Adrian"
 [[classes.readings]]
 name = "Producing Wrong Data Without Doing Anything Obviously Wrong!"
-link = "https://users.cs.northwestern.edu/~robby/courses/322-2013-spring/mytkowicz-wrong-data.pdf"
+link = "https://dl.acm.org/citation.cfm?id=1508275"
 details = "Todd Mytkowicz, Amer Diwan, Matthias Hauswirth, and Peter F. Sweeney. ASPLOS 2009."
 [[classes.readings]]
 name = "SIGPLAN Empirical Evaluation Guidelines"
