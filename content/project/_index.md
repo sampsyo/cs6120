@@ -13,6 +13,9 @@ Here’s what you do for each one:
 * Write a report as a post on our [course blog][blog].
 * Do an in-class design review to collect feedback from your peers.
 
+You can work in a small team if you want—up to about 3 people.
+You are also totally welcome to work alone.
+
 [blog]: @/blog/_index.md
 
 
