@@ -17,13 +17,16 @@ it's probably harder than you think.
 A Case Study in Measurement
 ---------------------------
 
-The most headline-worthy outcome from this paper is that it identifies a couple of particularly irrelevant-seeming changes that can completely ruin a realistic experiment.
-The authors set up a reasonable question that you can imagine wanting to answer empirically:
+In its most headline-worthy outcome,
+this paper identifies two particularly irrelevant-seeming changes that can completely ruin a realistic experiment.
+As a case study,
+the authors set up a reasonable question that you can imagine wanting to answer empirically:
 does [gcc][]'s `-O3` optimization level *really* offer any improvement over `-O2`?
 
 It should be easy to answer this question: you just need to compile some programs at both optimization levels and measure how long they take to run.
-But that simple idea encodes a sweeping assumption that your handful measurements on those applications are representative of the *general concept* of compiling with different optimization levels.
-On one hand, of course it's not—you can't possibly compile *all* the programs in the world, for example, so your choice of programs might certainly influence the results you see.
+But that obvious a sweeping assumption: that your handful measurements on those programs are representative of the *general concept* of compiling with different optimization levels.
+
+Of course it's not, you might say—you can't possibly compile *all* the programs in the world, for example, so your choice of programs might certainly influence the results you see.
 The best you can do is pick some standard, diverse, representative benchmarks and make the case that they're reasonably representative.
 Similarly, while a truly robust finding would require measuring *all the computers in the world* that someone might ever run optimized binaries on, that's clearly infeasible—so you can do your job as a scrupulous scientist by measuring a few popular machines and hoping for the best.
 
