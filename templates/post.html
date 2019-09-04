@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% block header %}
+<meta name="twitter:card" content="summary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ page.title }}">
+<meta property="og:description"
+    content="{{ page.content | striptags | split(pat="\n\n") | first }}">
+{% endblock header %}
 {% block main %}
 {% set secpath = page.ancestors | last %}
 {% set section = get_section(path=secpath, metadata_only=true) %}
