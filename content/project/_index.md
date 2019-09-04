@@ -16,6 +16,15 @@ Here’s what you do for each one:
 [blog]: @/blog/_index.md
 
 
+## Projects
+
+Here are the projects that we've announced so far:
+
+1. [Make Something Cool for Bril.][p1]
+
+[p1]: @/project/1.md
+
+
 ## Proposal
 
 At the beginning of the project period, you will decide what to do for the project.
