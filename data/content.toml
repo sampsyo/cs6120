@@ -205,6 +205,14 @@ details = "Katherine E. Coons, Xia Chen, Doug Burger, Kathryn S. McKinley, and S
 link = "https://dl.acm.org/citation.cfm?id=1168875"
 
 [[classes]]
+title = "Synthesis-Aided Compilers"
+leader = "TBD"
+[[classes.readings]]
+name = "Chlorophyll: synthesis-aided compiler for low-power spatial architectures"
+link = "https://dl.acm.org/citation.cfm?id=2594339"
+details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+
+[[classes]]
 title = "Dynamic Binary Translation"
 leader = "TBD"
 [[classes.readings]]
