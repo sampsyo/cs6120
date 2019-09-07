@@ -23,6 +23,12 @@ link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
 
 [[classes]]
 title = "Representing Programs"
+notes = [
+  "Concrete syntax, abstract syntax trees, instructions, control flow graphs, and basic blocks.",
+  "An introduction to [Bril](https://github.com/sampsyo/bril).",
+  "Derive the algorithm for forming basic blocks and CFGs thereof from flat lists of instructions. Then implement them for Bril.",
+  "For more reading, try Chapter 2 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf) by Anders Møller and Michael I. Schwartzbach.",
+]
 
 [[classes]]
 title = "Data Flow Analysis"
