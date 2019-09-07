@@ -20,9 +20,15 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
     +++
     title = "Welcome to CS 6120!"
     extra.author = "Adrian Sampson"
+    extra.author_link = "https://www.cs.cornell.edu/~asampson/"
+    extra.bio = """
+      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assitant professor of computer science.
+    """
     +++
 
-Then, the rest of the text file is the [Markdown][] text of your blog post.
+Include a link to your homepage if you have one, but it's optional.
+Also write a short bio for yourself (using [Markdown][]), which will appear at the bottom of the post.
+Then, the rest of the text file is the Markdown text of your blog post.
 
 You can preview your writing with any GitHub renderer.
 To see what it will look like when published, [install Zola][zola-install] and type `zola serve` to preview the entire site.
