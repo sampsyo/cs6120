@@ -23,5 +23,8 @@
     </time>
   </p>
   {{ page.content | safe }}
+  <footer>
+    {{ load_data(path="data/blog_footer.md") | markdown | safe }}
+  </footer>
 </article>
 {% endblock main %}

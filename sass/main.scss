@@ -158,6 +158,18 @@ article {
   h1 {
     margin-bottom: 0;
   }
+  footer {
+    font-style: italic;
+    margin: 1em 0;
+    text-align: inherit;
+    color: $disabled-color;
+    font-size: inherit;
+    border-top: 1px solid $disabled-color;
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  }
 }
 
 .details {
