@@ -34,6 +34,10 @@
       <p><a href="{{ blog.permalink }}">
         Blog
       </a></p>
+      {% set projects = get_section(path="project/_index.md") %}
+      <p><a href="{{ projects.permalink }}">
+        Projects
+      </a></p>
     </nav>
   </header>
   <main>
