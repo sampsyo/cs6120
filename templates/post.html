@@ -17,13 +17,16 @@
 <article>
   <h1>{{ page.title }}</h1>
   <p class="details">
-    <span class="author">by {{ page.extra.author }}</span>
+    <span class="author">by {% if page.extra.author_link %}<a href="{{ page.extra.author_link }}">{% endif %}{{ page.extra.author }}{% if page.extra.author_link %}</a>{% endif %}</span>
     <time datetime="{{ page.date }}">
       {{ page.date | date(format="%B %e, %Y") }}
     </time>
   </p>
   {{ page.content | safe }}
   <footer>
+    {% if page.extra.bio %}
+    {{ page.extra.bio | markdown | safe }}
+    {% endif %}
     {{ load_data(path="data/blog_footer.md") | markdown | safe }}
   </footer>
 </article>

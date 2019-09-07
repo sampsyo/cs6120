@@ -1,6 +1,10 @@
 +++
 title = "Measuring Computer Systems is Almost Certainly Harder Than You Think"
 extra.author = "Adrian Sampson"
+extra.author_link = "https://www.cs.cornell.edu/~asampson/"
+extra.bio = """
+  [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor and the instructor for 6120. He likes compilers, ISAs, and sourdough bread.
+"""
 +++
 Mytkowicz et al.’s [“Producing Wrong Data Without Doing Anything Obviously Wrong!”][paper] in ASPLOS 2009 is one of those papers that contains its own best summary.
 Right there in Section 2, it says:
