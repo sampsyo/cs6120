@@ -31,13 +31,24 @@ notes = [
 ]
 
 [[classes]]
-title = "Data Flow Analysis"
+title = "Local Analysis & Optimization"
+notes = [
+  "Report back on your CFG extractor.",
+  "Derive algorithms for simple dead code elimination: deleting globally unused instructions and locally \"killed\" instructions.",
+  "Local vs. global reasoning.",
+]
 
 [[classes]]
-title = "Control Flow & Domination"
+title = "Local Value Numbering"
+notes = [
+  "Common subexpression elimination."
+]
 
 [[classes]]
-title = "Constant Propagation, Common Subexpression Elimination, and Value Numbering"
+title = "Data Flow Analysis & Global Optimization"
+
+[[classes]]
+title = "Global Value Numbering"
 
 [[classes]]
 title = "Static Single Assignment (SSA)"
