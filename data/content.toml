@@ -51,6 +51,13 @@ notes = [
 ]
 
 [[classes]]
+title = "Extending Value Numbering"
+notes = [
+  "Adding language semantics to LVN.",
+  "Subsume constant folding and copy propagation, at least.",
+]
+
+[[classes]]
 title = "Data Flow Analysis & Global Optimization"
 
 [[classes]]
