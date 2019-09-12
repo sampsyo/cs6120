@@ -28,6 +28,7 @@ notes = [
   "An introduction to [Bril](https://github.com/sampsyo/bril).",
   "Derive the algorithm for forming basic blocks and CFGs thereof from flat lists of instructions. Then implement them for Bril.",
   "For more reading, try Chapter 2 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf) by Anders Møller and Michael I. Schwartzbach.",
+  "Homework: Implement a CFG extractor. Convince yourself it's correct.",
 ]
 
 [[classes]]
@@ -36,12 +37,17 @@ notes = [
   "Report back on your CFG extractor.",
   "Derive algorithms for simple dead code elimination: deleting globally unused instructions and locally \"killed\" instructions.",
   "Local vs. global reasoning.",
+  'Homework: Implement "trivial" dead code elimination, in which you delete instructions that are never used before they are reassigned. Remember to iterate to convergence.',
 ]
 
 [[classes]]
 title = "Local Value Numbering"
 notes = [
-  "Common subexpression elimination."
+  "Consider the common thread between dead code elimination (DCE), copy propagation, and common subexpression elimination.",
+  "Value numbering is a general framework for understanding & optimizing computations.",
+  "If you can deeply understand the mystical metaphysics of value numbering, you will have gotten most of what you need to get out of this part of 6120.",
+  "For more context and an alternate presentation, see [these slides from Phil Gibbons at CMU](https://www.cs.cmu.edu/~15745/lectures/L3-Local-Opts.pdf).",
+  "Homework: Implement local value numbering. Make sure it eliminates some common subexpressions. Try pairing it with trivial dead code elimination as a post-processing step.",
 ]
 
 [[classes]]
