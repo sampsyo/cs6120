@@ -58,7 +58,7 @@ If 9am repeatedly doesn’t work for you, I will ask you to drop the course.
 
 ## Paper Reading, Perspectives, and Presentations
 
-Half of the “work” in CS 6120 is about reading and understanding research papers.
+One part of the “work” in CS 6120 is about reading and understanding research papers.
 For some small subset of the classes, you will be the [discussion leader][discussion].
 The discussion leader has two main responsibilities: writing a blog post and facilitating the in-class discussion.
 
@@ -74,7 +74,7 @@ Read more about [leading discussions][discussion].
 
 ## Implementation Projects and Design Reviews
 
-The other half of the course “work” consists of [language implementation projects][project].
+The big part of the course “work” consists of [language implementation projects][project].
 These are all open-ended (to varying degrees) and open-source projects—even when you implement a well-known technique, *how* you approach the design and implementation are up to you and will inevitably end up being unique.
 Each project culminates in an experience report on the [course blog][blog] and an in-class design review.
 
@@ -87,6 +87,17 @@ Read more details on [how projects work][project].
 
 [project]: @/project/_index.md
 [blog]: @/blog/_index.md
+
+## Ad Hoc Implementation Homework
+
+Especially during the first part of the course, another part of course “work” will be implementing compiler algorithms that we learn about in class.
+In a given class, you'll come up with the pseudocode for an algorithm.
+Then, you should work outside of class—by yourself or with other students—to implement the algorithm for Bril programs.
+
+You won’t turn this code in, but you really should do it without looking at the provided implementations.
+Struggling to derive pseudocode before you see the answer is the best way to solidify the big concepts in this course.
+Struggling to get an *actually correct* implementation is the best way to confront the nitty-gritty details that are intrinsic to compiler implementation.
+Avoid the temptation to stop when you’ve got it most of the way—the idea is to go all the way to a complete, tested implementation to get the most out of the assignment.
 
 
 ## Policies
