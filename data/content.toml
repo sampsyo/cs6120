@@ -54,7 +54,8 @@ notes = [
 title = "Extending Value Numbering"
 notes = [
   "Adding language semantics to LVN.",
-  "Subsume constant folding and copy propagation, at least.",
+  "Subsume constant folding, copy propagation, and algebraic identities.",
+  "Homework: Extend your LVN implementation to optimize the trickier examples given in class.",
 ]
 
 [[classes]]
