@@ -53,8 +53,6 @@ mon = true
 
 [[days]]
 date = "October 2"
-canceled = true
-event = "CIS 20th Anniversary Celebration"
 
 [[days]]
 date = "October 4"
