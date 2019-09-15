@@ -69,14 +69,25 @@ notes = [
   "For more on fixed poit algorithms for solving data flow, see Section 5.3 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf).",
 ]
 
-[[classess]]
+[[classes]]
 title = "Instantiating Data Flow"
 
 [[classes]]
-title = "Global Value Numbering"
+title = "Global Analysis"
+notes = [
+  "Dominators & post-dominators.",
+  "An algorithm for finding dominators.",
+  "Reducible control flow & natural loops.",
+  "Loop-invariant code motion.",  # Maybe move this after SSA.
+]
 
 [[classes]]
 title = "Static Single Assignment (SSA)"
+notes = [
+  "Defining SSA.",
+  "Derive the algorithms for converting to and from SSA.",
+  "An application: global value numbering.",  # Maybe needs its own session.
+]
 
 
 # Fancy Optimization
