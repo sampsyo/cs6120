@@ -59,7 +59,18 @@ notes = [
 ]
 
 [[classes]]
-title = "Data Flow Analysis & Global Optimization"
+title = "Data Flow"
+notes = [
+  "*Reaching definitions* are an example of a global property that require you to look at an entire CFG.",
+  "Terminology: definition, use, available, kills.",
+  "The data flow framework.",
+  "Instantiating the the data flow framework for reaching definitions.",
+  "The worklist algorithm for solving data flow.",
+  "For more on fixed poit algorithms for solving data flow, see Section 5.3 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf).",
+]
+
+[[classess]]
+title = "Instantiating Data Flow"
 
 [[classes]]
 title = "Global Value Numbering"
