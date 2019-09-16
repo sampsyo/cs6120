@@ -22,7 +22,7 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
     extra.author = "Adrian Sampson"
     extra.author_link = "https://www.cs.cornell.edu/~asampson/"
     extra.bio = """
-      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assitant professor of computer science.
+      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science.
     """
     +++
 
