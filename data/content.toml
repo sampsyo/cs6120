@@ -53,14 +53,15 @@ notes = [
 [[classes]]
 title = "Extending Value Numbering"
 notes = [
-  "Adding language semantics to LVN.",
-  "Subsume constant folding, copy propagation, and algebraic identities.",
+  "LVN can subsume constant folding, copy propagation, and algebraic identities. You will need to extend it with language semantics.",
+  "Write complete pseudocode for the base LVN algorithm, and work out where the \"extension points\" need to be to capture those optimizations.",
   "Homework: Extend your LVN implementation to optimize the trickier examples given in class.",
 ]
 
 [[classes]]
 title = "Data Flow"
 notes = [
+  "Follow up from last time: annotate the LVN pseudocode with extension points.",
   "*Reaching definitions* are an example of a global property that require you to look at an entire CFG.",
   "Terminology: definition, use, available, kills.",
   "The data flow framework.",
