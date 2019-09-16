@@ -67,7 +67,7 @@ notes = [
   "The data flow framework.",
   "Instantiating the the data flow framework for reaching definitions.",
   "The worklist algorithm for solving data flow.",
-  "For more on fixed poit algorithms for solving data flow, see Section 5.3 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf).",
+  "For more on fixed point algorithms for solving data flow, see Section 5.3 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf).",
 ]
 
 [[classes]]
