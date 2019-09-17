@@ -24,8 +24,10 @@ You are also totally welcome to work alone.
 Here are the projects that we've announced so far:
 
 1. [Make Something Cool for Bril.][p1]
+2. [Implement and Optimization.][p2]
 
 [p1]: @/project/1.md
+[p2]: @/project/2.md
 
 
 ## Proposal
