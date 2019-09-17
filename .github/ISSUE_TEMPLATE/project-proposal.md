@@ -10,3 +10,6 @@ labels: 'proposal'
 **How will you do it?**
 
 **How will you empirically measure success?**
+
+**Team members:**
+[@mention their GitHub usernames, if it's not just you]
