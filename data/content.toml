@@ -67,6 +67,7 @@ notes = [
   "The data flow framework.",
   "Instantiating the the data flow framework for reaching definitions.",
   "The worklist algorithm for solving data flow.",
+  "For a longer introduction to data flow, see [the CS 4120 notes](http://www.cs.cornell.edu/courses/cs4120/2019sp/lectures/20dataflow/lec20-sp16.pdf).",
   "For more on fixed point algorithms for solving data flow, see Section 5.3 of [*Static Program Analysis*](https://cs.au.dk/~amoeller/spa/spa.pdf).",
 ]
 
@@ -182,9 +183,9 @@ details = "Thomas Ball and James R. Larus. MICRO 1996."
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "TBD"
+leader = "Rachit"
 [[classes.readings]]
-name = "An efficient implementation of SELF a dynamically-typed object-oriented language based on prototypes"
+name = "An efficient implementation of SELF, a dynamically-typed object-oriented language based on prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
 details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
