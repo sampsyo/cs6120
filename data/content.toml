@@ -99,7 +99,7 @@ title = "Alias Analysis"
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TBD"
+leader = "Yuan"
 [[classes.readings]]
 name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
@@ -123,7 +123,7 @@ details = "Philip B. Gibbons and Steven S. Muchnick. CC 1986."
 
 [[classes]]
 title = "Loop Optimization"
-leader = "Horace & Gabriela & Helena & Yuan"
+leader = "Horace & Gabriela & Helena"
 [[classes.readings]]
 name = "Compiler optimizations for improving data locality"
 link = "https://dl.acm.org/citation.cfm?id=195557"
