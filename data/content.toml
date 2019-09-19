@@ -162,7 +162,7 @@ details = "Hans-J. Boehm. PLDI 2005."
 
 [[classes]]
 title = "Thread-Level Speculation"
-leader = "Drew"
+leader = "Drew & Josh"
 [[classes.readings]]
 name = "POSH: a TLS compiler that exploits program structure"
 link = "https://dl.acm.org/citation.cfm?id=1122997"
@@ -249,7 +249,7 @@ link = "https://dl.acm.org/citation.cfm?id=155109"
 
 [[classes]]
 title = "Spatial Architectures"
-leader = "Sachille"
+leader = "Sachille & Sean"
 [[classes.readings]]
 name = "Scaling to the End of Silicon with EDGE Architectures"
 link = "https://ieeexplore.ieee.org/document/1310240"
