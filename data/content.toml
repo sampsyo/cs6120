@@ -288,7 +288,7 @@ details = "Xuejun Yang, Yang Chen, Eric Eide, and John Regehr. PLDI 2011."
 
 [[classes]]
 title = "Compiler Fuzzing II"
-leader = "Rolph"
+leader = "Rolph & Greg"
 [[classes.readings]]
 name = "Compiler validation via equivalence modulo inputs"
 link = "https://dl.acm.org/citation.cfm?id=2594334"
