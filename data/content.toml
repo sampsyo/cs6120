@@ -107,7 +107,7 @@ details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
 
 [[classes]]
 title = "Basic Block Placement"
-leader = "Gautam"
+leader = "Gautam & Eashan"
 [[classes.readings]]
 name = "Codestitcher: inter-procedural basic block layout optimization"
 link = "https://dl.acm.org/citation.cfm?id=3307358"
@@ -123,7 +123,7 @@ details = "Philip B. Gibbons and Steven S. Muchnick. CC 1986."
 
 [[classes]]
 title = "Loop Optimization"
-leader = "Horace & Gabriela & Helena"
+leader = "Horace & Gabriela"
 [[classes.readings]]
 name = "Compiler optimizations for improving data locality"
 link = "https://dl.acm.org/citation.cfm?id=195557"
@@ -175,7 +175,7 @@ details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau
 
 [[classes]]
 title = "Profiling"
-leader = "Qian"
+leader = "Qian & Helena"
 [[classes.readings]]
 name = "Efficient path profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
@@ -191,7 +191,7 @@ details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
 [[classes]]
 title = "Tracing"
-leader = "Dietrich"
+leader = "Dietrich & Phil"
 [[classes.readings]]
 name = "Trace-based just-in-time type specialization for dynamic languages"
 details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
