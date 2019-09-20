@@ -280,7 +280,7 @@ details = "James C. Dehnert, Brian K. Grant, John P. Banning, Richard Johnson, T
 
 [[classes]]
 title = "Compiler Fuzzing I"
-leader = "Zhijing"
+leader = "Zhijing & Chris"
 [[classes.readings]]
 name = "Finding and understanding bugs in C compilers"
 link = "https://dl.acm.org/citation.cfm?id=1993532"
