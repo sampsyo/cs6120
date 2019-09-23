@@ -161,7 +161,7 @@ details = "David Bacon, Joshua Bloch, Jeff Bogda, Cliff Click, Paul Haahr, Doug 
 
 [[classes]]
 title = "Memory Consistency"
-leader = "Neil"
+leader = "Neil & Edwin"
 [[classes.readings]]
 name = "Threads cannot be implemented as a library"
 link = "https://dl.acm.org/citation.cfm?id=1065042"
