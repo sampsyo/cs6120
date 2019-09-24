@@ -1,9 +1,9 @@
 +++
 title = "Manually Managed Memory in Bril"
-extra.author = "Drew Zagieboylo"
-extra.author_link = "https://www.cs.cornell.edu/~dzag/"
+extra.author = "Drew Zagieboylo & Ryan Doenges"
 extra.bio = """
   [Drew Zagieboylo](https://www.cs.cornell.edu/~dzag/) is a 3rd year PhD student researching Security, HW design and Programming Languages. He enjoys rock climbing and gaming in his free time.
+  [Ryan Doenges](http://ryandoeng.es/) is a 3rd year PhD student...
 """
 +++
 
@@ -13,9 +13,158 @@ Our goal was to add *pointer types* to Bril. _Pointers_ represent references to 
 
 - What did you do? (Include both the design and the implementation.)
 
-First we expanded the Bril syntax to support pointer types of the form ```ptr<TYPE>```. Pointers may represent references to data of any type, including other pointers. Therefore the type ```ptr<ptr<bool>>``` is well-formed, while the type ```ptr<ptr<>>``` is ill-formed.
+### Design Overview
 
-Next, we modified the interpreter to include instructions for pointer allocation and deallocation of the form `dest: ptr<TYPE> = alloc arg1` and `free arg1`.
+We designed Bril pointers to be very similar to [LLVM's manually allocated stack pointers](https://llvm.org/docs/LangRef.html#memory-access-and-addressing-operations), except that Bril pointers refer to heap-allocated memory and offer much more restricted operations. Namely, this means that pointer types completely define the data type to which they refer and and pointer representations are explicitly abstract. This means that, unlike in C, you cannot use a Bril pointer as an argument to an `add` operation; even if we did support casting it would be meaningless to "add" a Bril pointer and a Bril integer. More generally, the Bril interpreter/compiler has complete freedom to choose how pointers are represented and allocated; this separates the high level computaional usage of pointers and the low level (and likely platform-dependent) implementation details.
+
+#### Pointer Syntax & Representation
+
+First we expanded the Bril syntax to support pointer types of the form ```ptr<TYPE>```. 
+Since we want Bril types to be fully statically determined, `TYPE` must itself be a complete and legal Bril type.
+Therefore, the type ```ptr<ptr<bool>>``` is well-formed, while the type ```ptr<ptr>``` is not.
+Pointer *values*, however, have no syntactic representation, since we don't actually want their representation to be concrete. This implies that `const` operations cannot ever produce a pointer type *and* that the compiler/interpreter has complete control over how pointers are implemented.
+
+#### Memory Allocation
+
+`alloc` works almost the same as C's `malloc`, except that the argument passed to `alloc` represents *the number of elements to allocate*. In C, `malloc` expects its allocation size argument to specify a number of *bytes*, which are only loosely tied to the type of data to which the pointer refers.
+
+C Allocation of a Pointer to 10 ints:
+```
+int* myptr = malloc(sizeof(int) * 10);
+...
+```
+
+Bril Allocation of a Pointer to 10 ints:
+```
+ ten: int = const 10;
+ myptr: ptr<int> = alloc ten;
+ ...
+```
+
+Note that, in the C code, we needed to explicitly use a platform-dependent `sizeof` operator to translate our `int` type into a number of bytes. In Bril, that is unnecessary since the compiler/interpreter can determine how many bytes to allocate based on its representation of integers.
+
+#### Accessing Memory
+
+Like assembly languages, pointers can be used to access memory through `load` and `store` instructions. These operations take a pointer as their first argument and are analogous to pointer dereferencing in C. *Loads* correspond to read operations and *stores* correspond to writes. As an example, both of the following programs will print the value `4`.
+
+C Implementation:
+```
+int* myptr = malloc(sizeof(int) * 10);
+*myptr = 4;
+printf("%d\n", *myptr)
+```
+
+Bril Implementation:
+```
+ ten: int = const 10;
+ four: int = const 4;
+ myptr: ptr<int> = alloc ten;
+ store myptr four;
+ v: int = load myptr;
+ print v;
+```
+
+With these operations, we can only access the first memory cell in our allocated memory region, since that's where pointers returned by `alloc` point to. In C, you can use arithmetic operations on pointers to get new pointers that reference other bytes in that memory region. We include a `ptradd` operation to support this kind of functionality, which allows a program to add an integer to a pointer to produce a new pointer. The code snippets below access the second element of some already allocated memory region:
+
+C Implementation;
+```
+int* myptr;
+...
+printf("%d\n", myptr[1]); // myptr[1] === *(myptr + sizeof(int)*1)
+```
+
+Bril Impleentation:
+```
+...
+one: int = const 1
+myptr_1: ptr<int> = ptradd myptr one
+v: int = load my_ptr1
+print v
+```
+
+#### Deallocating Memory
+
+In general, `free` in Bril works exactly the same as it does in C. You can use any reference to the same allocation to free it; however, double frees or free-ing a pointer which doesn't refer to the beginning of an allocation are illegal. That means the following programs both result in bad behavior at runtime:
+
+Prog 1:
+```
+ten: int = const 10;
+myptr: ptr<int> = alloc ten;
+free myptr;
+free myptr;
+```
+
+Prog 2:
+```
+ten: int = const 10;
+myptr: ptr<int> = alloc ten;
+myptr_10: ptr<int> = ptradd myptr ten
+free myptr_10;
+```
+Furthermore, (also like C) Bril does not prevent memory leaks by default. In other words, programs may `alloc` memory that they never `free`.
+
+
+For a larger example of how pointers can be used in Bril, the following C code:
+
+```int vals[10];
+vals[0] = 0;
+for (int i = 1; i < 10; i++) {
+  vals[i] = vals[i-1] + 4;
+}
+```
+
+Would be roughly equivalent to the following Bril code:
+```
+ ten: int = const 10;
+ zero: int = const 0;
+ one: int = const 1;
+ neg_one: int = const -1;
+ four: int = const 4;
+ vals: ptr<int> = alloc ten
+ i: int = const 2;
+ i_minus_one: int = add i neg_one
+loop:
+ cond: lt i ten
+ br cond done body
+body:
+ vals_i: ptr<int> = ptradd vals i
+ vals_i_minus_one: ptr<int> = ptradd vals i_minus_one
+ tmp: int = load vals_i_minus_one
+ tmp: int = add tmp four
+ store vals_i tmp
+ i = add i one
+ i_minus_one = add i_minus_one one
+ jmp loop
+done:
+ free vals
+ ret
+```
+
+### Implementation
+
+To realize our design we had to complete the following tasks:
+   - Define a concrete pointer representation
+   - Implement a "memory allocator" that can create variable-size memory cells
+   - Support runtime error detection via argument typechecking and initialization checking
+
+
+#### Pointer Representation
+
+In our interpreter implementation, pointers are objects with two fields: a *Key* (a datatype defined by the [*Heap*](#memory-allocator) implementation) that is used for actually looking up where data is stored; and a *tag* which is a string that tells the runtime which kind of data the pointer actually stores. Unlike the surface syntax for Bril types, type tags must be one of the following values: `"int"`, `"bool"` or `"ptr"`.
+
+We don't need separate tags for every possible pointer type because all pointers have the same representation (namely the struct we just defined). During `load` and `store` instructions, our interpreter uses the type tag to ensure that the memory cell to which the pointer refers actually holds (or can actually hold) data of the appropriate size.
+
+#### Heap Memory
+
+We added a new data structure to the Bril interpreter to store heap-allocated memory, which we unsurprisingly called a "Heap". This heap supports pretty much exactly the same set of operations as the Bril pointer instructions and does most of the heavy lifting for the interpreter, other than dynamic type checking. Our "Heap" is really just a `Map` that maps Typescript `numbers` to arrays of objects. `alloc` gets a fresh number (by incrementing a global counter, we don't do anything smart about re-using numbers) and puts an array of the requested size into the map with that number as its key. Lastly, `alloc` returns an opaque *Key* object that the interpreter can use for future *Heap* operations, such as `get`, `set` and `free`.
+
+In reality, the *Key* is just another simple object that contains a `base` and an `offset`. Pointer arithmetic operations only modify the offset so we can keep track of whether or not any given pointer corresponds directly to an allocation (i.e. offset == 0). In this way, we keep track of which allocation any given pointer belongs to, regardless of "where" it may point in memory. Notably, this model means that our implementation does not model "a single contiguous memory space"; each allocation represents a continguous space and allocations are otherwise unrelated.
+
+`free` deletes entries from the internal map, so we are relying on the base Typescript Map implementation and the Javascript runtime garbage collection to actually free physical memory dynamically. We don't implement any interesting memory allocation strategies based on physical memory layout and simply let the runtime do the work. While smart, type-aware memory allocators are an interesting area of performance optimization, we felt that rabbit hole was outside the scope of this small project.
+
+#### An Alternative Heap Implementation
+
+TODO Ryan put Array Buffer stuff here
 
 - What were the hardest parts to get right?
 
