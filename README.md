@@ -29,11 +29,12 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
     name = "Grace Hopper"
     +++
 
+List all the authors of your post.
 Include a link to your homepage if you have one, but it's optional.
-Also write a short bio for yourself (using [Markdown][]), which will appear at the bottom of the post.
+Also write a short bio for yourselves (using [Markdown][]), which will appear at the bottom of the post.
 Then, the rest of the text file is the Markdown text of your blog post.
 
-You can preview your writing with any GitHub renderer.
+You can preview your writing with any Markdown renderer.
 To see what it will look like when published, [install Zola][zola-install] and type `zola serve` to preview the entire site.
 
 [pr]: https://help.github.com/en/articles/about-pull-requests
