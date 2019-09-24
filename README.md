@@ -26,6 +26,15 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
     """
     +++
 
+For multiple authors, use the `extra.authors` object instead:
+
+    +++
+    extra.authors = { "Adrian Sampson" = "https://www.cs.cornell.edu/~asampson/", "Author2": "link2" }
+    extra.bio = """
+      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science.
+    """
+    +++
+
 Include a link to your homepage if you have one, but it's optional.
 Also write a short bio for yourself (using [Markdown][]), which will appear at the bottom of the post.
 Then, the rest of the text file is the Markdown text of your blog post.

@@ -17,7 +17,16 @@
 <article>
   <h1>{{ page.title }}</h1>
   <p class="details">
-    <span class="author">by {% if page.extra.author_link %}<a href="{{ page.extra.author_link }}">{% endif %}{{ page.extra.author }}{% if page.extra.author_link %}</a>{% endif %}</span>
+    {% if page.extra.authors %}
+      <span class="author"> by
+      {% for author, link in page.extra.authors %}
+        {% if link %}<a href="{{ link }}">{% endif %}{{ author }}{% if link %}</a>{% endif %}{% if not loop.last %},
+        {% endif %}
+      {% endfor %}
+      <span>
+    {% else %}
+      <span class="author">by {% if page.extra.author_link %}<a href="{{ page.extra.author_link }}">{% endif %}{{ page.extra.author }}{% if page.extra.author_link %}</a>{% endif %}</span>
+    {% endif %}
     <time datetime="{{ page.date }}">
       {{ page.date | date(format="%B %e, %Y") }}
     </time>
