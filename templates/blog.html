@@ -10,7 +10,15 @@
 <article>
   <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
   <p class="details">
+    {% if post.extra.authors %}
+    <span class="author">by
+    {% for name, link in post.extra.authors %}
+      {{ name }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+    </span>
+    {% else %}
     <span class="author">by {{ post.extra.author }}</span>
+    {% endif %}
     <time datetime="{{ post.date }}">
       {{ post.date | date(format="%B %e, %Y") }}
     </time>
