@@ -11,8 +11,6 @@ extra.bio = """
 
 Our goal was to add *pointer types* to Bril. _Pointers_ represent references to manually managed read/write memory cells which can persist outside of function scope. Furthermore we support C-style arrays such that pointer arithmetic instructions can be used to index into allocated memory regions. Lastly, we wished to ensure that value typechecking was still supportable for our new instructions (however we did not implement a typechecker). Our pointer types are meant only for value checking (i.e. every pointer type totally specifies the type of its contents); they do not include bounds or alias information to prevent memory safety bugs.
 
-- What did you do? (Include both the design and the implementation.)
-
 ### Design Overview
 
 We designed Bril pointers to be very similar to [LLVM's manually allocated stack pointers](https://llvm.org/docs/LangRef.html#memory-access-and-addressing-operations), except that Bril pointers refer to heap-allocated memory and offer much more restricted operations. Namely, this means that pointer types completely define the data type to which they refer and and pointer representations are explicitly abstract. This means that, unlike in C, you cannot use a Bril pointer as an argument to an `add` operation; even if we did support casting it would be meaningless to "add" a Bril pointer and a Bril integer. More generally, the Bril interpreter/compiler has complete freedom to choose how pointers are represented and allocated; this separates the high level computaional usage of pointers and the low level (and likely platform-dependent) implementation details.
@@ -29,13 +27,13 @@ Pointer *values*, however, have no syntactic representation, since we don't actu
 `alloc` works almost the same as C's `malloc`, except that the argument passed to `alloc` represents *the number of elements to allocate*. In C, `malloc` expects its allocation size argument to specify a number of *bytes*, which are only loosely tied to the type of data to which the pointer refers.
 
 C Allocation of a Pointer to 10 ints:
-```
+```C
 int* myptr = malloc(sizeof(int) * 10);
 ...
 ```
 
 Bril Allocation of a Pointer to 10 ints:
-```
+```C
  ten: int = const 10;
  myptr: ptr<int> = alloc ten;
  ...
@@ -48,14 +46,14 @@ Note that, in the C code, we needed to explicitly use a platform-dependent `size
 Like assembly languages, pointers can be used to access memory through `load` and `store` instructions. These operations take a pointer as their first argument and are analogous to pointer dereferencing in C. *Loads* correspond to read operations and *stores* correspond to writes. As an example, both of the following programs will print the value `4`.
 
 C Implementation:
-```
+```C
 int* myptr = malloc(sizeof(int) * 10);
 *myptr = 4;
 printf("%d\n", *myptr)
 ```
 
 Bril Implementation:
-```
+```C
  ten: int = const 10;
  four: int = const 4;
  myptr: ptr<int> = alloc ten;
@@ -67,14 +65,14 @@ Bril Implementation:
 With these operations, we can only access the first memory cell in our allocated memory region, since that's where pointers returned by `alloc` point to. In C, you can use arithmetic operations on pointers to get new pointers that reference other bytes in that memory region. We include a `ptradd` operation to support this kind of functionality, which allows a program to add an integer to a pointer to produce a new pointer. The code snippets below access the second element of some already allocated memory region:
 
 C Implementation;
-```
+```C
 int* myptr;
 ...
 printf("%d\n", myptr[1]); // myptr[1] === *(myptr + sizeof(int)*1)
 ```
 
 Bril Impleentation:
-```
+```C
 ...
 one: int = const 1
 myptr_1: ptr<int> = ptradd myptr one
@@ -87,7 +85,7 @@ print v
 In general, `free` in Bril works exactly the same as it does in C. You can use any reference to the same allocation to free it; however, double frees or free-ing a pointer which doesn't refer to the beginning of an allocation are illegal. That means the following programs both result in bad behavior at runtime:
 
 Error Program 1:
-```
+```C
 ten: int = const 10;
 myptr: ptr<int> = alloc ten;
 free myptr;
@@ -95,7 +93,7 @@ free myptr;
 ```
 
 Error Program 2:
-```
+```C
 ten: int = const 10;
 myptr: ptr<int> = alloc ten;
 myptr_10: ptr<int> = ptradd myptr ten
@@ -106,7 +104,7 @@ Furthermore, (also like C) Bril does not prevent memory leaks by default. In oth
 
 For a larger example of how pointers can be used in Bril, the following C code:
 
-```
+```C
 int* vals = malloc(sizeof(int)*10);
 vals[0] = 0;
 for (int i = 1; i < 10; i++) {
@@ -115,7 +113,7 @@ for (int i = 1; i < 10; i++) {
 ```
 
 Would be roughly equivalent to the following Bril code:
-```
+```C
  ten: int = const 10;
  zero: int = const 0;
  one: int = const 1;
@@ -176,14 +174,14 @@ Firstly, we had to handle how to parse and represent new types that are paramete
 
 The original type parsing specification looked like this:
 
-```
+```C
 type: CNAME
 ```
 
 And created an AST node where the type was specified as a `string`.
 
 Our new version looks like this:
-```
+```C
 type: "ptr<" ptrtype ">" | basetype
 ptrtype: type
 basetype: CNAME
@@ -192,7 +190,7 @@ basetype: CNAME
 And we create an AST node where the type is specified as a (potentially nested) object with one field named "ptr".
 For example, the AST representation of a node with type `ptr<bool>` looks like
 
-```
+```C
 type: { ptr: "bool" }
 ```
 
