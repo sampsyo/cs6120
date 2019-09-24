@@ -13,37 +13,56 @@ Our goal was to add *pointer types* to Bril. _Pointers_ represent references to 
 
 ### Design Overview
 
-We designed Bril pointers to be very similar to [LLVM's manually allocated stack pointers](https://llvm.org/docs/LangRef.html#memory-access-and-addressing-operations), except that Bril pointers refer to heap-allocated memory and offer much more restricted operations. Namely, this means that pointer types completely define the data type to which they refer and and pointer representations are explicitly abstract. This means that, unlike in C, you cannot use a Bril pointer as an argument to an `add` operation; even if we did support casting it would be meaningless to "add" a Bril pointer and a Bril integer. More generally, the Bril interpreter/compiler has complete freedom to choose how pointers are represented and allocated; this separates the high level computaional usage of pointers and the low level (and likely platform-dependent) implementation details.
+We added manually managed memory and typed pointers to Bril while keeping the
+layout of data hidden from Bril programs. The API for working with these
+heap-allocated pointers was inspired by [LLVM's manually allocated stack pointer
+API](https://llvm.org/docs/LangRef.html#memory-access-and-addressing-operations).
+Pointer types include the data type to which they refer: no `void*` magic
+allowed. Furthermore, the representation of data in memory is abstract. In
+a type system that just consists of integers, booleans, and pointers this is not
+too strong a statement, but something like LLVM's `getelementptr` would allow
+structs to be added while still hiding type sizes from Bril programs.
+This depends on the fact that, unlike in C, you cannot do bytewise arithmetic on
+Bril pointers to determine the size of things in memory or extract the value of
+a pointer as an integer address.
+
+This design leaves the Bril interpreter/compiler complete freedom to choose how
+data including pointers are represented and allocated; this separates the high
+level computaional usage of pointers and the low level (and likely
+platform-dependent) implementation details while still providing usable manually
+managed memory to programs.
 
 #### Pointer Syntax & Representation
 
-First we expanded the Bril syntax to support pointer types of the form ```ptr<TYPE>```. 
-Since we want Bril types to be fully statically determined, `TYPE` must itself be a complete and legal Bril type.
-Therefore, the type ```ptr<ptr<bool>>``` is well-formed, while the type ```ptr<ptr>``` is not.
-Pointer *values*, however, have no syntactic representation, since we don't actually want their representation to be concrete. This implies that `const` operations cannot ever produce a pointer type *and* that the compiler/interpreter has complete control over how pointers are implemented.
+We expanded the Bril type syntax with ```ptr<TYPE>```, which denotes a pointer
+to a value in memory of type `TYPE`.
+There is no additional syntax for pointer values, since pointer representation
+is abstract: the only way to produce something of type `ptr<T>` is by using the
+language's memory allocator.
 
-#### Memory Allocation
+#### Allocating Memory
 
-`alloc` works almost the same as C's `malloc`, except that the argument passed to `alloc` represents *the number of elements to allocate*. In C, `malloc` expects its allocation size argument to specify a number of *bytes*, which are only loosely tied to the type of data to which the pointer refers.
+We added a typed `alloc` primitive to Bril.
+Bril's `alloc` works like C's `malloc`, but the argument passed to `alloc` represents the number of elements to allocate, rather than the number of bytes to allocate.
 
-C Allocation of a Pointer to 10 ints:
-```C
-int* myptr = malloc(sizeof(int) * 10);
-...
-```
-
-Bril Allocation of a Pointer to 10 ints:
+In Bril, allocating a pointer to 10 ints looks like this:
 ```C
  ten: int = const 10;
  myptr: ptr<int> = alloc ten;
- ...
 ```
 
-Note that, in the C code, we needed to explicitly use a platform-dependent `sizeof` operator to translate our `int` type into a number of bytes. In Bril, that is unnecessary since the compiler/interpreter can determine how many bytes to allocate based on its representation of integers.
+Doing the same in C would require invoking the `sizeof` operator to determine
+how much space an `int` takes up in memory, but that lets the program know
+something about the representation of data in memory. Bril's element-size
+allocator avoids this.
 
-#### Accessing Memory
+#### Modifying Memory
 
-Like assembly languages, pointers can be used to access memory through `load` and `store` instructions. These operations take a pointer as their first argument and are analogous to pointer dereferencing in C. *Loads* correspond to read operations and *stores* correspond to writes. As an example, both of the following programs will print the value `4`.
+Like in assembly languages, Bril pointers can be used to access memory through
+`load` and `store` instructions. These operations take a pointer as their first
+argument and work like pointer dereferencing in C. *Loads* correspond to
+read operations and *stores* correspond to writes. As an example, both of the
+following programs will print the value `4`.
 
 C Implementation:
 ```C
@@ -62,18 +81,27 @@ Bril Implementation:
  print v;
 ```
 
-With these operations, we can only access the first memory cell in our allocated memory region, since that's where pointers returned by `alloc` point to. In C, you can use arithmetic operations on pointers to get new pointers that reference other bytes in that memory region. We include a `ptradd` operation to support this kind of functionality, which allows a program to add an integer to a pointer to produce a new pointer. The code snippets below access the second element of some already allocated memory region:
+#### Pointer Arithmetic
+So far we can only use loads and stores to access the first cell in our
+allocated memory region, since that's where the pointers returned by `alloc`
+point to.
 
-C Implementation;
+To index into the memory region, Bril programs can use our typed `ptradd`
+instruction, which allows a program to add an integer to a pointer to produce
+a new pointer.
+
+The code snippets below access the second element of some already allocated
+memory region.
+
+C Implementation:
 ```C
 int* myptr;
-...
+// ... allocate memory ...
 printf("%d\n", myptr[1]); // myptr[1] === *(myptr + sizeof(int)*1)
 ```
 
 Bril Impleentation:
 ```C
-...
 one: int = const 1
 myptr_1: ptr<int> = ptradd myptr one
 v: int = load my_ptr1
@@ -101,9 +129,7 @@ free myptr_10;
 ```
 Furthermore, (also like C) Bril does not prevent memory leaks by default. In other words, programs may `alloc` memory that they never `free`.
 
-
 For a larger example of how pointers can be used in Bril, the following C code:
-
 ```C
 int* vals = malloc(sizeof(int)*10);
 vals[0] = 0;
@@ -161,10 +187,6 @@ We added a new data structure to the Bril interpreter to store heap-allocated me
 In reality, the *Key* is just another simple object that contains a `base` and an `offset`. Pointer arithmetic operations only modify the offset so we can keep track of whether or not any given pointer corresponds directly to an allocation (i.e. `offset == 0`). In this way, we keep track of which allocation any given pointer belongs to, regardless of "where" it may point in memory. Notably this implementation of a Heap does not model "a single contiguous memory space"; each allocation represents a continguous space and allocations are otherwise unrelated.
 
 `free` deletes entries from the internal map, so we are relying on the base Typescript Map implementation and the Javascript runtime garbage collection to actually free physical memory dynamically. We don't implement any interesting memory allocation strategies based on physical memory layout and simply let the runtime do the work. While smart, type-aware memory allocators are an interesting area of performance optimization, we felt that rabbit hole was outside the scope of this small project.
-
-#### An Alternative Heap Implementation
-
-TODO Ryan put Array Buffer stuff here
 
 ### Notable Challenges
 
