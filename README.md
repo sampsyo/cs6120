@@ -19,11 +19,14 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
 
     +++
     title = "Welcome to CS 6120!"
-    extra.author = "Adrian Sampson"
-    extra.author_link = "https://www.cs.cornell.edu/~asampson/"
     extra.bio = """
-      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science.
+      Grace Hopper made the first compiler. [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science, so that's pretty cool too I guess.
     """
+    [[extra.authors]]
+    name = "Adrian Sampson"
+    link = "https://www.cs.cornell.edu/~asampson/"  # Links are optional.
+    [[extra.authors]]
+    name = "Grace Hopper"
     +++
 
 Include a link to your homepage if you have one, but it's optional.
