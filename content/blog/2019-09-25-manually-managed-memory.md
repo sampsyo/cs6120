@@ -106,7 +106,8 @@ Furthermore, (also like C) Bril does not prevent memory leaks by default. In oth
 
 For a larger example of how pointers can be used in Bril, the following C code:
 
-```int vals[10];
+```
+int* vals = malloc(sizeof(int)*10);
 vals[0] = 0;
 for (int i = 1; i < 10; i++) {
   vals[i] = vals[i-1] + 4;
@@ -121,23 +122,24 @@ Would be roughly equivalent to the following Bril code:
  neg_one: int = const -1;
  four: int = const 4;
  vals: ptr<int> = alloc ten
- i: int = const 2;
- i_minus_one: int = add i neg_one
+ store vals zero;
+ i: int = const 1;
+ i_minus_one: int = add i neg_one;
 loop:
- cond: lt i ten
- br cond done body
+ cond: lt i ten;
+ br cond done body;
 body:
- vals_i: ptr<int> = ptradd vals i
- vals_i_minus_one: ptr<int> = ptradd vals i_minus_one
- tmp: int = load vals_i_minus_one
- tmp: int = add tmp four
- store vals_i tmp
- i = add i one
- i_minus_one = add i_minus_one one
- jmp loop
+ vals_i: ptr<int> = ptradd vals i;
+ vals_i_minus_one: ptr<int> = ptradd vals i_minus_one;
+ tmp: int = load vals_i_minus_one;
+ tmp: int = add tmp four;
+ store vals_i tmp;
+ i = add i one;
+ i_minus_one = add i_minus_one one;
+ jmp loop;
 done:
- free vals
- ret
+ free vals;
+ ret;
 ```
 
 ### Implementation
@@ -207,7 +209,6 @@ Primarily, our evaluation here was qualitative rather than quantitative; we simp
 
 Additionally, we needed to check a number of "bad" cases, which the interpreter should catch as errors and print a reasonable error message:
 
- - Parsing Bril programs with invalid pointer type specifications (.e.g `ptr<>`)
  - Passing non-pointers to `load`, `store` or `free` operations
  - Allocating pointers with non-positive size
  - Failing to free memory by the end of the program
