@@ -216,7 +216,8 @@ Additionally, we needed to check a number of "bad" cases, which the interpreter 
  - Trying to free a pointer into the middle of an allocation region
  - Accessing memory "out of bounds" of a given access
  - Writing the wrong type of data into a pointer (e.g. store `int` into a `ptr<bool>`)
- - Reading data into the wrong type of destination variable
+   - N.B. that "reading" data of the wrong type is still allowed, which actually mirrors the 
+     current interpreter implementation for other operations
 
 
 ##TODO empricial evaluation part
