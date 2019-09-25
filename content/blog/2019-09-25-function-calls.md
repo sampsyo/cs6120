@@ -71,7 +71,7 @@ Such functions are assumed to have a return type of void.
 ## Evaluating our contribution
 
 To convince ourselves that we'd actually made a useful contribution to Bril, we wanted to rigorously test our changes. 
-Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also have to make several tooling changes.
+Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also had to make several tooling changes.
 
 ### Tooling changes for testing
 
@@ -89,9 +89,20 @@ We thus added a named exception to Bril's interpreter with an custom exit code, 
 
 ### Bugs we found with manual testing
 
-We found several significant bugs via manual testing. 
+Manual testing uncovered several significant bugs via manual testing. 
 
-1. call as nested subexpression (found by recursive factorial)
+When were fairly confident we had finished our implementation (hah), we wrote a quick recursive Factorial implemention in the TypeScript frontend:
+
+```
+function fac(x : number) : number {
+    if (x <= 1) return 1;
+    var result = x * fac(x - 1);
+    return result; 
+}
+```
+
+Surprisingly, this test failed - we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables.
+
 2. 'void' written explicitly as a function type in typescript
 3. nondeterministic lark parsing of boolean variable declarations sometimes as value operations instead of constant operations
 
