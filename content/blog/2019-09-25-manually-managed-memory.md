@@ -3,7 +3,7 @@ title = "Manually Managed Memory in Bril"
 extra.author = "Drew Zagieboylo & Ryan Doenges"
 extra.bio = """
   [Drew Zagieboylo](https://www.cs.cornell.edu/~dzag/) is a 3rd year PhD student researching Security, HW design and Programming Languages. He enjoys rock climbing and gaming in his free time.
-  [Ryan Doenges](http://ryandoeng.es/) is a 3rd year PhD student...
+  [Ryan Doenges](http://ryandoeng.es/) is a 3rd year PhD student studying programming languages for networking.
 """
 +++
 
