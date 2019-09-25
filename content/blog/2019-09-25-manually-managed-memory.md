@@ -13,8 +13,9 @@ Our goal was to add *pointer types* to Bril. _Pointers_ represent references to
 manually managed read/write memory cells which can persist outside of function
 scope. Furthermore we support C-style arrays such that pointer arithmetic
 instructions can be used to index into allocated memory regions. Lastly, we
+did not implement a typechecker, however we
 wished to ensure that value typechecking was still supportable for our new
-instructions (however we did not implement a typechecker). Our pointer types are
+instructions. Our pointer types are
 meant only for value checking (i.e., every pointer type totally specifies the
 type of its contents); they do not include bounds or alias information to
 prevent memory safety bugs.
@@ -42,8 +43,10 @@ managed memory to programs.
 
 #### Pointer Syntax & Representation
 
-We expanded the Bril type syntax with ```ptr<TYPE>```, which denotes a pointer
-to a value in memory of type `TYPE`.
+We expanded the Bril JSON type syntax with `{ "ptr" : TYPE }`, which denotes a pointer
+to a value in memory of type `TYPE`. The corresponding Bril textual representation
+ of a pointer type is ```ptr<TYPE>```.
+For the rest of this article, we'll use the more concise text format.
 There is no additional syntax for pointer values, since pointer representation
 is abstract: the only way to produce something of type `ptr<T>` is by using the
 language's memory allocator. There is no address-of operator (like C's `&`)
@@ -79,7 +82,7 @@ C Implementation:
 ```C
 int* myptr = malloc(sizeof(int) * 10);
 *myptr = 4;
-printf("%d\n", *myptr)
+printf("%d\n", *myptr);
 ```
 
 Bril Implementation:
@@ -113,10 +116,10 @@ printf("%d\n", myptr[1]); // myptr[1] === *(myptr + sizeof(int)*1)
 
 Bril Implementation:
 ```C
-one: int = const 1
-myptr_1: ptr<int> = ptradd myptr one
-v: int = load my_ptr1
-print v
+one: int = const 1;
+myptr_1: ptr<int> = ptradd myptr one;
+v: int = load my_ptr1;
+print v;
 ```
 
 #### Deallocating Memory
@@ -139,7 +142,7 @@ Error Program 2:
 ```C
 ten: int = const 10;
 myptr: ptr<int> = alloc ten;
-myptr_10: ptr<int> = ptradd myptr ten
+myptr_10: ptr<int> = ptradd myptr ten;
 free myptr_10;
 ```
 Furthermore, (also like C) Bril does not prevent memory leaks by default. In
@@ -161,7 +164,7 @@ Would be roughly equivalent to the following Bril code:
  one: int = const 1;
  neg_one: int = const -1;
  four: int = const 4;
- vals: ptr<int> = alloc ten
+ vals: ptr<int> = alloc ten;
  store vals zero;
  i: int = const 1;
  i_minus_one: int = add i neg_one;
@@ -295,8 +298,16 @@ interpreter to catch and report as errors with reasonable error messages:
  - Accessing memory "out of bounds" of a given access
  - Writing the wrong type of data into a pointer (e.g. store `int` into
    a `ptr<bool>`)
-   - N.B. that "reading" data of the wrong type is still allowed, which actually
-     mirrors the current interpreter implementation for other operations
+
+
+*N.B. The interpreter may exhibit arbitrarily bad
+behavior upon ill-typed inputs and the existing implementation
+does allow some bad behaviors. Our memory operations do a
+fair amount of dymanic type checking to avoid writing the wrong
+kind of data into a memory cell but `load` operations can
+still read data of the wrong type for a given destination variable.*
+
+
 
 All of our tests pass. For fun, we also included tests to stress memory allocation,
 for example by allocating and free-ing in a tight loop and by allocating very
