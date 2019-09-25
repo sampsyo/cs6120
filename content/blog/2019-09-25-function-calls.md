@@ -9,9 +9,16 @@ extra.bio = """
 +++
 
 
-## Goal: Function calls in BRIL
+//## Goal: Function calls in BRIL
 
-### BRIL introduction
+## Function calls in BRIL
+In this post, we will describe our experience adding function calls to Bril (the Big Red Intermediate Language).
+
+// ### BRIL introduction
+
+Bril is a simple, extensible language that @sampsyo designed to be a playground for building compiler extensions and optimizations. While out-of-the-box Bril supports programs with multiple functions, the initial implementation lacked an instruction to actually _call_ one function from another. In service of this course's journey toward successively more fun compiler optimizations, we set out to rectify this gap by implementing function calls. 
+
+The Bril ecosystem is centered around a JSON-based intermediate language to represent functions, labels, and instructions. In addition, Bril includes two _front-ends_ to make for a more ergonomic programming experience---users can compile from either a concise text-based syntax or a restricted subset of TypeScript. For our project, we decided to focus our scope on simple function calls (without first-class functions) in favor of updating the full Bril ecosystem stack.
 
 ## What we did
 
