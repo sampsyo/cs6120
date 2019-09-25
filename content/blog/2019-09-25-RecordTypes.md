@@ -26,7 +26,7 @@ We decided on this format to mirror OCaml [record type declarations](https://v1.
 Also unlike OCaml, we decided to use nominal record types instead of structural ones because we thought it was clearer and adhered well to the existing precedents in Bril where everything is clearly typed.
 
 ### Nominal vs Structural Typing
-One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. Languages like C++, Java, and Swift have primarily nominal type systems. On the other hand, languages like OCaml and Haskell have primarily structural type systems. Why did they make these choices, and what are the arguments for choosing one over the other? When 
+One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. Languages like C++, Java, and Swift have primarily nominal type systems. On the other hand, languages like OCaml and Haskell have primarily structural type systems. Why did they make these choices, and what are the arguments for choosing one over the other?
 
 ```
 type Dog = {age: int; isAsleep: bool}
@@ -130,4 +130,3 @@ When making these decisions, one of the primary tradeoffs we identified was usab
 We wanted records to be easy to use to store data, but with immutability to be able to better reason about what values variables could be at any point in our program. In addition, since these are value types, changing one field will only change the field of the copy of the record you are modifying. Therefore, the same functionality can be achieved, but in a safer way, with _with syntax_. These sort of design decision and consideration of use cases was a challenge as we looked at other prior art to get ideas, but ultimately wanted these types to be useful in Bril. 
 
 A different challenge of this project was probably debugging the typescript interpreter as it was very difficult to trace errors as the source typescript gets compiled into a separate javascript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
-
