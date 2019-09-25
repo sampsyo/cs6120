@@ -1,5 +1,5 @@
 +++
-title = "Function calls in BRIL"
+title = "Function calls in Bril"
 extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "" }
 extra.bio = """
   [Alexa VanHattum](https://cs.cornell.edu/~avh) [[TODO]]
@@ -24,29 +24,56 @@ For our project, we decided to focus our scope on simple function calls (without
 
 ## What we did
 
-### Surface syntax for calls and fully-fledged function definitions in BRIL and typescript
+### Surface syntax for calls and fully-fledged function definitions in Bril and typescript
 
-BRIL now supports function definitions:
+Bril now supports function definitions:
 ```
-<return type> <name>(<arg1> : <type1>, ..., <argn> : <typen>) { <instructions> };
-````
+<ReturnType> <name>(<arg_1> : <type_1>, ..., <arg_n> : <type_n>) { <instructions> };
+```
 
-BRIL now supports both effectful call and value call instructions:
+Where:
+- `<ReturnType>`: The return type of a function must be `void` or one of the currently recognized Bril types: `int` or `bool`.
+- `<name>`: The function's name is a string that can consist of letters, numbers, and underscores. It cannot begin with a number.
+- `<arg_i> : <type_i>`: Each argument name must be paired with a Bril type.
+- `<instructions>`: This is a sequence of Bril instructions.
+
+Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
 ```
-call <name>(<args>);
 var <name> : <type>  = call <name>(<args>);
+call <name>(<args>);
 ```
 
-For backwards compatibility, functions can still be declared without return types and arguments, as in `br.bril`. 
+For backwards compatibility, functions can still be declared without return types and arguments, as in `tests/ts/br.bril`. 
 Such functions are assumed to have a return type of void.
 
-### Compile to JSON (BRIL IR)
+### Extended JSON representation
+
+We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every instruction still has a name and a list of instructions. 
+
+```
+{ "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
+```
+
+A function can take no arguments, in which case the \"args\" field contains the empty list.
+The return type, represented by the \"type\" field, is not required. A function that does not return anything (giving it the return type `void`) does not contain the \"type\" field.
+
+An Argument JSON object contains the argument's name and type:
+
+```
+{"name": "<string>", "type": <Type>}
+```
+
+
+
+The JSON Bril program object remains unchanged as a list of functions.
+
+### Compile to JSON (Bril IR)
 
 ### Interpretation (in `brili.ts`)
 
 ### Extended turnt to test for expected errors
 
-- necessitated adding comments in BRIL
+- necessitated adding comments in Bril
 
 ### Automated property-based testing with Hypothesis
 
