@@ -50,27 +50,6 @@ Such functions are assumed to have a return type of void.
 
 ### Interpretation (in `brili.ts`)
 
-## Evaluating our contribution
-
-In order to be sure we had made a useful contribution to Bril, we wanted to rigorously test our changes. Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also have to make several tooling changes.
-
-### Tooling changes for testing
-
-As we developed our implementation, we built up a  bevy of small Bril programs that we expected to trigger certain classes of errors.
-However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
-We [extended][] Turnt to check both standard error and program exit codes in order to test invalid Bril programs. 
-
-Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-baseded surface syntax to support comments of the form `\\ <comment>`. 
-
-Finally, in order for automated testing to be useful, we needed to distinguish between expected errors on invalid Bril programs and implementation flaws. We thus added a named exception to Bril's interpreter with an custom exit code, removing all string-based `throw` calls.
-
-[turnt]: https://github.com/cucapra/turnt 
-[functionality]: https://github.com/cucapra/turnt/issues/6
-
-### Bugs we found with manual testing
-
-### Automated property-based testing with Hypothesis
-
 ### Design decisions
 
 1. implicitly represent stack with recursive interpreter calls
@@ -89,19 +68,36 @@ Finally, in order for automated testing to be useful, we needed to distinguish b
 1. typescript ast
 2. generating reasonable programs in hypothesis
 
-## Evaluation
+## Evaluating our contribution
 
-### Description of new tests
+To convince ourselves that we'd actually made a useful contribution to Bril, we wanted to rigorously test our changes. 
+Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also have to make several tooling changes.
 
-- couldn't cover type error messages in typescript because bools aren't properly compiled in `ts2bril.ts`.
+### Tooling changes for testing
 
-### Errors found by tests
+As we developed our implementation, we built up a  bevy of small Bril programs that we expected to trigger certain classes of errors.
+However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
+We [extended][] Turnt to check both standard error and program exit codes in order to test invalid Bril programs. 
+
+Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-baseded surface syntax to support comments of the form `\\ <comment>`. 
+
+Finally, in order for automated testing to be useful, we needed to distinguish between expected errors on invalid Bril programs and implementation flaws. 
+We thus added a named exception to Bril's interpreter with an custom exit code, removing all string-based `throw` calls.
+
+[turnt]: https://github.com/cucapra/turnt 
+[functionality]: https://github.com/cucapra/turnt/issues/6
+
+### Bugs we found with manual testing
+
+We found several significant bugs via manual testing. 
 
 1. call as nested subexpression (found by recursive factorial)
 2. 'void' written explicitly as a function type in typescript
 3. nondeterministic lark parsing of boolean variable declarations sometimes as value operations instead of constant operations
 
-### Hypothesis
+- couldn't cover type error messages in typescript because bools aren't properly compiled in `ts2bril.ts`.
+
+### Automated property-based testing with Hypothesis
 
 1. no error-checking of "true" vs. True in `bril2txt`
 2. reading generated programs made us realize we don't check for function name collisions (hopefully, can hit this!)
