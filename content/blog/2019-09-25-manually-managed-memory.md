@@ -204,7 +204,7 @@ worrying about what type of data the pointer points to.
 
 Memory itself is represented by the `Heap` data structure. It implements all the
 operations exposed to Bril programs. Concretely, the `Heap` implementation is
-a Javascript `Map` that maps `number` keys to arrays of objects. Its `alloc`
+a JavaScript `Map` that maps `number` keys to arrays of objects. Its `alloc`
 method extends the map to map a fresh key `number` to a new array of the
 requested size and returns an opaque *Key* wrapping the `number`.
 
