@@ -15,7 +15,7 @@ scope. Furthermore we support C-style arrays such that pointer arithmetic
 instructions can be used to index into allocated memory regions. Lastly, we
 wished to ensure that value typechecking was still supportable for our new
 instructions (however we did not implement a typechecker). Our pointer types are
-meant only for value checking (i.e. every pointer type totally specifies the
+meant only for value checking (i.e., every pointer type totally specifies the
 type of its contents); they do not include bounds or alias information to
 prevent memory safety bugs.
 
