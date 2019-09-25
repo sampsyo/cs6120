@@ -76,21 +76,65 @@ If we give Rosette a falsifiable formula:
 Rosette generate a _model_ where the formula is false. In this case, Rosette
 will report that when `x = 0`, this formula is false.
 
-## Symbolic Interpretation
-
 ## Approach
 
-### Basic BLocks
+A symbolic interpreter is simply an interpreter that operates over symbolic values.
+This means that the result of a symbolic interpreter is a SMT formula that captures the 
+computation of the program, rather than an actual value.
+Rosette makes writing one of these almost as easy as writing a standard interpreter
+because it handles all the hard work of lifting the computation to symbolic formulas and passing
+verification requests to an SMT solver.
+
+### Basic Block Verification
+However, SMT theories are undecidable in general and if you are not careful, verification
+will not scale to big programs. Symbolic interpretation involves executing every path 
+in a program and the number of paths in a program tends to increase exponentially with
+the size of the program [^2].
+
+We address this problem by only interpreting single basic blocks at a time. By definition,
+there is only a single path through a basic block which means that Shrimp is able to produce
+simple formulas. We do this for all values of the variables that are live coming into the
+block.
+
+To verify that two basic blocks are equivalent, we assume that the common set of live
+variables are the same, and then ask Rosette to verify that the symbolic formula
+for each variable assigned in the program are equivalent. To see this more concretely,
+consider the following Bril fragments:
+```
+main {
+  ...
+  sum1: int = add a b;
+  sum2: int = add a b;
+  prod: int = mul sum1 sum2;
+}
+```
+We can do a simple CSE and dead code elimination to produce the following code:
+```
+main {
+  ...
+  sum1: int = add a b;
+  prod: int = mul sum1 sum1;
+}
+```
+
+
+with the complexity 
+of the basic blocks plus rather than the length of a program.
 
 ### Downfalls
+The downside of this approach is that it only conservatively approximates the result
+of each basic block. We may lose information about constraints on variables that cross
+basic block boundaries. 
+
+For example ...
+
 
 ## Evaulation
 
 To evaluate Shrimp, we performed a case study
 where we implemented [Common sub-expression elimination (CSE)][cse] 
-using [Local value numbering (LVN)][lvn]
-and tested whether Shrimp would find bugs in the implementation. We intentionally planted two bugs 
-and found a third bug in the process of testing.
+using [Local value numbering (LVN)][lvn] to show that Shrimp is useful in finding
+correctness bugs. We intentionally planted two bugs and found a third bug in the process of testing.
 
 There are some subtleties to a correct implementation of LVN. If you know that the variable 
 `sum1` holds the value `a + b`, you have to make sure that `sum1` is not assigned to again before
@@ -148,6 +192,8 @@ Serval stuff
 a non-trivial, open research problem. Should the compiler preserve the stdout
 behavior, or should it give even stronger guarantees such as preserving the
 timing behavior [[CITE]]?
+
+[^2]: https://en.wikipedia.org/wiki/Symbolic_execution#Limitations
 
 [rosette]: https://emina.github.io/rosette/
 [coq]: https://coq.inria.fr/
