@@ -272,7 +272,7 @@ sophisticated string pattern matching at runtime.
 We evaluated our implementation through qualitative testing rather than
 quantitative measurement. While one might argue we should measure memory
 allocation performance, we would really just be measuring how well the
-javascript runtime allocates memory and garbage collects.
+JavaScript runtime allocates memory and garbage collects.
 
 We wanted to evaluate the correctness of our code and
 see if we threw reasonable errors under all erroneous conditions. We created
