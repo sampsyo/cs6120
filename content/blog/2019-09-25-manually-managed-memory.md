@@ -35,7 +35,7 @@ Bril pointers to determine the size of things in memory or extract the value of
 a pointer as an integer address.
 
 This design leaves the Bril interpreter/compiler complete freedom to choose how
-data including pointers are represented and allocated; this separates the high
+data, including pointers, are represented and allocated; this separates the high
 level computaional usage of pointers and the low level (and likely
 platform-dependent) implementation details while still providing usable manually
 managed memory to programs.
@@ -184,7 +184,8 @@ done:
 
 ### Implementation
 
-We implemented our design by extending the Bril interpreter with for pointers,
+We implemented our design by extending the Bril text parser to support
+pointer types and the Bril interpreter to support pointers,
 heap memory, and runtime error checking.
 
 #### Pointer Representation
@@ -269,7 +270,11 @@ sophisticated string pattern matching at runtime.
 ### Evaluation
 
 We evaluated our implementation through qualitative testing rather than
-quantitative measurement. We wanted to evaluate the correctness of our code and
+quantitative measurement. While one might argue we should measure memory
+allocation performance, we would really just be measuring how well the
+javascript runtime allocates memory and garbage collects.
+
+We wanted to evaluate the correctness of our code and
 see if we threw reasonable errors under all erroneous conditions. We created
 a number of test cases that stress pointer arithmetic (similar to the large
 example presented earlier in this post). Key features to test were:
@@ -292,3 +297,7 @@ interpreter to catch and report as errors with reasonable error messages:
    a `ptr<bool>`)
    - N.B. that "reading" data of the wrong type is still allowed, which actually
      mirrors the current interpreter implementation for other operations
+
+All of our tests pass. For fun, we also included tests to stress memory allocation,
+for example by allocating and free-ing in a tight loop and by allocating very
+large amounts of memory. Those pass too, but some of them take a few seconds to complete :)
