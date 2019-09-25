@@ -300,4 +300,4 @@ interpreter to catch and report as errors with reasonable error messages:
 
 All of our tests pass. For fun, we also included tests to stress memory allocation,
 for example by allocating and free-ing in a tight loop and by allocating very
-large amounts of memory. Those pass too, but some of them take a few seconds to complete :)
+large amounts of memory. Those pass too, but some of them take a few seconds to complete. :)
