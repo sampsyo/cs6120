@@ -58,7 +58,7 @@ In order to be sure we had made a useful contribution to Bril, we wanted to rigo
 
 As we developed our implementation, we built up a  bevy of small Bril programs that we expected to trigger certain classes of errors.
 However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
-We extended Turnt with this additional [functionality][] in order to validate both valid and invalid Bril programs. 
+We [extended][] Turnt to check both standard error and program exit codes in order to test invalid Bril programs. 
 
 Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-baseded surface syntax to support comments of the form `\\ <comment>`. 
 
