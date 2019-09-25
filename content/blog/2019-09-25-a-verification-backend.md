@@ -27,7 +27,7 @@ is a [remarkably hard problem](https://en.wikipedia.org/wiki/Turing_completeness
 which forces such verification efforts to somehow bound the space of program
 behaviors.
 
-For our project, a pass verification infrastructure for Bril using the
+For our project, we implemented a pass verification infrastructure for Bril using the
 [Rosette][] framework and verified the correctness of a local value numbering
 pass.
 
@@ -75,6 +75,20 @@ If we give Rosette a falsifiable formula:
 
 Rosette generate a _model_ where the formula is false. In this case, Rosette
 will report that when `x = 0`, this formula is false.
+
+## Symbolic Interpretation
+
+## Approach
+
+### Basic BLocks
+
+### Downfalls
+
+## Evaulation
+
+## Conclusion
+Serval stuff
+
 
 [^1]: The problem of specifying the correctness condition of a compiler is itself
 a non-trivial, open research problem. Should the compiler preserve the stdout
