@@ -23,7 +23,7 @@ While out-of-the-box Bril supports programs with multiple functions, the initial
 In service of this course's journey toward successively more fun compiler hacking, we set out to rectify this \"oversight\". 
 
 The Bril ecosystem is centered around a JSON-based intermediate language that represents functions, labels, and instructions.
-In addition, Bril includes two _front-ends_ to make for a more ergonomic programming experience---users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
+In addition, Bril includes two _front-ends_ to make for a more ergonomic programming experience—users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
 For our project, we decided to focus our scope on simple function calls (without first-class functions) in favor of updating the full Bril stack.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
@@ -50,9 +50,24 @@ Such functions are assumed to have a return type of void.
 
 ### Interpretation (in `brili.ts`)
 
-### Extended turnt to test for expected errors
+## Evaluating our contribution
 
-- necessitated adding comments in BRIL
+In order to be sure we had made a useful contribution to Bril, we wanted to rigorously test our changes. Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also have to make several tooling changes.
+
+### Tooling changes for testing
+
+As we developed our implementation, we built up a  bevy of small Bril programs that we expected to trigger certain classes of errors.
+However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
+We extended Turnt with this additional [functionality][] in order to validate both valid and invalid Bril programs. 
+
+Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-baseded surface syntax to support comments of the form `\\ <comment>`. 
+
+Finally, in order for automated testing to be useful, we needed to distinguish between expected errors on invalid Bril programs and implementation flaws. We thus added a named exception to Bril's interpreter with an custom exit code, removing all string-based `throw` calls.
+
+[turnt]: https://github.com/cucapra/turnt 
+[functionality]: https://github.com/cucapra/turnt/issues/6
+
+### Bugs we found with manual testing
 
 ### Automated property-based testing with Hypothesis
 
@@ -66,6 +81,7 @@ Such functions are assumed to have a return type of void.
 5. TODO: multiple functions
 6. arguments for main: feed to brili (what adrian said, no argv/-c)
 	- main doesn't return an exit code
+7. Interpreter should not fail with implementation-specific errors (added custom exceptions)
 
 ### Hardest parts
 
