@@ -268,19 +268,19 @@ sophisticated string pattern matching at runtime.
 
 ### Evaluation
 
-Primarily, our evaluation here was qualitative rather than quantitative; we
-simply want to ensure that our instructions operated correctly on correct inputs
-and throw reasonable errors under all erroneous conditions. We created a number
-of test cases that stress pointer arithmetic (similar to the one presented
-earlier in this blog). Key features to test were:
+We evaluated our implementation through qualitative testing rather than
+quantitative measurement. We wanted to evaluate the correctness of our code and
+see if we threw reasonable errors under all erroneous conditions. We created
+a number of test cases that stress pointer arithmetic (similar to the large
+example presented earlier in this post). Key features to test were:
 
  - Allocating memory of various sizes
- - Reading & Writing memory
+ - Reading & writing memory
  - Re-writing memory
  - Ensuring that pointers to pointers function correctly
 
-Additionally, we needed to check a number of "bad" cases, which the interpreter
-should catch as errors and print a reasonable error message:
+Additionally, we needed to check a number of "bad" cases, which we expected the
+interpreter to catch and report as errors with reasonable error messages:
 
  - Passing non-pointers to `load`, `store` or `free` operations
  - Allocating pointers with non-positive size
@@ -292,6 +292,3 @@ should catch as errors and print a reasonable error message:
    a `ptr<bool>`)
    - N.B. that "reading" data of the wrong type is still allowed, which actually
      mirrors the current interpreter implementation for other operations
-
-
-##TODO empricial evaluation part
