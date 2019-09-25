@@ -26,7 +26,7 @@ We decided on this format to mirror OCaml [record type declarations](https://v1.
 Also unlike OCaml, we decided to use nominal record types instead of structural ones because we thought it was clearer and adhered well to the existing precedents in Bril where everything is clearly typed.
 
 ### Nominal vs Structural Typing
-One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. Languages like C++, Java, and Swift have primarily nominal type systems. On the other hand, languages like OCaml and Haskell have primarily structural type systems. Why did they make these choices, and what are the arguments for choosing one over the other?
+One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records.
 
 ```
 type Dog = {age: int; isAsleep: bool}
@@ -39,7 +39,6 @@ AndrewMyers: Person = record {class: v2; dog: Milo}
 ```
 
 When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to lookup the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. 
-
 
 Consider the case for checking the variable initializing a nested record, i.e. `Milo`. With nominal typing, if we expected a type, Dog, and we looked up the variable to have type ‘Dog’, we know this must have been previously typechecked when it was defined and added to our environment. Therefore it still must typecheck, due to immutability. This sort of _shallow type-checking_ falls out of the immutability property. 
 
