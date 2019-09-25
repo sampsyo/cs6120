@@ -218,7 +218,7 @@ allocation represents a continguous space and allocations are otherwise
 unrelated.
 
 The `free` method deletes entries from the internal map, so we are relying on
-the base Typescript Map implementation and the Javascript runtime garbage
+the base TypeScript Map implementation and the JavaScript runtime garbage
 collection to actually free physical memory dynamically. We don't implement any
 interesting memory allocation strategies based on physical memory layout and
 simply let the runtime do the work. While smart, type-aware memory allocators
