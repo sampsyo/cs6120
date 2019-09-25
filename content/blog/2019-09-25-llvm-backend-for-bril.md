@@ -2,14 +2,17 @@
 +++
 title = "Project Report 1: LLVM IR transformer"
 extra.bio = """
-
+In this project, we aim to extend the reachability of Bril IR to different backend devices by compiling Bril programs to LLVM IR. We execute the generated LLVM IR via LLVM execution engine to verify its functional correctness. Finally, we compare the runtime between LLVM JIT compilation and Bril interpreter
 """
 [[extra.authors]]
 name = "Shaojie Xiang"
+link = "https://github.com/Hecmay"
 [[extra.authors]]
 name = "Yi-Hsiang (Sean) Lai"
+link = "https://github.com/seanlatias"
 [[extra.authors]]
 name = "Yuan Zhou"
+link = "https://github.com/zhouyuan1119"
 +++
 
 ## Project Report 1: LLVM JIT Compiler for Bril 
@@ -128,4 +131,4 @@ By observing the generated LLVM code, we can see that at the very end of branch 
   }
 ```
 
-After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and Bril Interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. 
+After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and Bril Interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. For the test program with a regular for loop iteratively computing one multiply operation for 1 billion times, the LLVM interpreter run about 10 times faster than Bril interpreter. The average runtime is 0.47 seconds and 0.05 seconds for Bril and LLVM interpreter respectively.  
