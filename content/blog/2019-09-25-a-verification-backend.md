@@ -86,6 +86,60 @@ will report that when `x = 0`, this formula is false.
 
 ## Evaulation
 
+To evaluate Shrimp, we performed a case study
+where we implemented [Common sub-expression elimination (CSE)][cse] 
+using [Local value numbering (LVN)][lvn]
+and tested whether Shrimp would find bugs in the implementation. We intentionally planted two bugs 
+and found a third bug in the process of testing.
+
+There are some subtleties to a correct implementation of LVN. If you know that the variable 
+`sum1` holds the value `a + b`, you have to make sure that `sum1` is not assigned to again before
+you use it. For example, consider the following Bril program:
+```
+sum1: int = add a b;
+sum1: int = id a;
+sum2: int = add a b;
+prod: int = mul sum1 sum2;
+```
+We would like to replace `sum2: int = add a b` with `sum2: int = id sum1` because we
+have already computed the value. However, if we can't do this directly because then `sum2` would
+have the value `a`, not `a + b`. The solution is to rename the first instance of `sum1` to something unique so that we don't lose our reference to the value `a + b`. We can
+then replace `sum2` with a copy from this new variable.
+
+Shrimp was able to catch this bug and even produce a counter example that proves that the
+optimized code produced a different result from the original. With this information,
+it is easy to walk through the execution of the code and discover the source of the bug.
+
+The second bug we tested with can come up when extending CSE to deal with associativity.
+It would be nice if the compiler knew that `a + b` is equal to `b + a`. The most
+naïve thing to do is sort the arguments of values when you compare them so that
+`a + b` is the same value as `b + a`. However, this by itself is not enough.
+Testing the following example with Shrimp reveals the problem:
+```
+     sub1: int = sub a b;
+     sub2: int = sub b a;
+     prod: int = mul sub1 sub2;
+```
+Shrimp gives us the counter example `a = -8, b = -4`. The problem is that we can't
+sort the arguments for every instruction; `a - b != b - a`. Shrimp helps to reveal
+this problem.
+
+The final bug was actually an unintentional bug that Shrimp helped us find. We have a
+messy internal representation of the Bril ast where each instruction has it's own structure
+and is a sub-type of the `dest-instr` structure. When we were looking up values in the LVN table,
+we were only comparing that fields in `dest-instr` where the same. This meant that we were
+forgetting to actually compare that the op-codes of the instructions where the same!
+Shrimp was able to reveal this code from the following example:
+```
+sub1: int = sub a b;
+sub1: int = add a b;
+sub2: int = sub b a;
+prod: int = mul sub1 sub2;
+```
+This is the strongest testament that Shrimp is useful in finding bugs in optimization passes.
+The moral of the story is that you should use bad code when implementing optimizations
+for your bug finding tool so that you can expose real bugs.
+
 ## Conclusion
 Serval stuff
 
@@ -97,5 +151,7 @@ timing behavior [[CITE]]?
 
 [rosette]: https://emina.github.io/rosette/
 [coq]: https://coq.inria.fr/
+[cse]: https://en.wikipedia.org/wiki/Common_subexpression_elimination
+[lvn]: https://en.wikipedia.org/wiki/Value_numbering#Local_value_numbering
 [sat]:
 [ilp]:
