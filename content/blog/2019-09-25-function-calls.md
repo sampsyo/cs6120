@@ -9,18 +9,24 @@ extra.bio = """
 +++
 
 ## Function calls in Bril
-In this post, we will describe our experience extending Bril (the Big Red Intermediate Language) to include function calls. 
-In addition, we share how we tested our implementation with both targeted manual tests and automated property-based testing (a la QuickCheck) with Hypothesis.
+In this post, we will describe our experience extending [Bril][] (the Big Red Intermediate Language) to include function calls. 
+In addition, we share how we tested our implementation with both targeted manual tests and automated property-based testing (a la [QuickCheck][]) with [Hypothesis][].
+
+[bril]: https://github.com/sampsyo/bril/blob/master/README.md
+[quickcheck]: http://hackage.haskell.org/package/QuickCheck
+[hypothesis]: https://hypothesis.works
 
 ### Why did Bril need function calls?
 
-Bril is a simple language that @sampsyo designed to be a playground for building compiler extensions and optimizations. 
+Bril is a simple language that [Adrian][] designed to be a playground for building compiler extensions and optimizations. 
 While out-of-the-box Bril supports programs with multiple functions, the initial implementation lacked an instruction to actually _call_ one function from another. 
 In service of this course's journey toward successively more fun compiler hacking, we set out to rectify this \"oversight\". 
 
 The Bril ecosystem is centered around a JSON-based intermediate language that represents functions, labels, and instructions.
 In addition, Bril includes two _front-ends_ to make for a more ergonomic programming experience---users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
 For our project, we decided to focus our scope on simple function calls (without first-class functions) in favor of updating the full Bril stack.
+
+[adrian]: https://www.cs.cornell.edu/~asampson/
 
 ## What we did
 
