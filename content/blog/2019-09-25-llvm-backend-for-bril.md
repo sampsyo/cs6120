@@ -1,18 +1,11 @@
-
 +++
-title = "Project Report 1: LLVM IR transformer"
+title = "LLVM JIT Compiler for Bril"
+extra.author = "Shaojie Xiang & Yi-Hsiang Lai & Yuan Zhou"
 extra.bio = """
-In this project, we aim to extend the reachability of Bril IR to different backend devices by compiling Bril programs to LLVM IR. We execute the generated LLVM IR via LLVM execution engine to verify its functional correctness. Finally, we compare the runtime between LLVM JIT compilation and Bril interpreter
+  [Shaojie Xiang](https://github.com/Hecmay) is a 2nd year ECE PhD student researching on programming language and distributed system. 
+  [Yi-Hsiang (Sean) Lai](https://github.com/seanlatias) is a 4th year PhD student in Cornell's Computer System Lab. His area of interests includes electronic design automation (EDA), asynchronous system design and analysis, high-level synthesis (HLS), domain-specific languages (DSL), and machine learning. 
+  [Yuan Zhou](https://github.com/zhouyuan1119) is a 5th year PhD student in ECE department Computer System Lab. He is interested in design automation for heterogeneous compute platforms, with focus on high-level synthesis techniques for FPGAs.  
 """
-[[extra.authors]]
-name = "Shaojie Xiang"
-link = "https://github.com/Hecmay"
-[[extra.authors]]
-name = "Yi-Hsiang (Sean) Lai"
-link = "https://github.com/seanlatias"
-[[extra.authors]]
-name = "Yuan Zhou"
-link = "https://github.com/zhouyuan1119"
 +++
 
 ## Project Report 1: LLVM JIT Compiler for Bril 
@@ -21,10 +14,10 @@ Bril is a concise intermediate representation language, which is powerful enough
 
 ### Methodology 
 
-To compile a Bril program into LLVM IR, we first take the program in JSON format and have it analyzed by our compiler. The overall workflow is similar to what we do for data flow analysis in class. One thing to notice here is that, during the class, we have not mentioned static single assignment, which is essential when we have multiple assignments to a single variable. Namely, we need to create phi nodes in cases where we have branches. To solve that, we make each assignement a memory store. Similarly, each variable read becomes a memory load.
+To compile a Bril program into LLVM IR, we first take the program in JSON format and have it analyzed by our compiler. The overall workflow is similar to what we do for data flow analysis in class. One thing to notice here is that, during the class, we have not mentioned static single assignment (SSA), wihch is an IR property requiring each variable to be assigned exactly once. Multiple assignments to same variable create new versions for that variable. SSA is essential when we have multiple assignments to a single variable. Namely, we need to create phi nodes in cases where we have branches. However, Bril is not an SSA-form IR where multiple assignments overwrite the variable without creating new identifiers. To compile the Bril IR into SSA-form LLVM IR, we make each assignement a unique memory store. Similarly, each variable read becomes a memory load.
 
-1. Create a basic block mapping: Given the Bril IR in JSON representation, we create empty LLVM basic blocks according to block labels. Meanwhile, we maintain a mapping between label strings and LLVM basic blocks pointers. We also create a flag to mark whether a basic block is used or not.
-2. Insert instructions into blocks: We traverse the empty basic blocks and insert instructions into them. Each basic block should end with a valid terminator (i.e., jmp, br, or ret). The insertion process will terminate after encountering the first terminator. All following instructions under the same label will be ignored. 
+1. Create a basic block mapping: Given the Bril IR in JSON representation, we create empty LLVM basic blocks according to block labels. Meanwhile, we maintain a mapping between label strings and LLVM basic block pointers. We also create a flag to mark whether a basic block is used or not.
+2. Insert instructions into blocks: We traverse the empty basic blocks and insert instructions into them. Each basic block should end with a valid terminator (i.e., jmp, br, or ret). The insertion process will terminate after encountering the first terminator. All following instructions under the same label will be ignored since this code is dead and will not be executed in any condition. 
 
 ```markdown
 label:
@@ -38,7 +31,7 @@ b2:
   jmp end;    
 ```
 
-3. Dump LLVM code and run through JIT compilation: We allow the users to dump the generatede LLVM IR for easy inspection. After that, we compile the code with LLVM execution engine and verify the outputs by comparing the results produced by Bril interpreter.
+3. Dump LLVM code and run through JIT compilation: We allow the users to dump the generated LLVM IR for easy inspection. After that, we compile the code with LLVM execution engine and verify the outputs by comparing the results produced by Bril interpreter.
 
 ### Implementation details
 
@@ -76,11 +69,11 @@ llvm::Value* val = builder->CreateAlloca(t_int_, llvm::ConstantInt::getSigned(t_
 (*varToVal)[destination] = val;
 ```
 
-Special note for the print instruction in Bril: we create an LLVM function call with integer return data type, and pass in `%d` and actual LLVM value to be printed as arguments. Then we build a `CreateCall` node with LLVM IRBuilder so that the print function can be realized in LLVM program.
+Special note for the print instruction in Bril: we create an LLVM function call with integer return data type, and pass in `%d` and the actual LLVM value to be printed as arguments. Then we build a `CreateCall` node with LLVM IRBuilder so that the print function can be realized in LLVM program.
 
 ### Experiment Results
 
-Our program is in [one of Bril's forks](https://github.com/seanlatias/bril/tree/master/codegen-llvm), under the ``codegen-llvm`` folder. To compile our JIT compiler, ``make`` is the only command needed. Our program takes in two variable. One is the input Bril program in JSON format and the other is the output LLVM file (usually ends with `.ll`).
+Our program is in [one of Bril's forks](https://github.com/seanlatias/bril/tree/master/codegen-llvm), under the ``codegen-llvm`` folder. To compile our JIT compiler, ``make`` is the only command needed. Our program takes in two variables. One is the input Bril program in JSON format and the other is the output LLVM file (usually ends with `.ll`).
 
 To verify the correctness of the generated LLVM IR, we develop several test cases, which cover most commonly used arithmetic and control flow instructions, as well as some corner cases where the program has some redundant instructions that could be removed. The test example is shown as followed (it can also be found under the `codegen-llvm` folder):
 
@@ -106,14 +99,14 @@ end:
 }
 ```
 
-Bril program's JSON declaration is generated with `bril2json`. By running the following commands, the JSON file will be generated and analyzed. Our compiler then generates the LLVM code and print out the LLVM program into the destination file.
+We wrote the program in text representation for Bril and get the canonical JSON form Bril program with `bril2json`. By running the following commands, the JSON file will be generated and analyzed. Our compiler then generates the LLVM code and print out the LLVM program into the destination file.
 
 ```shell
 cat test.bril | bril2json > test.json
 ./bril-llvm test.json test.llvm
 ```
 
-By observing the generated LLVM code, we can see that at the very end of branch `b1`, a new instruction is added to avoid no terminator issue. Moreover, the print function of Bril is transformed into an LLVM function call with corresponding variables passed in as arguments.
+By observing the generated LLVM code, we can see that at the very end of branch `b1`, a new instruction is added to avoid the issue where the basic block is missing a terminator. Moreover, the print function of Bril is transformed into an LLVM function call with corresponding variables passed in as arguments.
 
 ```llvm
   b1:                                               ; preds = %0
@@ -131,4 +124,4 @@ By observing the generated LLVM code, we can see that at the very end of branch 
   }
 ```
 
-After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and Bril Interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. For the test program with a regular for loop iteratively computing one multiply operation for 1 billion times, the LLVM interpreter run about 10 times faster than Bril interpreter. The average runtime is 0.47 seconds and 0.05 seconds for Bril and LLVM interpreter respectively.  
+After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and Bril Interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. For the test program with a regular for loop iteratively computing one multiply operation for 1 billion times, the LLVM interpreter run about 10 times faster than Bril interpreter. The average runtime is 0.47 seconds and 0.05 seconds for Bril and LLVM interpreter respectively. The LLVM execution engine achieves approximately 1000x speedup over the Bril interpreter without optimizing the loop inside. We can expect higher speedup if the loop is optimized away. 
