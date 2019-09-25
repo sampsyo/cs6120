@@ -95,9 +95,38 @@ Within the braces, the user may specify 0 to n field name and value pairs, where
 
 This syntax was designed to have a similar format as record instantiation. 
 
+### Immutability
+Immutable data structures are easier to reason about when developing compiler optimizations. However, forcing developers to recreate the entire record every time they need to change a value poses usability challenges. We decided on sticking to immutability in part for optimizations' sake. The ability to make guarantees that a value will not change lends itself well to constant-folding, even after a function call that takes in your record as an argument. 
+
 ### Evaluation
 We set out to implement record types and we successfully implemented immutable nominal record types. Record types do not have any restrictions except that two fields cannot have the same name and that a record type cannot be recursive. Besides that, everything is allowed. Record types play nicely with existing types and new syntactical additions follow previous precedents set by Bril or otherwise follow precedents set by other languages that have record types. Record declaration, instantiation, and access are all (we think) intuitive and straightforward, and this means our record types provide good value as an addition to the Bril language. 
 
 We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName.`
 
-The hardest part of this project was probably debugging the typescript interpreter as it was very difficult to trace errors as the source typescript gets compiled into a separate javascript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
+We were successful in this aspect as creating a new record from an existing one but changing one field is nearly the same amount of code as mutating directly.
+```
+type Person = {age: int; isAsleep: bool}
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1}
+v2: bool = const true;
+AwakeHenry: Person = Henry with {isAsleep: v2}
+```
+Possible Mutable Record Syntax:
+```
+type Person = {age: int; isHappy: bool}
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isHappy: v1}
+v2: bool = const true;
+Henry.isHappy = v2
+```
+
+
+### Notable Challenges
+The design of records type went through multiple iterations before we were able to arrive at a specification that we felt was well-defined.
+When making these decisions, one of the primary tradeoffs we identified was usability and ability to optimize.
+
+We wanted records to be easy to use to store data, but with immutability to be able to better reason about what values variables could be at any point in our program. In addition, since these are value types, changing one field will only change the field of the copy of the record you are modifying. Therefore, the same functionality can be achieved, but in a safer way, with _with syntax_. These sort of design decision and consideration of use cases was a challenge as we looked at other prior art to get ideas, but ultimately wanted these types to be useful in Bril. 
+
+A different challenge of this project was probably debugging the typescript interpreter as it was very difficult to trace errors as the source typescript gets compiled into a separate javascript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
