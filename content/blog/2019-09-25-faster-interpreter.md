@@ -75,10 +75,8 @@ only accessed once/a handful of times, it may cost more to perform identifier tr
 interpretation. This transformation will be most beneficial for programs with loops and frequent
 variable access.
 
-We tried to implement this in a relatively clean way around the original Serde structure, but ran
-into some challenges that proved insurmountable in the time we had for this assignment: the
-difficulty of performing stateful deserialization and fighting the borrow checker about deserialized
-type lifetimes.
+We implemented this in a relatively clean way around the original Serde structure, but ran into some
+challenges around the difficulty of performing stateful deserialization.
 
 ## State of the Deserialization
 
@@ -105,15 +103,14 @@ the deserialization logic for a deeply-nested field of a data type. Indeed, it s
 most of the benefits of Serde's `#[derive(Deserialize)]` magic auto-implementation, and have to
 implement a tree of deserializers manually.
 
-The second option seems better: make the IR data types polymorphic and deserialize to a `String`
+The second option is better: make the IR data types polymorphic and deserialize to a `String`
 specialization of the types, then run a pass over the program to transform to a numerical
 specialization of the types. It's easy to use mutable state in this second transformation, and the
 use of parametric polymorphism makes the code clean.
 
-When we tried this, we made a version of the interpreter that compiled, but failed to deserialize
-JSON correctly. Though Serde is usually able to automatically derive deserialization logic for
-generic types, it seems to have done something unintended for us here - we're still not entirely
-sure why.
+We've implemented this, and it is working. Most of the potential speedup remains untapped - we did
+not have time in this project to implement parsing of operations into branch-friendly numerical
+representations.
 
 # How do we stack up?
 
@@ -146,19 +143,10 @@ Benchmarks were run on a 2018 Thinkpad T580 running Arch Linux, kernel version 5
 
 # What else could be done?
 
-If we continue to develop the interpreter, it would be worthwhile to try and overhaul our parsing
-logic to enable deserializing variable identifiers and operations into numerical representations.
-This would enable us to try adding some interpreter optimizations (e.g. those found
+If we continue to develop the interpreter, it would be worthwhile to try adding some interpreter
+optimizations (e.g. those found
 [here](https://github.com/status-im/nimbus/wiki/Interpreter-optimization-resources)) to squeeze out
-more speed. It isn't immediately clear how to best do this, given the challenges we encountered in
-attempting it. One (fairly hacky) approach could be to use macros to generate poor-man's generics: A
-copy of each IR type for `String` (for deserialization) and a version for indices/numerical
-representations (for interpretation). This would increase code size (though so do generics) and
-feels like a brittle solution. Another option is to use `unsafe` features and global mutable state
-to perform the transformation between strings and numerical representations during deserialization;
-this could work, but feels like an abuse of the language. Ideally, there is a way to get Serde to
-implement deserialization logic only for the string-based generic specialization of the IR types,
-but it's not clear if this is possible. 
+more speed.
 
 Aside from adding interpreter implementation optimizations, it would also be interesting to apply
 CFG-level optimizations and compile Bril to some optimized in-memory bytecode representation for
