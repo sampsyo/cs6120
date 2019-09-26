@@ -3,7 +3,7 @@ title = "Bril Syntax Highlighting for Vim"
 extra.author = "Edwin Peguero"
 +++
 
-### bril-syntax: Syntax Highlighting for Bril in Vim
+# bril-syntax: Syntax Highlighting for Bril in Vim
 This project aimed to provide syntax highlighting for Bril in the Vim text editor, with the goal of learning about the implementation process underlying this ubiquitous category of tools. Until now I've taken for granted this tooling across various editing environemnts and programming languages; so I felt that the ability to support my language design efforts might prove useful and interesting.
 
 ![](bril-syntax.png) 
@@ -17,7 +17,7 @@ This fundamental limitation is acknowledged at the start of Vim's documentation 
 
 Even though *syntax* highlighting implies the output of a parsing operation, the reality is closer to *lexing*. However, Vim's powerful regular expressions, in conjunction with the features available through some `syntax` commands, facilitate highlighting that appears more complex than simply highlighting tokens.
 
-#### Anatomy of a Vim Syntax Highlighter
+### Anatomy of a Vim Syntax Highlighter
 The basic structure of a Vim syntax highlighter is designed to separate the concerns of textual appearance from textual extraction of syntactic units. 
 A colorscheme will map a language's *syntax groups* to a set of generic *highlight groups* provided by Vim. 
 Each highlight group is named after a generic syntax unit, such as `Comment` or `Identifier`, and defines its appearance. 
@@ -81,7 +81,7 @@ syntax region brilBranchInstr start='br' end=';'
   \ oneline contained contains=brilCondVariable,brilVariable,brilEffectOp
 ```
 
-#### Local Parsing via `sync` points
+#### Incremental Parsing via `sync` points
 When scrolling through a file or making an edit, Vim needs to figure out the most fitting syntax groups in the corresponding line. Since syntax groups may lie within a syntax region, Vim needs to find the most accurate *syntax state* for the new line:
 >Vim wants to be able to start redrawing in any position in the document.  To make this possible it needs to know the syntax state at the position where redrawing starts.
 
@@ -92,7 +92,7 @@ Additionally, Vim provides a mechanism for locally 'guessing' the current syntax
  
 `bril-syntax` uses the `syntax sync fromstart`, which, as the name implies, sets the sync point at the start of the file. Thus, the entire file is parsed with each new line.
 
-#### Evaluation
+## Evaluation
 The correctness of `bril-syntax` can be defined by its ability to correctly highlight well-formed Bril code. 
 To this end, I highlighted a small Bril file (`test.bril`) containing all base Bril constructs and observed consistent coloring of syntax groups. 
 Armed with a [helpful Vim script](https://stackoverflow.com/questions/9464844/how-to-get-group-name-of-highlighting-under-cursor-in-vim), I was able to manually confirm that `bril-syntax` correctly identifies the nested syntax group structures at every cursor position in `test.bril`.
@@ -104,7 +104,7 @@ A qualitative evaluation observes how smoothly and effectively `bril-syntax` int
 If Bril was heavily used, a user study could assess how the particular choice and arrangement of syntax groups affects usability. For example, in the current `bril-syntax` implementation, the syntax groups contained in instruction regions, such as op names, are only highlighted once a semicolon is typed; it's unclear whether this peculiarity is significant. In either case, changing it would not be difficult.
 
 
-### Limitations of Vimscript
+#### Limitations of Vimscript
 Despite its powerful features for syntax highlighting, Vimscript itself is rife with language issues that severely hinder its reliability and maintainability.
 
 References to old variable bindings remain active between executions of a script, a fact I often only realized after restarting Vim.
@@ -122,6 +122,24 @@ Splicing this faulty regexp into a program string will generate a faulty program
 
 We can solve this by *escaping each 'escaping' backslash with a backslash, except for those backslashes that escape backlashes.* (it's no wonder the leading Vimscript tutorial recommends [beer](http://learnvimscriptthehardway.stevelosh.com/chapters/08.html) to accompany some of the exercises.)
 To avoid backslash hell, we can instead store regexps as literal strings, which can never escape characters.
-Later on, these can be spliced with program fragments that are also represented as string literals to avoid escaping any hard-coded regexps.
+Later on, these can be spliced with program fragments that are also represented as string literals, rather than strings, to avoid escaping any hard-coded regexps.
+
+Once I dealt with the frustrations and mysterious bugs, I found Vimscript to be pretty fun, in part due to its flexibility,
+and I enjoyed pondering the feedback problem of language design for language tooling.
+
+### Design Considerations and Future Work
+As I've described it, a syntax highlighters principle job is to give a meaningful visual presentation to an evolving syntax tree.
+In reality, developers have come to expect much more from a syntax highlighter, including:
+- Syntactically-aware code editing and navigation, such as automatic indentation, folding, variable renaming, etc...
+- Type checking and type information lookup
+- Code linting
+- etc..
 
 
+All of these tasks benefit from Vimscript's prowess at text manipulation and syntax extraction, and represent
+additional opportunities to explore different concerns in the space of language design for language tooling.
+
+It's unfortunate that these efforts benefit only Vim users; an editor-agnostic approach would be ideal.
+[LSP](https://microsoft.github.io/language-server-protocol/) and [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) provide editor-agnostic languages to support these tasks, though a cursory reading of the state-of-the-art reveals that no current tool can accomplish all syntax-sensitive editing features adequately.
+
+For now, I hope you enjoy `bril-syntax`!
