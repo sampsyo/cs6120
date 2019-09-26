@@ -34,13 +34,13 @@ For our project, we decided to focus our scope on simple function calls (without
 
 Bril now supports function definitions:
 ```
-<ReturnType> <name>(<Arg> : <Type>, ...) { <instructions> };
+<ReturnType> <name>(<arg_1> : <type_1>, ..., <arg_n> : <type_n>) { <instructions> };
 ```
 
 Where:
 - `<ReturnType>`: The return type of a function must be `void` or one of the currently recognized Bril types: `int` or `bool`.
-- `<Name>`: The function's name.
-- `<Arg> : <Type>`: A list of zero or more arguments, each paired with a Bril type.
+- `<name>`: The function's name is a string that can consist of letters, numbers, and underscores. It cannot begin with a number.
+- `<arg_i> : <type_i>`: Each argument name must be paired with a Bril type.
 - `<instructions>`: This is a sequence of Bril instructions.
 
 Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
@@ -57,10 +57,7 @@ Such functions are assumed to have a return type of void.
 We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every `Function` object still has a name and a list of instructions. 
 
 ```
-{"name": "<string>",
-  "instrs": [<Instruction>, ...],
-  "args": [<Argument>, ...],
-  "type": <Type>}
+{ "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
 ```
 
 A function can take no arguments, in which case the \"args\" field contains the empty list.
