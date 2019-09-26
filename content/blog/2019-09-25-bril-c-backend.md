@@ -22,11 +22,48 @@ As of now, Bril only has one main function. For the sake of simplicity, I first 
 
 In order to verify the correctness of this C backend, I create some valid handwritten tests to verify against the existing interpreter `brili`. The C backend successfully passes all the tests.
 
-The source code and tests can be found at [Bril2C](https://github.com/xu3kev/bril2c) . The tool to translate Bril JSON format to C is `bril2c.py`. It takes input on stdin and produces output on stdout.
+Here we show a small example to demonstrate the translation.
+```
+main {
+  a: int = const 4;
+  b: int = const 4;
+  cmp: bool = ge a b;
+  jmp somewhere;
+  a: int = const 2;
+  somewhere:
+  c: int = add a b;
+  print c;
+  print cmp;
+}
+```
+The above Bril program can be translate to C as the following.
+```C
+#include <stdint.h>
+#include <stdio.h>
+#include <inttypes.h>
+int main(){
+int64_t a;
+int64_t b;
+int cmp;
+int64_t c;
+a = 4LL;
+b = 4LL;
+cmp = a >= b;
+goto somewhere;
+a = 2LL;
+somewhere:;
+c = a + b;
+printf("%" PRId64 "\n", c);
+printf(cmp?"true\n":"false\n");
+return 0;
+}
+```
 
 Implementation
 ---
 I implemented the translation tool in Python. The implementation is straightforward and it consists of 134 lines of code.  Compared to other projects such as one use LLVM  consists of 500+ lines of Cpp code and the other one generating JAVA bytecode consist of 400+ lines of Java code, I think it is safe to say that the implementation complexity of C backend is smaller.
+
+The source code and tests can be found at [Bril2C](https://github.com/xu3kev/bril2c) . The tool to translate Bril JSON format to C is `bril2c.py`. It takes input on stdin and produces output on stdout.
 
 Benchmark
 ---
