@@ -8,8 +8,6 @@ extra.bio = """
 """
 +++
 
-## Project Report 1: LLVM JIT Compiler for Bril 
-
 Bril is a concise intermediate representation language, which is powerful enough to describe most common arithmetic operations (e.g., add, mul, div, and other control flow instructions). In this project, we aim to extend the reachability of Bril IR to different backend devices by compiling Bril programs to LLVM IR. We execute the generated LLVM IR via LLVM execution engine to verify its functional correctness. Finally, we compare the runtime between LLVM JIT compilation and Bril interpreter.
 
 ### Methodology 
