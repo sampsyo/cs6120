@@ -202,16 +202,16 @@ types = sampled_from(["int", "bool"])
 
 @composite
 def bril_constant_instr(draw):
-    type = draw(types)
-    if (typ == "int"):
+    typee = draw(types)
+    if (type == "int"):
         value = draw(sampled_from(range(100)))
-    elif (typ == "bool"):
+    elif (type == "bool"):
         value = draw(sampled_from([True, False]))
     return {
         "op": "const",
         "value": value,
         "dest": draw(names),
-        "type": draw(types)}
+        "type": type)}
 ```
 Here, we use a sampling primitive to choose either `int` or `bool`, then generate a numeric or boolean value as appropriate.
 
