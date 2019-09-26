@@ -157,7 +157,7 @@ it will provide a counter-example to prove it. In this case, it is not too hard 
 that this formula is in fact valid, which shows that these two basic blocks are functionally
 equivalent.
 
-### Downfalls
+### Downsides
 The downside of this approach is that it only conservatively approximates the result
 of each basic block. We may lose information about constraints on variables that cross
 basic block boundaries. For example, consider the following toy program:
