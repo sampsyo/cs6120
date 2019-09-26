@@ -83,7 +83,7 @@ The goal was to convert our new function definitions and call instructions to th
 We also extended the TypeScript frontend in `ts2bril.ts`.
 The TypeScript parser already handled calls and functions, so we wrote the converter from node in the abstract syntax tree to JSON.
 
-Below, we discuss our overall design decisions and their impact on our implementation.
+Below, we discuss our design decisions and their impact on our implementation.
 
 ### Interpretation (in `brili.ts`)
 
@@ -96,15 +96,20 @@ Compilers need to check for errors. The interpreter now checks for a number of p
 
 ### Design decisions
 
-1. implicitly represent stack with recursive interpreter calls
-2. no first-order functions
-3. backwards compatibility
-  - typescript implicit main
-4. calls can be effectful or non-effectful (call is its own 'kind' of instruction)
-5. TODO: multiple functions
-6. arguments for main: feed to brili (what adrian said, no argv/-c)
-  - main doesn't return an exit code
-7. Interpreter should not fail with implementation-specific errors (added custom exceptions)
+There were surprisingly many decisions to be made in the course of designing function calls.
+
+- For the sake of a sufficiently-scoped project, we chose not to implement first-order functions.
+- We implicitly represent the stack with recursive interpreter calls for simplicity based on the functionality we target.
+An explicit stack would allow more interesting control flow.
+- We chose to allow backwards compatibility with the Bril `main` syntax that did not .
+Similarly, the typescript `main` function is not explicitly demarcated&mdash; it is understood to consist of the instructions before any function definitions.
+- Calls can be effectful or non-effectful.
+In the JSON representation of Bril, we chose to represent `call` as its own 'kind' of instruction, allowing us to include the function's name as a field in the JSON object.
+- If multiple functions with the same name are defined, the interpreter throws an error.
+- `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`.
+The Bril interpreter doesn't parse the command line itself.
+We also decided `main` doesn't return an exit code for simplicity.
+- Interpreter should not fail with implementation-specific errors (added custom exceptions)
 
 ### Hardest parts
 
