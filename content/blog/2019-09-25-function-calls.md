@@ -54,7 +54,7 @@ Such functions are assumed to have a return type of void.
 
 ### Extended JSON representation
 
-We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every instruction still has a name and a list of instructions. 
+We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every `Function` object still has a name and a list of instructions. 
 
 ```
 { "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
@@ -63,7 +63,7 @@ We extended the JSON representation of Bril functions to account for a function'
 A function can take no arguments, in which case the \"args\" field contains the empty list.
 The return type, represented by the \"type\" field, is not required. A function that does not return anything (giving it the return type `void`) does not contain the \"type\" field.
 
-An Argument JSON object contains the argument's name and type:
+An `Argument` JSON object contains the argument's name and type:
 
 ```
 {"name": "<string>", "type": <Type>}
@@ -83,11 +83,11 @@ The JSON Bril program object remains unchanged as a list of functions.
 1. implicitly represent stack with recursive interpreter calls
 2. no first-order functions
 3. backwards compatibility
-	- typescript implicit main
+  - typescript implicit main
 4. calls can be effectful or non-effectful (call is its own 'kind' of instruction)
 5. TODO: multiple functions
 6. arguments for main: feed to brili (what adrian said, no argv/-c)
-	- main doesn't return an exit code
+  - main doesn't return an exit code
 7. Interpreter should not fail with implementation-specific errors (added custom exceptions)
 
 ### Hardest parts
@@ -117,9 +117,9 @@ We thus added a named exception to Bril's interpreter with an custom exit code, 
 
 ### Bugs we found with manual testing
 
-Manual testing uncovered several significant bugs via manual testing. 
+Manual testing uncovered several significant bugs. 
 
-When were fairly confident we had finished our implementation (hah), we wrote a quick recursive Factorial implemention in the TypeScript frontend:
+When we were fairly confident we had finished our implementation (hah), we wrote a quick recursive factorial implemention in the TypeScript frontend:
 
 ```
 function fac(x : number) : number {
@@ -129,12 +129,20 @@ function fac(x : number) : number {
 }
 ```
 
-Surprisingly, this test failed to compile to Bril—we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. 
+Surprisingly, this test failed - we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. We did not have to worry about this in text-based Bril because operations can only take variables as their arguments.
 
-2. 'void' written explicitly as a function type in typescript
-3. nondeterministic lark parsing of boolean variable declarations sometimes as value operations instead of constant operations
+Testing `void` functions revealed that the TypeScript compiler was expecting only annotated function types of `number` and `boolean`.
+Though the legacy syntax for defining a `void` function&mdash;without any type annotation&mdash;compiled fine, the test showed that we had to add a check for an explicit `void` return type.
 
-- couldn't cover type error messages in typescript because bools aren't properly compiled in `ts2bril.ts`.
+We also found a bug arising from the nondeterminism of Lark, the Python parser; constant operations were occasionally parsed as value operations. This was fixed with a simple upgrade to the most recent version of Lark.
+
+Finally, we found a bug in the original TypeScript compiler (`ts2bril.ts`) while manually testing the argument type error messages of our function implementation (TODO link Bril issue).
+Hopefully we can fix this soon!
+The compiler hits an unexpected error when encountering a boolean variable declaration (with or without the type annotation):
+
+```
+var x : boolean = true;
+```
 
 ### Automated property-based testing with [Hypothesis][]
 
@@ -208,15 +216,3 @@ Overall, property-based testing was easier than expected to set up, and helped u
 2. first-order/anonymous functions
 3. integrating with a static type checker, which would let us remove dynamic function call type checking
 4. TS main arguments and return code
-
-
-
-
-
-
-
-
-
-
-
-
