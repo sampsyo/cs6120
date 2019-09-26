@@ -53,7 +53,7 @@ var: int = a2v arr idx
 ```
 Similarly, we can move a value stored in a variable `var` into one of the array's element `arr[idx]`:
 ```
-array_name: int v2a var index
+arr: int v2a var index
 ```
 
 To put a constant into an array, the constant should first be put to a variable.
