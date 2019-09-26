@@ -77,6 +77,7 @@ as fast, however. The results (measurements reported as mean plus/minus standard
 | Benchmark        | brili            | brilirs           | Speedup                            |
 |------------------|------------------|-------------------|------------------------------------|
 | matrix_mul, n=10 | 45.5 ms ± 3.4 ms | 21.0 ms ± 2.7 ms  | 2.16 ± 0.32                        |
+| matrix_mul, n=20 | 82.2 ms ± 2.5 ms | 148.9 ms ± 3.6 ms | brili was 1.81 ± 0.07 times faster |  
 | poly_mul, n=50   | 53.4 ms ± 3.9 ms | 44.2 ms ± 1.9 ms  | 1.21 ± 0.10                        |
 | poly_mul, n=100  | 86.2 ms ± 5.0 ms | 174.7 ms ± 4.0 ms | brili was 2.03 ± 0.13 times faster |
 
