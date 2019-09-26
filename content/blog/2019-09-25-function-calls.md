@@ -92,9 +92,12 @@ The JSON Bril program object remains unchanged as a list of functions.
 
 ### Hardest parts
 
-0. touching the whole stack (both frontends, json representation, interpreter, test framework)
-1. typescript ast
-2. generating reasonable programs in hypothesis
+The hardest part of this particular project, as with many compiler endeavors, was wrangling with new frameworks and existing code bases. 
+In particular, this project was more involved than we originally expected because it touched the full Bril stack&mdash;not just the interpreter, but the text-to-JSON and JSON-to-text compilers, the TypeScript frontend, and the Turnt testing framework. 
+
+The TypeScript frontend changes were especially gnarly because the TypeScript AST does not have detailed documentation. It took us quite some time to determine how to determine, for example, if a function call AST node stored its result to a variable. 
+
+Finally, the Hypothesis testing framework was completely new for us, so it was somewhat challenging to think of how to generate meaningful test data automatically. In the end, we settled on generating relatively simple syntactically correct programs. It would be interesting to put more time into generating richer, semantically meaningful Bril in the future as well. 
 
 ## Evaluating our contribution
 
@@ -155,6 +158,7 @@ In testing Bril, this meant specifying how to generate syntactically correct Bri
 
 Our first test checks the property that conversion from text-based Bril JSON to is invertible. 
 That is, we want the following high level assertion to hold:
+
 ```
 bril2json(bril2txt(program)) == program
 ```
@@ -212,7 +216,4 @@ Overall, property-based testing was easier than expected to set up, and helped u
 
 ## Next steps
 
-1. explicit program stack
-2. first-order/anonymous functions
-3. integrating with a static type checker, which would let us remove dynamic function call type checking
-4. TS main arguments and return code
+There are severa interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's static checks. Finally, we could modify the TypeScript frontend to also take arguments from main and produce and exit code.
