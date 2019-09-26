@@ -1,6 +1,14 @@
 +++
 title = "Shrimp: Verifying IRs with Rosette"
-extra.authors = { "Rachit Nigam" = "https://rachitnigam.com", "Sam Thomas" = "https://github.com/sgpthomas" }
+
+[[extra.authors]]
+name = "Rachit Nigam"
+link = "https://rachitnigam.com"
+
+[[extra.authors]]
+name = "Sam Thomas"
+link = "https://github.com/sgpthomas"
+
 extra.bio = """
   [Rachit Nigam](https://rachitnigam.com) is a second year PhD student interested
   programming languages & computer architecture. In his free time, he
@@ -8,6 +16,7 @@ extra.bio = """
 
   Sam Thomas is a senior undergraduate student at Cornell. He is applying to Grad Schools for applied PL.
 """
+
 +++
 
 
@@ -81,7 +90,7 @@ will report that when `x = 0`, this formula is false.
 
 A symbolic interpreter is simply an interpreter that executes over symbolic values rather than real values.
 A standard interpreter takes a program, such as `x + 2 + 3`, and a variable assignment, `x = 1`
-and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs, 
+and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs,
 but takes symbols as arguments instead of value assignments. For the same program, `x + 2 + 3`, symbolic
 interpretation would produce the formula `x + 5`.
 
@@ -182,11 +191,11 @@ actually analyzing the code of the optimization so if you don't have extensive e
 unnoticed.
 
 ## Evaluation
-To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse] 
+To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse]
 using [Local value numbering (LVN)][lvn] to show that Shrimp is useful in finding
 correctness bugs. We intentionally planted two bugs and found a third bug in the process of testing.
 
-There are some subtleties to a correct implementation of LVN. If you know that the variable 
+There are some subtleties to a correct implementation of LVN. If you know that the variable
 `sum1` holds the value `a + b`, you have to make sure that `sum1` is not assigned to again before
 you use it. For example, consider the following Bril program:
 ```
@@ -206,8 +215,8 @@ With this information, it is easy to walk through the execution of the code
 and discover the source of the bug.
 
 Next we tried extending CSE to deal with associativity.
-It would be nice if the compiler knew that `a + b` is equal to `b + a` so that it could eliminate more 
-sub expressions. The most naïve thing to do is sort the arguments for all expressions when you 
+It would be nice if the compiler knew that `a + b` is equal to `b + a` so that it could eliminate more
+sub expressions. The most naïve thing to do is sort the arguments for all expressions when you
 compare them so that `a + b` is the same value as `b + a`. However, this by itself is not enough.
 Testing the following example with Shrimp reveals the problem:
 ```
