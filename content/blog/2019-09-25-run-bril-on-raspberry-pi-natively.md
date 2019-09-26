@@ -188,7 +188,7 @@ variance of experiment data.
 The experiment runs matrix multiplications from 5 by 5 to 40 by 40, with step
 size 5.
 
-![](matmul.png)
+![](https://www.cs.cornell.edu/~hongbo/cs6120/report/matmul.png)
 
 The first plot shows the comparison of execution time between Bril interpreter
 and native binary program. 
