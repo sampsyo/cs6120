@@ -117,9 +117,10 @@ sure why.
 
 # How do we stack up?
 
-We ran benchmarks using [hyperfine](https://github.com/sharkdp/hyperfine). The same bril program was run
-using both brili and brilirs. Overall, brilirs was faster, as expected. On one benchmark, brili was twice
-as fast, however. The results (measurements reported as mean plus/minus standard deviation):
+We ran benchmarks using [hyperfine](https://github.com/sharkdp/hyperfine). The same bril program was
+run using both brili and brilirs. Overall, brilirs was faster, as expected. On one benchmark, brili
+was twice as fast, however. The results (measurements reported as mean plus/minus standard
+deviation):
 
 | Benchmark        | brili            | brilirs           | Speedup                            |
 |------------------|------------------|-------------------|------------------------------------|
@@ -128,8 +129,8 @@ as fast, however. The results (measurements reported as mean plus/minus standard
 | poly_mul, n=50   | 53.4 ms ± 3.9 ms | 44.2 ms ± 1.9 ms  | 1.21 ± 0.10                        |
 | poly_mul, n=100  | 86.2 ms ± 5.0 ms | 174.7 ms ± 4.0 ms | brili was 2.03 ± 0.13 times faster |
 
-For other benchmarks, brilirs was so fast that hyperfine warned that the average run was under or around 
-five milliseconds:
+For other benchmarks, brilirs was so fast that hyperfine warned that the average run was under or
+around five milliseconds:
 
 | Benchmark       | brili            | brilirs         | Speedup       |
 |-----------------|------------------|-----------------|---------------|
