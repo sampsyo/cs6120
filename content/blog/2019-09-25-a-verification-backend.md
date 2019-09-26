@@ -20,8 +20,8 @@ flavors: (1) Proving a compiler is correct by construction using a
 observable semantics of a program by checking the equivalence of the input and
 the output programs.
 
-Correct by construction compiler have been demonstrated to viable for
-non-trivial but require several man-years of work to implement, specify [^1],
+Non-trivial correct by construction compilers have been demonstrated to be viable for
+but require several person-years of work to implement, specify[^1],
 and prove correct. On the other hand, proving program equivalence automatically
 is a [remarkably hard problem](https://en.wikipedia.org/wiki/Turing_completeness)
 which forces such verification efforts to somehow bound the space of program
@@ -40,12 +40,13 @@ to prove properties in a domain that we care about. For example, SAT + theory of
 integers can be used to solve [Integer Linear Programming][ilp] problems.
 
 Program properties can be verified by first encoding the semantics of your
-language as an SMT formula and asking a solver to prove it's correctness.
+language as an SMT formula and asking a solver to prove it's correctness by finding
+a satisfying assignment.
 
 ## Rosette
 
 Rosette is a symbolic execution engine for the [Racket][] programming language.
-It allows us to write simple Racket programs and automatically lifts them
+It lets us write normal Racket programs and does the work of automatically lifting them
 to perform symbolic computations.
 
 Consider the following program:
@@ -59,7 +60,7 @@ inputs, Rosette _lifts_ operations like `+` to return symbolic formulas
 instead.  So, running this program with the symbolic input `x` would give us
 the ouput `x + 1`.
 
-Next, Rosette can be used to ask _verification queries_ using a symbolic inputs.
+Rosette also lets us ask _verification queries_ using a symbolic inputs.
 We can write the following program:
 
     symbolic x integer?
@@ -77,7 +78,7 @@ Rosette generate a _model_ where the formula is false. In this case, Rosette
 will report that when `x = 0`, this formula is false.
 
 ## Symbolic Interpretation
-A symbolic interpreter is simply an interpreter that executes with symbolic values.
+A symbolic interpreter is simply an interpreter that executes over symbolic values rather than real values.
 A standard interpreter takes a program, such as `x + 2 + 3`, and a variable assignment, `x = 1`
 and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs, 
 but takes symbols as arguments instead of value assignments. For the same program, `x + 2 + 3`, symbolic
@@ -85,19 +86,20 @@ interpretation would produce the formula `x + 5`.
 
 This proves useful for verification because it reduces the problem of program equivalence to formula equivalence.
 To prove that the program `x + 2 + 3` is equivalent to the program `3 + 2 + x` we only need to reduce these
-to formulas and then prove their equivalence. This may seem like we have only complicated the problem,
-but it turns out that we can use off-the-shelf SMT solvers to do the hard work of showing this equivalence.
+to formulas and then prove their equivalence. This still looks hard, but it turns out that we can use SMT
+solvers to do most of the hard work.
 
 We have reduced the problem of program equivalence to symbolic interpretation plus a query
 to an SMT solver. Fortunately, Rosette makes both of these tasks simple. We can write a normal interpreter
-in Racket and Rosette will lift the computation into SMT formulas and then make the query to the SMT solver.
+in Racket and Rosette will lift the computation into SMT formulas and also make the query to the SMT solver.
 
 ### Limiting scope to basic blocks
-While this initially sounds great, it turns out that SMT theories are undecidable in general 
+While this initially sounds great, SMT theories are undecidable in general 
 and even when you restrict it to decidable 
 fragments, verification can take a very long time. Because, symbolic interpretation involves 
 following every path in a program and the number of paths in a program tends to increase exponentially with
-the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale.
+the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale to
+large programs.
 
 We address this problem by proving basic block equivalence rather than program equivalence.
 By definition, there is only a single path through a basic block. This avoids the exponential
@@ -154,7 +156,6 @@ it will provide a counter-example to prove it. In this case, it is not too hard 
 that this formula is in fact satifiable, which shows that these two basic blocks are functionally
 equivalent.
 
-
 ### Downfalls
 The downside of this approach is that it only conservatively approximates the result
 of each basic block. We may lose information about constraints on variables that cross
@@ -162,11 +163,10 @@ basic block boundaries.
 
 For example ...
 
+Still need actual program to test, you will only find bugs that would be exposed in particular tests.
 
-## Evaulation
-
-To evaluate Shrimp, we performed a case study
-where we implemented [Common sub-expression elimination (CSE)][cse] 
+## Evaluation
+To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse] 
 using [Local value numbering (LVN)][lvn] to show that Shrimp is useful in finding
 correctness bugs. We intentionally planted two bugs and found a third bug in the process of testing.
 
@@ -230,6 +230,7 @@ timing behavior [[CITE]]?
 [^2]: https://en.wikipedia.org/wiki/Symbolic_execution#Limitations
 
 [rosette]: https://emina.github.io/rosette/
+[racket]: https://racket-lang.org/
 [coq]: https://coq.inria.fr/
 [cse]: https://en.wikipedia.org/wiki/Common_subexpression_elimination
 [lvn]: https://en.wikipedia.org/wiki/Value_numbering#Local_value_numbering
