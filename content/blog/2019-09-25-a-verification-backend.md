@@ -90,14 +90,15 @@ to formulas and then prove their equivalence. This still looks hard, but it turn
 solvers to do most of the hard work.
 
 We have reduced the problem of program equivalence to symbolic interpretation plus a query
-to an SMT solver. Fortunately, Rosette makes both of these tasks simple. We can write a normal interpreter
+to an SMT solver. Fortunately, Rosette makes both of these tasks simple. We can write a normal interpreter for Bril
 in Racket and Rosette will lift the computation into SMT formulas and also make the query to the SMT solver.
 
 ### Limiting scope to basic blocks
-While this initially sounds great, SMT theories are undecidable in general 
+
+SMT theories are undecidable in general 
 and even when you restrict it to decidable 
-fragments, verification can take a very long time. Because, symbolic interpretation involves 
-following every path in a program and the number of paths in a program tends to increase exponentially with
+fragments, verification can take a very long time. Because symbolic interpretation involves 
+following every path in a program and the number of paths in a program increases exponentially with
 the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale to
 large programs.
 
@@ -147,13 +148,13 @@ prod = (a$2 + b$2) * (a$2 + b$2)
 Finally we check if the variables which are defined in both blocks are equivalent.
 In other words, assuming that the common live variables are equal, is the following true:
 ```
-(a$1 + b$1) = (a$2 + b$2)
-&&
-(a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2)
+forall a$1, a$2, b$1, b$2.
+((a$1 + b$1) = (a$2 + b$2) &&
+(a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2))
 ```
-The SMT solver will verify this for us, and if it can't satisify this formula, then
+The SMT solver will verify this for us, and if it can't the formula to be valid,
 it will provide a counter-example to prove it. In this case, it is not too hard to see
-that this formula is in fact satifiable, which shows that these two basic blocks are functionally
+that this formula is in fact valid, which shows that these two basic blocks are functionally
 equivalent.
 
 ### Downfalls
