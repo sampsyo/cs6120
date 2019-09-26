@@ -1,10 +1,14 @@
 +++
 title = "Function calls in Bril"
-extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "" }
+extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "https://cs.cornell.edu/~gyauney" }
 extra.bio = """
-  [Alexa VanHattum](https://cs.cornell.edu/~avh) [[TODO]]
+  [Alexa VanHattum][] is a second year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals. 5'10".
 
-  [Gregory Yauney](https://cs.cornell.edu/~gyauney) [[TODO]]
+  [Gregory Yauney][] is 6'1".
+  
+[alexa vanhattum]: https://cs.cornell.edu/~avh
+[gregory yauney]: https://cs.cornell.edu/~gyauney
+[fish truck] :https://www.triphammermarketplace.com/events/
 """
 +++
 
