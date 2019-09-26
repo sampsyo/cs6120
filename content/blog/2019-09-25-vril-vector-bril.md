@@ -6,7 +6,7 @@ extra.author = "Helena Caminal, Sachille Atapattu and Tuan Ta"
 Why Vectors are cool to have!
 ---------------------------
 
-## High-level idea
+### High-level idea
 In principle vectors are just one-dimensional arrays. An array is a collection of elements that can be accessed by index. However, there are lot of applications where you would perform the same operation on each and every element of an array. This is what is called data-level parallelism (DLP). Some architectures are able to exploit this DLP by encapsulating several operations to different elements of one array into one vector operation. By doing that, they release the pressure in the front-end of the processor because they fetch and decode only once and then they can execute many identical operations concurrently. One of the challenges is for the workloads to exhibit sufficient data-level parallelism to achieve full utilization.
 
 There are three popular options to program for vector architectres, a.k.a. *vectorization*:
@@ -25,16 +25,16 @@ This project is aiming at having these general vector specifications at the comp
 - naturally expose opportunities for vector optimizations at bril
 - offer to the compiler (automatic) vectorizer the possibility of generating bril IR vector operations that can later be mapped into ISA vector instructions
 
-## Link to project
+### Link to project
 [Vril](https://github.com/sa2257/vril) is our public repository.
 
 Arrays
 ------------------
 
-## Arrays in Vril
+### Arrays in Vril
 Definition of an array in Vril is a sequence of elements of any type (no type checking carried out) and the length being any Bril literal. 
 
-## Initializing arrays in Vril
+### Initializing arrays in Vril
 Vril extends the grammar of Bril to include arrays by adding an `init` operator to initialize an array of length `l` as follows,
 ```
 array_name : array = init l
@@ -44,7 +44,7 @@ Vril adds array operations to Bril of the form,
 ```
 array/ variable: type = aop args
 ```
-## Supported array operations
+### Supported array operations
 Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to arrays by moving one element of the array to a variable and performing any arithmetic or logic operation that are already supported in the original bril, and 2) we can perform *vector* accesses to the arrays by using new vector operations that take arrays as arguments directly.
 
 In order to move data from an element of an array `arr[idx]` to a variable `var`, we can use `a2v` op:
@@ -62,10 +62,10 @@ To operate with a scalar operator (for instance `print`) on a single element, th
 Vector ops
 ----------------------------
 
-## Vector ops in Vril
+### Vector ops in Vril
 There are two types of vector ops in Vril: configuration ops and arithmetic/logic ops. Vector arithmetic or logic operations take arrays as arguments and produce an array or a scalar value as a result. Instead, configuration ops help in configuring a vector state.
 
-## Adding vector ops to Vril
+### Adding vector ops to Vril
 For now there is only one configuration op: `setvl`. 
 ```
 vl: int setvl val
@@ -77,7 +77,7 @@ arr3: array vadd arr1 arr2
 ```
 Which takes two arrays as arguments and performs element-wise vector addition, and stores it into a third array.
 
-## Simulating vector ops in Vrili (Vril interpreter)
+### Simulating vector ops in Vrili (Vril interpreter)
 We have extended Brili to interpret vector operations.
 Vrili executes for loops across the different elements of the array operands in order to produce the correct result. This emulates what a vector microarchitecture would do concurrently with a single fetch-decode effort.
 
@@ -86,36 +86,36 @@ Evaluation
 
 Vril makes two major additions to Bril, adding Arrays and extending Briloperations with vector operations. This section describes how we evaluate each of these.
 
-## Evaluating Arrays
+### Evaluating Arrays
 We take three approaches to evaluate arrays,
 - evaluating integration to Bril
 - qualitative evaluation to justify arrays
 - evaluating functionality of arrays
 
-### Integration tests for arrays
+#### Integration tests for arrays
 We ran tests to generate JSON representation of Bril from text format and vice-versa to evaluate whether the array specification is expressible in both available formats. These tests reside in `vtest/parse` and `vtest/print` directories.
 
-### Qualitative evaluation of arrays
+#### Qualitative evaluation of arrays
 Arrays provide a convenient method to use loops in Bril. To add two groups of 10 numbers, conventional Brili required 44 lines of code, 20 of which would define the 20 numbers and 10 to add them. Vril required 50 lines of code, 20 of which were still used to define two arrays element by element and 6 lines to add them in a loop body. It is observed that as the size of the arrays grow, conventional Bril would need correspondingly more lines of code where as Vril would still use 6 lines of code in the loop body.
 
-### Functional evaluation of arrays
+#### Functional evaluation of arrays
 We first wrote a simple test to initialize an array, store a value to an array and read a value from an array. 
 A second test described a loop which would add two array elements and save it in a third array.
 Both these tests generated the expected result from the interpreter. We also walked through the program to count the dynamic instruction count and number of hops over basic blocks. A program with 50 lines of code created 109 dynamic instructions and 11 hops, which matched the expectation. These tests reside in `vtest/interp` directory.
 
-## Evaluating Vector operation `vadd`
+### Evaluating Vector operation `vadd`
 We took a similar approach to evaluate our addition of `vadd` in Vril.
 - evaluating integration to Bril
 - evaluating functionality of `vadd`
 - evaluating performance of `vadd`
 
-### Integration tests for Vectors
+#### Integration tests for Vectors
 We added tests to generate JSON and text representation of Bril from each other to gain confidence about its translatability. These tests are included in `vtest/parse` and `vtest/print`.
 
-### Functional testing of `vadd`
+#### Functional testing of `vadd`
 We wrote a program with `vadd` and ran this test in `vrili` with different values for `maxvl` which represents the size of vector lenght of the backend. The test generated expected results. This is included in `vtest/interp/array_vector.bril`.
 
-### Performance of `vadd`
+#### Performance of `vadd`
 Initial motivation for Vril is to reduce hop counts by having vector operators in Bril. This aspect is tested by comparing dynamic instruction count, hop count and lines of code for a loop executed in a scalar manner and a vector operation. 
 
 | Program           | Lines of code | Dynamic instructions | Hop count |
