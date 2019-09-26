@@ -8,13 +8,13 @@ extra.bio = """
 
 ## The Goal
 
-For this project, I wanted to create a transformation from Bril to LLVM IR and implement this transformation in OCaml. The motivation for the first goal of the project (LLVM code generation) was to allow Bril to be compiled and run natively, instead of just interpreted. LLVM can be compiled to machine code using a tool like `clang`. Furthermore, LLVM IR supports many optimizations which allow even a naive transformation of Bril to LLVM to be quite performant. The motivation for the second goal was that OCaml provides several constructs, like variants, GADTs, and partial function application, that make it nicer to write IR transformations than Typescript, for some definition of *nicer*.
+For this project, I wanted to create a transformation from Bril to LLVM IR and implement this transformation in OCaml. The motivation for the first goal of the project (LLVM code generation) was to allow Bril to be compiled and run natively, instead of just interpreted. LLVM can be compiled to machine code using a tool like `clang`. Furthermore, LLVM IR supports many optimizations which allow even a naive transformation of Bril to LLVM to be quite performant. The motivation for the second goal was that OCaml provides several constructs, like variants, GADTs, and partial function application. These features might make it nicer to write IR transformations than it would to do the transformations in Typescript.
 
 ## The Implementation
 
 ### An unsuccessful representation
 
-The first part of this project was creating some representation of the Bril IR in OCaml. This actually turned out to be a fairly interesting question that I spent a lot of time thinking about. One of my goals when defining a representation for Bril in OCaml was that I wanted to maintain some of the inheritance like structure of the Bril definition in Typescript. For example, the Typescript definition of Bril distinguishes between effect operations and value operations with two different interfaces:
+The first part of this project was creating some representation of the Bril IR in OCaml. One of my goals when defining a representation for Bril in OCaml was that I wanted to maintain some of the inheritance structure of the Bril definition in Typescript. For example, the Typescript definition of Bril distinguishes between effect operations and value operations with two different interfaces:
 
 ```typescript
 export interface EffectOperation {
@@ -32,7 +32,7 @@ export interface ValueOperation {
 }
 ```
 
-This defines a nice separation between the two kinds of operations and allows a programmer to handle a generic effect operation or value operation without having to worry about which specific operation they are given. My first crack at trying to implement a similar type of operation hierarchy in OCaml using variants was not very successful. So, I initially settled for defining a single variant for operations which had a different constructor for each operation type:
+This creates a nice separation between the two kinds of operations and allows a programmer to handle a generic effect operation or value operation without having to worry about which specific operation they are handling. Initially, I created a basic type that was a single variant type with a different constructor for each operation:
 
 ```ocaml
 type operation =
@@ -45,7 +45,9 @@ type operation =
   ...
 ```
 
-This was a simple representation and generally worked fine for something like basic block generation, when I only really cared about specifically identifying `Ret`, `Br`, and `Jmp` operations. One of the first things I wanted to do when I was generating LLVM code was to create a stack (since I wasn't going to implement an SSA transformation). On this stack I would map variables to stack indices, so I needed a list of all variables that were written to in a function. Using the representation I just described above, in order to extract all of the destinations from instructions I would have to write something like:
+This was a simple representation and generally worked fine for something like basic block generation, when I only really cared about specifically identifying `Ret`, `Br`, and `Jmp` operations. 
+
+One of the first things I wanted to do when I was generating LLVM code was to create a stack (since I wasn't going to implement an SSA transformation). On this stack I would map variables to stack indices, so I needed a list of all variables that were written to in a function. Using the representation I just described above, in order to extract all of the destinations from instructions I would have to write something like:
 
 ```ocaml
 match op with 
@@ -70,13 +72,13 @@ The above code does not need to know which operation it is operating on, only if
 
 One of the goals that I came up with for the representation was that I should have a representation that allowed me to match on an operation based on the data it contained or match on a specific operation. Furthermore, if I matched on the data in an operation, this should  statically limit the kinds of operations that I could match on. For example, if the case of a match statement I am in tells me that I have a `dest` field, OCaml should complain if I try to match the opcode of that operation with `Br`, since `Br` does not have a `dest` field.
 
-The way I did this was by combining GADT's with polymorphic variants to create extensible records. The top level record type for an operation was:
+The way I did this was by combining GADT's with polymorphic variants to create what I called constrained extensible records. The top level record type for an operation was:
 
 ```ocaml
 type 'a operation = {op: 'a opcode; ex: 'a op_ex}
 ```
 
-Every operation had an opcode. Furthermore, that opcode encoded information about the type of data held in the `ex` field of the `operation` record. An opcode is a GADT that can only be constructed using a Constructor representing one of the Bril opcodes:
+Every operation has an opcode field. Furthermore, that opcode encodes information about the type of data held in the `ex` field of the `operation` record. An opcode is a GADT that can only be constructed using a Constructor representing one of the Bril opcodes:
 
 ```ocaml
 type _ opcode =
@@ -98,7 +100,7 @@ type _ op_ex =
 
 The basic idea was that the GADT parameterized over polymorphic variants representing the opcodes would constrain the type of data that could be in the `ex` field of an operation. This kind of pattern continues down the type hierarchy and took a while to get correct. Even though this is the representation I ended up doing this project in, the reason I called it an unsuccessful representation is that in hindsight a similar effect could have been achieved by simply defining a hierarchy of plain old variants with different data structures. I thought I would be saving myself unnecessary match statements by incorporating GADTs to constrain the data but ultimately I don't think I saved myself any match cases and had to spend a lot of time wrestling with the OCaml type system.
 
-I think there is a cautionary tale here about trying to overengineer an AST representation based on how you think you are going to use it. If anyone is interested in looking at the full type representation that I used, it can be found [here](https://github.com/Dan12/bril/blob/master/bril-ocaml/bril/bril_v2.ml). I will say though, it was a good exercise in learning about the more peculiar parts of OCaml's type system and I think made me more comfortable about GADTs and made me more congnizant about their limitations.
+I think there is a cautionary tale here about trying to overengineer an AST representation based on how you think you are going to use it. If anyone is interested in looking at the full type representation that I used, it can be found [here](https://github.com/Dan12/bril/blob/master/bril-ocaml/bril/bril_v2.ml). I will say though, it was a good exercise in learning about the more peculiar parts of OCaml's type system and I think made me more comfortable with GADTs and made me more cognizant about their limitations.
 
 ### LLVM Code Generation
 
@@ -145,3 +147,5 @@ As mentioned above, one aspect where I felt like this project didn't succeed was
 Another potential way and one I started to explore is similar to how you can generate LLVM code in C++. You create function objects and basic block objects within those functions and then append instructions to those basic block objects. I tried to do something similar and add some static type checking when composing certain types of operations. For example, a `br` instruction takes in an `i1` argument (a boolean). So I tried to write some operation builders with some input and output type constraints. This also lead to a lot of struggling with the OCaml type system but I was able to get something reasonable working for a subset of Bril operations. You can check it out [here](https://github.com/Dan12/bril/blob/master/bril-ocaml/llvm_gen/llvm.ml)
 
 The hardest part of this project was definitely trying to get a good representation of the Bril AST in OCaml. I think I might want to revisit this representation in future projects and try and get something that I am happy with. One interesting comparison would have been to also try to do this project in Typescript, since it has some cool type constructs.
+
+All of the code can be found [here](https://github.com/Dan12/bril/tree/master/bril-ocaml)
