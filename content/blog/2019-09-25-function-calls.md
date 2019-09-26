@@ -44,7 +44,7 @@ Bril now supports function definitions:
 Where:
 - `<ReturnType>`: The return type of a function must be `void` or one of the currently recognized Bril types: `int` or `bool`.
 - `<function name>`: The function's name.
-- `<argument name> : <Type>`: Each argument name must be paired with a Bril type.
+- `<argument name> : <Type>`: There can be zero or more arguments. Each argument name must be paired with a Bril type.
 - `<instructions>`: This is a sequence of Bril instructions.
 
 Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
