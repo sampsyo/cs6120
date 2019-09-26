@@ -160,13 +160,13 @@ Though the legacy syntax for defining a `void` function&mdash;without any type a
 
 We also found a bug arising from the nondeterminism of Lark, the Python parser; constant operations were occasionally parsed as value operations. This was fixed with a simple upgrade to the most recent version of Lark.
 
-Finally, we found a bug in the original TypeScript compiler (`ts2bril.ts`) while manually testing the argument type error messages of our function implementation (TODO link Bril issue).
-Hopefully we can fix this soon!
+Finally, we found a bug in the original TypeScript compiler (`ts2bril.ts`) while manually testing the argument type error messages of our function implementation.
 The compiler hits an unexpected error when encountering a boolean variable declaration (with or without the type annotation):
 
 ```
 var x : boolean = true;
 ```
+We hope to fix this soon!
 
 ### Automated property-based testing with [Hypothesis][]
 
