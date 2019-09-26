@@ -24,13 +24,14 @@ In addition, we share how we tested our implementation with both targeted manual
 
 Bril is a simple language that [Adrian][] designed to be a playground for building compiler extensions and optimizations. 
 While out-of-the-box Bril supports programs with multiple functions, the initial implementation lacked an instruction to actually _call_ one function from another. 
-In service of this course's journey toward successively more fun compiler hacking, we set out to rectify this \"oversight\". 
+In service of [this course][]'s journey toward successively more fun compiler hacking, we set out to rectify this \"oversight\". 
 
 The Bril ecosystem is centered around a JSON-based intermediate language that represents functions, labels, and instructions.
 In addition, Bril includes two _frontends_ to make for a more ergonomic programming experience—users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
 For our project, we decided to focus our scope on simple function calls (without first-class functions) in favor of updating the full Bril stack.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
+[this course]: https://www.cs.cornell.edu/courses/cs6120/2019fa/
 
 ## What we did
 
@@ -64,8 +65,8 @@ We extended the JSON representation of Bril functions to account for a function'
 { "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
 ```
 
-A function can take no arguments, in which case the \"args\" field contains the empty list.
-The return type, represented by the \"type\" field, is not required. A function that does not return anything (giving it the return type `void`) does not contain the \"type\" field.
+A function can take no arguments, in which case the `\"args\"` field contains the empty list.
+The return type, represented by the `\"type\"` field, is not required. A function that does not return anything (giving it the return type `void`) does not contain the `\"type\"` field.
 
 An `Argument` JSON object contains the argument's name and type:
 
@@ -81,18 +82,18 @@ We extended the frontend for text-based Bril in `briltxt.py`.
 The goal was to convert our new function definitions and call instructions to the JSON representation of Bril, necessitating extending the parser and JSON generators.
 
 We also extended the TypeScript frontend in `ts2bril.ts`.
-The TypeScript parser already handled calls and functions, so we wrote the converter from node in the abstract syntax tree to JSON.
-
-Below, we discuss our design decisions and their impact on our implementation.
+The TypeScript parser already handled calls to handle treating `console.log` statements as Bril's `print` statements. We extended this component to also capture effectful calls that return results. In addition, the initial implementation did not support function clarations, so we added new support to transform the declaration and type information.
 
 ### Interpreter
 
-The interpreter needs to be able to handle the functions and calls in the extended JSON representation. 
-The main work is when encountering a `call` instruction: a new, empty environment must be created with the arguments bound to the correct values.
+The interpreter needed to be able to handle functions and calls in their extended JSON representation. 
+The main work was when encountering a `call` instruction: we create a new, empty environment with the arguments bound to the correct values.
 The interpreter searches for the function name in the program's list of functions since we are not implementing first-class functions.
-The call is executed with a recursive call to the `evalInstr` function because we chose to represent the stack implicitly.
+Because we chose to represent the stack implicitly, function calls are executed with a recursive call to `evalInstr`, thus relying on the underlying TypeScript stack frame implementation.
 
-Compilers need to check for errors. The interpreter now checks for a number of possible errors when calling functions. We use simple dynamic type checking to ensure that (1) argument types match the types of the provided values and (2) the function's declared return type matches both the type of the returned value and the type of the variable where the returned value is being stored.
+Helpful compilers also need to check for errors. The interpreter now checks for a number of possible errors when calling functions. We use simple dynamic type checking to ensure that (1) argument types match the types of the provided values and (2) the function's declared return type matches both the type of the returned value and the type of the variable where the returned value is being stored.
+
+Below, we discuss our design decisions and their impact on our implementation.
 
 ### Design decisions
 
@@ -100,15 +101,14 @@ There were surprisingly many decisions to be made in the course of designing fun
 
 - For the sake of a sufficiently-scoped project, we chose not to implement first-order functions.
 - We implicitly represent the stack with recursive interpreter calls for simplicity based on the functionality we target.
-An explicit stack would allow more interesting control flow.
-- We chose to allow backwards compatibility with the Bril `main` syntax that did not .
+An explicit stack would allow more interesting control flow in the future.
+- We chose to allow backwards compatibility with the original Bril `main` syntax that did not have a return type or arguments.
 Similarly, the typescript `main` function is not explicitly demarcated&mdash; it is understood to consist of the instructions before any function definitions.
 - Calls can be effectful or non-effectful.
-In the JSON representation of Bril, we chose to represent `call` as its own 'kind' of instruction, allowing us to include the function's name as a field in the JSON object.
-- If multiple functions with the same name are defined, the interpreter throws an error.
-- `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`.
-The Bril interpreter doesn't parse the command line itself.
-We also decided `main` doesn't return an exit code for simplicity.
+In the JSON representation of Bril, we chose to represent `call` as its own 'kind' of instruction, allowing us to include the function's name as an explicit `name` field in the JSON object rather than an argument to the instruction.
+- If multiple functions with the same name are defined or a called function is missing, the interpreter throws an error.
+- `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`. `main` also takes named and typed arguments, rather than C-style `argc/argv`.
+However, `main` doesn't return an exit code for simplicity.
 - Originally, the Bril interpreter simply threw string message exceptions on errors. We made the design decision that the interpreter should not leak interpretation details through uncaught excerptions for anticipated failures. We updated the interpreter to return a specific exception, which is caught and send to standard error along with a custom exit code.
 
 ### Challenges
