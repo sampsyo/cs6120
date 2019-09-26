@@ -142,6 +142,8 @@ around five milliseconds:
 
 Most of the benchmarks are from [bril-benchmark](https://github.com/xu3kev/bril-benchmark/).
 
+Benchmarks were run on a 2018 Thinkpad T580 running Arch Linux, kernel version 5.2.11.
+
 # What else could be done?
 
 If we continue to develop the interpreter, it would be worthwhile to try and overhaul our parsing
