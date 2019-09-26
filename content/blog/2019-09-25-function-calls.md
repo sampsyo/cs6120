@@ -54,7 +54,7 @@ Such functions are assumed to have a return type of void.
 
 ### Extended JSON representation
 
-We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every `Function` object still has a name and a list of instructions. 
+We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every instruction still has a name and a list of instructions. 
 
 ```
 { "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
@@ -63,7 +63,7 @@ We extended the JSON representation of Bril functions to account for a function'
 A function can take no arguments, in which case the \"args\" field contains the empty list.
 The return type, represented by the \"type\" field, is not required. A function that does not return anything (giving it the return type `void`) does not contain the \"type\" field.
 
-An `Argument` JSON object contains the argument's name and type:
+An Argument JSON object contains the argument's name and type:
 
 ```
 {"name": "<string>", "type": <Type>}
@@ -117,9 +117,9 @@ We thus added a named exception to Bril's interpreter with an custom exit code, 
 
 ### Bugs we found with manual testing
 
-Manual testing uncovered several significant bugs. 
+Manual testing uncovered several significant bugs via manual testing. 
 
-When we were fairly confident we had finished our implementation (hah), we wrote a quick recursive factorial implemention in the TypeScript frontend:
+When were fairly confident we had finished our implementation (hah), we wrote a quick recursive Factorial implemention in the TypeScript frontend:
 
 ```
 function fac(x : number) : number {
@@ -129,25 +129,78 @@ function fac(x : number) : number {
 }
 ```
 
-Surprisingly, this test failed - we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. We did not have to worry about this in text-based Bril because operations can only take variables as their arguments.
+Surprisingly, this test failed to compile to Bril—we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. 
 
-Testing `void` functions revealed that the TypeScript compiler was expecting only annotated function types of `number` and `boolean`.
-Though the legacy syntax for defining a `void` function&mdash;without any type annotation&mdash;compiled fine, the test showed that we had to add a check for an explicit `void` return type.
+2. 'void' written explicitly as a function type in typescript
+3. nondeterministic lark parsing of boolean variable declarations sometimes as value operations instead of constant operations
 
-We also found a bug arising from the nondeterminism of Lark, the Python parser; constant operations were occasionally parsed as value operations. This was fixed with a simple upgrade to the most recent version of Lark.
+- couldn't cover type error messages in typescript because bools aren't properly compiled in `ts2bril.ts`.
 
-Finally, we found a bug in the original TypeScript compiler (`ts2bril.ts`) while manually testing the argument type error messages of our function implementation (TODO link Bril issue).
-Hopefully we can fix this soon!
-The compiler hits an unexpected error when encountering a boolean variable declaration (with or without the type annotation):
+### Automated property-based testing with [Hypothesis][]
+
+We were excited to try our hand at stress testing our Bril implementation with automated testing. 
+The key idea behind property-based testing is to specify some details of expected program behavior, then use an framework to test those ideas on many automated examples (in particular, more than a human would reasonably want to write). 
+
+For Bril, we decided to use a python-based property testing framework, Hypothesis. 
+The primary challenge in using such a tool is to specify _how_ example data can be generated such that the tests are useful. 
+In testing Bril, this meant specifying how to generate syntactically correct Bril programs.
+
+Our first test checks the property that conversion from text-based Bril JSON to is invertible. 
+That is, we want the following high level assertion to hold:
+```
+bril2json(bril2txt(program)) == program
+```
+
+For this test, we don't particuarly care if the programs we generate are _meaningful_, as long as they are of the correct syntatic for. 
+We can also generate the simplier, JSON syntactic form. 
+In Hypothesis, this is accomplished via _strategies_ that tell the framework how to compose test data. 
+We start with the small forms, and build up to a whole program.
+For example, we can generate simple names with the following, which says that names are 1-3 lowercase Latin characters:
+```
+names = text(alphabet=characters(min_codepoint=97, max_codepoint=122), 
+             min_size=1,
+             max_size=3)
+```
+
+Instructions are built up compositionally, using a `draw` primitive that automatically explores the specified space of the constitiant parts. For example, constant instructions are generated with:
 
 ```
-var x : boolean = true;
+types = sampled_from(["int", "bool"])
+
+@composite
+def bril_constant_instr(draw):
+    typ = draw(types)
+    if (typ == "int"):
+        value = draw(sampled_from(range(100)))
+    elif (typ == "bool"):
+        value = draw(sampled_from([True, False]))
+    return {
+        "op": "const",
+        "value": value,
+        "dest": draw(names),
+        "type": draw(types)}
+```
+Here, we use a sampling primitive to choose either `int` or `bool`, then generate a numeric or boolean value as appropriate.
+
+Along with similar composite strategies for other instruction forms (including calls) and functions, we build up many (somewhat silly) programs. Even this naive strategy found a potential bug:
+
+```
+{'functions': [{'args': [], 'instrs': [{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': True}], 'name': 'main', 'type': 'int'}]}  !=
+{'functions': [{'args': [], 'instrs': [{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': 'true'}], 'name': 'main', 'type': 'int'}]}
 ```
 
-### Automated property-based testing with Hypothesis
+Originally, we generated the JSON strings `true` and `false` (instead of boolean literals `True` and `False`). The `bril2txt` implementation parsed this correctly, which we decided to leave as-implemented, but this assured us that Hypothesis could actually find programs that were not reversible as we expected.
 
-1. no error-checking of "true" vs. True in `bril2txt`
-2. reading generated programs made us realize we don't check for function name collisions (hopefully, can hit this!)
+We also tested that running Hypothesis-generated programs through the `brili` Bril interpreter only produced clean-exit expected error cases, instead of exposing failures in the underlying TypeScript implementation. Once we changed `Brili` to throw a specific exception, this meant testing the high-level property:
+
+```
+exit_code = brili(program) 
+exit_code == 0 || exit_code == <known exit code>
+```
+
+Because we did not encode much semantic meaning into the generation strategies, almost all generated programs failed in the interpreter (some did execute, and print values, sucessfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
+
+Overall, property-based testing was easier than expected to set up, and helped us explore the sample space of Bril programs.
 
 ## Next steps
 
