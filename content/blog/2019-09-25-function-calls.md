@@ -8,7 +8,7 @@ extra.bio = """
   
 [alexa vanhattum]: https://cs.cornell.edu/~avh
 [gregory yauney]: https://cs.cornell.edu/~gyauney
-[fish truck] :https://www.triphammermarketplace.com/events/
+[fish truck]: https://www.triphammermarketplace.com/events/
 """
 +++
 
