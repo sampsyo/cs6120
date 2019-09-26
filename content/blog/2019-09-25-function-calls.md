@@ -93,8 +93,6 @@ Because we chose to represent the stack implicitly, function calls are executed 
 
 Helpful compilers also need to check for errors. The interpreter now checks for a number of possible errors when calling functions. We use simple dynamic type checking to ensure that (1) argument types match the types of the provided values and (2) the function's declared return type matches both the type of the returned value and the type of the variable where the returned value is being stored.
 
-Below, we discuss our design decisions and their impact on our implementation.
-
 ### Design decisions
 
 There were surprisingly many decisions to be made in the course of designing function calls.
@@ -153,7 +151,7 @@ function fac(x : number) : number {
 }
 ```
 
-Surprisingly, this test failed - we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. We did not have to worry about this in text-based Bril because operations can only take variables as their arguments.
+Surprisingly, this test failed&mdash;we had forgotten that in TypeScript, function calls could be nested subexpressions! Our implementation expected functions that did not return void to be stored directly into variables. We did not have to worry about this in text-based Bril because operations can only take variables as their arguments.
 
 Testing `void` functions revealed that the TypeScript compiler was expecting only annotated function types of `number` and `boolean`.
 Though the legacy syntax for defining a `void` function&mdash;without any type annotation&mdash;compiled fine, the test showed that we had to add a check for an explicit `void` return type.
@@ -195,14 +193,14 @@ names = text(alphabet=characters(min_codepoint=97, max_codepoint=122),
              max_size=3)
 ```
 
-Instructions are built up compositionally, using a `draw` primitive that automatically explores the specified space of the constitiant parts. For example, constant instructions are generated with:
+Instructions are built up compositionally, using a `draw` primitive that automatically explores the specified space of the constituent parts. For example, constant instructions are generated with:
 
 ```
 types = sampled_from(["int", "bool"])
 
 @composite
 def bril_constant_instr(draw):
-    typee = draw(types)
+    type = draw(types)
     if (type == "int"):
         value = draw(sampled_from(range(100)))
     elif (type == "bool"):
