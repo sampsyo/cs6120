@@ -96,12 +96,12 @@ in Racket and Rosette will lift the computation into SMT formulas and also make 
 
 ### Limiting scope to basic blocks
 
-SMT theories are undecidable in general 
-and even when you restrict it to decidable 
-fragments, verification can take a very long time. Because symbolic interpretation involves 
-following every path in a program and the number of paths in a program increases exponentially with
-the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale to
-large programs.
+SMT theories are undecidable in general and even when you restrict it to
+decidable fragments, verification can take a very long time. Because symbolic
+interpretation involves following every path in a program and the number of
+paths in a program increases exponentially with the size of the program,
+it can be difficult to make verification with symbolic interpretation scale
+to large programs.
 
 We address this problem by proving basic block equivalence rather than program equivalence.
 By definition, there is only a single path through a basic block. This avoids the exponential
@@ -111,8 +111,8 @@ equivalence, we can only give a conservative approximation.
 
 To verify that two basic blocks are equivalent, we assume that the common set of live
 variables equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
-assigned variable are equivalent To see this concretely,
-consider the following Bril fragments:
+assigned variable are equivalent.
+
 ```
 block1 {
   ...
