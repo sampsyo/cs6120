@@ -1,9 +1,7 @@
-```
 +++
 title = "Vril! Vector Bril"
 extra.author = "Helena Caminal, Sachille Atapattu and Tuan Ta"
 +++
-```
 
 Why Vectors are cool to have!
 ---------------------------
