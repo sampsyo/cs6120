@@ -34,7 +34,7 @@ For our project, we decided to focus our scope on simple function calls (without
 
 ## What we did
 
-### Surface syntax for calls and fully-fledged function definitions in Bril and typescript
+### Surface syntax
 
 Bril now supports function definitions:
 ```
@@ -75,7 +75,7 @@ An `Argument` JSON object contains the argument's name and type:
 
 The JSON Bril `Program` object remains unchanged as a list of functions.
 
-### Compile to JSON (Bril IR)
+### Compiling to JSON
 
 We extended the frontend for text-based Bril in `briltxt.py`.
 The goal was to convert our new function definitions and call instructions to the JSON representation of Bril, necessitating extending the parser and JSON generators.
@@ -85,7 +85,7 @@ The TypeScript parser already handled calls and functions, so we wrote the conve
 
 Below, we discuss our design decisions and their impact on our implementation.
 
-### Interpretation (in `brili.ts`)
+### Interpreter
 
 The interpreter needs to be able to handle the functions and calls in the extended JSON representation. 
 The main work is when encountering a `call` instruction: a new, empty environment must be created with the arguments bound to the correct values.
@@ -111,7 +111,7 @@ The Bril interpreter doesn't parse the command line itself.
 We also decided `main` doesn't return an exit code for simplicity.
 - Originally, the Bril interpreter simply threw string message exceptions on errors. We made the design decision that the interpreter should not leak interpretation details through uncaught excerptions for anticipated failures. We updated the interpreter to return a specific exception, which is caught and send to standard error along with a custom exit code.
 
-### Hardest parts
+### Challenges
 
 The hardest part of this particular project, as with many compiler endeavors, was wrangling with new frameworks and existing code bases. 
 In particular, this project was more involved than we originally expected because it touched the full Bril stack&mdash;not just the interpreter, but the text-to-JSON and JSON-to-text compilers, the TypeScript frontend, and the Turnt testing framework. 
