@@ -109,7 +109,7 @@ In the JSON representation of Bril, we chose to represent `call` as its own 'kin
 - `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`.
 The Bril interpreter doesn't parse the command line itself.
 We also decided `main` doesn't return an exit code for simplicity.
-- Interpreter should not fail with implementation-specific errors (added custom exceptions)
+- Originally, the Bril interpreter simply threw string message exceptions on errors. We made the design decision that the interpreter should not leak interpretation details through uncaught excerptions for anticipated failures. We updated the interpreter to return a specific exception, which is caught and send to standard error along with a custom exit code.
 
 ### Hardest parts
 
