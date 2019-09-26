@@ -186,6 +186,16 @@ Through this process, I uncovered some bugs when implementing the type inferrer:
 By rigorously testing all possible language features, we can be confident that
 the type inference is correct.
 
+## Hardest Parts to Get Right
+The hardest parts to get right were the parser and full correctness of the type
+inferrer. I didn't realize the issue with the parser towards the beginning
+because I arbitrarily set a priority for the type annotation rule; debugging
+this took a while. Additionally, it was really easy to get a type inferrer
+that seemed to work for majority of cases. However, small bugs like the ones
+mentioned previously were only fixed through intense testing. Comparatively, the
+actual type inference and typechecking was relatively straightforward, mostly
+because there are only two types in Bril and no function calls.
+
 ## Possible Extensions
 Other groups are working on adding function calls to the language. By doing
 type inference on the function arguments and checking the return type, we can
