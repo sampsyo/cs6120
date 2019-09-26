@@ -184,14 +184,15 @@ have already computed the value. However, if we can't do this directly because t
 have the value `a`, not `a + b`. The solution is to rename the first instance of `sum1` to something unique so that we don't lose our reference to the value `a + b`. We can
 then replace `sum2` with a copy from this new variable.
 
-Shrimp was able to catch this bug and even produce a counter example that proves that the
-optimized code produced a different result from the original. With this information,
-it is easy to walk through the execution of the code and discover the source of the bug.
+We implemented the faulty version and ran Shrimp. It was able to show that the programs
+are not equivalent and even produced a counter example to prove this.
+With this information, it is easy to walk through the execution of the code
+and discover the source of the bug.
 
-The second bug we tested with can come up when extending CSE to deal with associativity.
-It would be nice if the compiler knew that `a + b` is equal to `b + a`. The most
-naïve thing to do is sort the arguments of values when you compare them so that
-`a + b` is the same value as `b + a`. However, this by itself is not enough.
+Next we tried extending CSE to deal with associativity.
+It would be nice if the compiler knew that `a + b` is equal to `b + a` so that it could eliminate more 
+sub expressions. The most naïve thing to do is sort the arguments for all expressions when you 
+compare them so that `a + b` is the same value as `b + a`. However, this by itself is not enough.
 Testing the following example with Shrimp reveals the problem:
 ```
      sub1: int = sub a b;
@@ -202,21 +203,18 @@ Shrimp gives us the counter example `a = -8, b = -4`. The problem is that we can
 sort the arguments for every instruction; `a - b != b - a`. Shrimp helps to reveal
 this problem.
 
-The final bug was actually an unintentional bug that Shrimp helped us find. We have a
-messy internal representation of the Bril ast where each instruction has it's own structure
-and is a sub-type of the `dest-instr` structure. When we were looking up values in the LVN table,
-we were only comparing that fields in `dest-instr` where the same. This meant that we were
-forgetting to actually compare that the op-codes of the instructions where the same!
-Shrimp was able to reveal this code from the following example:
+The final bug was actually an unintentional bug that Shrimp helped us find. We made the arguably
+bad decision to give each Bril instruction it's own structure that is a sub-type of a `dest-instr` structure
+rather than to give `dest-instr` an op-code field. When we were looking up values in the LVN table,
+we were only comparing that fields in `dest-instr` where the same. We forgot to compare the actual
+types of the instructions! Shrimp was able to reveal this code from the following example:
 ```
 sub1: int = sub a b;
 sub1: int = add a b;
 sub2: int = sub b a;
 prod: int = mul sub1 sub2;
 ```
-This is the strongest testament that Shrimp is useful in finding bugs in optimization passes.
-The moral of the story is that you should use bad code when implementing optimizations
-for your bug finding tool so that you can expose real bugs.
+This made it easy to find and fix a rather embarrassing bug in the LVN implementation.
 
 ## Conclusion
 Serval stuff
