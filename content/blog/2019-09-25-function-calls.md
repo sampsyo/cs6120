@@ -216,4 +216,4 @@ Overall, property-based testing was easier than expected to set up, and helped u
 
 ## Next steps
 
-There are severa interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's static checks. Finally, we could modify the TypeScript frontend to also take arguments from main and produce and exit code.
+There are several interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's static checks. Finally, function calls will allow us and other Bril implementors to run more exciting programs (and optimizations) in the future.
