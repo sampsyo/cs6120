@@ -116,14 +116,14 @@ However, `main` doesn't return an exit code for simplicity.
 The hardest part of this particular project, as with many compiler endeavors, was wrangling with new frameworks and existing code bases. 
 In particular, this project was more involved than we originally expected because it touched the full Bril stack&mdash;not just the interpreter, but the text-to-JSON and JSON-to-text compilers, the TypeScript frontend, and the Turnt testing framework. 
 
-The TypeScript frontend changes were especially gnarly because the TypeScript AST does not have detailed documentation. It took us quite some time to determine how to determine, for example, if a function call AST node stored its result to a variable. 
+The TypeScript frontend changes were especially gnarly because the TypeScript AST does not have detailed documentation. It took us quite some time to determine, e.g., if a function call AST node stored its result to a variable. 
 
 Finally, the Hypothesis testing framework was completely new for us, so it was somewhat challenging to think of how to generate meaningful test data automatically. In the end, we settled on generating relatively simple syntactically correct programs. It would be interesting to put more time into generating richer, semantically meaningful Bril in the future as well. 
 
 ## Evaluating our contribution
 
 To convince ourselves that we'd actually made a useful contribution to Bril, we wanted to rigorously test our changes. 
-Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofting testings goals, we also had to make several tooling changes.
+Our evaluation was two-fold: (1) manual testing at multiple abstraction levels (JSON, text-based Bril, and TypeScript), and (2) automated property-based testing to try and cover classes of errors we may not have anticipated. In order to support these lofty testings goals, we also had to make several tooling changes.
 
 ### Tooling changes for testing
 
@@ -131,13 +131,13 @@ As we developed our implementation, we built up a  bevy of small Bril programs t
 However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
 We [extended][] Turnt to check both standard error and program exit codes in order to test invalid Bril programs. 
 
-Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-baseded surface syntax to support comments of the form `\\ <comment>`. 
+Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-based surface syntax to support comments of the form `\\ <comment>`. 
 
 Finally, in order for automated testing to be useful, we needed to distinguish between expected errors on invalid Bril programs and implementation flaws. 
-We thus added a named exception to Bril's interpreter with an custom exit code, removing all string-based `throw` calls.
+We thus added a named exception to Bril's interpreter with a custom exit code, removing all string-based `throw` calls.
 
 [turnt]: https://github.com/cucapra/turnt 
-[functionality]: https://github.com/cucapra/turnt/issues/6
+[extended]: https://github.com/cucapra/turnt/issues/6
 
 ### Bugs we found with manual testing
 
@@ -170,8 +170,8 @@ var x : boolean = true;
 
 ### Automated property-based testing with [Hypothesis][]
 
-We were excited to try our hand at stress testing our Bril implementation with automated testing. 
-The key idea behind property-based testing is to specify some details of expected program behavior, then use a framework to test those properties on many automated examples (in particular, more than a human would reasonably want to write). 
+We were excited to try our hand at stress-testing our Bril implementation with automated testing. 
+The key idea behind property-based testing is to specify some details of expected program behavior, then use a framework to test those properties on many automated examples (in particular, more than a human would reasonably want to write). This framework allows us to test many aspects of Bril, not solely the new function calls.
 
 For Bril, we decided to use a python-based property testing framework, Hypothesis. 
 The primary challenge in using such a tool is to specify _how_ example data can be generated such that the tests are useful. 
@@ -233,8 +233,8 @@ exit_code == 0 || exit_code == <known exit code>
 
 Because we did not encode much semantic meaning into the generation strategies, almost of the all of the thousands of generated programs failed in the interpreter (some did execute, and print values, successfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
 
-Overall, property-based testing was easier than expected to set up, and helped us explore the sample space of Bril programs.
+Overall, property-based testing was easier than expected to set up, and helped us explore the space of Bril programs.
 
 ## Next steps
 
-There are several interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's static checks. Finally, function calls will allow us and other Bril implementors to run more exciting programs (and optimizations) in the future.
+There are several interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's dynamic checks. Finally, function calls will allow us and other Bril implementors to run more exciting programs (and optimizations) in the future.
