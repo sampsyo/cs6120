@@ -79,15 +79,26 @@ We have extended Brili to interpret vector operations.
 Evaluation
 ----------------------------
 
-## Claim
+Vril makes two major additions to Bril, adding Arrays and extending Briloperations with vector operations. This section describes how we evaluate each of these.
 
-## Comparison
+## Evaluating Arrays
+We take two approaches to evaluate arrays,
+- integration to Bril
+- qualitative evaluation to justify arrays
+- evaluating functionality of arrays
 
-## Benchmark
+## Integration tests for arrays
+We ran tests to generate JSON representation of Bril from text format and vice-versa to evaluate whether the array specification is expressible in both available formats. These tests reside in `vtest/parse` and `vtest/print` directories.
 
-## Data Analysis
+### Qualitative evaluation of arrays
+Arrays provide a convenient method to use loops in Bril. To add two groups of 10 numbers, conventional Brili required 44 lines of code, 20 of which would define the 20 numbers and 10 to add them. Vril required 50 lines of code, 20 of which were still used to define two arrays element by element and 6 lines to add them in a loop body. It is observed that as the size of the arrays grow, conventional Bril would need correspondingly more lines of code where as Vril would still use 6 lines of code in the loop body.
 
-## Metrics
+### Functional evaluation of arrays
+We first wrote a simple test to initialize an array, store a value to an array and read a value from an array. 
+A second test described a loop which would add two array elements and save it in a third array.
+Both these tests generated the expected result from the interpreter. We also walked through the program to count the dynamic instruction count and number of hops over basic blocks. A program with 50 lines of code created 109 dynamic instructions and 11 hops, which matched the expectation. These tests reside in `vtest/interp` directory.
+
+## Evaluating Vector operation `vadd`
 
 ## Experimental Design
 
@@ -98,6 +109,5 @@ Conclusion
 We have extended bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow to modify a vector state and arithmetic operations perform operations on array arguments.
 
 The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we written a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes, it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
-
 
 [cs6120]: @/_index.md
