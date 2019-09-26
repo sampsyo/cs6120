@@ -160,11 +160,25 @@ equivalent.
 ### Downfalls
 The downside of this approach is that it only conservatively approximates the result
 of each basic block. We may lose information about constraints on variables that cross
-basic block boundaries. 
+basic block boundaries. For example, consider the following toy program:
 
-For example ...
+```
+main {
+  a: int = const 2;
+  b: int = const 4;
+  c: int = id a;
+  jmp next;
+next:
+  sum: int = add a c;
+}
+```
+Because, `c` is a copy of `a`, this program would be functionally the same if you replaced the assignment
+to `sum` with `sum: int = add a a`. However, because we are only doing verification on the basic block level,
+we don't know that these programs are equivalent.
 
-Still need actual program to test, you will only find bugs that would be exposed in particular tests.
+Another problem is that this approach to verification relies on the existence of test programs. We are not
+actually analyzing the code of the optimization so if you don't have extensive enough tests, bugs may go by
+unnoticed.
 
 ## Evaluation
 To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse] 
