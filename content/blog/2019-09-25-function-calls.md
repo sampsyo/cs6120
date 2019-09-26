@@ -23,7 +23,7 @@ While out-of-the-box Bril supports programs with multiple functions, the initial
 In service of this course's journey toward successively more fun compiler hacking, we set out to rectify this \"oversight\". 
 
 The Bril ecosystem is centered around a JSON-based intermediate language that represents functions, labels, and instructions.
-In addition, Bril includes two _front-ends_ to make for a more ergonomic programming experience—users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
+In addition, Bril includes two _frontends_ to make for a more ergonomic programming experience—users can compile from either a more concise text-based syntax or a restricted subset of TypeScript.
 For our project, we decided to focus our scope on simple function calls (without first-class functions) in favor of updating the full Bril stack.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
@@ -39,14 +39,14 @@ Bril now supports function definitions:
 
 Where:
 - `<ReturnType>`: The return type of a function must be `void` or one of the currently recognized Bril types: `int` or `bool`.
-- `<name>`: The function's name is a string that can consist of letters, numbers, and underscores. It cannot begin with a number.
+- `<name>`: The function's name.
 - `<arg_i> : <type_i>`: Each argument name must be paired with a Bril type.
 - `<instructions>`: This is a sequence of Bril instructions.
 
 Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
 ```
-var <name> : <type>  = call <name>(<args>);
-call <name>(<args>);
+var <variable name> : <Type>  = call <function name>(<args>);
+call <function name>(<args>);
 ```
 
 For backwards compatibility, functions can still be declared without return types and arguments, as in `tests/ts/br.bril`. 
@@ -69,14 +69,26 @@ An `Argument` JSON object contains the argument's name and type:
 {"name": "<string>", "type": <Type>}
 ```
 
-
-
-The JSON Bril program object remains unchanged as a list of functions.
+The JSON Bril `Program` object remains unchanged as a list of functions.
 
 ### Compile to JSON (Bril IR)
 
+We extended the frontend for text-based Bril in `briltxt.py`.
+The goal was to convert our new function definitions and call instructions to the JSON representation of Bril, necessitating extending the parser and JSON generators.
+
+We also extended the TypeScript frontend in `ts2bril.ts`.
+The TypeScript parser already handled calls and functions, so we wrote the converter from node in the abstract syntax tree to JSON.
+
+Below, we discuss our overall design decisions and their impact on our implementation.
+
 ### Interpretation (in `brili.ts`)
 
+The interpreter needs to be able to handle the functions and calls in the extended JSON representation. 
+The main work is when encountering a `call` instruction: a new, empty environment must be created with the arguments bound to the correct values.
+The interpreter searches for the function name in the program's list of functions since we are not implementing first-class functions.
+The call is executed with a recursive call to the `evalInstr` function because we chose to represent the stack implicitly.
+
+Compilers need to check for errors. The interpreter now checks for a number of possible errors when calling functions. We use simple dynamic type checking to ensure that (1) argument types match the types of the provided values and (2) the function's declared return type matches both the type of the returned value and the type of the variable where the returned value is being stored.
 
 ### Design decisions
 
