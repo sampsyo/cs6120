@@ -128,10 +128,9 @@ Initial motivation for Vril is to reduce hop counts by having vector operators i
 
 Given that the length of array is N=10 and vector length selected by Vrili at execution is k, and compensating for the start and the end block as shown in the figure, scalar operation iterates N times and vector operation iterates N/k times.
 
-![CFG for scalar array operation](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_scalar_nv.png)
-
-
-![CFG for vector array operation](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_vector_nv.png)
+CFG for scalar array operation  | CFG for vector array operation
+:-------------------------:|:-------------------------:
+![](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_scalar_nv.png) | ![](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_vector_nv.png)
 
 Conclusion
 --------------------------------------
