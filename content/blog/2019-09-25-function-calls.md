@@ -1,10 +1,14 @@
 +++
 title = "Function calls in Bril"
-extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "" }
+extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "https://cs.cornell.edu/~gyauney" }
 extra.bio = """
-  [Alexa VanHattum](https://cs.cornell.edu/~avh) [[TODO]]
+  [Alexa VanHattum][] is a second year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals. 5'10".
 
-  [Gregory Yauney](https://cs.cornell.edu/~gyauney) [[TODO]]
+  [Gregory Yauney][] is 6'1".
+  
+[alexa vanhattum]: https://cs.cornell.edu/~avh
+[gregory yauney]: https://cs.cornell.edu/~gyauney
+[fish truck]: https://www.triphammermarketplace.com/events/
 """
 +++
 
@@ -95,18 +99,21 @@ Compilers need to check for errors. The interpreter now checks for a number of p
 1. implicitly represent stack with recursive interpreter calls
 2. no first-order functions
 3. backwards compatibility
-	- typescript implicit main
+  - typescript implicit main
 4. calls can be effectful or non-effectful (call is its own 'kind' of instruction)
 5. TODO: multiple functions
 6. arguments for main: feed to brili (what adrian said, no argv/-c)
-	- main doesn't return an exit code
+  - main doesn't return an exit code
 7. Interpreter should not fail with implementation-specific errors (added custom exceptions)
 
 ### Hardest parts
 
-0. touching the whole stack (both frontends, json representation, interpreter, test framework)
-1. typescript ast
-2. generating reasonable programs in hypothesis
+The hardest part of this particular project, as with many compiler endeavors, was wrangling with new frameworks and existing code bases. 
+In particular, this project was more involved than we originally expected because it touched the full Bril stack&mdash;not just the interpreter, but the text-to-JSON and JSON-to-text compilers, the TypeScript frontend, and the Turnt testing framework. 
+
+The TypeScript frontend changes were especially gnarly because the TypeScript AST does not have detailed documentation. It took us quite some time to determine how to determine, for example, if a function call AST node stored its result to a variable. 
+
+Finally, the Hypothesis testing framework was completely new for us, so it was somewhat challenging to think of how to generate meaningful test data automatically. In the end, we settled on generating relatively simple syntactically correct programs. It would be interesting to put more time into generating richer, semantically meaningful Bril in the future as well. 
 
 ## Evaluating our contribution
 
@@ -156,26 +163,73 @@ The compiler hits an unexpected error when encountering a boolean variable decla
 var x : boolean = true;
 ```
 
-### Automated property-based testing with Hypothesis
+### Automated property-based testing with [Hypothesis][]
 
-1. no error-checking of "true" vs. True in `bril2txt`
-2. reading generated programs made us realize we don't check for function name collisions (hopefully, can hit this!)
+We were excited to try our hand at stress testing our Bril implementation with automated testing. 
+The key idea behind property-based testing is to specify some details of expected program behavior, then use a framework to test those properties on many automated examples (in particular, more than a human would reasonably want to write). 
+
+For Bril, we decided to use a python-based property testing framework, Hypothesis. 
+The primary challenge in using such a tool is to specify _how_ example data can be generated such that the tests are useful. 
+In testing Bril, this meant specifying how to generate syntactically correct Bril programs.
+
+Our first test checks the property that conversion from text-based Bril JSON to is invertible. 
+That is, we want the following high level assertion to hold:
+
+```
+bril2json(bril2txt(program)) == program
+```
+
+For this test, we don't particularly care if the programs we generate are _meaningful_, as long as they are of the correct syntactic form. 
+We can also generate the simpler, JSON syntactic form. 
+In Hypothesis, this is accomplished via _strategies_ that tell the framework how to compose test data. 
+We start with the small forms, and build up to a whole program.
+For example, we can generate simple names with the following, which says that names are 1-3 lowercase Latin characters:
+```
+names = text(alphabet=characters(min_codepoint=97, max_codepoint=122), 
+             min_size=1,
+             max_size=3)
+```
+
+Instructions are built up compositionally, using a `draw` primitive that automatically explores the specified space of the constitiant parts. For example, constant instructions are generated with:
+
+```
+types = sampled_from(["int", "bool"])
+
+@composite
+def bril_constant_instr(draw):
+    type = draw(types)
+    if (typ == "int"):
+        value = draw(sampled_from(range(100)))
+    elif (typ == "bool"):
+        value = draw(sampled_from([True, False]))
+    return {
+        "op": "const",
+        "value": value,
+        "dest": draw(names),
+        "type": draw(types)}
+```
+Here, we use a sampling primitive to choose either `int` or `bool`, then generate a numeric or boolean value as appropriate.
+
+Along with similar composite strategies for other instruction forms (including calls) and functions, we build up many (somewhat silly) programs. Even this naive strategy found a potential bug:
+
+```
+{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': True} !=
+{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': 'true'}
+```
+
+Originally, we generated the JSON strings `true` and `false` (instead of boolean literals `True` and `False`). The `bril2txt` implementation parsed this correctly, which we decided to leave as-implemented, but this assured us that Hypothesis could actually find programs that were not reversible as we expected.
+
+We also tested that running Hypothesis-generated programs through the `brili` Bril interpreter only produced clean-exit expected error cases, instead of exposing failures in the underlying TypeScript implementation. Once we changed `Brili` to throw a specific exception, this meant testing the high-level property:
+
+```
+exit_code = brili(program) 
+exit_code == 0 || exit_code == <known exit code>
+```
+
+Because we did not encode much semantic meaning into the generation strategies, almost of the all of the thousands of generated programs failed in the interpreter (some did execute, and print values, successfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
+
+Overall, property-based testing was easier than expected to set up, and helped us explore the sample space of Bril programs.
 
 ## Next steps
 
-1. explicit program stack
-2. first-order/anonymous functions
-3. integrating with a static type checker, which would let us remove dynamic function call type checking
-4. TS main arguments and return code
-
-
-
-
-
-
-
-
-
-
-
-
+There are several interesting directions that Bril's function handling could take from here. We could represent the program stack and context explicitly, rather than relying on the underlying interpreter's stack, and implement first-order and anonymous functions. We could also integrate with other projects' type checking and eliminate most of the interpreter's static checks. Finally, function calls will allow us and other Bril implementors to run more exciting programs (and optimizations) in the future.
