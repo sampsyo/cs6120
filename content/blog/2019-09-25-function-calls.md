@@ -139,7 +139,7 @@ Surprisingly, this test failed to compile to Bril—we had forgotten that in Typ
 ### Automated property-based testing with [Hypothesis][]
 
 We were excited to try our hand at stress testing our Bril implementation with automated testing. 
-The key idea behind property-based testing is to specify some details of expected program behavior, then use an framework to test those ideas on many automated examples (in particular, more than a human would reasonably want to write). 
+The key idea behind property-based testing is to specify some details of expected program behavior, then use a framework to test those properties on many automated examples (in particular, more than a human would reasonably want to write). 
 
 For Bril, we decided to use a python-based property testing framework, Hypothesis. 
 The primary challenge in using such a tool is to specify _how_ example data can be generated such that the tests are useful. 
@@ -151,8 +151,8 @@ That is, we want the following high level assertion to hold:
 bril2json(bril2txt(program)) == program
 ```
 
-For this test, we don't particuarly care if the programs we generate are _meaningful_, as long as they are of the correct syntatic for. 
-We can also generate the simplier, JSON syntactic form. 
+For this test, we don't particularly care if the programs we generate are _meaningful_, as long as they are of the correct syntactic form. 
+We can also generate the simpler, JSON syntactic form. 
 In Hypothesis, this is accomplished via _strategies_ that tell the framework how to compose test data. 
 We start with the small forms, and build up to a whole program.
 For example, we can generate simple names with the following, which says that names are 1-3 lowercase Latin characters:
@@ -169,7 +169,7 @@ types = sampled_from(["int", "bool"])
 
 @composite
 def bril_constant_instr(draw):
-    typ = draw(types)
+    type = draw(types)
     if (typ == "int"):
         value = draw(sampled_from(range(100)))
     elif (typ == "bool"):
@@ -198,7 +198,7 @@ exit_code = brili(program)
 exit_code == 0 || exit_code == <known exit code>
 ```
 
-Because we did not encode much semantic meaning into the generation strategies, almost all generated programs failed in the interpreter (some did execute, and print values, sucessfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
+Because we did not encode much semantic meaning into the generation strategies, almost of the all of the thousands of generated programs failed in the interpreter (some did execute, and print values, successfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
 
 Overall, property-based testing was easier than expected to set up, and helped us explore the sample space of Bril programs.
 
