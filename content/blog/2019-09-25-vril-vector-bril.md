@@ -52,9 +52,13 @@ array/ variable: type = aop args
 Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to arrays by moving one element of the array to a variable and performing any arithmetic or logic operation that are already supported in the original bril, and 2) we can perform *vector* accesses to the arrays by using new vector operations that take arrays as arguments directly.
 
 In order to move data from an element of an array `arr[idx]` to a variable `var`, we can use `a2v` op:
-```var: int = a2v arr idx```
+```
+var: int = a2v arr idx
+```
 Similarly, we can move a value stored in a variable `var` into one of the array's element `arr[idx]`:
-```array_name: int v2a var index```
+```
+array_name: int v2a var index
+```
 
 To put a constant into an array, the constant should first be put to a variable.
 To operate with a scalar operator (for instance `print`) on a single element, the array element has to first be put to a variable.
@@ -67,10 +71,14 @@ There are two types of vector ops in Vril: configuration ops and arithmetic/logi
 
 ## Adding vector ops to Vril
 For now there is only one configuration op: `setvl`. 
-```vl: int setvl val```
+```
+vl: int setvl val
+```
 is used to request `val` lanes to the IR and `setvl` returns `vl:=val` if `vl<maxvl` or `vl:=maxvl` if `vl>=maxvl`.
 We have also implemented only one arithmetic vector op `vadd` as a proof of concept:
-```arr3: array vadd arr1 arr2```
+```
+arr3: array vadd arr1 arr2
+```
 Which takes two arrays as arguments and performs element-wise vector addition, and stores it into a third array.
 
 ## Simulating vector ops in Vrili (Vril interpreter)
