@@ -91,12 +91,12 @@ Evaluation
 Vril makes two major additions to Bril, adding Arrays and extending Briloperations with vector operations. This section describes how we evaluate each of these.
 
 ## Evaluating Arrays
-We take two approaches to evaluate arrays,
-- integration to Bril
+We take three approaches to evaluate arrays,
+- evaluating integration to Bril
 - qualitative evaluation to justify arrays
 - evaluating functionality of arrays
 
-## Integration tests for arrays
+### Integration tests for arrays
 We ran tests to generate JSON representation of Bril from text format and vice-versa to evaluate whether the array specification is expressible in both available formats. These tests reside in `vtest/parse` and `vtest/print` directories.
 
 ### Qualitative evaluation of arrays
@@ -108,10 +108,27 @@ A second test described a loop which would add two array elements and save it in
 Both these tests generated the expected result from the interpreter. We also walked through the program to count the dynamic instruction count and number of hops over basic blocks. A program with 50 lines of code created 109 dynamic instructions and 11 hops, which matched the expectation. These tests reside in `vtest/interp` directory.
 
 ## Evaluating Vector operation `vadd`
+We took a similar approach to evaluate our addition of `vadd` in Vril.
+- evaluating integration to Bril
+- evaluating functionality of `vadd`
+- evaluating performance of `vadd`
 
-## Experimental Design
+### Integration tests for Vectors
+We added tests to generate JSON and text representation of Bril from each other to gain confidence about its translatability. These tests are included in `vtest/parse` and `vtest/print`.
 
-## Presentation
+### Functional testing of `vadd`
+We wrote a program with `vadd` and ran this test in `vrili` with different values for `maxvl` which represents the size of vector lenght of the backend. The test generated expected results. This is included in `vtest/interp/array_vector.bril`.
+
+### Performance of `vadd`
+Initial motivation for Vril is to reduce hop counts by having vector operators in Bril. This aspect is tested by comparing dynamic instruction count, hop count and lines of code for a loop executed in a scalar manner and a vector operation. 
+
+| Program           | Lines of code | Dynamic instructions | Hop count |
+|-------------------|---------------|----------------------|-----------|
+| Conventional Bril | 43            | 41                   | 1         |
+| Scalar Array      | 50            | 109                  | 12        |
+| Vector Array      | 48            | 44                   | 3         |
+
+Given that the length of array is N=10 and vector length selected by Vrili at execution is k, and compensating for the start and the end block as shown in the figure, scalar operation iterates N times and vector operation iterates N/k times.
 
 Conclusion
 --------------------------------------
