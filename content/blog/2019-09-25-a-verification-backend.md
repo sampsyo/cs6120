@@ -76,50 +76,84 @@ If we give Rosette a falsifiable formula:
 Rosette generate a _model_ where the formula is false. In this case, Rosette
 will report that when `x = 0`, this formula is false.
 
-## Approach
+## Symbolic Interpretation
+A symbolic interpreter is simply an interpreter that executes with symbolic values.
+A standard interpreter takes a program, such as `x + 2 + 3`, and a variable assignment, `x = 1`
+and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs, 
+but takes symbols as arguments instead of value assignments. For the same program, `x + 2 + 3`, symbolic
+interpretation would produce the formula `x + 5`.
 
-A symbolic interpreter is simply an interpreter that operates over symbolic values.
-This means that the result of a symbolic interpreter is a SMT formula that captures the 
-computation of the program, rather than an actual value.
-Rosette makes writing one of these almost as easy as writing a standard interpreter
-because it handles all the hard work of lifting the computation to symbolic formulas and passing
-verification requests to an SMT solver.
+This proves useful for verification because it reduces the problem of program equivalence to formula equivalence.
+To prove that the program `x + 2 + 3` is equivalent to the program `3 + 2 + x` we only need to reduce these
+to formulas and then prove their equivalence. This may seem like we have only complicated the problem,
+but it turns out that we can use off-the-shelf SMT solvers to do the hard work of showing this equivalence.
 
-### Basic Block Verification
-However, SMT theories are undecidable in general and if you are not careful, verification
-will not scale to big programs. Symbolic interpretation involves executing every path 
-in a program and the number of paths in a program tends to increase exponentially with
-the size of the program [^2].
+We have reduced the problem of program equivalence to symbolic interpretation plus a query
+to an SMT solver. Fortunately, Rosette makes both of these tasks simple. We can write a normal interpreter
+in Racket and Rosette will lift the computation into SMT formulas and then make the query to the SMT solver.
 
-We address this problem by only interpreting single basic blocks at a time. By definition,
-there is only a single path through a basic block which means that Shrimp is able to produce
-simple formulas. We do this for all values of the variables that are live coming into the
-block.
+### Limiting scope to basic blocks
+While this initially sounds great, it turns out that SMT theories are undecidable in general 
+and even when you restrict it to decidable 
+fragments, verification can take a very long time. Because, symbolic interpretation involves 
+following every path in a program and the number of paths in a program tends to increase exponentially with
+the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale.
+
+We address this problem by proving basic block equivalence rather than program equivalence.
+By definition, there is only a single path through a basic block. This avoids the exponential
+growth of the number of paths to explore and means that we only ever produce relatively simple
+formulas that are usually fast to verify. However, this comes at the cost of exact program
+equivalence, we can only give a conservative approximation.
 
 To verify that two basic blocks are equivalent, we assume that the common set of live
-variables are the same, and then ask Rosette to verify that the symbolic formula
-for each variable assigned in the program are equivalent. To see this more concretely,
+variables equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
+assigned variable are equivalent To see this concretely,
 consider the following Bril fragments:
 ```
-main {
+block1 {
   ...
   sum1: int = add a b;
   sum2: int = add a b;
   prod: int = mul sum1 sum2;
 }
 ```
-We can do a simple CSE and dead code elimination to produce the following code:
+A simple CSE and dead code elimination produces the following code:
 ```
-main {
+block2 {
   ...
   sum1: int = add a b;
   prod: int = mul sum1 sum1;
 }
 ```
 
+We first find the common set of live variables.
+In this case, `a, b` are live at the beginning of both of these blocks. Next, we create a symbolic version
+of these variables for each block. We'll use `$` to designate symbolic variables.
+This gives us `a$1, b$1` for the first block and `a$2, b$2` for the second block. We assume that
+`a$1 = a$2` and `b$1 = b$2`. Then we can call our basic block symbolic interpreter with these
+variables to get the following formula:
+```
+block1
+sum1 = a$1 + b$1
+prod = (a$1 + b$1) * (a$1 + b$1)
 
-with the complexity 
-of the basic blocks plus rather than the length of a program.
+block2
+sum1 = a$2 + b$2
+sum2 = a$2 + b$2
+prod = (a$2 + b$2) * (a$2 + b$2)
+```
+Finally we check if the variables which are defined in both blocks are equivalent.
+In other words, assuming that the common live variables are equal, is the following true:
+```
+(a$1 + b$1) = (a$2 + b$2)
+&&
+(a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2)
+```
+The SMT solver will verify this for us, and if it can't satisify this formula, then
+it will provide a counter-example to prove it. In this case, it is not too hard to see
+that this formula is in fact satifiable, which shows that these two basic blocks are functionally
+equivalent.
+
 
 ### Downfalls
 The downside of this approach is that it only conservatively approximates the result
