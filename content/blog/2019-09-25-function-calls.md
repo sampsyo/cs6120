@@ -193,8 +193,8 @@ Here, we use a sampling primitive to choose either `int` or `bool`, then generat
 Along with similar composite strategies for other instruction forms (including calls) and functions, we build up many (somewhat silly) programs. Even this naive strategy found a potential bug:
 
 ```
-{'functions': [{'args': [], 'instrs': [{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': True}], 'name': 'main', 'type': 'int'}]}  !=
-{'functions': [{'args': [], 'instrs': [{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': 'true'}], 'name': 'main', 'type': 'int'}]}
+{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': True} !=
+{'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': 'true'}
 ```
 
 Originally, we generated the JSON strings `true` and `false` (instead of boolean literals `True` and `False`). The `bril2txt` implementation parsed this correctly, which we decided to leave as-implemented, but this assured us that Hypothesis could actually find programs that were not reversible as we expected.
