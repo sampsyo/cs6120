@@ -38,13 +38,13 @@ For our project, we decided to focus our scope on simple function calls (without
 
 Bril now supports function definitions:
 ```
-<ReturnType> <name>(<arg_1> : <type_1>, ..., <arg_n> : <type_n>) { <instructions> };
+<ReturnType> <function name>(<argument name> : <Type>, ...) { <instructions> };
 ```
 
 Where:
 - `<ReturnType>`: The return type of a function must be `void` or one of the currently recognized Bril types: `int` or `bool`.
-- `<name>`: The function's name.
-- `<arg_i> : <type_i>`: Each argument name must be paired with a Bril type.
+- `<function name>`: The function's name.
+- `<argument name> : <Type>`: Each argument name must be paired with a Bril type.
 - `<instructions>`: This is a sequence of Bril instructions.
 
 Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
