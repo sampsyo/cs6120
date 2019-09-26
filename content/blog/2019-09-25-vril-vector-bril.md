@@ -75,6 +75,7 @@ Which takes two arrays as arguments and performs element-wise vector addition, a
 
 ## Simulating vector ops in Vrili (Vril interpreter)
 We have extended Brili to interpret vector operations.
+Vrili executes for loops across the different elements of the array operands in order to produce the correct result. This emulates what a vector microarchitecture would do concurrently with a single fetch-decode effort.
 
 Evaluation
 ----------------------------
