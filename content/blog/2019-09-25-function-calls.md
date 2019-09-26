@@ -38,7 +38,8 @@ For our project, we decided to focus our scope on simple function calls (without
 ### Surface syntax
 
 Bril now supports function definitions:
-```
+
+```typescript
 <ReturnType> <function name>(<argument name> : <Type>, ...) { <instructions> };
 ```
 
@@ -49,7 +50,8 @@ Where:
 - `<instructions>`: This is a sequence of Bril instructions.
 
 Bril now supports two kinds of `call`s, those that produce a value (value operation), and those that do not (effect operation):
-```
+
+```typescript
 var <variable name> : <Type>  = call <function name>(<args>);
 call <function name>(<args>);
 ```
@@ -61,7 +63,7 @@ Such functions are assumed to have a return type of void.
 
 We extended the JSON representation of Bril functions to account for a function's arguments and return type. Every `Function` object still has a name and a list of instructions. 
 
-```
+```typescript
 { "name": "<string>", "instrs": [<Instruction>, ...], "args": [<Argument>, ...], "type": <Type>}
 ```
 
@@ -70,7 +72,7 @@ The return type, represented by the `\"type\"` field, is not required. A functio
 
 An `Argument` JSON object contains the argument's name and type:
 
-```
+```typescript
 {"name": "<string>", "type": <Type>}
 ```
 
@@ -143,7 +145,7 @@ Manual testing uncovered several significant bugs.
 
 When we were fairly confident we had finished our implementation (hah), we wrote a quick recursive factorial implemention in the TypeScript frontend:
 
-```
+```typescript
 function fac(x : number) : number {
     if (x <= 1) return 1;
     var result = x * fac(x - 1);
@@ -161,7 +163,7 @@ We also found a bug arising from the nondeterminism of Lark, the Python parser; 
 Finally, we found a bug in the original TypeScript compiler (`ts2bril.ts`) while manually testing the argument type error messages of our function implementation.
 The compiler hits an unexpected error when encountering a boolean variable declaration (with or without the type annotation):
 
-```
+```typescript
 var x : boolean = true;
 ```
 We hope to fix this soon!
@@ -178,7 +180,7 @@ In testing Bril, this meant specifying how to generate syntactically correct Bri
 Our first test checks the property that conversion from text-based Bril JSON to is invertible. 
 That is, we want the following high level assertion to hold:
 
-```
+```python
 bril2json(bril2txt(program)) == program
 ```
 
@@ -187,7 +189,8 @@ We can also generate the simpler, JSON syntactic form.
 In Hypothesis, this is accomplished via _strategies_ that tell the framework how to compose test data. 
 We start with the small forms, and build up to a whole program.
 For example, we can generate simple names with the following, which says that names are 1-3 lowercase Latin characters:
-```
+
+```python
 names = text(alphabet=characters(min_codepoint=97, max_codepoint=122), 
              min_size=1,
              max_size=3)
@@ -195,7 +198,7 @@ names = text(alphabet=characters(min_codepoint=97, max_codepoint=122),
 
 Instructions are built up compositionally, using a `draw` primitive that automatically explores the specified space of the constituent parts. For example, constant instructions are generated with:
 
-```
+```python
 types = sampled_from(["int", "bool"])
 
 @composite
@@ -215,7 +218,7 @@ Here, we use a sampling primitive to choose either `int` or `bool`, then generat
 
 Along with similar composite strategies for other instruction forms (including calls) and functions, we build up many (somewhat silly) programs. Even this naive strategy found a potential bug:
 
-```
+```typescript
 {'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': True} !=
 {'dest': 'aaa', 'op': 'const', 'type': 'bool', 'value': 'true'}
 ```
@@ -224,9 +227,9 @@ Originally, we generated the JSON strings `true` and `false` (instead of boolean
 
 We also tested that running Hypothesis-generated programs through the `brili` Bril interpreter only produced clean-exit expected error cases, instead of exposing failures in the underlying TypeScript implementation. Once we changed `Brili` to throw a specific exception, this meant testing the high-level property:
 
-```
+```python
 exit_code = brili(program) 
-exit_code == 0 || exit_code == <known exit code>
+exit_code == 0 or exit_code == <known_exit_code>
 ```
 
 Because we did not encode much semantic meaning into the generation strategies, almost of the all of the thousands of generated programs failed in the interpreter (some did execute, and print values, successfully!). Reading the generated programs also led us to realize that we were not specifically handling the case where a Bril program calls a function with multiple definitions. 
