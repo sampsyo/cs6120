@@ -78,6 +78,7 @@ Rosette generate a _model_ where the formula is false. In this case, Rosette
 will report that when `x = 0`, this formula is false.
 
 ## Symbolic Interpretation
+
 A symbolic interpreter is simply an interpreter that executes over symbolic values rather than real values.
 A standard interpreter takes a program, such as `x + 2 + 3`, and a variable assignment, `x = 1`
 and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs, 
@@ -232,20 +233,26 @@ prod: int = mul sub1 sub2;
 This made it easy to find and fix a rather embarrassing bug in the LVN implementation.
 
 ## Conclusion
-Serval stuff
+
+Symbolic verification provides a trade-off between verification effort and
+the completeness of a verification procedure. Beyond our implementation,
+there has also been recent work in verifying correctness of [file systems](),
+[memory models](), and [operating systems]() code using symbolic verification
+demonstrating the flexibility of this approach to program verification.
 
 
 [^1]: The problem of specifying the correctness condition of a compiler is itself
 a non-trivial, open research problem. Should the compiler preserve the stdout
 behavior, or should it give even stronger guarantees such as preserving the
-timing behavior [[CITE]]?
-
-[^2]: https://en.wikipedia.org/wiki/Symbolic_execution#Limitations
+timing behavior?
 
 [rosette]: https://emina.github.io/rosette/
 [racket]: https://racket-lang.org/
 [coq]: https://coq.inria.fr/
 [cse]: https://en.wikipedia.org/wiki/Common_subexpression_elimination
 [lvn]: https://en.wikipedia.org/wiki/Value_numbering#Local_value_numbering
-[sat]:
-[ilp]:
+[sat]: https://en.wikipedia.org/wiki/Boolean_satisfiability_problem
+[ilp]: https://en.wikipedia.org/wiki/Integer_programming
+[file systems]: https://homes.cs.washington.edu/~emina/doc/yggdrasil.osdi16.pdf
+[memory models]: https://homes.cs.washington.edu/~emina/doc/memsynth.pldi17.pdf
+[operating systems]: https://unsat.cs.washington.edu/papers/nelson-serval.pdf
