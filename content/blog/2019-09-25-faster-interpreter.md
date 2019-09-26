@@ -117,7 +117,29 @@ sure why.
 
 # How do we stack up?
 
-**TODO:** Eval results here
+We ran benchmarks using [hyperfine](https://github.com/sharkdp/hyperfine). The same bril program was run
+using both brili and brilirs. Overall, brilirs was faster, as expected. On one benchmark, brili was twice
+as fast, however. The results (measurements reported as mean plus/minus standard deviation):
+
+| Benchmark        | brili            | brilirs           | Speedup                            |
+|------------------|------------------|-------------------|------------------------------------|
+| matrix_mul, n=10 | 45.5 ms ± 3.4 ms | 21.0 ms ± 2.7 ms  | 2.16 ± 0.32                        |
+| matrix_mul, n=20 | 82.2 ms ± 2.5 ms | 148.9 ms ± 3.6 ms | brili was 1.81 ± 0.07 times faster |  
+| poly_mul, n=50   | 53.4 ms ± 3.9 ms | 44.2 ms ± 1.9 ms  | 1.21 ± 0.10                        |
+| poly_mul, n=100  | 86.2 ms ± 5.0 ms | 174.7 ms ± 4.0 ms | brili was 2.03 ± 0.13 times faster |
+
+For other benchmarks, brilirs was so fast that hyperfine warned that the average run was under or around 
+five milliseconds:
+
+| Benchmark       | brili            | brilirs         | Speedup       |
+|-----------------|------------------|-----------------|---------------|
+| factorial       | 38.2 ms ± 4.2 ms | 2.4 ms ± 1.3 ms | 16.09 ± 8.84  |
+| fibonacci        | 39.8 ms ± 3.3 ms | 4.1 ms ± 2.4 ms | 9.74 ± 5.68   |
+| id_chain, n=10  | 36.8 ms ± 3.0 ms | 1.9 ms ± 1.1 ms | 19.06 ± 11.06 |
+| id_chain, n=500 | 39.4 ms ± 4.1 ms | 5.7 ms ± 1.2 ms | 6.89 ± 1.64   |
+| poly_mul, n=10  | 37.8 ms ± 2.3 ms | 5.6 ms ± 1.3 ms | 6.80 ± 1.65   |
+
+Most of the benchmarks are from [bril-benchmark](https://github.com/xu3kev/bril-benchmark/).
 
 # What else could be done?
 
