@@ -35,7 +35,7 @@ v2: int = const 4120;
 AndrewMyers: Person = record {class: v2; dog: Milo}
 ```
 
-When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to lookup the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. 
+When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. 
 
 Consider the case for checking the variable initializing a nested record, i.e. `Milo`. With nominal typing, if we expected a type, Dog, and we looked up the variable to have type ‘Dog’, we know this must have been previously typechecked when it was defined and added to our environment. Therefore it still must typecheck, due to immutability. This sort of _shallow type-checking_ falls out of nominal subtyping. 
 
