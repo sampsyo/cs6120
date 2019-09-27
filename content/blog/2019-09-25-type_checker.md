@@ -23,7 +23,7 @@ The goal of the project was to add a static type checker to find type errors, mu
 ### Design
 
 
-To establish type checking rules we define a basic enviroment `$\sigma$`:
+To establish type checking rules we define a basic enviroment $\sigma$:
 
 $$\sigma: \\var: int | bool\\label: strings | \#line$$
 
@@ -32,11 +32,11 @@ We start by defining each variable as either an integer or a boolean - the two v
 $$ \frac{}{<n,\sigma>\Downarrow_a int} \rightarrow \frac{}{<v,\sigma>\Downarrow_a var_{int}}\\ \frac{}{<true/false,\sigma>\Downarrow_b bool} \rightarrow \frac{}{<v,\sigma>\Downarrow_a var_{bool}}\\ $$
 
 
-Then we define the arithmetic rules where `$int$` is a constant integer, while `$var_{int}$` indicates variable of integer type. We note the fact that *arithmetic operations* only take integer variables as input and produce an integer variable as output.
+Then we define the arithmetic rules where $int$ is a constant integer, while $var_{int}$ indicates variable of integer type. We note the fact that *arithmetic operations* only take integer variables as input and produce an integer variable as output.
 
 $$ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1+a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1-a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1 * a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1 / a_2,\sigma>\Downarrow_a var_{int}} $$
 
-Similarly, for *boolean operations*, we have the followings where  `$bool$` is a constant boolean value, while `$var_{bool}$` indicates variable of boolean type.
+Similarly, for *boolean operations*, we have the followings where  $bool$ is a constant boolean value, while $var_{bool}$ indicates variable of boolean type.
 
 $$ \frac{<b_1,\sigma>\Downarrow_b var_{bool}}{<not\ b_1,\sigma>\Downarrow_b var_{bool}}\\ \frac{<b_1,\sigma>\Downarrow_b var_{bool}, <b_2,\sigma>\Downarrow_b var_{bool}}{<and/or\ b_1 b_2,\sigma>\Downarrow_b var_{bool}} $$
 
@@ -44,11 +44,11 @@ In *comparison operation* we note that integer variables are compared to give a 
 
 $$ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<eq/lt/gt/le/ge\ a_1 a_2,\sigma>\Downarrow var_{bool}} $$
 
-For *control flow operations* we need to make sure that the `$label$` in the operation actually exists in the program and is unique. We can see this via the rule below where `$\sigma[label]$` is all the labels.
+For *control flow operations* we need to make sure that the $label$ in the operation actually exists in the program and is unique. We can see this via the rule below where $\sigma[label]$ is all the labels.
 
 $$ \frac{l_1 \in \sigma[label]}{jmp\ l_1,\sigma \Downarrow \sigma'} $$
 
-For the branch condition we check that the inputs are boolean and valid labels and jump to a different environment denoted by `$\sigma'$`
+For the branch condition we check that the inputs are boolean and valid labels and jump to a different environment denoted by $\sigma'$
 
 $$ \frac{<cond,\sigma>\Downarrow_b bool, l_1\in \sigma[label], l_2\in \sigma[label]}{<br cond l_1 l_2, \sigma>\Downarrow \sigma'}\\ $$
 
