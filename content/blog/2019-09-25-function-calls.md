@@ -166,7 +166,9 @@ The compiler hits an unexpected error when encountering a boolean variable decla
 ```typescript
 var x : boolean = true;
 ```
-We hope to fix this soon!
+We've opened an [issue][] in the main Bril repository and hope to fix this soon!
+
+[issue]: https://github.com/sampsyo/bril/issues/25
 
 ### Automated property-based testing with [Hypothesis][]
 
