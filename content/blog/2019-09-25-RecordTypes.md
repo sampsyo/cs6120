@@ -8,22 +8,19 @@ name = "Henry Liu"
 link = "https://www.linkedin.com/in/liuhenry4428/"  
 +++
 
-# Record Types!
-The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration, record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability.
+The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration (that are named), record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability. The following code will be provided in human-readable bril, though we do update the `bril2json` tool to allow translations into the canonical json form. 
 
 ### To declare a record type
     type <record type name>  = 
         {<field1 name> : <field1 type> ; <field2 name> : <field2 type> ; … };
 
 Where
-`type` is a new keyword
-`<record type name>` is an identifier 
-`<field# name>` is an identifier
-`<field# type>` is a primitive type or previously declared record type
+`type` is a new keyword,
+`<record type name>` is an identifier ,
+`<field# name>` is an identifier, and
+`<field# type>` is a type name, which may be either a primitive type or a previously declared record type.
 
-We decided on this format to mirror OCaml [record type declarations](https://v1.realworldocaml.org/v1/en/html/records.html). However, unlike OCaml, we disallow recursive record types (i.e. a record type that may contain itself) as we do not have a notion of Null in Bril. We need a notion of Null because a recursive record field must eventually be Null as it cannot be cyclic (as there are not pointers in Bril either), and so it is important to be able to check whether such a field is Null before accessing it.
-
-Also unlike OCaml, we decided to use nominal record types instead of structural ones because we thought it was clearer and adhered well to the existing precedents in Bril where everything is clearly typed.
+We decided on this format to mirror OCaml [record type declarations](https://v1.realworldocaml.org/v1/en/html/records.html). However, unlike OCaml, we disallow recursive record types (i.e. a record type that may contain itself) as that would require complicated recursive types as well as a notion of nullable references, which are outside of the scope of this project.
 
 ### Nominal vs Structural Typing
 One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records.
@@ -49,13 +46,13 @@ Along with the ability to quickly verify any type, nominal subtyping allows us t
 ### Instantiation
 To instantiate a new record with a previously declared record type, we use the following format:
 
-    <record instance name>  : <record type> = 
+    <variable name>  : <record type> = 
         record {<field1 name> : <field1 value>; <field2 name> : <field2 value>};
 Where:
-`<record instance name>` is an identifier
-`<record type>` is a previous declared record type
-`<record>` is new keyword
-`<field# name>` is the field name used in the record type definition
+`<variable name>` is an identifier,
+`<record type>` is a previous declared record type,
+`<record>` is new keyword,
+`<field# name>` is the field name used in the record type definition, and
 `<field# value>` is an identifier for an existing variable matching the field type
 
 We decided to introduce the `record` keyword to match the precedent of using `id` or `const` in front of an identifier or constant value. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
@@ -67,7 +64,7 @@ We use the dot operator to access a field of a record:
     <new record name> : <type> = <record> . <field>
 
 Where:
-`<new record name>` is a valid identifier that takes on the value of the indicated field
+`<new record name>` is a valid identifier that takes on the value of the indicated field, and
 `<record>` is the name of an instance of a record with a field name `<field>` that has type `<type>`
 Note that there is a space before and after the dot. This is strictly necessary as dot is a valid character for a variable name and we decided that it would be horrible for backwards compatibility if we changed variable naming rules.
 
@@ -85,10 +82,10 @@ We use the following syntax:
         <old record> with {<field1 name>: <field1 value>; <field2 name>: <field2 value> … };
 
 Where:
-`<new record>` is the name of the new record
-`<record type>` is the same type as `<old record>`
-`with` is a new keyword
-`<field# name>` must match with a field in `<type>`
+`<new record>` is the name of the new record,
+`<record type>` is the same type as `<old record>`,
+`with` is a new keyword,
+`<field# name>` must match with a field in `<type>`, and
 `<field# value>` must be a variable with a type that matches its field name.
 Within the braces, the user may specify 0 to n field name and value pairs, where n is the total number of fields in the record type.
 
