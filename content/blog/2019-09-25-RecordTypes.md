@@ -97,7 +97,7 @@ Immutable data structures are easier to reason about when developing compiler op
 ### Evaluation
 We set out to implement record types and we successfully implemented immutable nominal record types. Record types do not have any restrictions except that two fields cannot have the same name and that a record type cannot be recursive. Besides that, everything is allowed. Record types play nicely with existing types and new syntactical additions follow previous precedents set by Bril or otherwise follow precedents set by other languages that have record types. Record declaration, instantiation, and access are all (we think) intuitive and straightforward, and this means our record types provide good value as an addition to the Bril language. 
 
-We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName.`
+We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName`.
 
 We were successful in this aspect as creating a new record from an existing one but changing one field is nearly the same amount of code as mutating directly.
 ```
