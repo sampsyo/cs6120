@@ -115,7 +115,7 @@ Notice that the program does not initialize values in memory or print  the resul
 
 We run vvadd with various iteration amounts (128, 1024, 2048, 4098, and 8196). We average the runtime of five executions of the same program. Our baseline is the Typescript implementation of vector instructions. The following figure shows the speedup of various implemenations relevant to the baseline. Our performance metric is the execution time of the whole program.
 
-![Interpreter Performance](images/vector-graph.png)
+![Interpreter Performance](vector-graph.png)
 
 The C++ implemetations outperform the Typescript impletation at a smaller number of iterations. However, the performance equalizes for higher iterations. This is potentially due in part to the Javascript JIT warming up on later iterations and matching the C++ generated code. However, C++ is still expected to get much better performance up to this point as measured previously. The JIT hypothesis does not explain the full trend.
 
