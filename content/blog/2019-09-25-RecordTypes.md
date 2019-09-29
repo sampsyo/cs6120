@@ -150,7 +150,7 @@ v2: bool = const true;
 v3: int = Henry . age;
 AwakeHenry: Person = record {age: v3; isAsleep: v2};
 ```
-Here we use the with syntax.
+Here we use the *with* syntax.
 ```
 type Person = {age: int; isAsleep: bool};
 v0: int = const 21;
