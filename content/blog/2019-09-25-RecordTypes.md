@@ -95,13 +95,12 @@ This syntax was designed to have a similar format as record instantiation.
 Immutable data structures are easier to reason about when developing compiler optimizations. However, forcing developers to recreate the entire record every time they need to change a value poses usability challenges. We decided on sticking to immutability in part for optimizations' sake. The ability to make guarantees that a value will not change lends itself well to constant-folding, even after a function call that takes in your record as an argument. 
 
 ### Evaluation
-To evaluate our implementation, we need to check that our implementation works as specified as a language feature, and that this language features satisfies the goal of extending Bril's ability to compile higher-level languages with record data types.
 
-One of the goals of record types was to allow Bril to logically group and use related data points. This feature is useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
+The two main goals of record types was to allow Bril to logically group and use related data points and to have them be valuable as a language feature. These would be useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
 
-To measure success of this goal, we considered whether the functionality added from these new types increases Bril's ability to compile higher-level languages with record type data structures.
+To satisfy the first goal, we implemented immutable nominal record types. This implementation includes record declaration, instantiation, and access. Decisions about which operations to include in our design were influenced by the operations available on record data types in higher-level languages. 
 
-We implemented immutable nominal record types. This implementation includes record declaration, instantiation, and access. Decisions about which operations to include in our design were influenced by the operations available on record data types in higher-level languages. To test this functionality, we created a suite of tests that covered each of these operations, as well as combinations of these operations.
+To evaluate the functionality of our implementation, we created a suite of tests that covered each of these operations, as well as combinations of these operations.
 
 The primary operation not supported by our record type specification that is supported by some higher-level language record types is mutation. While our record types do not support mutation as discussed, this does not significantly hinder Bril's ability to compile higher-level languages that support this feature. 
 
@@ -129,7 +128,7 @@ Henry: Person = Henry with {age: v2};
 ```
 As shown in this example, mutable record types can be transformed into immutable records in Bril without significant effort. Therefore, lack of this operation does not compromise this goal.
 
-Finally, to evaluate record types as a language feature in Bril, we consider how this functionality translates to Bril.
+For the second goal, to evaluate record types as a language feature in Bril, we consider how this functionality translates to Bril.
 We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName`.
 
 We were successful in this aspect as creating a new record from an existing one with this syntax is more concise and easier to reason about than copying over every field. This is an advantage in an IR as we can logically think about a single _with statement_ and a sequence of functionally equivalent statements that copy variables in the same way.
