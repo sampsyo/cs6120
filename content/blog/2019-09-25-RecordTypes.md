@@ -131,7 +131,7 @@ Henry: Person = record {age: v0; isAsleep: v1};
 v2: int = const 21;
 Henry: Person = Henry with {age: v2};
 ```
-As shown in this example, mutable record types can be compiled into immutable records in Bril without significant effort. Therefore, lack of this operation does not compromise this goal.
+As shown in this example, mutable record types can be transformed into immutable records in Bril without significant effort. Therefore, lack of this operation does not compromise this goal.
 
 Finally, to evaluate record types as a language feature in Bril, we consider how this functionality translates to Bril.
 We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName`.
