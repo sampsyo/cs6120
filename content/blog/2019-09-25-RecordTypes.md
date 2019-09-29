@@ -95,8 +95,6 @@ This syntax was designed to have a similar format as record instantiation.
 Immutable data structures are easier to reason about when developing compiler optimizations. However, forcing developers to recreate the entire record every time they need to change a value poses usability challenges. We decided on sticking to immutability in part for optimizations' sake. The ability to make guarantees that a value will not change lends itself well to constant-folding, even after a function call that takes in your record as an argument. 
 
 ### Evaluation
-<!-- We set out to implement record types and we successfully implemented immutable nominal record types. Record types do not have any restrictions except that two fields cannot have the same name and that a record type cannot be recursive. Besides that, everything is allowed. Record types play nicely with existing types and new syntactical additions follow previous precedents set by Bril or otherwise follow precedents set by other languages that have record types. Record declaration, instantiation, and access are all (we think) intuitive and straightforward, and this means our record types provide good value as an addition to the Bril language.  -->
-
 To evaluate our implementation, we need to check that our implementation works as specified as a language feature, and that this language features satisfies the goal of extending Bril's ability to compile higher-level languages with record data types.
 
 One of the goals of record types was to allow Bril to logically group and use related data points. This feature is useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
