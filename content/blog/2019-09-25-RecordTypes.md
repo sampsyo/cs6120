@@ -112,17 +112,13 @@ struct Person {
    bool isAsleep;
 };
 
-void updateAge(Person p){
-    p->age = p->age + 1;
-}
-
 int main(void) {
     Person Henry = { 20, false };
     Henry.age += 1;
     return 0;
 }
 ```
-Compiling this program to Bril may look something like this, assuming we ignore function calls.
+Compiling this program to Bril may look something like this:
 ```
 type Person = {age: int; isAsleep: bool};
 v0: int = const 20;
