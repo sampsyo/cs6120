@@ -118,7 +118,7 @@ void updateAge(Person p){
 
 int main(void) {
     Person Henry = { 20, false };
-    updateAge(Henry);
+    Henry.age += 1;
     return 0;
 }
 ```
