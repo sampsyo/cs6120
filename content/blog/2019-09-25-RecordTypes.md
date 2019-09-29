@@ -66,7 +66,7 @@ We use the dot operator to access a field of a record:
 Where:
 `<new record name>` is a valid identifier that takes on the value of the indicated field, and
 `<record>` is the name of an instance of a record with a field name `<field>` that has type `<type>`
-Note that there is a space before and after the dot. This is strictly necessary as dot is a valid character for a variable name and we decided that it would be horrible for backwards compatibility if we changed variable naming rules.
+Note that there is a space before and after the dot. This is strictly necessary as dot is a valid character for a variable name and we decided that it would be horrible for backwards compatibility if we changed variable naming rules. In hindsight, a `get` instruction with a `record` and `field` argument would have been a better choice as that is more in line with existing syntax.
 
 
 We chose this format because using the dot operator to access fields is very common in modern programming languages.
