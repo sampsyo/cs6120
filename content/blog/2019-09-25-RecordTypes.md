@@ -16,7 +16,7 @@ The goal was to design and implement record types (aka structs). We decided on i
 
 Where
 `type` is a new keyword,
-`<record type name>` is an identifier ,
+`<record type name>` is an identifier,
 `<field# name>` is an identifier, and
 `<field# type>` is a type name, which may be either a primitive type or a previously declared record type.
 
