@@ -142,10 +142,10 @@ Consider the blocks of code below. These programs duplicate a record with one fi
 Here we show what this would look like without _with statements_. 
 
 ```
-type Person = {age: int; isHappy: bool};
+type Person = {age: int; isAsleep: bool};
 v0: int = const 21;
 v1: bool = const false;
-Henry: Person = record {age: v0; isHappy: v1};
+Henry: Person = record {age: v0; isAsleep: v1};
 v2: bool = const true;
 v3: int = Henry . age;
 AwakeHenry: Person = record {age: v3; isAsleep: v2};
