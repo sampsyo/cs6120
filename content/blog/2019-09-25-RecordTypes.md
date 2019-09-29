@@ -155,7 +155,7 @@ Henry: Person = record {age: v0; isAsleep: v1};
 v2: bool = const true;
 AwakeHenry: Person = Henry with {isAsleep: v2};
 ```
-It is worth noting that the size of code required to duplicate a record without _with statements_ scales linearly with the size of the record. In contrast, the size of code required to duplicate a record with _with statements_ does not change as the size of the record increases. Therefore, record types are successsful as a language feature as they integrate well with current syntax and do not impose unneccesary code bloat. 
+It is worth noting that the size of code required to duplicate a record without _with statements_ scales linearly with the size of the record. In contrast, the size of code required to duplicate a record with _with statements_ only increases with the size of the changes. Therefore, record types are successful as a language feature as they integrate well with current syntax and do not impose unnecessary code bloat. 
 
 Overall, record types implement the basic operations necessary to use them effectively and they increase Bril's ability to compile higher-level languages. 
 
