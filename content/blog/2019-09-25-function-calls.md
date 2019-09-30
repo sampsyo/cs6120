@@ -1,7 +1,7 @@
 +++
 title = "Function Calls and Property-Based Testing in Bril"
-extra.authors = { "Alexa VanHattum" = "https://www.cs.cornell.edu/~avh", "Gregory Yauney" = "https://www.cs.cornell.edu/~gyauney" }
-extra.bio = """
+[extra]
+bio = """
   [Alexa VanHattum][] is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
 
   [Gregory Yauney][] is a second-year student working on machine learning and digital humanities.
@@ -10,6 +10,12 @@ extra.bio = """
 [gregory yauney]: https://www.cs.cornell.edu/~gyauney
 [fish truck]: https://www.triphammermarketplace.com/events/
 """
+[[extra.authors]]
+name = "Alexa VanHattum"
+link = "https://www.cs.cornell.edu/~avh"
+[[extra.authors]]
+name = "Gregory Yauney"
+link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
 In this post, we will describe our experience extending [Bril][] (the Big Red Intermediate Language) to include function calls. 
