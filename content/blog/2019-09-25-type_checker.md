@@ -14,7 +14,7 @@ extra.latex = true
 
 ## Goal
 
-The goal of the project was to add a static type checker to find type errors, multiple defnitions of variables and undefined ones as well. We also ensure that the branch labels are valid and unique.
+The goal of the project was to add a static type checker to find type errors, multiple definitions of variables and undefined ones as well. We also ensure that the branch labels are valid and unique.
 
 
 
