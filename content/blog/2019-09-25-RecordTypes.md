@@ -8,9 +8,9 @@ name = "Henry Liu"
 link = "https://www.linkedin.com/in/liuhenry4428/"  
 +++
 
-The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration (that are named), record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability. The following code will be provided in human-readable bril, though we do update the `bril2json` tool to allow translations into the canonical json form. 
+The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration (that are named), record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability. To achieve this, we made additions to the bril interpreter `brili.ts` as well as adding new types to the language definition in `bril.ts`. The following code will be provided in human-readable bril and semantic additions will be followed by their JSON representations as well. We upgrade the `bril2json` tool to allow translations from human-readable Bril into JSON. 
 
-### To declare a record type
+### Declaring a Record Type
     type <record type name>  = 
         {<field1 name> : <field1 type> ; <field2 name> : <field2 type> ; … };
 
@@ -19,6 +19,19 @@ Where
 `<record type name>` is an identifier,
 `<field# name>` is an identifier, and
 `<field# type>` is a type name, which may be either a primitive type or a previously declared record type.
+
+In JSON:
+```json
+{
+    "recordname": "<record type name>",
+    "op": "recorddef",
+    "fields": {
+        "<field1 name>": "<field1 type>",
+        "<field2 name>": "<field2 type>",
+        ...
+    }
+}
+```
 
 We decided on this format to mirror OCaml [record type declarations](https://v1.realworldocaml.org/v1/en/html/records.html). However, unlike OCaml, we disallow recursive record types (i.e. a record type that may contain itself) as that would require complicated recursive types as well as a notion of nullable references, which are outside of the scope of this project.
 
@@ -57,19 +70,46 @@ Where:
 `<field# name>` is the field name used in the record type definition, and
 `<field# value>` is an identifier for an existing variable matching the field type
 
+In JSON:
+```json
+{
+    "dest": "<variable name>",
+    "fields": {
+        "<field1 name>": "<field1 value>",
+        "<field2 name>": "<field2 valuie>",
+        ...
+    },
+    "op": "recordinst",
+    "type": "<record type>"
+}
+```
+
 We decided to introduce the `record` keyword to match the precedent of using `id` or `const` in front of an identifier or constant value. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
 
 
 ### Access
 We use the dot operator to access a field of a record:
 
-    <new record name> : <type> = <record> . <field>
+    <variable name> : <type> = <record> . <field>
 
 Where:
-`<new record name>` is a valid identifier that takes on the value of the indicated field, and
+`<variable name>` is a valid identifier that takes on the value of the indicated field, and
 `<record>` is the name of an instance of a record with a field name `<field>` that has type `<type>`
 Note that there is a space before and after the dot. This is strictly necessary as dot is a valid character for a variable name and we decided that it would be horrible for backwards compatibility if we changed variable naming rules. In hindsight, a `get` instruction with a `record` and `field` argument would have been a better choice as that is more in line with existing syntax.
 
+In JSON:
+```json
+{
+    "src": "<record>",
+    "dest": "<variable name>",
+    "args": [
+        "<record>",
+        "<field>"
+    ],
+    "op": "access",
+    "type": "<type>"
+}
+```
 
 We chose this format because using the dot operator to access fields is very common in modern programming languages.
 
@@ -89,7 +129,23 @@ Where:
 `with` is a new keyword,
 `<field# name>` must match with a field in `<type>`, and
 `<field# value>` must be a variable with a type that matches its field name.
+
 Within the braces, the user may specify 0 to n field name and value pairs, where n is the total number of fields in the record type.
+
+In JSON:
+```json
+{
+    "dest": "<new record>",
+    "src": "<old record>",
+    "type": "<record type>",
+    "op": "recordwith",
+    "fields": {
+        "<field1 name>": "<field1 value>",
+        "<field2 name>": "<field2 value>",
+        ...
+    }
+}
+```
 
 This syntax was designed to have a similar format as record instantiation. 
 
