@@ -64,7 +64,8 @@ In JSON:
 We decided to introduce the `record` keyword to match the precedent of using `id` or `const` in front of an identifier or constant value. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
 
 ### Nominal vs Structural Typing
-One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records.
+One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. We use the following example to illustrate nominal typing:
+
 
 ```
 type Dog = {age: int; isAsleep: bool};
@@ -76,16 +77,12 @@ v2: int = const 4120;
 AndrewMyers: Person = record {class: v2; dog: Milo};
 ```
 
-When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. 
-
 Consider the case for checking the variable initializing a nested record, i.e., `Milo`. With nominal typing, if we expected a type, Dog, and we looked up the variable to have type ‘Dog’, we know this must have been previously typechecked when it was defined and added to our environment. Therefore it still must typecheck, due to immutability. This sort of _shallow type-checking_ falls out of nominal subtyping. 
 
 Along with the ability to quickly verify any type, nominal subtyping allows us to reject a nested record's type if it does not match the signature’s record type name without recursive checks. In a structural typing world, the name of the type bound to the initializing variable is not enough to reject a type. If the declared type did not match, we would need to recursively check all of the fields of the value bound to our initializing variable, and compare these with the type signature recursively. This is much slower.
 
-
 ### Immutability
 We decided to make record types immutable as it is considered best practice to make value types immutable. One key reason is that mutation of a value type only changes that specific copy. This is morally equivalent to creating a new record as the other copies remain unchanged. Therefore, when thinking about values, it is logical to think of this new record as a different value, and thus, not a mutation at all.
-
 
 ### Access
 We use the dot operator to access a field of a record:
