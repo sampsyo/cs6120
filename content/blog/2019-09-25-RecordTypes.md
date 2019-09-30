@@ -26,13 +26,13 @@ We decided on this format to mirror OCaml [record type declarations](https://v1.
 One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records.
 
 ```
-type Dog = {age: int; isAsleep: bool}
-type Person = {class: int; dog: Dog}
+type Dog = {age: int; isAsleep: bool};
+type Person = {class: int; dog: Dog};
 v0: int = const 3;
 v1: bool = const false;
-Milo: Dog = record {age: v0; isAsleep: v1}
+Milo: Dog = record {age: v0; isAsleep: v1};
 v2: int = const 4120;
-AndrewMyers: Person = record {class: v2; dog: Milo}
+AndrewMyers: Person = record {class: v2; dog: Milo};
 ```
 
 When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. 
