@@ -1,5 +1,5 @@
 +++
-title = "Static type checking for Bril"
+title = "Static Type Checking for Bril"
 extra.author = "Yi Jing, Zhijing Li, Neil Adit"
 extra.bio = """
 [Zhijing Li](https://tissue3.github.io/) is a 2nd year Phd student at ECE department, Cornell. She is interested in compiler optimization and domain-specific languages. \n
