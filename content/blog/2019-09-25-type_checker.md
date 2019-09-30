@@ -23,7 +23,7 @@ The goal of the project was to add a static type checker to find type errors, mu
 ### Design
 
 
-To establish type checking rules we define a basic enviroment $\sigma$:
+To establish type checking rules we define a basic environment $\sigma$:
 
 $$\sigma: \\var: int | bool\\label: strings | \#line$$
 
