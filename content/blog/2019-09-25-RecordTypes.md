@@ -95,29 +95,68 @@ This syntax was designed to have a similar format as record instantiation.
 Immutable data structures are easier to reason about when developing compiler optimizations. However, forcing developers to recreate the entire record every time they need to change a value poses usability challenges. We decided on sticking to immutability in part for optimizations' sake. The ability to make guarantees that a value will not change lends itself well to constant-folding, even after a function call that takes in your record as an argument. 
 
 ### Evaluation
-We set out to implement record types and we successfully implemented immutable nominal record types. Record types do not have any restrictions except that two fields cannot have the same name and that a record type cannot be recursive. Besides that, everything is allowed. Record types play nicely with existing types and new syntactical additions follow previous precedents set by Bril or otherwise follow precedents set by other languages that have record types. Record declaration, instantiation, and access are all (we think) intuitive and straightforward, and this means our record types provide good value as an addition to the Bril language. 
 
+The two main goals of record types are to allow Bril to logically group and use related data points as well as to serve as a valuable language feature. These would be useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
+
+To satisfy the first goal, we implemented immutable nominal record types. This implementation includes record declaration, instantiation, and access. Decisions about which operations to include in our design were influenced by the operations available on record data types in higher-level languages. 
+
+To evaluate the functionality of our implementation, we created a suite of tests that covered each of these operations, as well as combinations of these operations.
+
+The primary operation not supported by our record type specification that is supported by some higher-level language record types is mutation. While our record types do not support mutation as discussed, this does not significantly hinder Bril's ability to compile higher-level languages that support this feature. 
+
+Consider the following C code that declares a struct and provides a method to update.
+```
+struct Person {
+   int age;
+   bool isAsleep;
+};
+
+int main(void) {
+    Person Henry = { 20, false };
+    Henry.age += 1;
+    return 0;
+}
+```
+Compiling this program to Bril may look something like this:
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 20;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: int = const 21;
+Henry: Person = Henry with {age: v2};
+```
+As shown in this example, mutable record types can be transformed into immutable records in Bril without significant effort. Therefore, lack of this operation does not compromise this goal.
+
+For the second goal, to evaluate record types as a language feature in Bril, we consider how this functionality translates to Bril.
 We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName`.
 
-We were successful in this aspect as creating a new record from an existing one but changing one field is nearly the same amount of code as mutating directly.
-```
-type Person = {age: int; isAsleep: bool}
-v0: int = const 21;
-v1: bool = const false;
-Henry: Person = record {age: v0; isAsleep: v1}
-v2: bool = const true;
-AwakeHenry: Person = Henry with {isAsleep: v2}
-```
-Possible Mutable Record Syntax:
-```
-type Person = {age: int; isHappy: bool}
-v0: int = const 21;
-v1: bool = const false;
-Henry: Person = record {age: v0; isHappy: v1}
-v2: bool = const true;
-Henry.isHappy = v2
-```
+We were successful in this aspect as creating a new record from an existing one with this syntax is more concise and easier to reason about than copying over every field. This is an advantage in an IR as we can logically think about a single _with statement_ and a sequence of functionally equivalent statements that copy variables in the same way.
 
+Consider the blocks of code below. These programs duplicate a record with one field changed.
+Here we show what this would look like without _with statements_. 
+
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: bool = const true;
+v3: int = Henry . age;
+AwakeHenry: Person = record {age: v3; isAsleep: v2};
+```
+Here we use the *with* syntax.
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: bool = const true;
+AwakeHenry: Person = Henry with {isAsleep: v2};
+```
+It is worth noting that the size of code required to duplicate a record without _with statements_ scales linearly with the size of the record. In contrast, the size of code required to duplicate a record with _with statements_ only increases with the size of the changes. Therefore, record types are successful as a language feature as they integrate well with current syntax and do not impose unnecessary code bloat. 
+
+Overall, record types implement the basic operations necessary to use them effectively and they increase Bril's ability to compile higher-level languages. 
 
 ### Notable Challenges
 The design of records type went through multiple iterations before we were able to arrive at a specification that we felt was well-defined.
