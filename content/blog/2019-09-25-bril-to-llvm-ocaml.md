@@ -8,7 +8,7 @@ extra.bio = """
 
 ## The Goal
 
-For this project, I wanted to create a transformation from Bril to LLVM IR and implement this transformation in OCaml. The motivation for the first goal of the project (LLVM code generation) was to allow Bril to be compiled and run natively, instead of just interpreted. LLVM can be compiled to machine code using a tool like `clang`. Furthermore, LLVM IR supports many optimizations which allow even a naive transformation of Bril to LLVM to be quite performant. The motivation for doing this transformation in OCaml is that functional languages in general encourage a way of writing code that lends itself well to writing AST transformations. OCaml in particular implements language features such as variants, GADTs, and partial function application. These features might make it nicer to write IR transformations in OCaml than it would to do the transformations in TypeScript.
+For this project, I wanted to create a transformation from Bril to LLVM IR and implement this transformation in OCaml. The motivation for the first goal of the project (LLVM code generation) was to allow Bril to be compiled and run natively, instead of just interpreted. Furthermore, LLVM IR supports many optimizations which allow even a naive transformation of Bril to LLVM to be quite performant. The motivation for doing this transformation in OCaml is that functional languages in general encourage a way of writing code that lends itself well to writing AST transformations. OCaml in particular implements language features such as variants, GADTs, and partial function application. These features might make it nicer to write IR transformations in OCaml than it would to do the transformations in TypeScript.
 
 ## The Implementation
 
