@@ -91,7 +91,7 @@ The following table represents instructions that should throw up an error when c
 | Add         | Adding an integer and a boolean type | ` int a; bool b; int c = a+b; ` |
 | Add | Only allowed to add two integer variables | `int a; int c = a+ 5;` |
 | Const | Cannot assign an integer const to a bool variable | `bool v1 = 2;` |
-| Cond Branch | Only takes **bool** variable as inpput (and 2 labels) | `int a = 1; br a here there;` |
+| Cond Branch | Only takes **bool** variable as input (and 2 labels) | `int a = 1; br a here there;` |
 | Label | Label argument in control operation not present in code | `jmp itsatrap;` |
 | Label | A label should be unique and not be repeated | `jmp label; label: <> .... label: <>` |
 | Not | Cannot assign the output of not to an integer | `bool b = true; int a = not b;` |
