@@ -105,6 +105,12 @@ notes = [
 
 [[classes]]
 title = "Alias Analysis"
+notes = [
+  "Stating the alias analysis problem. May alias & must alias.",
+  "Instantiating data flow for intraprocedural alias analysis.",
+  "Heap models.",
+  "Scalable & precise alias analysis remains an open problem. For much more, see [*Pointer Analysis*](https://yanniss.github.io/points-to-tutorial15.pdf), a tutorial by Yannis Smaragdakis and George Balatsouras.",
+]
 
 [[classes]]
 title = "Alias-Based Optimization"
