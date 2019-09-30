@@ -1,5 +1,5 @@
 +++
-title = "Function calls in Bril"
+title = "Function Calls in Bril"
 extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "https://cs.cornell.edu/~gyauney" }
 extra.bio = """
   [Alexa VanHattum][] is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
@@ -14,7 +14,7 @@ extra.bio = """
 
 ## Function calls in Bril
 In this post, we will describe our experience extending [Bril][] (the Big Red Intermediate Language) to include function calls. 
-In addition, we share how we tested our implementation with both targeted manual tests and automated property-based testing (a la [QuickCheck][]) with [Hypothesis][].
+In addition, we share how we tested our implementation with both targeted manual tests and automated property-based testing (à la [QuickCheck][]) with [Hypothesis][].
 
 [bril]: https://github.com/sampsyo/bril/blob/master/README.md
 [quickcheck]: http://hackage.haskell.org/package/QuickCheck
@@ -103,11 +103,11 @@ There were surprisingly many decisions to be made in the course of designing fun
 - We implicitly represent the stack with recursive interpreter calls for simplicity based on the functionality we target.
 An explicit stack would allow more interesting control flow in the future.
 - We chose to allow backwards compatibility with the original Bril `main` syntax that did not have a return type or arguments.
-Similarly, the typescript `main` function is not explicitly demarcated&mdash; it is understood to consist of the instructions before any function definitions.
+Similarly, the TypeScript `main` function is not explicitly demarcated&mdash;it is understood to consist of the instructions before any function definitions.
 - Calls can be effectful or non-effectful.
-In the JSON representation of Bril, we chose to represent `call` as its own 'kind' of instruction, allowing us to include the function's name as an explicit `name` field in the JSON object rather than an argument to the instruction.
+In the JSON representation of Bril, we chose to represent `call` as its own "kind" of instruction, allowing us to include the function's name as an explicit `name` field in the JSON object rather than an argument to the instruction.
 - If multiple functions with the same name are defined or a called function is missing, the interpreter throws an error.
-- `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`. `main` also takes named and typed arguments, rather than C-style `argc/argv`.
+- `main` functions in the text and JSON Bril representations can take arguments that are fed to `brili`. `main` also takes named and typed arguments, rather than C-style `argc`/`argv`.
 However, `main` doesn't return an exit code for simplicity.
 - Originally, the Bril interpreter simply threw string message exceptions on errors. We made the design decision that the interpreter should not leak interpretation details through uncaught excerptions for anticipated failures. We updated the interpreter to return a specific exception, which is caught and send to standard error along with a custom exit code.
 
@@ -175,7 +175,7 @@ We've opened an [issue][] in the main Bril repository and hope to fix this soon!
 We were excited to try our hand at stress-testing our Bril implementation with automated testing. 
 The key idea behind property-based testing is to specify some details of expected program behavior, then use a framework to test those properties on many automated examples (in particular, more than a human would reasonably want to write). This framework allows us to test many aspects of Bril, not solely the new function calls.
 
-For Bril, we decided to use a python-based property testing framework, Hypothesis. 
+For Bril, we decided to use a Python-based property testing framework, [Hypothesis][]. 
 The primary challenge in using such a tool is to specify _how_ example data can be generated such that the tests are useful. 
 In testing Bril, this meant specifying how to generate syntactically correct Bril programs.
 
