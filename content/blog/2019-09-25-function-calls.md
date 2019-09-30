@@ -1,18 +1,17 @@
 +++
-title = "Function Calls in Bril"
-extra.authors = { "Alexa VanHattum" = "https://cs.cornell.edu/~avh", "Gregory Yauney" = "https://cs.cornell.edu/~gyauney" }
+title = "Function Calls and Property-Based Testing in Bril"
+extra.authors = { "Alexa VanHattum" = "https://www.cs.cornell.edu/~avh", "Gregory Yauney" = "https://www.cs.cornell.edu/~gyauney" }
 extra.bio = """
   [Alexa VanHattum][] is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
 
   [Gregory Yauney][] is a second-year student working on machine learning and digital humanities.
   
-[alexa vanhattum]: https://cs.cornell.edu/~avh
-[gregory yauney]: https://cs.cornell.edu/~gyauney
+[alexa vanhattum]: https://www.cs.cornell.edu/~avh
+[gregory yauney]: https://www.cs.cornell.edu/~gyauney
 [fish truck]: https://www.triphammermarketplace.com/events/
 """
 +++
 
-## Function calls in Bril
 In this post, we will describe our experience extending [Bril][] (the Big Red Intermediate Language) to include function calls. 
 In addition, we share how we tested our implementation with both targeted manual tests and automated property-based testing (à la [QuickCheck][]) with [Hypothesis][].
 
@@ -131,7 +130,7 @@ As we developed our implementation, we built up a  bevy of small Bril programs t
 However, the check-expect-style testing framework Bril employs, [Turnt][], did not support tests that were expected to fail.
 We [extended][] Turnt to check both standard error and program exit codes in order to test invalid Bril programs. 
 
-Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-based surface syntax to support comments of the form `\\ <comment>`. 
+Turnt relies on C-style comments to configure settings on a per-test basis, so we also extended the Bril text-based surface syntax to support comments of the form `// <comment>`. 
 
 Finally, in order for automated testing to be useful, we needed to distinguish between expected errors on invalid Bril programs and implementation flaws. 
 We thus added a named exception to Bril's interpreter with a custom exit code, removing all string-based `throw` calls.
@@ -166,7 +165,7 @@ The compiler hits an unexpected error when encountering a boolean variable decla
 ```typescript
 var x : boolean = true;
 ```
-We've opened an [issue][] in the main Bril repository and hope to fix this soon!
+We opened an [issue][] in the main Bril repository which was subsequently fixed. 
 
 [issue]: https://github.com/sampsyo/bril/issues/25
 
