@@ -96,7 +96,7 @@ Immutable data structures are easier to reason about when developing compiler op
 
 ### Evaluation
 
-The two main goals of record types was to allow Bril to logically group and use related data points and to have them be valuable as a language feature. These would be useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
+The two main goals of record types are to allow Bril to logically group and use related data points as well as to serve as a valuable language feature. These would be useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
 
 To satisfy the first goal, we implemented immutable nominal record types. This implementation includes record declaration, instantiation, and access. Decisions about which operations to include in our design were influenced by the operations available on record data types in higher-level languages. 
 
