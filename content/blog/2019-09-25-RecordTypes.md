@@ -61,7 +61,7 @@ In JSON:
 }
 ```
 
-We decided to introduce the `record` keyword to match the precedent of using `id` or `const` in front of an identifier or constant value. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
+We decided to introduce the `record` opcode. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
 
 ### Nominal vs Structural Typing
 One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. We use the following example to illustrate nominal typing:
