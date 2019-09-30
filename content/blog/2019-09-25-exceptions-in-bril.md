@@ -31,23 +31,23 @@ The Bril text format now allows for declarations of the form
 funcName arg1:type1 ... argN:typeN { instrs }
 ```
 
-Our implemention explicitly represents the program stack as an object. 
+Our interpreter implemention explicitly represents the program stack
+as an object. 
 
-The interpreter has four configuration variables that consist of its current
-activation record:
+The interpreter's activation record has four components:
 
 * Bril function object --- the current function whose list of instructions
   is being executed
 
 * Variable environment --- map from local variables to values
 
-* Handler environment --- map from exception handlers to (see below)
+* Handler environment --- map from exception names to handlers (see below)
 
 * PC index --- the index into the instruction list of the current instruction
   being executed
 
 The interpreter proceeds by executing instructions, which either change
-environment mappings and/or sets the PC index of the next instruction
+environment mappings and/or set the PC to the index of the next instruction
 to execute.
 When `call` is executed, the interpreter does the following:
 
@@ -58,7 +58,7 @@ When `call` is executed, the interpreter does the following:
   An empty handler environment is constructed.
 
 * The PC index is changed to 0, and the variable and handler environments 
-  are updated.
+  are updated to be empty.
   The interpreter resumes execution in this new state.
 
 When a function returns, it pops the top of the program stack as the new
@@ -109,8 +109,8 @@ in this way.
 
 Our implementation of exception handlers does not support passing
 exception objects.
-To support this in the future, we make handlers be standalone functions instead
-of just labels in an existing function.
+To support this in the future, we will make handlers be standalone functions
+instead of just labels in an existing function.
 This would make reasoning about the control flow of the program even less local
 since it would make handlers not syntactically part of the contexts in which
 they might be thrown, so we obviated this design choice for the current
