@@ -73,7 +73,7 @@ Once we had the rules setup for all types of instructions, we check each instruc
 
 The type checker implementation, though straightforward, had a few challenges. 
 
-1. Type check rules had to be designed specifically for each instruction. While implementing these rules, we had to carefully partition all the cases and link them to appropriate arithmetic/boolean/control checks.
+1. The typing rules had to be designed specifically for each instruction. While implementing these rules, we had to carefully partition all the cases and link them to appropriate arithmetic/boolean/control checks.
 2. Keeping track of the line number and error message to return when encountered with an error.
 3. Mantaning modularity to help future developments like checking expressions recursively.
 
