@@ -95,7 +95,7 @@ The following table represents instructions that should throw up an error when c
 | Label | Label argument in control operation not present in code | `jmp itsatrap;` |
 | Label | A label should be unique and not be repeated | `jmp label; label: <> .... label: <>` |
 | Not | Cannot assign the output of not to an integer | `bool b = true; int a = not b;` |
-| Const       | Variables cannot be redefined for a different type | `int v = 5; bool v = true;` |
+| Const       | Variables cannot be redefined with a different type | `int v = 5; bool v = true;` |
 
 These were some of the tests we used to check exhaustively for the rules developed for type checking.
 
