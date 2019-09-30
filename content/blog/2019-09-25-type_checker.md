@@ -81,7 +81,7 @@ The type checker implementation, though straightforward, had a few challenges.
 
 ## Evaluation and results
 
-We wrote a comprehensive set of benchmaking codes to test our implementation for various types of rules defined in the design section above. 
+We wrote a comprehensive set of benchmaking programs to test our implementation for various types of rules defined in the design section above. 
 
 The following table represents instructions that should throw up an error when compiled using the type checker system developed for Bril.
 
