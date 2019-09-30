@@ -42,6 +42,8 @@ Consider the case for checking the variable initializing a nested record, i.e., 
 Along with the ability to quickly verify any type, nominal subtyping allows us to reject a nested record's type if it does not match the signature’s record type name without recursive checks. In a structural typing world, the name of the type bound to the initializing variable is not enough to reject a type. If the declared type did not match, we would need to recursively check all of the fields of the value bound to our initializing variable, and compare these with the type signature recursively. This is much slower and does not take advantage of the variable-save model to avoid recomputation.
 
 
+### Immutability
+We decided to make record types immutable as it is considered best practice to make value types immutable. One key reason is that mutation of a value type only changes that specific copy. This is morally equivalent to creating a new record as the other copies remain unchanged. Therefore, when thinking about values, it is logical to think of this new record as a different value, and thus, not a mutation at all.
 
 ### Instantiation
 To instantiate a new record with a previously declared record type, we use the following format:
@@ -90,9 +92,6 @@ Where:
 Within the braces, the user may specify 0 to n field name and value pairs, where n is the total number of fields in the record type.
 
 This syntax was designed to have a similar format as record instantiation. 
-
-### Immutability
-Immutable data structures are easier to reason about when developing compiler optimizations. However, forcing developers to recreate the entire record every time they need to change a value poses usability challenges. We decided on sticking to immutability in part for optimizations' sake. The ability to make guarantees that a value will not change lends itself well to constant-folding, even after a function call that takes in your record as an argument. 
 
 ### Evaluation
 
