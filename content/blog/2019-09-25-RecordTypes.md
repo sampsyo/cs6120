@@ -211,9 +211,10 @@ It is worth noting that the size of code required to duplicate a record without 
 Overall, record types implement the basic operations necessary to use them effectively and they increase Bril's ability to compile higher-level languages. 
 
 ### Notable Challenges
-The design of records type went through multiple iterations before we were able to arrive at a specification that we felt was well-defined.
-When making these decisions, one of the primary tradeoffs we identified was usability and ability to optimize.
+One of the challenging aspects of this project was to think about how our design decisions interact to help us reach the aformentioned goals.
 
-We wanted records to be easy to use to store data, but with immutability to be able to better reason about what values variables could be at any point in our program. In addition, since these are value types, changing one field will only change the field of the copy of the record you are modifying. Therefore, the same functionality can be achieved, but in a safer way, with _with syntax_. These sort of design decisions and consideration of use cases was a challenge as we looked at other prior art to get ideas, but ultimately wanted these types to be useful in Bril. 
+One our goals was to make Bril able to compile a larger set of programs in higher-level languages that use record data types. Questions like "Does immutability hinder Bril's ability to compile mutable record types?" or "What are the strengths of nominal vs. structural typing when designing an IR vs. a higher-level language?" were challenging as they involve considering how different aspects of our design interact.
 
-A different challenge of this was probably debugging the TypeScript interpreter as it was very difficult to trace errors as the source TypeScript gets compiled into a separate JavaScript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
+Our second goal was to add a valuable language feature. One aspect of this added value is extensibility. When designing the declaration instruction, we wanted an instruction that could generalize to type aliases, in the event that we decide to add these in the future. One of the challenges here is that when making our design decisions, not only did we consider the current state of the language, but we also tried to predict what features may be useful in the future.
+
+A different challenge was debugging the TypeScript interpreter as it was very difficult to trace errors as the source TypeScript gets compiled into a separate JavaScript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
