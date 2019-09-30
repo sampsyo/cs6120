@@ -10,6 +10,9 @@ link = "https://www.linkedin.com/in/liuhenry4428/"
 
 The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration (that are named), record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability. To achieve this, we made additions to the bril interpreter `brili.ts` as well as adding new types to the language definition in `bril.ts`. The following code will be provided in human-readable bril and semantic additions will be followed by their JSON representations as well. We upgrade the `bril2json` tool to allow translations from human-readable Bril into JSON. 
 
+### Immutability
+We decided to make record types immutable as it is considered best practice to make value types immutable. One key reason is that mutation of a value type only changes that specific copy. This is morally equivalent to creating a new record as the other copies remain unchanged. Therefore, when thinking about values, it is logical to think of this new record as a different value, and thus, not a mutation at all.
+
 ### Declaring a Record Type
     type <record type name>  = 
         {<field1 name> : <field1 type> ; <field2 name> : <field2 type> ; … };
@@ -80,9 +83,6 @@ AndrewMyers: Person = record {class: v2; dog: Milo};
 Consider the case for checking the variable initializing a nested record, i.e., `Milo`. With nominal typing, if we expected a type, Dog, and we looked up the variable to have type ‘Dog’, we know this must have been previously typechecked when it was defined and added to our environment. Therefore it still must typecheck, due to immutability. This sort of _shallow type-checking_ falls out of nominal subtyping. 
 
 Along with the ability to quickly verify any type, nominal subtyping allows us to reject a nested record's type if it does not match the signature’s record type name without recursive checks. In a structural typing world, the name of the type bound to the initializing variable is not enough to reject a type. If the declared type did not match, we would need to recursively check all of the fields of the value bound to our initializing variable, and compare these with the type signature recursively. This is much slower.
-
-### Immutability
-We decided to make record types immutable as it is considered best practice to make value types immutable. One key reason is that mutation of a value type only changes that specific copy. This is morally equivalent to creating a new record as the other copies remain unchanged. Therefore, when thinking about values, it is logical to think of this new record as a different value, and thus, not a mutation at all.
 
 ### Access
 We use the dot operator to access a field of a record:
