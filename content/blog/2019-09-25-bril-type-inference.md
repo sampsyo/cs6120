@@ -29,10 +29,7 @@ main {
   print v2;
 }
 ```
-This is useful in cases where the frontend isn't typed. For example, someone
-building a Python frontend would need to specify the types of variables, which
-may be annoying. This takes some burden off the frontend implementation.
-Additionally, it makes it quicker to write Bril programs because we don't have
+This makes it quicker to write Bril programs because we don't have
 to worry about correctly typing the variables.
 
 We also will implement type checking through this type inference.
