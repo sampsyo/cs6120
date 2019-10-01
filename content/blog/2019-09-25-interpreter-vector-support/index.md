@@ -1,4 +1,4 @@
- +++
++++
 title = "Vector Instruction Support in the Bril Interpreter"
 extra.bio = """
   Philip Bedoukian is a 3rd year PhD student in ECE. His research focuses on reconfigurable hardware.
