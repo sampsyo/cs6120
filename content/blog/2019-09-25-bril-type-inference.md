@@ -38,7 +38,7 @@ to worry about correctly typing the variables.
 We also will implement type checking through this type inference.
 
 ## Design
-For our workflow, we'd like to take a semi-typed bril program and convert it
+For our workflow, we'd like to take a semi-typed Bril program and convert it
 between JSON and text representations. This requires changing the grammar so
 that type annotations are optional.
 
