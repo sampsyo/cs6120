@@ -54,6 +54,9 @@ a {
 h1 {
   line-height: 110%;
   margin-top: 0;
+}
+
+h1, h2 {
   a {
     color: inherit;
     text-decoration: none;
@@ -169,6 +172,23 @@ article {
     a {
       color: inherit;
       text-decoration: underline;
+    }
+  }
+
+  &.small {
+    margin-bottom: 0.3rem;
+    h1 {
+      font-size: inherit;
+      &:hover {
+        text-decoration: underline;
+      }
+      display: inline;
+    }
+    time {
+      display: inline-block;
+      text-align: right;
+      width: 4rem;
+      margin-right: 0.5rem;
     }
   }
 }
