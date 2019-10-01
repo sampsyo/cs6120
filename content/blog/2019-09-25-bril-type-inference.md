@@ -150,7 +150,7 @@ command = "cat {filename} | bril2json | python ../../infer.py | bril2txt"
 We are taking Bril text programs, turning them into JSON, generating a new
 equivalent typed program, and turning it back to text. First I started with
 simple Bril programs that already existed to build some confidence. Then to gain
-full confidence, I wrote tests that use every kind of operations, e.g.
+full confidence, I wrote tests that use every kind of operations, e.g.,
 arithmetic ops, comparison ops, logical ops, effect ops, and misc. ops.
 
 I tested for both positive and negative results. In other words, I ensured
