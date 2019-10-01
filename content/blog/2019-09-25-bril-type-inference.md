@@ -43,7 +43,7 @@ between JSON and text representations. This requires changing the grammar so
 that type annotations are optional.
 
 Because Bril only supports two types, `int` and `bool`, the type inference is
-very straight forward. For example, consider arithmetic operations, i.e.
+very straightforward. For example, consider arithmetic operations, i.e.,
 `add`, `mul`, `sub`, and `div`. The arguments to this operations *must* be ints,
 and the result is an int. Therefore, if we see a statement like `x = add a b`,
 we know `x`, `a`, and `b` are all ints. If at any point we inferred that one
