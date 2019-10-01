@@ -8,7 +8,7 @@ name = "Christopher Roman"
 +++
 
 ## Overview
-The goal of this is to build a type inferrer for Bril. Ultimately, we want to
+The goal of this project is to build a type inferrer for Bril. Ultimately, we want to
 take a Bril program that has some (or none) of the types specified on variables
 and produce a new Bril program that has all the correct type annotations.
 For example, this program:
