@@ -78,7 +78,7 @@ The gcc version  is 5.4.0 and optimization flag is O3.
 
 The benchmark result is as following.
 <br>
-<img src="../../img/c_backend_benchmark.png" width="500">
+<img src="c_backend_benchmark.png" width="500">
 <br>
 The four test program are factorial computation, Fibonacci sequence, polynomial multiplication and matrix multiplication.
 We can see that we gain a significant speedup across different tests. However, because Bril now has only bool and int type, the thing we can compute is still limited. In the future, as Bril extends more feature such as floating point arithmetic and array, we can have more practical benchmark.
