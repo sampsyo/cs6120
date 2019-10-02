@@ -26,7 +26,11 @@ Writing programs is famously hard. Writing program that generate programs
 flavors: (1) Proving a compiler is correct by construction using a
 [proof-assistant][coq], or (2) proving that each compiler pass preserves the
 observable semantics of a program by checking the equivalence of the input and
-the output programs.
+the output programs. The salient difference is that in the
+correct-by-construction approach, the *compiler* is verified, i.e. the
+verification is done once, while in the equivalence-checking approach, the
+*output* is verified which requires verification to happen every time a
+pass is run.
 
 Non-trivial correct by construction compilers have been demonstrated to be viable for
 but require several person-years of work to implement, specify[^1],
