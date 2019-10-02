@@ -144,7 +144,7 @@ Benchmarks were run on a 2018 Thinkpad T580 running Arch Linux, kernel version 5
 # What else could be done?
 
 If we continue to develop the interpreter, it would be worthwhile to try adding some interpreter
-optimizations (e.g. those found
+optimizations (e.g., those found
 [here](https://github.com/status-im/nimbus/wiki/Interpreter-optimization-resources)) to squeeze out
 more speed.
 
