@@ -204,7 +204,7 @@ you use it. For example, consider the following Bril program:
     prod: int = mul sum1 sum2;
 
 We would like to replace `sum2: int = add a b` with `sum2: int = id sum1` because we
-have already computed the value. However, if we can't do this directly because then `sum2` would
+have already computed the value. However, we can't do this directly because then `sum2` would
 have the value `a`, not `a + b`. The solution is to rename the first instance of `sum1` to something unique so that we don't lose our reference to the value `a + b`. We can
 then replace `sum2` with a copy from this new variable.
 
