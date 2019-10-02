@@ -19,9 +19,8 @@
   <p class="details">
     {% if page.extra.authors %}
       <span class="author"> by
-      {% for author, link in page.extra.authors %}
-        {% if link %}<a href="{{ link }}">{% endif %}{{ author }}{% if link %}</a>{% endif %}{% if not loop.last %},
-        {% endif %}
+      {% for author in page.extra.authors %}
+        {% if author.link %}<a href="{{ author.link }}">{% endif %}{{ author.name }}{% if author.link %}</a>{% endif %}{% if not loop.last %},{% endif %}
       {% endfor %}
       <span>
     {% else %}

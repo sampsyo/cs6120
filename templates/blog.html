@@ -12,8 +12,8 @@
   <p class="details">
     {% if post.extra.authors %}
     <span class="author">by
-    {% for name, link in post.extra.authors %}
-      {{ name }}{% if not loop.last %},{% endif %}
+    {% for author in post.extra.authors %}
+      {{ author.name }}{% if not loop.last %},{% endif %}
     {% endfor %}
     </span>
     {% else %}

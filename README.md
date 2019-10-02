@@ -19,27 +19,22 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
 
     +++
     title = "Welcome to CS 6120!"
-    extra.author = "Adrian Sampson"
-    extra.author_link = "https://www.cs.cornell.edu/~asampson/"
     extra.bio = """
-      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science.
+      Grace Hopper made the first compiler. [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science, so that's pretty cool too I guess.
     """
+    [[extra.authors]]
+    name = "Adrian Sampson"
+    link = "https://www.cs.cornell.edu/~asampson/"  # Links are optional.
+    [[extra.authors]]
+    name = "Grace Hopper"
     +++
 
-For multiple authors, use the `extra.authors` object instead:
-
-    +++
-    extra.authors = { "Adrian Sampson" = "https://www.cs.cornell.edu/~asampson/", "Author2": "link2" }
-    extra.bio = """
-      [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science.
-    """
-    +++
-
+List all the authors of your post.
 Include a link to your homepage if you have one, but it's optional.
-Also write a short bio for yourself (using [Markdown][]), which will appear at the bottom of the post.
+Also write a short bio for yourselves (using [Markdown][]), which will appear at the bottom of the post.
 Then, the rest of the text file is the Markdown text of your blog post.
 
-You can preview your writing with any GitHub renderer.
+You can preview your writing with any Markdown renderer.
 To see what it will look like when published, [install Zola][zola-install] and type `zola serve` to preview the entire site.
 
 [pr]: https://help.github.com/en/articles/about-pull-requests
