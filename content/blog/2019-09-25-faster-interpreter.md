@@ -3,7 +3,7 @@ title = "Writing a Faster Interpreter for Bril"
 extra.bio = """
 Daniel Glus is a Cornell undergraduate in CS.
 
-[Wil Thomason](https://www.cs.cornell.edu/~wil) is a
+[Wil Thomason](https://www.cs.cornell.edu/~wil) is an
 nth year Cornell PhD student in CS. He primarily works on planning algorithms for robotics.
 """
 extra.author = "Wil Thomason and Daniel Glus"
