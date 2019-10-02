@@ -229,7 +229,7 @@ sort the arguments for every instruction; `a - b != b - a`. Shrimp helps to reve
 this problem.
 
 The final bug was actually an unintentional bug that Shrimp helped us find. We made the arguably
-bad decision to give each Bril instruction it's own structure that is a sub-type of a `dest-instr` structure
+bad decision to give each Bril instruction its own structure that is a sub-type of a `dest-instr` structure
 rather than to give `dest-instr` an op-code field. When we were looking up values in the LVN table,
 we were only comparing that fields in `dest-instr` were the same. We forgot to compare the actual
 types of the instructions! Shrimp was able to reveal this code from the following example:
