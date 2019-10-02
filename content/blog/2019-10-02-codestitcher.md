@@ -1,4 +1,13 @@
-## Codestitcher: inter-procedural basic block layout optimization
++++
+title = "Codestitcher: inter-procedural basic block layout optimization"
+extra.bio = """
+Eashan Garg is an undergraduate studying CS and English.
+Gautam Mekkat is an undergraduate studying CS and ECE.
+"""
+extra.author = "Eashan Garg and Gautam Mekkat"
++++
+
+## Introduction
 
 So far, we've covered traditional compiler optimizations such as dead code elimination, copy propagation, and constant propagation. These techniques are centered around *elimination*--- reducing the number of instructions in a program. This is useful, but programs have dramatically increased in size over the years. Eliminating unnecessary code can only do so much. Meanwhile, the capacities of memory units like L1 caches and the TLB haven't grown to account for larger program sizes. One reason for this is that as cache size increases, latency increases. Because of this, we want to optimally place instructions in caches, making sure the most commonly run code lives in the cache. Code layout is critical here. In this post we will discuss this paper's approach to code layout.
 
