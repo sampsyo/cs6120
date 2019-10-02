@@ -181,7 +181,8 @@ equivalent.
 ### Downsides
 The downside of this approach is that it only conservatively approximates the result
 of each basic block. We may lose information about constraints on variables that cross
-basic block boundaries. For example, consider the following toy program:
+basic block boundaries and are therefore unable to verify the correctness of global
+program optimizations. For example, consider the following toy program:
 
     main {
       a: int = const 2;
