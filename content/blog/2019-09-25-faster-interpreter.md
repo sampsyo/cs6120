@@ -50,7 +50,7 @@ and other syntax (including labels, functions, etc.)
 from label names to basic block indices and uses this map to "link" together connected basic
 blocks. Linking in this way (rather than just constructing the name/index mapping and using that
 at runtime) gives us slightly faster execution - it's faster to load an array index than it is to
-e.g. load a heap-allocated object (as in a pointer-linked graph) or compute a string hash every
+e.g., load a heap-allocated object (as in a pointer-linked graph) or compute a string hash every
 time we need to find a label location. To see why this is faster than chasing a pointer, consider
 that we can exploit spatial locality by storing blocks in contiguous memory. Since a block is
 usually small, a set of blocks stored in contiguous memory may be able to fit in cache, making
