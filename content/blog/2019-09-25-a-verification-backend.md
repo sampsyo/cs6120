@@ -30,7 +30,7 @@ observable semantics of a program by checking the equivalence of the input and
 the output programs.
 
 Non-trivial correct by construction compilers have been demonstrated to be viable for
-but require several person-years of work to implement, specify[^1],
+but require several person-years of work to implement, specify, [^1]
 and prove correct. On the other hand, proving program equivalence automatically
 is a [remarkably hard problem](https://en.wikipedia.org/wiki/Turing_completeness)
 which forces such verification efforts to somehow bound the space of program
@@ -245,8 +245,8 @@ This made it easy to find and fix a rather embarrassing bug in the LVN implement
 
 Symbolic verification provides a trade-off between verification effort and
 the completeness of a verification procedure. Beyond our implementation,
-there has also been recent work in verifying correctness of [file systems](),
-[memory models](), and [operating systems]() code using symbolic verification
+there has also been recent work in verifying correctness of [file systems][],
+[memory models][], and [operating systems][] code using symbolic verification
 demonstrating the flexibility of this approach to program verification.
 
 
