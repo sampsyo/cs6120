@@ -197,10 +197,11 @@ Because `c` is a copy of `a`, this program would be functionally the same if you
 to `sum` with `sum: int = add a a`. However, because we are only doing verification on the basic block level,
 we don't know that these programs are equivalent.
 
-Another problem is that this approach to verification relies on the existence of test programs. We are not
-actually analyzing the code of the optimization so if you don't have extensive enough tests, bugs may go by
-unnoticed. Of course, you could run this after every invocation of the compiler to increase the likelihood of
-finding bugs.
+Another problem is that this approach to verification relies on the existence
+of test programs. We are not actually analyzing the code of the optimization so
+if you don't have extensive enough tests, bugs may go by unnoticed. Of course,
+you could run this after every invocation of the compiler to increase the
+likelihood of finding bugs.
 
 ## Evaluation
 To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse]
