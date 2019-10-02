@@ -67,7 +67,7 @@ Consider the following program:
 In addition to running this program with _concrete_ inputs (like `1`), Rosette
 allows us to run it with a _symbolic input_. When computing with symbolic
 inputs, Rosette _lifts_ operations like `+` to return symbolic formulas
-instead.  So, running this program with the symbolic input `x` would give us 
+instead.  So, running this program with the symbolic input `x` would give us
 the symbolic value `x + 1`.
 
 Rosette also lets us ask _verification queries_ using a symbolic inputs.
@@ -91,10 +91,10 @@ will report that when `x = 0`, this formula is false.
 A symbolic interpreter is simply an interpreter that executes over symbolic values rather than real values.
 A standard interpreter takes an expression, such as `x + 2 + 3`, and a concrete variable assignment, like `x = 1`,
 and then recursively evaluates the expression, substituting the value for `x` every time we see it. In this
-case `x + 2 + 3` evaluates to `6`. A symbolic interpreter works on the same types of programs, 
+case `x + 2 + 3` evaluates to `6`. A symbolic interpreter works on the same types of programs,
 but takes symbols as arguments instead of concrete value assignments. For the same program, `x + 2 + 3`, symbolic
 interpretation produces the formula `x + 5`. Computations that don't involve symbols are still run concretely and
-Rosette is smart enough to do this regardless of the parenthesization of the expression. 
+Rosette is smart enough to do this regardless of the parenthesization of the expression.
 
 This proves useful for verification because it reduces the problem of program equivalence to formula equivalence.
 To prove that the program `x + 2 + 3` is equivalent to the program `3 + 2 + x` we only need to reduce these
