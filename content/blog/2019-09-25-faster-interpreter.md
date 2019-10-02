@@ -1,5 +1,5 @@
 +++
-title = "Writing a faster interpreter for Bril"
+title = "Writing a Faster Interpreter for Bril"
 extra.bio = """
 Daniel Glus is a Cornell undergraduate in CS.
 
