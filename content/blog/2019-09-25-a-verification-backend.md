@@ -40,14 +40,16 @@ to prove properties in a domain that we care about. For example, SAT + theory of
 integers can be used to solve [Integer Linear Programming][ilp] problems.
 
 Program properties can be verified by first encoding the semantics of your
-language as an SMT formula and asking a solver to prove it's correctness by finding
+language as an SMT formula and asking a solver to prove its correctness by finding
 a satisfying assignment.
 
 ## Rosette
 
 Rosette is a symbolic execution engine for the [Racket][] programming language.
 It lets us write normal Racket programs and does the work of automatically lifting them
-to perform symbolic computations.
+to perform symbolic computations. This is different than simply having bindings into an SMT
+solver where you use code to generate constraints because Rosette gives symbolic meaning
+to actual Racket programs.
 
 Consider the following program:
 
@@ -58,7 +60,7 @@ In addition to running this program with _concrete_ inputs (like `1`), Rosette
 allows us to run it with a _symbolic input_. When computing with symbolic
 inputs, Rosette _lifts_ operations like `+` to return symbolic formulas
 instead.  So, running this program with the symbolic input `x` would give us
-the ouput `x + 1`.
+the symbolic value `x + 1`.
 
 Rosette also lets us ask _verification queries_ using a symbolic inputs.
 We can write the following program:
@@ -66,7 +68,7 @@ We can write the following program:
     symbolic x integer?
     verify (forall x. add(x) > x)
 
-Rosette will convert this into an SMT formula and verify it's correctness using
+Rosette will convert this into an SMT formula and verify its correctness using
 a backend solver.
 
 If we give Rosette a falsifiable formula:
@@ -79,10 +81,12 @@ will report that when `x = 0`, this formula is false.
 
 ## Symbolic Interpretation
 A symbolic interpreter is simply an interpreter that executes over symbolic values rather than real values.
-A standard interpreter takes a program, such as `x + 2 + 3`, and a variable assignment, `x = 1`
-and does something like: `x + 2 + 3 => 1 + 2 + 3 => 6`. A symbolic interpreter works on the same types of programs, 
-but takes symbols as arguments instead of value assignments. For the same program, `x + 2 + 3`, symbolic
-interpretation would produce the formula `x + 5`.
+A standard interpreter takes an expression, such as `x + 2 + 3`, and a concrete variable assignment, like `x = 1`,
+and then recursively evaluates the expression, substituting the value for `x` every time we see it. In this
+case `x + 2 + 3` evaluates to `6`. A symbolic interpreter works on the same types of programs, 
+but takes symbols as arguments instead of concrete value assignments. For the same program, `x + 2 + 3`, symbolic
+interpretation produces the formula `x + 5`. Computations that don't involve symbols are still run concretely and
+Rosette is smart enough to do this regardless of the parenthesization of the expression. 
 
 This proves useful for verification because it reduces the problem of program equivalence to formula equivalence.
 To prove that the program `x + 2 + 3` is equivalent to the program `3 + 2 + x` we only need to reduce these
@@ -95,9 +99,7 @@ in Racket and Rosette will lift the computation into SMT formulas and also make 
 
 ### Limiting scope to basic blocks
 
-SMT theories are undecidable in general 
-and even when you restrict it to decidable 
-fragments, verification can take a very long time. Because symbolic interpretation involves 
+Symbolic interpretation can take a very long time (or forever if there are loops) because it involves 
 following every path in a program and the number of paths in a program increases exponentially with
 the size of the program[^2], it can be difficult to make verification with symbolic interpretation scale to
 large programs.
@@ -178,7 +180,8 @@ we don't know that these programs are equivalent.
 
 Another problem is that this approach to verification relies on the existence of test programs. We are not
 actually analyzing the code of the optimization so if you don't have extensive enough tests, bugs may go by
-unnoticed.
+unnoticed. Of course, you could run this after every invocation of the compiler to increase the likelihood of
+finding bugs.
 
 ## Evaluation
 To evaluate Shrimp, we implemented [Common sub-expression elimination (CSE)][cse] 
@@ -238,7 +241,7 @@ Serval stuff
 [^1]: The problem of specifying the correctness condition of a compiler is itself
 a non-trivial, open research problem. Should the compiler preserve the stdout
 behavior, or should it give even stronger guarantees such as preserving the
-timing behavior [[CITE]]?
+timing behavior?
 
 [^2]: https://en.wikipedia.org/wiki/Symbolic_execution#Limitations
 
