@@ -16,7 +16,7 @@ teaching compilers and compiler optimizations. Part of Bril being useful for thi
 existence of a solid, simple reference interpreter for the language: `brili`. Written in
 [TypeScript](https://www.typescriptlang.org/), `brili` is straightforward to extend and allows easy
 experimentation with new language features and optimizations. The flipside of `brili`'s simplicity
-and the use of TypeScript for its implementation is that is isn't very fast. Thus, while `brili` is
+and the use of TypeScript for its implementation is that it isn't very fast. Thus, while `brili` is
 suitable for working with small, simple Bril programs, it may make experiments using more complex,
 long-running programs unnecessarily onerous.
 
