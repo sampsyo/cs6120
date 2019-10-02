@@ -127,6 +127,14 @@ them, but not both). We defer the problem of verifier more complicated optimizat
 To verify that two basic blocks are equivalent, we assume that the common set
 of live variables are equal, and ask Rosette to verify that the symbolic
 formulas we get from interpretation for each assigned variable are equivalent.
+Formally, for two basic blocks $b1$ and $b2$, we generate the formula:
+
+$ \forall lives(b1), lives(b2). interpret(b1) = interpret(b2) $
+
+where the $lives$ function generates the live variables in a basic block and
+$interpret$ returns a new state map for all variables in the basic block.
+
+Concretely, given the following basic block:
 
 
     block1 {
@@ -136,7 +144,7 @@ formulas we get from interpretation for each assigned variable are equivalent.
       prod: int = mul sum1 sum2;
     }
 
-A simple CSE and dead code elimination produces the following code:
+a simple CSE and dead code elimination will produce the following code:
 
     block2 {
       ...
