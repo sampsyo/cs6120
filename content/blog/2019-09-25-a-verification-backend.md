@@ -215,7 +215,7 @@ and discover the source of the bug.
 
 Next we tried extending CSE to deal with associativity.
 It would be nice if the compiler knew that `a + b` is equal to `b + a` so that it could eliminate more
-sub expressions. The most naïve thing to do is sort the arguments for all expressions when you
+sub-expressions. The most naïve thing to do is sort the arguments for all expressions when you
 compare them so that `a + b` is the same value as `b + a`. However, this by itself is not enough.
 Testing the following example with Shrimp reveals the problem:
 
