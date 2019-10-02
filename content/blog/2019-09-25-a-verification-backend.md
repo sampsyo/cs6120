@@ -75,7 +75,7 @@ We can write the following program:
     symbolic x integer?
     verify (forall x. add(x) > x)
 
-Rosette will convert this into an SMT formula and verify it's correctness using
+Rosette will convert this into an SMT formula and verify its correctness using
 a backend solver.
 
 If we give Rosette a falsifiable formula:
