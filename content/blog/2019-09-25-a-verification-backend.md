@@ -119,7 +119,7 @@ formulas that are usually fast to verify. However, this comes at the cost of exa
 equivalence, we can only give a conservative approximation.
 
 To verify that two basic blocks are equivalent, we assume that the common set of live
-variables equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
+variables are equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
 assigned variable are equivalent.
 
 
