@@ -114,7 +114,7 @@ representations.
 
 # How do we stack up?
 
-We ran benchmarks using [hyperfine](https://github.com/sharkdp/hyperfine). The same bril program was
+We ran benchmarks using [hyperfine](https://github.com/sharkdp/hyperfine). The same Bril program was
 run using both `brili` and `brilirs`. Overall, `brilirs` was faster, as expected. On one benchmark, `brili`
 was twice as fast, however. The results (measurements reported as mean plus/minus standard
 deviation):
