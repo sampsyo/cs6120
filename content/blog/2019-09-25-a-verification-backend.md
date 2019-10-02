@@ -162,7 +162,7 @@ In other words, assuming that the common live variables are equal, is the follow
     ((a$1 + b$1) = (a$2 + b$2) &&
     (a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2))
 
-The SMT solver will verify this for us, and if it can't the formula to be valid,
+The SMT solver will verify this for us, and if it can't prove the formula to be valid,
 it will provide a counter-example to prove it. In this case, it is not too hard to see
 that this formula is in fact valid, which shows that these two basic blocks are functionally
 equivalent.
