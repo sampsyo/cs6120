@@ -22,7 +22,7 @@ The goal of the project was to add a static type checker to find type errors, mu
 
 ### Design
 
-Bril currently supports 2 types - **int** and **bool** which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation  `a = b+c` would raise an error if either the source or destination arguments are *not* int. Similarly, boolean operations only accept all bool arguments and comaprison operations have integer arguments but a boolean destination. Currently Bril only supports operations on variables and not constants which implies `a = b+5` is an invalid operation. During type checking, we also ensure that the variable has been defined in the function before. Conversely, we make sure that there isn't a redifiniton of the variable. For control flow operation, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
+Bril currently supports 2 types - **int** and **bool** which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation  `a = b+c` would raise an error if either the source or destination arguments are *not* int. Similarly, boolean operations only accept all bool arguments and comparison operations have integer arguments but a boolean destination. Currently Bril only supports operations on variables and not constants which implies `a = b+5` is an invalid operation. During type checking, we also ensure that the variable has been defined in the function before. Conversely, we make sure that there isn't a redefinition of the variable. For control flow operation, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
 
 The error raised by the type checker outputs the line at which we find the first operation breaking the type check rule and mentions the type of error found.
 
@@ -34,7 +34,7 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 1. Invalid instructions- This ensures that all the arguments and destination (if applicable) of an instruction are available, which is given by the length of instruction.
 2. Argument and destination type- For various operations we check if arguments and destination variables have the correct type. Something like `bool d = a + b` where `a,b` are integers would raise an error for the destination variable.
 3. Redefined variables- We check if the destination variable has already been assigned to a different type in that context. We do allow const instructions on the same type as it can be treated as an assignment operation rather than a definition. So `int a =2; bool a = true` is not allowed but `int a =2; int a =5` is allowed. We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
-4. Undefined variables- We check if the arguments to the instruction have defined variables using the set of variables mentoined before. 
+4. Undefined variables- We check if the arguments to the instruction have defined variables using the set of variables mentioned before. 
 
 
 
@@ -42,7 +42,7 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
 The type checker implementation, though straightforward, had a few challenges.
 
-1. The typing rules need to be designed carefully for each operation, ranging from arithmetic, boolean to control instructions. Take the branch instruction as an example, say we have "br b left right". The type checker needs to go through all the existing boolean variables to ensure that b is predefined and left and right are valid labels in the code snippet. Also, though not currently supported in bril, the instructions could be nested. Thus, it is important to maintain modularity of arithmetic/boolean and control flow checking so that future updates could be made easily to support recursive checking.
+1. The typing rules need to be designed carefully for each operation, ranging from arithmetic, boolean to control instructions. Take the branch instruction as an example, say we have "br b left right". The type checker needs to go through all the existing boolean variables to ensure that b is predefined and left and right are valid labels in the code snippet. Also, though not currently supported in Bril, the instructions could be nested. Thus, it is important to maintain modularity of arithmetic/boolean and control flow checking so that future updates could be made easily to support recursive checking.
 2. To ensure that the type checker works properly with labels, a first pass of the labels is designed. Through the first pass, all existing labels are saved and no duplicate ones are allowed to avoid conflicts. Though this almost doubles the type checking overhead, it further ensures the correctness of the program by static analysis.
 3. Keeping track of the line number and returning proper error message when encountered with an type checking error. When scanning through the code line by line after the first pass, a line number is maintained during type checking to help the programmer debug. In order to maintain the line number with blank lines and comments, we take in the original code snippet and ignore these lines while updating it during type checking.
 
@@ -70,7 +70,7 @@ Finally, though not required, we also implemented other checking passes as long 
 | Argument Number       | The expected argument is 2 but only 1 is given.          |  int: v0= const 5;int: v1 = add v0;  |
 | Argument Existence | The argument is never defined. | int: v1 = add v0; |
 | Label Existence      | Label argument in control operation not present in code. |            jmp its_a_trap; (Consider this as is a full program)     |
-| Label Repeatance      |      A label should be unique and not be repeated.       | jmp label;<br/> label: a:int=1;<br/> label: a:int =2 |
+| Repeated Label |      A label should be unique and not be repeated.       | jmp label;<br/> label: a:int=1;<br/> label: a:int =2 |
 
 By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type error). We would be very happy if someone comes up with more cases and reaches out us by mail or github issues.
 
