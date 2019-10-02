@@ -224,7 +224,7 @@ Testing the following example with Shrimp reveals the problem:
      prod: int = mul sub1 sub2;
 
 Shrimp gives us the counter example `a = -8, b = -4`. The problem is that we can't
-sort the arguments for every instruction; `a - b != b - a`. Shrimp helps to reveal
+sort the arguments for every instruction; $a - b \neq b - a$. Shrimp helps to reveal
 this problem.
 
 The final bug was actually an unintentional bug that Shrimp helped us find. We made the arguably
