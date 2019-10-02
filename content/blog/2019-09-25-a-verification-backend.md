@@ -122,22 +122,22 @@ To verify that two basic blocks are equivalent, we assume that the common set of
 variables equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
 assigned variable are equivalent.
 
-```
-block1 {
-  ...
-  sum1: int = add a b;
-  sum2: int = add a b;
-  prod: int = mul sum1 sum2;
-}
-```
+
+    block1 {
+      ...
+      sum1: int = add a b;
+      sum2: int = add a b;
+      prod: int = mul sum1 sum2;
+    }
+
 A simple CSE and dead code elimination produces the following code:
-```
-block2 {
-  ...
-  sum1: int = add a b;
-  prod: int = mul sum1 sum1;
-}
-```
+
+    block2 {
+      ...
+      sum1: int = add a b;
+      prod: int = mul sum1 sum1;
+    }
+
 
 We first find the common set of live variables.
 In this case, `a, b` are live at the beginning of both of these blocks. Next, we create a symbolic version
@@ -145,23 +145,23 @@ of these variables for each block. We'll use `$` to designate symbolic variables
 This gives us `a$1, b$1` for the first block and `a$2, b$2` for the second block. We assume that
 `a$1 = a$2` and `b$1 = b$2`. Then we can call our basic block symbolic interpreter with these
 variables to get the following formula:
-```
-block1
-sum1 = a$1 + b$1
-prod = (a$1 + b$1) * (a$1 + b$1)
 
-block2
-sum1 = a$2 + b$2
-sum2 = a$2 + b$2
-prod = (a$2 + b$2) * (a$2 + b$2)
-```
+    block1
+    sum1 = a$1 + b$1
+    prod = (a$1 + b$1) * (a$1 + b$1)
+
+    block2
+    sum1 = a$2 + b$2
+    sum2 = a$2 + b$2
+    prod = (a$2 + b$2) * (a$2 + b$2)
+
 Finally we check if the variables which are defined in both blocks are equivalent.
 In other words, assuming that the common live variables are equal, is the following true:
-```
-forall a$1, a$2, b$1, b$2.
-((a$1 + b$1) = (a$2 + b$2) &&
-(a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2))
-```
+
+    forall a$1, a$2, b$1, b$2.
+    ((a$1 + b$1) = (a$2 + b$2) &&
+    (a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2))
+
 The SMT solver will verify this for us, and if it can't the formula to be valid,
 it will provide a counter-example to prove it. In this case, it is not too hard to see
 that this formula is in fact valid, which shows that these two basic blocks are functionally
@@ -172,16 +172,15 @@ The downside of this approach is that it only conservatively approximates the re
 of each basic block. We may lose information about constraints on variables that cross
 basic block boundaries. For example, consider the following toy program:
 
-```
-main {
-  a: int = const 2;
-  b: int = const 4;
-  c: int = id a;
-  jmp next;
-next:
-  sum: int = add a c;
-}
-```
+    main {
+      a: int = const 2;
+      b: int = const 4;
+      c: int = id a;
+      jmp next;
+    next:
+      sum: int = add a c;
+    }
+
 Because, `c` is a copy of `a`, this program would be functionally the same if you replaced the assignment
 to `sum` with `sum: int = add a a`. However, because we are only doing verification on the basic block level,
 we don't know that these programs are equivalent.
@@ -198,12 +197,12 @@ correctness bugs. We intentionally planted two bugs and found a third bug in the
 There are some subtleties to a correct implementation of LVN. If you know that the variable
 `sum1` holds the value `a + b`, you have to make sure that `sum1` is not assigned to again before
 you use it. For example, consider the following Bril program:
-```
-sum1: int = add a b;
-sum1: int = id a;
-sum2: int = add a b;
-prod: int = mul sum1 sum2;
-```
+
+    sum1: int = add a b;
+    sum1: int = id a;
+    sum2: int = add a b;
+    prod: int = mul sum1 sum2;
+
 We would like to replace `sum2: int = add a b` with `sum2: int = id sum1` because we
 have already computed the value. However, if we can't do this directly because then `sum2` would
 have the value `a`, not `a + b`. The solution is to rename the first instance of `sum1` to something unique so that we don't lose our reference to the value `a + b`. We can
@@ -219,11 +218,11 @@ It would be nice if the compiler knew that `a + b` is equal to `b + a` so that i
 sub expressions. The most naïve thing to do is sort the arguments for all expressions when you
 compare them so that `a + b` is the same value as `b + a`. However, this by itself is not enough.
 Testing the following example with Shrimp reveals the problem:
-```
+
      sub1: int = sub a b;
      sub2: int = sub b a;
      prod: int = mul sub1 sub2;
-```
+
 Shrimp gives us the counter example `a = -8, b = -4`. The problem is that we can't
 sort the arguments for every instruction; `a - b != b - a`. Shrimp helps to reveal
 this problem.
@@ -233,12 +232,12 @@ bad decision to give each Bril instruction its own structure that is a sub-type 
 rather than to give `dest-instr` an op-code field. When we were looking up values in the LVN table,
 we were only comparing that fields in `dest-instr` were the same. We forgot to compare the actual
 types of the instructions! Shrimp was able to reveal this code from the following example:
-```
-sub1: int = sub a b;
-sub1: int = add a b;
-sub2: int = sub b a;
-prod: int = mul sub1 sub2;
-```
+
+    sub1: int = sub a b;
+    sub1: int = add a b;
+    sub2: int = sub b a;
+    prod: int = mul sub1 sub2;
+
 This made it easy to find and fix a rather embarrassing bug in the LVN implementation.
 
 ## Conclusion
