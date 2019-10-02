@@ -107,22 +107,26 @@ in Racket and Rosette will lift the computation into SMT formulas and also make 
 
 ### Limiting scope to basic blocks
 
-SMT theories are undecidable in general and even when you restrict it to
-decidable fragments, verification can take a very long time. Because symbolic
-interpretation involves following every path in a program and the number of
-paths in a program increases exponentially with the size of the program,
-it can be difficult to make verification with symbolic interpretation scale
-to large programs.
+The scalability of SMT-based verification depends on the choice of the theories
+we use (reals, integers, arrays, etc.) and the size of formulas we generate.
 
-We address this problem by proving basic block equivalence rather than program equivalence.
-By definition, there is only a single path through a basic block. This avoids the exponential
-growth of the number of paths to explore and means that we only ever produce relatively simple
-formulas that are usually fast to verify. However, this comes at the cost of exact program
-equivalence, we can only give a conservative approximation.
+Choosing rich theories like non-linear arithemtic make it easier to
+translate the semantics of a program but also genearate formulaes that might be
+undecidable. We restrict ourselves to the fragement of Quantifier
+Bitvector Formulas which have fast, decidable solvers. Rosette automatically
+translates all integers to bitvectors of a programmer defined size.
 
-To verify that two basic blocks are equivalent, we assume that the common set of live
-variables are equal, and ask Rosette to verify that the symbolic formulas we get from interpretation for each
-assigned variable are equivalent.
+To reduce the size of the formulas we generate, we only try to prove equivalence
+at the basic block level. Note that basic-block equivalence implies program
+equivalence but not the other way around. That means that our verifier is
+necessarily conservative and might give false positives. We think basic
+block equivalence is the right level of verification because most optimizations
+only locally change the program structure (they either add basic blocks or remove
+them, but not both). We defer the problem of verifier more complicated optimizations.
+
+To verify that two basic blocks are equivalent, we assume that the common set
+of live variables are equal, and ask Rosette to verify that the symbolic
+formulas we get from interpretation for each assigned variable are equivalent.
 
 
     block1 {
@@ -159,9 +163,7 @@ variables to get the following formula:
 Finally we check if the variables which are defined in both blocks are equivalent.
 In other words, assuming that the common live variables are equal, is the following true:
 
-    forall a$1, a$2, b$1, b$2.
-    ((a$1 + b$1) = (a$2 + b$2) &&
-    (a$1 + b$1) * (a$1 + b$1) = (a$2 + b$2) * (a$2 + b$2))
+$ \forall a1, a2, b1, b2. a1 + b1 = a2 + b2 \land (a1 + b1) * (a1 + b1) = (a2 + b2) * (a2 + b2) $
 
 The SMT solver will verify this for us, and if it can't prove the formula to be valid,
 it will provide a counter-example to prove it. In this case, it is not too hard to see
