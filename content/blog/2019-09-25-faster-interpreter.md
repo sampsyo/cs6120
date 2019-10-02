@@ -47,14 +47,16 @@ and other syntax (including labels, functions, etc.)
 2. Parse Bril JSON into the aforementioned structures.
 
 3. Form basic blocks and a CFG from the program instructions. This process constructs an mapping
-from label names to basic block indices and uses this map to "link" together connected basic blocks.
-Linking in this way (rather than just constructing the name/index mapping and using that at runtime)
-lets us have slightly faster execution - it's faster to load an array index than it is to e.g.
-load a heap-allocated object (as in a pointer-linked graph) or compute a string hash every time we
-need to find a label location. It's worth noting that while we could've gotten away with not forming
-basic blocks or a CFG, and potentially gained some speedup from this laziness, the CFG building
-process should not dominate interpretation times and enables us to build more optimizations down the
-line.
+from label names to basic block indices and uses this map to "link" together connected basic
+blocks. Linking in this way (rather than just constructing the name/index mapping and using that
+at runtime) gives us slightly faster execution - it's faster to load an array index than it is to
+e.g. load a heap-allocated object (as in a pointer-linked graph) or compute a string hash every
+time we need to find a label location. To see why this is faster than chasing a pointer, consider
+that we can exploit spatial locality by storing blocks in contiguous memory. Since a block is
+usually small, a set of blocks stored in contiguous memory may be able to fit in cache, making
+access fast. It's worth noting that while we could've gotten away with not forming basic blocks
+or a CFG, and potentially gained some speedup from this laziness, the CFG building process should
+not dominate interpretation times and enables us to build more optimizations down the line.
 
 4. Starting at the first basic block of the `main` function, iterate through, matching each
 instruction based on its type (using Rust's `match` expression on a large variant type representing
