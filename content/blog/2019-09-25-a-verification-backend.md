@@ -49,7 +49,7 @@ to prove properties in a domain that we care about. For example, SAT + theory of
 integers can be used to solve [Integer Linear Programming][ilp] problems.
 
 Program properties can be verified by first encoding the semantics of your
-language as an SMT formula and asking a solver to prove it's correctness by finding
+language as an SMT formula and asking a solver to prove its correctness by finding
 a satisfying assignment.
 
 ## Rosette
