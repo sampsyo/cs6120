@@ -19,7 +19,8 @@ Include Zola-style "[TOML][] front matter" at the top, which looks like this:
 
     +++
     title = "Welcome to CS 6120!"
-    extra.bio = """
+    [extra]
+    bio = """
       Grace Hopper made the first compiler. [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science, so that's pretty cool too I guess.
     """
     [[extra.authors]]
@@ -34,6 +35,8 @@ Include a link to your homepage if you have one, but it's optional.
 Also write a short bio for yourselves (using [Markdown][]), which will appear at the bottom of the post.
 Then, the rest of the text file is the Markdown text of your blog post.
 
+If you want to use math in your blog post, put `latex = true` in your `[extra]` section to enable [KaTeX][]. Then you can use `$\pi$` for inline math and `\[ e^{i\pi} = 0 \]` for display math.
+
 You can preview your writing with any Markdown renderer.
 To see what it will look like when published, [install Zola][zola-install] and type `zola serve` to preview the entire site.
 
@@ -41,3 +44,4 @@ To see what it will look like when published, [install Zola][zola-install] and t
 [toml]: https://github.com/toml-lang/toml
 [markdown]: https://daringfireball.net/projects/markdown/
 [zola-install]: https://www.getzola.org/documentation/getting-started/installation/
+[katex]: https://katex.org
