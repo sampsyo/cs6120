@@ -22,82 +22,57 @@ The goal of the project was to add a static type checker to find type errors, mu
 
 ### Design
 
+Bril currently supports 2 types - **int** and **bool** which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation  `a = b+c` would raise an error if either the source or destination arguments are *not* int. Similarly, boolean operations only accept all bool arguments and comaprison operations have integer arguments but a boolean destination. Currently Bril only supports operations on variables and not constants which implies `a = b+5` is an invalid operation. During type checking, we also ensure that the variable has been defined in the function before. Conversely, we make sure that there isn't a redifiniton of the variable. For control flow operation, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
 
-To establish type checking rules we define a basic environment $\sigma$:
-
-$$\sigma: \\var: int | bool\\label: strings | \#line$$
-
-We start by defining each variable as either an integer or a boolean - the two valid types in Bril.
-
-$$ \frac{}{<n,\sigma>\Downarrow_a int} \rightarrow \frac{}{<v,\sigma>\Downarrow_a var_{int}}\\ \frac{}{<true/false,\sigma>\Downarrow_b bool} \rightarrow \frac{}{<v,\sigma>\Downarrow_a var_{bool}}\\ $$
-
-
-Then we define the arithmetic rules where $int$ is a constant integer, while $var_{int}$ indicates variable of integer type. We note the fact that *arithmetic operations* only take integer variables as input and produce an integer variable as output.
-
-$$ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1+a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1-a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1 * a_2,\sigma>\Downarrow_a var_{int}}\\ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<a_1 / a_2,\sigma>\Downarrow_a var_{int}} $$
-
-Similarly, for *boolean operations*, we have the followings where  $bool$ is a constant boolean value, while $var_{bool}$ indicates variable of boolean type.
-
-$$ \frac{<b_1,\sigma>\Downarrow_b var_{bool}}{<not\ b_1,\sigma>\Downarrow_b var_{bool}}\\ \frac{<b_1,\sigma>\Downarrow_b var_{bool}, <b_2,\sigma>\Downarrow_b var_{bool}}{<and/or\ b_1 b_2,\sigma>\Downarrow_b var_{bool}} $$
-
-In *comparison operation* we note that integer variables are compared to give a boolean output:
-
-$$ \frac{<a_1,\sigma>\Downarrow_a var_{int}, <a_2,\sigma>\Downarrow_a var_{int}}{<eq/lt/gt/le/ge\ a_1 a_2,\sigma>\Downarrow var_{bool}} $$
-
-For *control flow operations* we need to make sure that the $label$ in the operation actually exists in the program and is unique. We can see this via the rule below where $\sigma[label]$ is all the labels.
-
-$$ \frac{l_1 \in \sigma[label]}{jmp\ l_1,\sigma \Downarrow \sigma'} $$
-
-For the branch condition we check that the inputs are boolean and valid labels and jump to a different environment denoted by $\sigma'$
-
-$$ \frac{<cond,\sigma>\Downarrow_b bool, l_1\in \sigma[label], l_2\in \sigma[label]}{<br cond l_1 l_2, \sigma>\Downarrow \sigma'}\\ $$
-
-There are some special operator: const, id, print, ret. We list the rules below. Though we are not very confident at formulation on this part, it should not affect the correctness of the our type checking program.
-
-$$ \frac{<n,\sigma>\Downarrow int}{<var:int = const\ n ,\sigma>\Downarrow \sigma'}\\ \frac{a,\sigma \Downarrow_a var_{int}}{<id\ a,\sigma>\Downarrow \sigma'}\\ \frac{b,\sigma \Downarrow_b var_{bool}}{<id\ b,\sigma>\Downarrow \sigma'}\\ \frac{}{<ret,\sigma>\Downarrow End}\\ \frac{\forall v_i \in \sigma[var]}{<print\ v_1,v_2,\dots,v_i,\dots,v_n,\sigma> \Downarrow \sigma'} $$
-
+The error raised by the type checker outputs the line at which we find the first operation breaking the type check rule and mentions the type of error found.
 
 
 ### Implementation
 
-Once we had the rules setup for all types of instructions, we check each instruction against them. We have a first pass in the algorithm which collects a list of labels and ensures that each label is unique. This also helps to check for control instructions if the label in the argument is valid.  In the second pass, we go over each instruction and check for various type errors - 
+We have a first pass in the algorithm which collects a list of labels and ensures that each label is unique. If there are multiple labels with the same name, we throw an error at this point. This also helps us create a set of label names which is used to check for valid strings (of labels) during the second pass for control flow operations.  In the second pass, we go over each instruction and check for various type errors. Some fundamental checks in this process are:
 
-1. For const instructions, check if assigned value is of the same type as the destiantion type. We also check if the variable has already been assigned to a different type in that context, in which case reassignment would be an error.
-2. For arithmetic and logical operations, we check if the two source operands are valid and are of the same type as the destination type.
-3. For comparison operations, the source operands should be valid integer type variables and the destination should be a boolean.
-4. For jump and branch instructions, making sure that label is valid and the condition argument is a boolean type suffices.
+1. Invalid instructions- This ensures that all the arguments and destination (if applicable) of an instruction are available, which is given by the length of instruction.
+2. Argument and destination type- For various operations we check if arguments and destination variables have the correct type. Something like `bool d = a + b` where `a,b` are integers would raise an error for the destination variable.
+3. Redefined variables- We check if the destination variable has already been assigned to a different type in that context. We do allow const instructions on the same type as it can be treated as an assignment operation rather than a definition. So `int a =2; bool a = true` is not allowed but `int a =2; int a =5` is allowed. We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
+4. Undefined variables- We check if the arguments to the instruction have defined variables using the set of variables mentoined before. 
 
 
 
 ## Hardest parts during the implementation
 
-The type checker implementation, though straightforward, had a few challenges. 
+The type checker implementation, though straightforward, had a few challenges.
 
-1. The typing rules had to be designed specifically for each instruction. While implementing these rules, we had to carefully partition all the cases and link them to appropriate arithmetic/boolean/control checks.
-2. Keeping track of the line number and error message to return when encountered with an error.
-3. Mantaning modularity to help future developments like checking expressions recursively.
+1. The typing rules need to be designed carefully for each operation, ranging from arithmetic, boolean to control instructions. Take the branch instruction as an example, say we have "br b left right". The type checker needs to go through all the existing boolean variables to ensure that b is predefined and left and right are valid labels in the code snippet. Also, though not currently supported in bril, the instructions could be nested. Thus, it is important to maintain modularity of arithmetic/boolean and control flow checking so that future updates could be made easily to support recursive checking.
+2. To ensure that the type checker works properly with labels, a first pass of the labels is designed. Through the first pass, all existing labels are saved and no duplicate ones are allowed to avoid conflicts. Though this almost doubles the type checking overhead, it further ensures the correctness of the program by static analysis.
+3. Keeping track of the line number and returning proper error message when encountered with an type checking error. When scanning through the code line by line after the first pass, a line number is maintained during type checking to help the programmer debug. In order to maintain the line number with blank lines and comments, we take in the original code snippet and ignore these lines while updating it during type checking.
 
 
 
 ## Evaluation and results
 
-We wrote a comprehensive set of benchmaking programs to test our implementation for various types of rules defined in the design section above. 
+We wrote a set of benchmarking programs to test our implementation for various types of rules defined in the design section above. 
 
-The following table represents instructions that should throw up an error when compiled using the type checker system developed for Bril.
+The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as "\*.out" corresponding to the input file "\*.bril". User can simply run all test cases in a directory by running turnt directory/\*.bril. For example, to run should-fail benchmark, one can just run turnt test/type-check/should-pass/\*.bril at the main directory of bril.
 
+Because should-pass cases are trivial, where we enumerate list existing operations, in the following table we only list tests cases that our type checker will report error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
 
-| Instruction |                 Type check rule for testing                  |  Pseudo Code snippet  |
-| ----------- | :----------------------------------------------------------: | :------: |
-| Add         | Adding an integer and a boolean type | ` int a; bool b; int c = a+b; ` |
-| Add | Only allowed to add two integer variables | `int a; int c = a+ 5;` |
-| Const | Cannot assign an integer const to a bool variable | `bool v1 = 2;` |
-| Cond Branch | Only takes **bool** variable as input (and 2 labels) | `int a = 1; br a here there;` |
-| Label | Label argument in control operation not present in code | `jmp itsatrap;` |
-| Label | A label should be unique and not be repeated | `jmp label; label: <> .... label: <>` |
-| Not | Cannot assign the output of not to an integer | `bool b = true; int a = not b;` |
-| Const       | Variables cannot be redefined with a different type | `int v = 5; bool v = true;` |
+| Instruction |               Type Checking Rule               |          Testing Code Snippet          |
+| ----------- | :-----------------------------------------------------: | :-----------------------------------: |
+| Conflict Definition       |   Variables cannot be redefined with a different type.   |      v: int = 5;<br/> v :bool = true;      |
+| Arithmetic         |          Adding an integer and a boolean type.           |                a: int = 4;<br/>b: bool = true;<br/>c: int = add a b;               |
+| Boolean         |      Cannot assign the output of boolean to an integer.      |    b: bool = true;<br/> a:int = not b;    |
+| Const       |    Cannot assign an integer const to a bool variable.    |            a: int =  const true;             |
+| Cond Branch |    Only takes bool variable as input (and 2 labels).     |     a: int = 1;<br/> br a here there;<br/> here: print a;<br/>there: jmp here; |
+Finally, though not required, we also implemented other checking passes as long as an input stream is parsable by bril2json, an interpret for bril. That includes type existence checking, number checking, argument existence checking, label existence checking and label repentance checking.
+| Instruction |               Type Checking Rule               |          Testing Code Snippet          |
+| ----------- | :-----------------------------------------------------: | :-----------------------------------: |
+| Type existence       | The destination type is undefined.          |  boolean: v0= const true; |
+| Argument Number       | The expected argument is 2 but only 1 is given.          |  int: v0= const 5;int: v1 = add v0;  |
+| Argument Existence | The argument is never defined. | int: v1 = add v0; |
+| Label Existence      | Label argument in control operation not present in code. |            jmp its_a_trap; (Consider this as is a full program)     |
+| Label Repeatance      |      A label should be unique and not be repeated.       | jmp label;<br/> label: a:int=1;<br/> label: a:int =2 |
 
-These were some of the tests we used to check exhaustively for the rules developed for type checking.
+By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type error). We would be very happy if someone comes up with more cases and reaches out us by mail or github issues.
 
 
 
