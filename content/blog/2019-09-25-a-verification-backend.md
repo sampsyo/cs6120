@@ -181,7 +181,7 @@ basic block boundaries. For example, consider the following toy program:
       sum: int = add a c;
     }
 
-Because, `c` is a copy of `a`, this program would be functionally the same if you replaced the assignment
+Because `c` is a copy of `a`, this program would be functionally the same if you replaced the assignment
 to `sum` with `sum: int = add a a`. However, because we are only doing verification on the basic block level,
 we don't know that these programs are equivalent.
 
