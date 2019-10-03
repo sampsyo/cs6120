@@ -5,15 +5,15 @@ extra.author_link = "https://www.cs.cornell.edu/~hongbo/"
 extra.bio = """"""
 +++
 
-[Bril][] comes with a reference interpreter `Brili`, 
-which allows any platform that supports `Node.js` to run Bril code.
+[Bril][] comes with a reference interpreter `brili`, 
+which allows any platform that supports Node.js to run Bril code.
 The downside of using an interpreter is that
 the performance is usually not as good as a native binary.
 Therefore, it would be more efficient (and cool) if Bril could be run natively on a ARMv8 processor.
 In this project, I am going to build a code translator that
 translate Bril to AArch64 assembly,
-so that it could run on a 64-bit Raspberry Pi (Raspberry Pi 2B v1.2 or later versions)
-or any other 64-bit ARM devices with AArch64 architecture.
+so that it can run on a 64-bit Raspberry Pi (Raspberry Pi 2B v1.2 or later versions)
+or any other 64-bit ARM devices with the AArch64 architecture.
 
 [bril]: https://github.com/sampsyo/bril
 
@@ -30,7 +30,7 @@ Currently there are two values types in Bril:
 
 * `int`: 64-bit two's complement signed integer type. 
 It is equivalent to the `int64_t` type in C.
-It will occupy 8 byte of memory and fit in a single 64-bit register of 64-bit ARM processors.
+It will occupy 8 bytes of memory and fit in a single 64-bit register of 64-bit ARM processors.
 * `bool`: Boolean value that could be either `true` or `false`.
 It is equivalent to the `bool` type in C.
 It will occupy one whole byte in memory. 
@@ -50,9 +50,9 @@ stack frame of the current function.
 ```
 
 Unlike C, where variables needs to be explicitly declared, 
-Bril instruction with a `dest` opcode will inexplicitly declare a variable.
+Bril instruction with a `dest` opcode will implicitly declare a variable.
 In order to build the symbol table and allocate stack space for all variables,
-it needs to scan all instructions in the function and add all `dest` to 
+it needs to scan all instructions in the function and add all `dest` variables to 
 the symbol table.
 
 ARMv8 requires that the stack pointer is 16-byte aligned.
@@ -67,7 +67,7 @@ it will check if there is any fragmented stack space is big enough for the
 variable.
 It will only increase the stack size by 16 bytes if there is no enough space.
 
-For example, the following Bril program  
+For example, the following Bril program:
 
 ```
 main {
@@ -77,7 +77,7 @@ main {
     d:bool = const false;
 }
 ```
-will have stack allocation like this
+will have stack allocation like this:
 
 |variable|offset|
 |--------|------|
@@ -103,17 +103,17 @@ func-name:
 ```
 
 At the beginning of a function, it will first push all callee-save registers
-on to stack, including frame pointer (`x29`) and link register (`x30`).
-Then will build symbol table for current function 
+onto the stack, including the frame pointer (`x29`) and the link register (`x30`).
+Then it will build the symbol table for the current function 
 and move the stack pointer and frame pointer accordingly to leave enough space
 for all variables.
 
 At the end of a function, there is a label indicating the return point.
 Before `ret` to the address in link register, 
-it needs to pop out all local variable by moving the stack pointer back,
+it needs to pop out all local variables by moving the stack pointer back
    and restore all saved register values.
 
-With this design, function call could be added easily with minor changes
+With this design, function calls could be added easily with minor changes
 for passing parameters.
 
 ### Arithmetic and Logic Operations
@@ -137,7 +137,7 @@ Arithmetic, logic, and comparison operations are easy to translate.
 
 The difference between Bril and AArch64 is the addressing model.
 AArch64 does the operation directly on the register data.
-Bril does the operation on variables on stack, 
+Bril does the operation on variables on the stack, 
      which should be accessed by memory operations.
 
 For example, `c:int = add a b`
@@ -147,38 +147,38 @@ For example, `c:int = add a b`
 3. `add x8, x8, x9`
 4. store `x9` back to the space for `c`
 
-## Other Instruction
+## Other Instructions
 
-* `const`: store value to stacok by `str`
+* `const`: store value to stack by `str`
 * `id`: load the value by `ldr` and store to a different location by `str`
 * `br`: load the register value to `x8`, then
     1. `cbz x8, label2`
     2. `b   lable1`
 * `jmp`: `b label`
 * `ret`: branch to the return point of current function
-* `print`: calling the `printf` in C. 
+* `print`: calling the `printf` function in C. 
 There is a small generated function called `printbool` 
-to print `true` or `false` string.
+to print `true` or `false` strings.
 
 ## Evaluation
 
-### Experiment Setup
+### Experimental Setup
 
 The experiment is done on a Raspberry Pi 3B+, 
-which has a Quad Core 1.2GHz Broadcom BCM2837 64-bit processor
+which has a quad-core 1.2GHz Broadcom BCM2837 64-bit processor
 and 1GB LPDDR2 SDRAM.
 Generated AArch64 assembly programs are compiled by gcc version 8.3.0.
 
 In order to evaluate the performance of Bril interpreter and 
 native binary programs,
-both approaches are tested on n by n matrices multiplication workload,
-which has `O(n^2)` space usage, `O(n^3)` arithmetic computation, 
-      and `O(n^3)` memory access.
+both approaches are tested on an n-by-n matrix multiplication workload,
+which has `O(n^2)` space usage, `O(n^3)` arithmetic operations, 
+      and `O(n^3)` memory accesses.
 
 The benchmark Bril program is generated by a Python script
 and translated into JSON format for Bril interpreter, 
 so that the translation to JSON will not be counted in performance evaluation.
-`perf` tool is used to report total clock cycles.
+The `perf` tool is used to report total clock cycles.
 
 Each experiment runs for 10 times to report average and 
 variance of experiment data.
@@ -190,9 +190,9 @@ size 5.
 
 ![](https://www.cs.cornell.edu/~hongbo/cs6120/report/matmul.png)
 
-The first plot shows the comparison of clock cycles between Bril interpreter
-and native binary program. 
-The second plot zooms in to show the trend of clock cycles of binary program.
+The first plot shows the comparison of clock cycles between the Bril interpreter
+and native binary programs. 
+The second plot zooms in to show the trend of clock cycles of binary programs.
 The native binary program runs much faster than Brili interpreter
 on the matrix multiplication of the same size.
 
@@ -221,15 +221,15 @@ Let's take a look at the file sizes.
 |JSON size|54K|374K|1.2M|2.8M|5.3M|9.1M|15M|
 
 
-One of the reason is that the Bril code file gets too large to do simple task,
+One of the reasons is that the Bril code file gets too large to do simple tasks
 because current Bril lacks of basic and advanced language features.
-For example, Bril does not have array yet,
-so it is not possible to do matrix multiplication with loop.
+For example, Bril does not have arrays yet,
+so it is not possible to do matrix multiplication with loops.
 Therefore, each multiplication instruction is explicitly generated,
     which means the source code increases cubically.
 
 ## Conclusion
 
-Native binary Bril program runs much faster than Bril interpreter.
-Bril interpreter currently is way too slow due to lack of language features.
-Loading and paring JSON-format Bril code dominates the execution time.
+Native binary Bril programs runs much faster than the Bril interpreter.
+The Bril interpreter currently is way too slow due to the lack of language features.
+Loading and paring the JSON-format Bril code dominates the execution time.
