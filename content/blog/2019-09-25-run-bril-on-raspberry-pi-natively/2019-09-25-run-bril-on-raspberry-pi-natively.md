@@ -2,7 +2,7 @@
 title = "Run Bril on Raspberry Pi Natively"
 extra.author = "Hongbo Zhang"
 extra.author_link = "https://www.cs.cornell.edu/~hongbo/"
-extra.bio = """"""
+extra.bio = """Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architectures. He is also okay archer shooting recurve bow."""
 +++
 
 [Bril][] comes with a reference interpreter `brili`, 
@@ -109,7 +109,7 @@ and move the stack pointer and frame pointer accordingly to leave enough space
 for all variables.
 
 At the end of a function, there is a label indicating the return point.
-Before `ret` to the address in link register, 
+Before the process returns to the address in link register by `ret`, 
 it needs to pop out all local variables by moving the stack pointer back
    and restore all saved register values.
 
@@ -140,22 +140,31 @@ AArch64 does the operation directly on the register data.
 Bril does the operation on variables on the stack, 
      which should be accessed by memory operations.
 
-For example, `c:int = add a b`
+For example, the Bril instruction `c:int = add a b` will be compiled to the
+following sequence of AArch64 instructions:
 
 1. load data `a` to `x8` by `ldr`
 2. load data `b` to `x9` by `ldr`
 3. `add x8, x8, x9`
 4. store `x9` back to the space for `c`
 
+Currently, it does not have register allocation for local variables,
+so it needs to load and store data between registers and memory for each instruction. It is slow but fine for now. Optimizations could be done in future works.
+
 ## Other Instructions
 
-* `const`: store value to stack by `str`
-* `id`: load the value by `ldr` and store to a different location by `str`
-* `br`: load the register value to `x8`, then
-    1. `cbz x8, label2`
-    2. `b   lable1`
-* `jmp`: `b label`
-* `ret`: branch to the return point of current function
+Other Bril instructions are relatively straight-forward to translate:
+
+* `a:int = const 1;`: store value `1` to the stack location 
+of variable `a` by `str`
+* `a:int = id b;`: load the value of `b` by `ldr` 
+and store to the stack location of `a` by `str`
+* `br cond label1 label2`: 
+    1. load the value of boolean variable `cond` to `x8`
+    2. `cbnz x8, label1` if the value is not zero (true), branch to `label1`
+    3. `b   label2` otherwise branch to `label2`
+* `jmp label`: `b label` branch to `label`
+* `ret`: branch to the return point (stored link register) of current function
 * `print`: calling the `printf` function in C. 
 There is a small generated function called `printbool` 
 to print `true` or `false` strings.
@@ -167,7 +176,7 @@ to print `true` or `false` strings.
 The experiment is done on a Raspberry Pi 3B+, 
 which has a quad-core 1.2GHz Broadcom BCM2837 64-bit processor
 and 1GB LPDDR2 SDRAM.
-Generated AArch64 assembly programs are compiled by gcc version 8.3.0.
+Generated AArch64 assembly programs are aseembled and linked by gcc version 8.3.0.
 
 In order to evaluate the performance of Bril interpreter and 
 native binary programs,
@@ -188,7 +197,7 @@ variance of experiment data.
 The experiment runs matrix multiplications from 5 by 5 to 40 by 40, with step
 size 5.
 
-![](https://www.cs.cornell.edu/~hongbo/cs6120/report/matmul.png)
+<img src="matmul.png" style="width: 100%;">
 
 The first plot shows the comparison of clock cycles between the Bril interpreter
 and native binary programs. 
@@ -205,7 +214,7 @@ By removing the `evalProg` function from the Bril interpreter,
 it will only load and parse the JSON file.
 The experiment is re-run to obtain the average cycles spent on loading.
 
-![](https://www.cs.cornell.edu/~hongbo/cs6120/report/cyclediff.png)
+<img src="cyclediff.png" style="width: 100%;">
 
 By comparing the blue line and orange line in the plot,
 it shows that on average most of the cycles are spent on parsing JSON input.
@@ -222,7 +231,7 @@ Let's take a look at the file sizes.
 
 
 One of the reasons is that the Bril code file gets too large to do simple tasks
-because current Bril lacks of basic and advanced language features.
+because current Bril lacks of basic language features.
 For example, Bril does not have arrays yet,
 so it is not possible to do matrix multiplication with loops.
 Therefore, each multiplication instruction is explicitly generated,
@@ -230,6 +239,7 @@ Therefore, each multiplication instruction is explicitly generated,
 
 ## Conclusion
 
-Native binary Bril programs runs much faster than the Bril interpreter.
-The Bril interpreter currently is way too slow due to the lack of language features.
-Loading and paring the JSON-format Bril code dominates the execution time.
+Native binary Bril programs runs much faster than the Bril interpreter on ARMv8 
+processor.
+Currently, loading and paring the JSON-format Bril code dominates the execution 
+time of Bril interpreter. 
