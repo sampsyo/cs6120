@@ -224,7 +224,7 @@ The average cycles spent on evaluating programs,
 
 Let's take a look at the file sizes. 
 
-|n|5|10|15|20|25|30|35|
+|matrix size|5|10|15|20|25|30|35|
 |---|---|---|---|---|---|---|---|
 |binary size|18K|46K|126K|282K|530|902K|1.4M|
 |JSON size|54K|374K|1.2M|2.8M|5.3M|9.1M|15M|
