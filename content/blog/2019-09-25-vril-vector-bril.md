@@ -84,7 +84,7 @@ Vrili executes for loops across the different elements of the array operands in 
 Evaluation
 ----------------------------
 
-Vril makes two major additions to Bril, adding Arrays and extending Briloperations with vector operations. This section describes how we evaluate each of these.
+Vril makes two major additions to Bril, adding Arrays and extending Bril operations with vector operations. This section describes how we evaluate each of these.
 
 ### Evaluating Arrays
 We take three approaches to evaluate arrays,
@@ -113,10 +113,10 @@ We took a similar approach to evaluate our addition of `vadd` in Vril.
 We added tests to generate JSON and text representation of Bril from each other to gain confidence about its translatability. These tests are included in `vtest/parse` and `vtest/print`.
 
 #### Functional testing of `vadd`
-We wrote a program with `vadd` and ran this test in `vrili` with different values for `maxvl` which represents the size of vector lenght of the backend. The test generated expected results. This is included in `vtest/interp/array_vector.bril`.
+We wrote a program with `vadd` and ran this test in `vrili` with different values for `maxvl` which represents the size of vector length of the backend. The test generated expected results. This is included in `vtest/interp/array_vector.bril`.
 
 #### Performance of `vadd`
-Initial motivation for Vril is to reduce hop counts by having vector operators in Bril. This aspect is tested by comparing dynamic instruction count, hop count and lines of code for a loop executed in a scalar manner and a vector operation. 
+The initial motivation for Vril is to reduce hop counts by having vector operators in Bril. This aspect is tested by comparing the dynamic instruction count, hop count, and lines of code for a loop executed in a scalar manner and a vector operation. 
 
 | Program           | Lines of code | Dynamic instructions | Hop count |
 |-------------------|---------------|----------------------|-----------|
@@ -132,8 +132,8 @@ CFG for scalar array operation  | CFG for vector array operation
 
 Conclusion
 --------------------------------------
-We have extended bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow to modify a vector state and arithmetic operations perform operations on array arguments.
+We have extended bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow programs to modify a vector state and arithmetic operations perform operations on array arguments.
 
-The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we written a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes, it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
+The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we wrote a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes: it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
 
 [cs6120]: @/_index.md
