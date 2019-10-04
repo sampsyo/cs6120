@@ -87,7 +87,8 @@ notes = [
   "Dominators & post-dominators.",
   "An algorithm for finding dominators.",
   "Reducible control flow & natural loops.",
-  "Loop-invariant code motion.",  # Maybe move this after SSA.
+  "Loop-invariant code motion.",
+  "Homework: Implement the algorithm for finding domintors. For bonus “points,” also try computing the dominance tree and the domination frontier.",
 ]
 
 [[classes]]
@@ -96,6 +97,7 @@ notes = [
   "Defining SSA.",
   "Derive the algorithms for converting to and from SSA.",
   "An application: global value numbering.",  # Maybe needs its own session.
+  "Homework: Implement the “into SSA” and “out of SSA” transformations on Bril functions.",
 ]
 
 
@@ -103,6 +105,12 @@ notes = [
 
 [[classes]]
 title = "Alias Analysis"
+notes = [
+  "Stating the alias analysis problem. May alias & must alias.",
+  "Instantiating data flow for intraprocedural alias analysis.",
+  "Heap models.",
+  "Scalable & precise alias analysis remains an open problem. For much more, see [*Pointer Analysis*](https://yanniss.github.io/points-to-tutorial15.pdf), a tutorial by Yannis Smaragdakis and George Balatsouras.",
+]
 
 [[classes]]
 title = "Alias-Based Optimization"

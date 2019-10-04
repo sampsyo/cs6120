@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block main %}
+{{ section.content | safe }}
+
+{% set blog = get_section(path="blog/_index.md") %}
+<h2>
+  <a href="{{ blog.permalink }}">Latest Blog Posts</a>
+  <a href="{{ get_url(path="rss.xml", trailing_slash=false) | safe }}">
+    <img src="./img/rss.svg" class="rss">
+  </a>
+</h2>
+
+{% for post in blog.pages | slice(end=7) %}
+<article class="small">
+  <time datetime="{{ post.date }}">
+    {{ post.date | date(format="%b %e") }}
+  </time>
+  <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
+</article>
+{% endfor %}
+
+<p>
+  See <a href="{{ blog.permalink }}">all posts</a> on the course blog.
+</p>
+{% endblock main %}
