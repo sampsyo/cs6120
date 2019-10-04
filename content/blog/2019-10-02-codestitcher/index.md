@@ -25,18 +25,18 @@ Informally, given a program, the Pettis-Hansen method (hereafter referred to as 
 
 Let's go through a brief example. Suppose the weighted call graph is as follows.
 
-<img src="https://i.imgur.com/tvee3J0.png" style="width=100%">
+<img src="ph-step-1.png" style="width=100%">
 
 
 From the above graph, we see that *A* calls *B* 100 times, *B* calls *C* 30 times, and so on. In the first iteration of the algorithm (step 4), we pick the edge with the largest weight. That's *AB*. We then combine nodes *A* and *B* to arrive at the following graph.
 
-<img src="https://i.imgur.com/cSvb1SL.png" style="width=100%">
+<img src="ph-step-2.png" style="width=100%">
 
 
 We then combine *C* and *D*.
 
 
-<img src="https://i.imgur.com/Ua3UW3I.png" style="width=100%">
+<img src="ph-step-3.png" style="width=100%">
 
 
 Here, we obviously combine *A-B* and *C-D*, but recall the rule about concatenating node names. There are four ways to coalesce the nodes:
@@ -50,14 +50,14 @@ Based on the above, *B-A-C-D* is the optimal ordering, since it maximizes the we
 ### Basic block reordering
 PH also works at the basic block level. PH conducts basic block reordering based on "hot" and "cold" portions of code to maximize spatial locality of the program. This is done by moving the basic blocks that run the most frequently to the top of the procedure. Below is a diagram showing how this works. "Primary" refers to "hot" code while "Fluff" refers to "cold" code.
 
-<img src="https://i.imgur.com/74Daxfj.png" style="width: 100%">
+<img src="hotcold.png" style="width: 100%">
 
 As we reorder blocks, we will need to insert additional jumps to preserve the control flow. Therefore, we wish to order basic blocks in a way that minimizes these unconditional jumps. This is to prevent unnecessary instruction pointer moves during the execution of the program.
 
 ### Shortcomings of PH
 We have a method for reordering entire functions, but this method does not consider the relationship between individual basic blocks and functions. Consider the following call graph presented in the Codestitcher paper, in which function *A* has three basic blocks, *A0*, *A1*, and *A2*:
 
-<img src="https://i.imgur.com/sKXOH1O.png" style="width: 100%">
+<img src="codestitcher-example.png" style="width: 100%">
 
 Using PH, a viable block layout would be *M-A-B-C*, which we expand to *M-A0-A1-A2-B-C*. If we add up the weights of consecutive blocks (hereafter referred to as control flow transfers), we arrive at 180 (100 for *M-A0* and 80 for *A0-A1*). This is far from optimal, as we can generate the layout *M-A0-A1-B-A2-C* with 280 control flow transfers, an improvement of over 50% from before. Note that we use this metric because it tells us how often code will "fall-through." We want to maximize fall-throughs as this improves spatial locality.
 
@@ -120,7 +120,7 @@ To do the actual testing, the authors generate profiles over multiple runs of ea
 
 Here are the results when testing the programs:
 
-<img src="https://i.imgur.com/tCF1aul.png" style="width: 100%">
+<img src="codestitcher-evaluation.png" style="width: 100%">
 
 Based on their evaluation, Codestitcher has a visible performance benefit on three of the programs (MySQL, Clang, and Firefox), while PHP and Python show little to no improvement. In fact, most of the code layout optimization methods followed a similar trend. Why is that?
 
@@ -151,7 +151,7 @@ One final axis that the paper decided to evaluate Codestitcher against was perfo
 2. Overhead to construct the weighted CFG
 3. Overhead to actual reorder and compute an optimal layout
 
-<img src="https://i.imgur.com/kXDMIpr.png" style="width: 100%">
+<img src="cs-table.png" style="width: 100%">
 
 While the profiling overhead is much lower for CS, the added costs from building the weighted CFG and engaging in code reordering are important to keep into mind when making this comparison. For example, their basic block chaining method has a worse time complexity than that of PH, since it incorporates the approximation algorithm which is slower than PH's greedy heuristic. We think it would have been interesting to also do an overhead comparison to PGO-PH and PGO-C3, which would have had a more fair comparison with regards to layout construction and trace processing overhead.
 
