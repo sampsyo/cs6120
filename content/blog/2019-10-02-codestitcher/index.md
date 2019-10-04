@@ -79,7 +79,7 @@ In order to build our weighted CFG for layout analysis, we need to collect data 
 ### Basic Block Chaining
 We define a basic block chain as a directed sequence of basic blocks where no jumps can occur until the end of the last basic block. Generating a maximum-cardinality set of these chains would constitute the fewest number of unconditional jumps required. The authors denote this problem the *fall-through maximization problem*. This problem is the same as the maximum path cover problem, which is **NP-hard**. PH uses a greedy heuristic to approach this but does not provide a theoretical guarantee of how close to optimal the generated solution is.
 
-There *is* is a 1/2-approximation algorithm for this problem guarantees that the weight of the path cover is within *1/2* of the optimal solution. The authors tested this algorithm on one test machine and found its performance to be only 0.03% over PH's heuristic, which makes it unclear whether this algorithm is really useful. Codestitcher uses a hybrid of PH's method and the approximation algorithm, which provides better results than either algorithm run individually.
+There *is* is a 1/2-approximation algorithm for this problem guarantees that the weight of the path cover is within *1/2* of the optimal solution. Codestitcher uses a hybrid of PH's method and the approximation algorithm, which provides better results than either algorithm run individually. However, this improvement is minimal---only around 0.03% over the approximation algorithm (according to the authors' tests), so it is unclear why the authors added so much complexity to this problem for minimal gain.
 
 ### Hierarchical Code Collocation
 
