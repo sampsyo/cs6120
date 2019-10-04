@@ -25,18 +25,18 @@ Informally, given a program, the Pettis-Hansen method (hereafter referred to as 
 
 Let's go through a brief example. Suppose the weighted call graph is as follows.
 
-<img src="ph-step-1.png" style="width=100%">
+<img src="ph-step-1.png" style="width: 100%">
 
 
 From the above graph, we see that *A* calls *B* 100 times, *B* calls *C* 30 times, and so on. In the first iteration of the algorithm (step 4), we pick the edge with the largest weight. That's *AB*. We then combine nodes *A* and *B* to arrive at the following graph.
 
-<img src="ph-step-2.png" style="width=100%">
+<img src="ph-step-2.png" style="width: 100%">
 
 
 We then combine *C* and *D*.
 
 
-<img src="ph-step-3.png" style="width=100%">
+<img src="ph-step-3.png" style="width: 100%">
 
 
 Here, we obviously combine *A-B* and *C-D*, but recall the rule about concatenating node names. There are four ways to coalesce the nodes:
