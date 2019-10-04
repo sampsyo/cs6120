@@ -63,5 +63,7 @@ Testing was focused on correctly interpreting several new files added to the Bri
 
 Some evaluation details of note include floating-point exactness testing and TypeScript compilation limitations.  Some simple floating-point operations [provided](https://github.com/Checkmate50/bril/blob/master/test/interp/float.bril) to `brili` were compared to a similar C implementation ([compiled online](https://www.onlinegdb.com/online_c_compiler)) and found to be identical in precision.  
 I originally intended to verify TypeScript compilation by interpreting the resulting code; that is, by running the command:
-`ts2bril src.ts | bril2txt | bril2json | brili`
+
+    ts2bril src.ts | bril2txt | bril2json | brili
+
 Due to the limitations in the `ts2bril` compiler described above, however, I was unable to achieve this goal with my TypeScript [array test file](https://github.com/Checkmate50/bril/blob/arrays/test/ts/array.ts).
