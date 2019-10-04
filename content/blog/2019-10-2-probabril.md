@@ -81,7 +81,7 @@ To the language specification I have added three instructions,
 
  - `flip` : an instruction which stores a random boolean in its target destination
  - `obv` : an observe primative, used for conditioning, which can be thought of as an assert --- if it fails, the world and any mass on it are destroyed, netting a sub-deistribution. If one thinks of programs as being normalized distributions (that is, conditioned on a program finishing), then this mass is re-distributed to the other runs, and this instruction is equivalent to ra restart of the program.
- - `clr` : clears the environment variables. `obv` can be compiled to a branch which restarts the program, with a `clr`. 
+ - `clear` : clears the environment variables. `obv` can be compiled to a branch which restarts the program, with a `clear`. 
 
 ### Background on Exact Inference
 
@@ -92,11 +92,13 @@ There are at least two canonical ways of approaching this problem: one from prog
 are pairs consisting of the program counter and the environment state, and the weight $T_{s_1, s_2}$ of the edge between states $s_1$ and $s_2$ is the probability of transitioning from state $s_2$ from state $s_1$. Note that this graph is incredibly sparse, as each state can only move to one or two other states. 
  
 #### [ 1 ]  Abstract Interpretation and Jacobi Iterates
-The first of these is related to dataflow analysis. Note that the space of  distributions over states, which we will call $\Delta \mathcal S$, can be endowed with a natural order $\preceq$ on wich $T$ is monotonic, making it a complete partial order (CPO), i.e., an ordered set with arbitrary superema. Because it is a CPO and $f$ is monotonic, there is a least fixed point of $x$ of $f$ such that $x \succeq s$ for any $s \in \mathcal S$, computed by
+The first thing we can do is in the same spirit as information flow analysis: we interpret programs abstractly --- that is, run them by keeping track of some some restricted information that necessarily must be true about each variable, rather than its exact value.  
 
-\[ x := \mathrm {lfp} (f,s) =  \lim_{n \to \infty} f^{n} (s)\] 
+Consider the abstract domain $\mathcal D = (2^{\Delta \mathcal S})$ distributions over states, which we will call $\Delta \mathcal S$, can be endowed with a natural order $\preceq$ on wich $T$ is monotonic, making it a complete partial order (CPO), i.e., an ordered set with arbitrary superema. Because it is a CPO and $f$ is monotonic, there is a least fixed point of $x$ of $f$ such that $x \succeq s$ for any $s \in \mathcal S$, computed by
 
-The values obtained by stopping at any given point are called the Jacobi iterates, and are the basis of Cousot style abstract interpretation. However, even if the state space $\mathcal S$ is finite, the set of distributions over them is decidedly not --- and this procedure will not terminate. In practice, to get termination people sacrifice completeness to get a sound, terminating abstract interpreter, pulling tricks such as [widening](https://en.wikipedia.org/wiki/Widening_(computer_science)#Use_in_Abstract_Interpretation). 
+\[ x := \mathrm {lfp}^{\preceq} (f,s) =  \lim_{n \to \infty} f^{n} (s)\] 
+
+The values obtained by stopping at any given point are called the Jacobi iterates, and are the basis of Cousot style abstract interpretation. However, even if the state space $\mathcal S$ is finite, the set of distributions over them is decidedly not --- and this procedure will not terminate. In practice, to get termination people sacrifice completeness to get a sound, terminating abstract interpreter, pulling tricks such as [widening](https://en.wikipedia.org/wiki/Widening_(computer_science)#Use_in_Abstract_Interpretation).  In this setting, this 
 
 #### [ 2 ]  Stationary Distributions on Markov Chains
 The second natural view of a probabilistic program is as a Markov chain. In a very clear way, a program describes exactly the data required to transition from one state (including both the environment variables and the program counter) to a distribution over next states. In particular, the transition $T_{i,j}$ is the probability of transitioning to state $j$ given that you're in state $i$. For a deterministic program, $T_{i,j}$ is a function, and therefore has exactly a single one in each row, and zeros elsewhere; this structure is
