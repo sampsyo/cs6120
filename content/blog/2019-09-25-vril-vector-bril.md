@@ -68,7 +68,7 @@ There are two types of vector ops in Vril: configuration ops and arithmetic/logi
 ### Adding vector ops to Vril
 For now there is only one configuration op: `setvl`. 
 ```
-vl: int setvl val
+vl: int = setvl val
 ```
 is used to request `val` lanes to the IR and `setvl` returns `vl:=val` if `vl<maxvl` or `vl:=maxvl` if `vl>=maxvl`.
 We have also implemented only one arithmetic vector op `vadd` as a proof of concept:
