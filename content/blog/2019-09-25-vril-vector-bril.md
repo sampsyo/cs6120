@@ -43,7 +43,7 @@ array_name : array = init l
 
 Vril adds array operations to Bril of the form,
 ```
-array/ variable: type = aop args
+variable: type = aop args
 ```
 ### Supported array operations
 Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to arrays by moving one element of the array to a variable and performing any arithmetic or logic operation that are already supported in the original bril, and 2) we can perform *vector* accesses to the arrays by using new vector operations that take arrays as arguments directly.
