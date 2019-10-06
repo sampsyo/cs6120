@@ -18,7 +18,7 @@ Manual vectorization allows explicit control, but usually becomes architecture s
 
 Auto-vectorization aims to improve the programmer's productivity by performing a compiler pass to automatically generate vector instructions in a given program. However, in practice help from the programmer is needed to achieve competitive vectorized codes, either fully manual or with the user annotations.
 
-An additional benefit of auto-vectorization and most user annotations is the decoupling the program specification and underlying execution which is architecture-specific.The vectorizable source will be portable to different architectures and the compiler will dictate if it can be vectorized or how well it can exploit the program's DLP in order to generate the architecture-specific vector instructions.
+An additional benefit of auto-vectorization and most user annotations is decoupling the program specification and underlying execution which is architecture-specific. The vectorizable source will be portable to different architectures and the compiler will dictate if it can be vectorized or how well it can exploit the program's DLP in order to generate the architecture-specific vector instructions.
 
 This project is aiming at having these general vector specifications at the compiler-level which:
 - permits intrinsics or vector assembly instructions to be translated into bril IR
