@@ -12,8 +12,9 @@ In principle vectors are just one-dimensional arrays. An array is a collection o
 There are three popular options to program for vector architectres, a.k.a. *vectorization*:
 - manual vectorization: Explicitly using vector operations in assembly or intrinsics.
 - user annotations or [pragmas](https://info.ornl.gov/sites/publications/files/Pub69214.pdf): Help the compiler find the *vectorizable* regions of code and inform the compiler about lack of dependences and other situations that would typically restrict the vectorization.
-- auto-vectorization: Rely directly on the compiler vectorizer which is typically enabled by the flag `-ftree-vectorize` and by default at `-O3` in [gcc](https://www.gnu.org/software/gcc/projects/tree-ssa/vectorization.html).
-Programmer lead vectorization allows explicit control, but usually becomes architecture specific and assumes vector-like programming from the programmer.
+- auto-vectorization: Rely directly on the compiler vectorizer. In the case of [gcc](https://www.gnu.org/software/gcc/projects/tree-ssa/vectorization.html), it is typically enabled by the flag `-ftree-vectorize` and by default at `-O3`.
+
+Manual vectorization allows explicit control, but usually becomes architecture specific and assumes vector-like programming from the programmer.
 
 Auto-vectorization aims to improve the programmer's productivity by performing a compiler pass to automatically generate vector instructions in a given program. However, in practice help from the programmer is needed to achieve competitive vectorized codes, either fully manual or with the user annotations.
 
