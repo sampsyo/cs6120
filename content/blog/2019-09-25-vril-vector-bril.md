@@ -57,8 +57,7 @@ Similarly, we can move a value stored in a variable `var` into one of the array'
 array_name: int = v2a var index
 ```
 
-To put a constant into an array, the constant should first be put to a variable.
-To operate with a scalar operator (for instance `print`) on a single element, the array element has to first be put to a variable.
+Constants are inserted to arrays through variables, just like the original Bril.
 
 Vector ops
 ----------------------------
