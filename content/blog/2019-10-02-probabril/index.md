@@ -28,13 +28,21 @@ The main bit of the project was to write an abstract interpreter that solves for
   y : bool = flip;
   ret
 ```
-we should be able to see represents the distribution
-\[
-p \left(\begin{matrix}x \land y  \\
+we should be able to see represents the distributions
+
+\[ x \]
+
+$$ \left(\begin{array}{}
+  1 & 0 \\
+  0 & 1
+\end{array}\right)
+$$
+
+
+$$ p \left(\begin{matrix}x \land y  \\
 x \land \lnot y  \\
 \lnot x \land y \\\lnot x \land \lnot y  \end{matrix}\right)
- = \left(\begin{matrix} .25 \\ .25 \\ .25 \\ .25 \end{matrix}\right)
-\]
+ = \left(\begin{matrix} .25 \\ .25 \\ .25 \\ .25 \end{matrix}\right)$$
 
 By repeatedly running a program and recording the frequencies of resulting environments (Monte Carlo sampling), one can get a rough approximation of the distribution, but this can be less than satisfying for a number of reasons:
 
@@ -57,12 +65,12 @@ end:
 ```
 which one can easily see results in the distribution
 
-\[
+$$
 p \left(\begin{matrix}x \land y \land \lnot z \vphantom{\frac{1}{3}} \\
 x \land \lnot y \land \lnot z \vphantom{\frac{1}{3}} \\
 \lnot x \land y \land \lnot z \vphantom{\frac{1}{3}}  \end{matrix}\right)
  = \left(\begin{matrix} \frac{1}{3} \\\frac{1}{3} \\ \frac{1}{3}  \end{matrix}\right)
-\]
+$$
 ... will never terminate if we just split worlds on flips, because there's 
 
 The goal is to design an algorithm which soundly deals with issues like this, which exactly computes distributions over any program with finite state space in a finite number of steps.
@@ -86,8 +94,7 @@ To the language specification I have added three instructions,
 ### Background on Exact Inference
 
 There are at least two canonical ways of approaching this problem: one from programming languages, and one from ergodic theory. In both cases, a program $P$ can be thoguht of as a weighted graph $(\mathcal S, T)$, where the vertices 
-
-\[ \mathcal S := \mathrm{Instructions} \times \mathrm{Env}  \]
+$$ \mathcal S := \mathrm{Instructions} \times \mathrm{Env}  $$
 
 are pairs consisting of the program counter and the environment state, and the weight $T_{s_1, s_2}$ of the edge between states $s_1$ and $s_2$ is the probability of transitioning from state $s_2$ from state $s_1$. Note that this graph is incredibly sparse, as each state can only move to one or two other states. 
  
@@ -96,7 +103,7 @@ The first thing we can do is in the same spirit as information flow analysis: we
 
 Consider the abstract domain $\mathcal D = (2^{\Delta \mathcal S}, \subseteq, \varnothing, \bigcup)$ of sets of distributions over states, which we will call $\Delta \mathcal S$, can be endowed with a natural order $\preceq$ on wich $T$ is monotonic, making it a complete partial order (CPO), i.e., an ordered set with arbitrary superema. Because it is a CPO and $f$ is monotonic, there is a least fixed point of $x$ of $f$ such that $x \succeq s$ for any $s \in \mathcal S$, computed by
 
-\[ x := \mathrm {lfp}^{\preceq} (f,s) =  \lim_{n \to \infty} f^{n} (s)\] 
+$$ x := \mathrm {lfp}^{\preceq} (f,s) =  \lim_{n \to \infty} f^{n} (s) $$
 
 The values obtained by stopping at any given point are called the Jacobi iterates, and are the basis of Cousot style abstract interpretation. However, even if the state space $\mathcal S$ is finite, the set of distributions over them is decidedly not --- and this procedure will not terminate. In practice, to get termination people sacrifice completeness to get a sound, terminating abstract interpreter, pulling tricks such as [widening](https://en.wikipedia.org/wiki/Widening_(computer_science)#Use_in_Abstract_Interpretation).  In this setting, this 
 
@@ -109,18 +116,29 @@ Because it is a contracting map, the Banach fixpoint theorem tells use that a fi
 
 Given an oracle for computing the eigenvectors of this transition matrix $\mathbf T$, the right thing to do is clear:
 
-\[ \lim_{n \to \infty}  \mathbf T^n \vec s  = \lim_{n \to \infty}  \mathbf T^n \vec s \]
+$$ \lim_{n \to \infty}  \mathbf T^n \vec s  = \lim_{n \to \infty}  \mathbf U \Sigma^n \mathbf V^T \vec s $$
 
+where $\mathbf U \Sigma \mathbf V^T$ is the singular decomposition of $\mathbf T$ --- that is, $\mathbf U$ and $\mathbf V$ are unitary and $\Sigma$ is a diagonal matrix of the singular values of $\mathbf T$. Because we know $\mathbf T$ is a (sub)stochastic matrix, we know that it can have no eigenvalue greater than 1, and if the program has any chance of returning, the return statement corresponds to an eigenvector that does in fact have corresponding eigenvalue 1. It is easy to see that any singular value that is less than 1 will ultimately go to zero, and 
 
 <!--hr/-->
 ### Algorithm
 
 The key insight is that the limits point of a single cycle can be computed the moment you spot the cycle, and know where all of the "off-ramps" are. For instance, if your program looks like this:
 
-![I](images/graph-sketch.png)
+![example-graph](graph-sketch.png)
 
-\[ \begin{bmatrix}\end{bmatrix} \]
+then the moment you've seen the path $a \to b \to c$, and realized that the probability mass has dropped from $1$ to $\frac{1}{8}$ by going around the circle, we see that that we will ultiately end up with a geometric series
 
+$$ 1 + \frac{1}{8} + \frac{1}{8^2} + \cdots  =  \frac{1}{1 - \frac{1}{8}} $$ 
+
+That is, we can immediately pass to a limit, by removing all weight at the origin of the cycle, and multiplying the probability masses which branch off by $\frac{8}{7}$, which means the resulting graph looks like this:
+
+
+In any case, this results in the following algorithm:
+
+```javascript
+let x = $a$.
+```
 
 #### How is this possible?
 

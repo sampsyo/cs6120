@@ -191,9 +191,16 @@ article {
       margin-right: 0.5rem;
     }
   }
+  
+  p > img {
+      width : 100%
+  }
 }
 
 pre {
+    font-weight: 50;
+    margin-left : 2em;
+    font-size: 110%;
     line-height: 120%;
 }
 
