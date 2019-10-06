@@ -37,6 +37,12 @@ Then, the rest of the text file is the Markdown text of your blog post.
 
 If you want to use math in your blog post, put `latex = true` in your `[extra]` section to enable [KaTeX][]. Then you can use `$\pi$` for inline math and `\[ e^{i\pi} = 0 \]` for display math.
 
+To include images or other resources in your post, make your post into a directory.
+That is, make a new directory called `YYYY-MM-DD-title` inside `content/blog/`.
+Then, put your text in a file called `index.md` inside that.
+Put your images in the same directory and refer to them with relative paths.
+See [the Zola docs on assets][zola-assets] for more details.
+
 You can preview your writing with any Markdown renderer.
 To see what it will look like when published, [install Zola][zola-install] and type `zola serve` to preview the entire site.
 
@@ -44,4 +50,5 @@ To see what it will look like when published, [install Zola][zola-install] and t
 [toml]: https://github.com/toml-lang/toml
 [markdown]: https://daringfireball.net/projects/markdown/
 [zola-install]: https://www.getzola.org/documentation/getting-started/installation/
+[zola-assets]: https://www.getzola.org/documentation/content/overview/#assets-colocation
 [katex]: https://katex.org
