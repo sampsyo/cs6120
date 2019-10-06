@@ -50,11 +50,11 @@ Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to a
 
 In order to move data from an element of an array `arr[idx]` to a variable `var`, we can use `a2v` op:
 ```
-var: int = a2v arr idx
+var: int = a2v array_name idx
 ```
 Similarly, we can move a value stored in a variable `var` into one of the array's element `arr[idx]`:
 ```
-arr: int v2a var index
+array_name: int = v2a var index
 ```
 
 To put a constant into an array, the constant should first be put to a variable.
