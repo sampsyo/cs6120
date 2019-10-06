@@ -21,7 +21,7 @@ Auto-vectorization aims to improve the programmer's productivity by performing a
 An additional benefit of auto-vectorization and most user annotations is decoupling the program specification and underlying execution which is architecture-specific. The vectorizable source will be portable to different architectures and the compiler will dictate if it can be vectorized or how well it can exploit the program's DLP in order to generate the architecture-specific vector instructions.
 
 This project is aiming at having these general vector specifications at the compiler-level which:
-- permits intrinsics or vector assembly instructions to be translated into bril IR
+- permits intrinsics or vector assembly instructions to be translated into Bril IR
 - permits architecture specific backend to easily generate an executable
 - naturally expose opportunities for vector optimizations at bril
 - offer to the compiler (automatic) vectorizer the possibility of generating bril IR vector operations that can later be mapped into ISA vector instructions
