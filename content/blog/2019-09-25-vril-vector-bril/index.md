@@ -23,8 +23,8 @@ An additional benefit of auto-vectorization and most user annotations is decoupl
 This project is aiming at having these general vector specifications at the compiler-level which:
 - permits intrinsics or vector assembly instructions to be translated into Bril IR
 - permits architecture specific backend to easily generate an executable
-- naturally expose opportunities for vector optimizations at bril
-- offer to the compiler (automatic) vectorizer the possibility of generating bril IR vector operations that can later be mapped into ISA vector instructions
+- naturally expose opportunities for vector optimizations at Bril
+- offer to the compiler (automatic) vectorizer the possibility of generating Bril IR vector operations that can later be mapped into ISA vector instructions
 
 ### Link to project
 [Vril](https://github.com/sa2257/vril) is our public repository.
@@ -46,7 +46,7 @@ Vril adds array operations to Bril of the form,
 variable: type = aop args
 ```
 ### Supported array operations
-Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to arrays by moving one element of the array to a variable and performing any arithmetic or logic operation that are already supported in the original bril, and 2) we can perform *vector* accesses to the arrays by using new vector operations that take arrays as arguments directly.
+Vril can operate on arrays in two ways: 1) We can perform *scalar* accesses to arrays by moving one element of the array to a variable and performing any arithmetic or logic operation that are already supported in the original Bril, and 2) we can perform *vector* accesses to the arrays by using new vector operations that take arrays as arguments directly.
 
 In order to move data from an element of an array `arr[idx]` to a variable `var`, we can use `a2v` op:
 ```
@@ -130,8 +130,8 @@ As underscored in the code inspection, array initialization overhead is sizable 
 
 Conclusion
 --------------------------------------
-We have extended bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow programs to modify a vector state and arithmetic operations perform operations on array arguments.
+We have extended Bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended Bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow programs to modify a vector state and arithmetic operations perform operations on array arguments.
 
-The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we wrote a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes: it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
+The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended Bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we wrote a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes: it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
 
 [cs6120]: @/_index.md
