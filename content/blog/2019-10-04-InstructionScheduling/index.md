@@ -82,7 +82,7 @@ This criteria is broad enough to account for all serialization constraints. Depl
 
 | Instruction List | Dependency Dag | Reordered Instructions |
 | ---------------- | -------------- | --------------
-| <img src="ins1.png"> | <img src="dag.png" >| <img src="ins2.png" >
+| <img src="ins1.png" style="width: 100%"> | <img src="dag.png" style="width: 100%">| <img src="ins2.png" style="width: 100%">
 
 
 This dag is created by scanning backward through the block, and for each instruction, finding the definitions or uses that precede it. As such, this construction costs O(n<sup>2</sup>) where n is the number of instructions in the basic block.
