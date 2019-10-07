@@ -37,7 +37,7 @@ The authors wanted to target a range of architectures which could differ in what
 ### Assumptions
 To create an algorithm that was generalizable across architectures, the authors made three important assumptions to simplify the problem:
 1. Each memory location is assumed to be referenced by an offset from one base register.
-2. All pointers references are assumed to alias (though this can be made tighter if the compiler produced aliasing information).
+2. All pointers are assumed to alias (though this can be made tighter if the compiler produced aliasing information).
 3. The target architecture will have a hardware hazard detection with interlock such that it is not necessary to remove all hazards.
 
 ### Technical Approach
@@ -81,7 +81,7 @@ This dag representation differs from other literature on instruction ordering as
 
 Now, using this dag, any scheduling order following a topological sort will produce an execution indistinguishable from the original order.
 
-Their algorithm travels down the dag from the roots and selects *candidates* ---  instructions whose immediate predecessors have all been scheduled (or root instructions).
+Their algorithm travels down the dag from the roots and selects *candidates*---instructions whose immediate predecessors have all been scheduled (or root instructions).
 
 When choosing the "best" candidate to schedule, they provide two guidelines:
  1. Schedule an instruction that will not interlock with the one just scheduled (if possible).
@@ -112,9 +112,9 @@ The overall complexity is O(n<sup>2</sup>). This is significantly better compare
 
 ### Experiments
 The authors implemented this instruction scheduler and made the following observations from benchmark results:
- - In practice, these heuristics effectively remove avoidable interlocks and runs in approximately linear time.
+ - In practice, these heuristics effectively remove avoidable interlocks and run in approximately linear time.
  - The memory referencing assumptions greatly improve results, and effectiveness increases with better aliasing information (provided by other parts of the compiler).
- - Carry/Borrow subgraph do not improve much for most programs. Significant improvements only occur when the program is computationally intensive. 
+ - The carry/borrow subgraph does not improve much for most programs. Significant improvements only occur when the program is computationally intensive. 
  - Using more versatile dags proposed by other literature only slightly improves the instruction scheduling effectiveness. 
 
 The referenced additional information on performance in the [[Joh86]](https://dl.acm.org/citation.cfm?id=13321) paper which tested load/store scheduling and showed a 5% improvement. This improvement was measured by the reduction in interlocks caused by load/store instructions. 
