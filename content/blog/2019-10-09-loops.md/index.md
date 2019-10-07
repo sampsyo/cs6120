@@ -197,7 +197,7 @@ for (int i = 0; i < MAXN; i++)
         A[i][j]++;
 
 for (int j=0; j<MAXN; j+=2)
-    for (int i = 0; i < MAXN; i++)
+    for (int i = 0; i < MAXN; i++)t
         B[j][i]++;
 ```
 Thus iterating in the optimal order for both arrays.
