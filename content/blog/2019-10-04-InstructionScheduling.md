@@ -8,7 +8,7 @@ name = "Wen-Ding Li"
 
 ## Introduction
 
-A pipelined architecture allows for machine instructions to overlap each other for greater throughput, but it comes with the cost of *pipeline hazards*. These hazards emerge when one structural or data resource is needed by more than one instruction, forcing the hardware to resolve the hazard by delaying subsequent instructions for one cycle, known as a pipeline interlock. These interlocks decrease throughput and this paper proposes a heuristic way to minimize interlocks that has a better worst-case runtime than other solutions while maintaining comparable results. 
+A pipelined architecture allows for machine instructions to overlap each other for greater throughput, but it comes with the cost of *pipeline hazards*. These hazards emerge when one structural or data resource is needed by more than one instruction, forcing the hardware to resolve the hazard by delaying subsequent instructions for one cycle, known as a pipeline interlock (a.k.a., stalls). These interlocks decrease throughput and this paper proposes a heuristic way to minimize interlocks that has a better worst-case runtime than other solutions while maintaining comparable results. 
 
 ## Background
 ### Pipelined Processors
@@ -24,9 +24,23 @@ You may recall from CS 3410 or another equivalent systems class that there are t
 We can ignore control hazards as this paper only reorders instructions within a basic block.
 
 The architecture of this paper is based on has three hazards:
-1. Loading a register from memory followed by using *that* register as a source.
-2. Storing to any memory location followed by loading from any location.
-3. Loading from memory followed by using *any* register as the target of an arithmetic/logical instruction or a load/store with address modification.
+1. Loading to a register from memory and then using that register as a source. This is commonly known as a load-use hazard.
+2. Any store followed by any load.
+3. Loading from memory followed by any arithmetic or logical instruction.
+
+For example, this program with a load-use hazard:
+
+    load    0(sp), r0
+    add     #1, r0, r0  //hazard caused by use of r0 immediately after load
+    add     #5, r1, r1
+
+Rescheduling it as follows eliminates the hazard:
+
+    load    0(sp), r0
+    add     #5, r1, r1
+    add     #1, r0, r0  //r0 not used immediately after load
+
+We were unsure of why the second and third hazards presented by the paper were problematic, and we will discuss it later in this post. For now, it is sufficient to accept that they are hazards for their target architecture.
 
 ## Summary
 
@@ -37,11 +51,12 @@ The authors wanted to target a range of architectures which could differ in what
 ### Assumptions
 To create an algorithm that was generalizable across architectures, the authors made three important assumptions to simplify the problem:
 1. Each memory location is assumed to be referenced by an offset from one base register.
+   - We were unsure of why this was needed. Our best guess is that more complex addressing modes could take too long calculate, such as [scaled indexing](https://en.wikipedia.org/wiki/Addressing_mode#Scaled) which could need multiplication, or [memory indirect indexing](https://en.wikipedia.org/wiki/Addressing_mode#Memory_indirect) which could take multiple cycles to return.
 2. All pointers are assumed to alias (though this can be made tighter if the compiler produced aliasing information).
 3. The target architecture will have a hardware hazard detection with interlock such that it is not necessary to remove all hazards.
 
 ### Technical Approach
-This optimization is carried out by reordering assembly instructions after code generation and register allocation. It acts on basic blocks and it's a transformation from assembly to assembly. To create such a transformation, scheduling constraints first need to be modeled and then the heuristic for selection order must be applied while abiding by those constraints. 
+This optimization is carried out by reordering assembly instructions after code generation and register allocation. It acts on basic blocks and it's a transformation from assembly to assembly. To create such a transformation, scheduling constraints first need to be modeled and then the heuristic for selection order must be applied while abiding by those constraints. The scheduling contraints provide all sets of orderings that guarantees correctness and then the heuristic chooses the ordering that the most likely to have the least amount of hazards.
 
 #### Expressing Constraints
 As instructions cannot be arbitrarily reordered due to dependencies, they are placed in a directed acyclic graph (dag) where each node (an instruction) succeeds the instruction(s) it is dependent on. In terms of scheduling, this means that parent nodes must be executed before child nodes, and root nodes do not have dependencies so they can be placed wherever convenient. 
@@ -74,7 +89,7 @@ This dag is created by scanning backward through the block, and for each instruc
 
 There are also carry/borrow dependencies which are definitions or uses of carry/borrow bits, which should be treated similarly to a register since they are another stateful processor resource. They are changed during arithmetic operations where a carry or borrow is used, making them frequently defined but rarely used. Adding them to the dependency dag would be unnecessarily constraining, so the authors placed them in a special subgraph for instructions that uses a carry or borrow.
 
-This dag representation differs from other literature on instruction ordering as they include edges for definitions vs definitions. This is necessary for the final definition of a resource at the end of a basic block (as it could be used by instructions that follow the basic block).
+This dag representation differs from other literature on instruction ordering as they include edges for definitions vs definitions. This is necessary for the final definition of a resource at the end of a basic block (as it could be used by instructions that follow the basic block), or for defs to one register followed by a read from the same register.
 
 
 #### Selecting an Order: The Static Evaluator
@@ -90,7 +105,7 @@ When choosing the "best" candidate to schedule, they provide two guidelines:
 Lookaheads would definitely improve scheduling, but that also significantly increases worst-case complexity. Instead, they use three concrete heuristics that evaluate the candidates' static local properties. In order of importance, they are as follows:
  1. Whether an instruction interlocks with any of its immediate successors.
  2. The number of immediate successors.
- 3. The length of the longest path from the instruction to the leaves.
+ 3. The height of the daf rooted at that node.
 
 These criteria yields instructions which:
 1. May cause interlocks. This is desirable because it allows instructions that are likely to interlock to be scheduled as early as possible as that gives the greatest number of candidates for subsequent instructions.
@@ -115,20 +130,26 @@ The authors implemented this instruction scheduler and made the following observ
  - In practice, these heuristics effectively remove avoidable interlocks and run in approximately linear time.
  - The memory referencing assumptions greatly improve results, and effectiveness increases with better aliasing information (provided by other parts of the compiler).
  - The carry/borrow subgraph does not improve much for most programs. Significant improvements only occur when the program is computationally intensive. 
- - Using more versatile dags proposed by other literature only slightly improves the instruction scheduling effectiveness. 
+ - Using more versatile dags proposed by other literature only slightly improves the instruction scheduling effectiveness, despite them having significantly worse complexity.
 
-The referenced additional information on performance in the [[Joh86]](https://dl.acm.org/citation.cfm?id=13321) paper which tested load/store scheduling and showed a 5% improvement. This improvement was measured by the reduction in interlocks caused by load/store instructions. 
+The referenced additional information on performance in the [[Joh86]](https://dl.acm.org/citation.cfm?id=13321) paper which tested load/store scheduling and showed a 5% improvement. It was published in the same proceedings by colleagues working on the same architecture, and this improvement was measured by the reduction in interlocks caused by load/store instructions. 
+
+Such a small suite of benchmarks and statistics would be unacceptable today, but it was perhaps okay for 1986. 
 
 ## Our Thoughts
 This paper left a few things to be desired. 
 
 First, we did not quite understand some of the hazards this paper was concerned about. The first hazard of "loading a register from memory followed by using *that* register as a source" is clear as that's a traditional load-use hazard where the load finishes at the end of the cycle while the value it was loading was needed at the beginning of the cycle. 
 
-However, the second hazard of "storing to any memory location followed by loading from any location" was puzzling as it is not clear why this would not work. Even if we considered the addresses to alias and assumed no store-to-load forwarding, it seems reasonable that the store would finish before the subsequent load and that the load would return the correct value. If we go a step further and assume memory accesses take multiple cycles, there still does not appear to be a problem as this is a read-after-write dependency, and the writing happens before the read. 
+However, the second hazard of "storing to any memory location followed by loading from any location" was puzzling as it is not clear why this would not work. Even if we considered the addresses to alias and assumed no store-to-load forwarding, it seems reasonable that the store would finish before the subsequent load and that the load would return the correct value. If we go a step further and assume memory accesses take multiple cycles, there still does not appear to be a problem as this is a read-after-write dependency, and the writing happens before the read. Another explanation could be that memory accesses could occur at different points in the pipeline, such as both before and after the execution stage. If an add instruction required a read from memory and then writing back to memory, and that add instruction was followed by a load, that load would have to stall until the add instruction's write finished, resulting in an interlock. However, this explanation would not work if we assumed a [PA-RISC](https://www.openpa.net/pa-risc_architecture.html) architecture as the only memory operations allowed are explicit loads and store. 
 
-The third hazard of "loading from memory followed by using *any* register as the target of an arithmetic/logical instruction or a load/store with address modification" was even more confusing. This seemed to imply that the memory stage included the one and only arithmetic logic unit (ALU) in the processor as it specifically mentioned load/stores with address modification (which we took to imply adding an offset to a base address register). We did not like this explanation as the ALU and memory access operations typically take the most time in a processor, so placing them in the same stage would be bad for performance.
+The third hazard of "loading from memory followed by using *any* register as the target of an arithmetic/logical instruction or a load/store with address modification" (verbatim from the paper) was even more confusing. This seemed to imply that the memory stage included the one and only arithmetic logic unit (ALU) in the processor as it specifically mentioned load/stores with address modification (which we took to imply adding an offset to a base address register). We did not like this explanation so we looked up many HP Precision Architecture designs. In particular, [this architecture](http://hpmuseum.net/document.php?catfile=372) seemd to give a convincing explanation:
 
-Perhaps improvements to pipeline designs in the three decades since this paper was published caused these mysteries, but all of this could be easily resolved if they had provided more information on exactly what kind of architecture they drew their hazards from. Their only reference was to [[Kog81]](https://newcatalog.library.cornell.edu/catalog/835270), which is a computer architecture textbook only available in print, and they cited the entire book without specific page numbers. Currently we are trying to request it from the Cornell Library Annex, and hopefully we will be able to read it before leading the discussion.
+
+In this pipeline, it takes one cycle for the ALU to calculate address, then only in the next cycle is the ALU address result written to a register, and only in the cycle after that is the loaded data finally written to a register. Each stage is subdivided into two halves, where register writes can onyl happen in the first half and reads in the second. As such, an ALU operation cannot happen the cycle following a load/store address calculation since that value has not been written to a register yet, making an interlock necessary.
+
+
+Perhaps improvements to pipeline designs in the three decades since this paper was published caused these mysteries, but all of this could be easily resolved if they had provided more information on exactly what kind of architecture they drew their hazards from. Their only reference was to [[Kog81]](https://newcatalog.library.cornell.edu/catalog/835270), which is a computer architecture textbook only available in print, and they cited the entire book without specific page numbers. We requested it from the Cornell Library Annex and combed through it, but it did not give any specific instruction set architecture designs. 
 
 Of these three hazards, the example they provided included two interlocks each for hazard types two and three. We would have preferred at least one of each type of interlock to have a more representative example. This paper also did not provide an example that would have utilized the carry/borrow dependency subgraph.
 
