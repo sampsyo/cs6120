@@ -229,7 +229,21 @@ optimizations as well.
 
 
 
+# References
 
+[1]      H. Miyoshi et al., “Development and achievement of NAL numerical wind tunnel (NWT) for CFD computations,” in Proceedings of the ACM/IEEE Supercomputing Conference, 1994, pp. 685–692.
+
+[2]      “National Aerospace Laboratory of Japan’s Numerical Wind Tunnel,” Information Processing Society of Japan Computer Museum. [Online]. Available: http://museum.ipsj.or.jp/en/computer/super/0020.html. [Accessed: 03-Oct-2019].
+
+[3]      Y. Matsuo, “Special contribution numerical wind tunnel: History and evolution of supercomputing,” Fujitsu Scientific and Technical Journal, vol. 53, no. 3. pp. 15–23, 2017.
+
+[4]      “Summit User Guide – Oak Ridge Leadership Computing Facility,” 2019. [Online]. Available: https://www.olcf.ornl.gov/for-users/system-user-guides/summit/summit-user-guide/. [Accessed: 03-Oct-2019].
+
+[5]      P. Wang, “Unified Memory on P100.”
+
+[6]      G. Goff, K. Kennedy, and C. W. Tseng, “Practical dependence testing,” in Proceedings of the ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI), 1991, pp. 15–29.
+
+[7]      G. Rivera and C. W. Tseng, “A comparison of compiler tiling algorithms,” in Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 1999, vol. 1575, pp. 168–183.
 
 
 
