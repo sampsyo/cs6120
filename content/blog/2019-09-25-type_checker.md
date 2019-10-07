@@ -77,7 +77,7 @@ Finally, though not required, we also implemented other checking passes as long 
 | Label Existence      | Label argument in control operation not present in code. |            jmp its_a_trap; (Consider this as is a full program)     |
 | Repeated Label |      A label should be unique and not be repeated.       | jmp label;<br/> label: a:int=1;<br/> label: a:int =2 |
 
-By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type error). We would be very happy if someone comes up with more cases and reaches out us by mail or github issues.
+By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type errors). We would be very happy if someone comes up with more cases and reaches out us by mail or GitHub issues.
 
 
 
