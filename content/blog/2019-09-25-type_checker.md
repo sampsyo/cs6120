@@ -70,35 +70,6 @@ The type checker implementation, though straightforward, had a few challenges.
 
 ## Evaluation and results
 
-We wrote a set of benchmarking programs to test our implementation for various types of rules defined in the design section above. 
-
-The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as "\*.out" corresponding to the input file "\*.bril". User can simply run all test cases in a directory by running turnt directory/\*.bril. For example, to run should-fail benchmark, one can just run turnt test/type-check/should-pass/\*.bril at the main directory of bril.
-
-Because should-pass cases are trivial, where we enumerate list existing operations, in the following table we only list tests cases that our type checker will report error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
-
-| Instruction | Type Checking Rule |Testing Code Snippet  |
-| ----------- | :-----------: | :-------------: |
-| Conflict Definition       |   Variables cannot be redefined with a different type.   |      v: int = 5;<br/> v :bool = true;      |
-| Arithmetic         |          Adding an integer and a boolean type.           |                a: int = 4;<br/>b: bool = true;<br/>c: int = add a b;               |
-| Boolean         |      Cannot assign the output of boolean to an integer.      |    b: bool = true;<br/> a:int = not b;    |
-| Const       |    Cannot assign an integer const to a bool variable.    |            a: int =  const true;             |
-| Cond Branch |    Only takes bool variable as input (and 2 labels).     |     a: int = 1;<br/> br a here there;<br/> here: print a;<br/>there: jmp here; |
-
-
-Finally, though not required, we also implemented other checking passes as long as an input stream is parsable by bril2json, an interpret for bril. That includes type existence checking, number checking, argument existence checking, label existence checking and label repentance checking.
-
-
-
-| Instruction |               Type Checking Rule               |          Testing Code Snippet          |
-| ----------- | :-----------------------------------------------------: | :-----------------------------------: |
-| Type existence       | The destination type is undefined.          |  boolean: v0= const true; |
-| Argument Number       | The expected argument is 2 but only 1 is given.          |  int: v0= const 5;<br/> int: v1 = add v0;  |
-| Argument Existence | The argument is never defined. | int: v1 = add v0; |
-| Label Existence      | Label argument in control operation not present in code. |            jmp its_a_trap; (Consider this as is a full program)     |
-| Repeated Label |      A label should be unique and not be repeated.       | jmp label;<br/> label: a:int=1;<br/> label: a:int =2 |
-
-By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type errors). We would be very happy if someone comes up with more cases and reaches out us by mail or GitHub issues.
-
 We wrote a set of benchmarking programs to test our implementation for various types of rules defined in the design section above.
 The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as `*.out` corresponding to the input file `*.bril`. User can simply run all test cases in a directory by running `turnt directory/*.bril`. For example, to run should-fail benchmark, one can just run `turnt test/type-check/should-pass/*.bril` at the main directory of bril.
 Because should-pass cases are trivial, where we enumerate list existing operations, in the following table we only list tests cases that our type checker will report an error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
