@@ -22,7 +22,11 @@ The goal of the project was to add a static type checker to find type errors, mu
 
 ### Design
 
-Bril currently supports 2 types - **int** and **bool** which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation  `a = b+c` would raise an error if either the source or destination arguments are *not* int. Similarly, boolean operations only accept all bool arguments and comparison operations have integer arguments but a boolean destination. These type definitions have been nicely defined [here](https://capra.cs.cornell.edu/bril/langref.html). Currently Bril only supports operations on variables and not constants which implies `a = b+5` is an invalid operation. During type checking, we also ensure that the variable has been defined in the function before. Conversely, we make sure that there isn't a redefinition of the variable. For control flow operation, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
+Bril currently supports 2 types, `int` and `bool`, which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation like this:
+
+ `a: int = add b c` 
+
+would raise an error if either `a` or `b` has type other than `int` . Similarly, boolean operations only accept all bool arguments and comparison operations have integer arguments but a boolean destination. These type definitions have been nicely defined [here](https://capra.cs.cornell.edu/bril/langref.html). Currently Bril only supports operations on variables and not constants which implies `a = b+5` is an invalid operation. During type checking, we also ensure that the variable has been defined in the function before. Conversely, we make sure that there isn't a redefinition of the variable. For control flow operation, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
 
 The error raised by the type checker outputs the line at which we find the first operation breaking the type check rule and mentions the type of error found.
 
