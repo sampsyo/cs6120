@@ -33,7 +33,7 @@ Arrays
 ------------------
 
 ### Arrays in Vril
-The definition of an array in Vril is a sequence of elements of any type (no type checking carried out) and the length being any Bril literal. 
+Vril includes a new type `array` to the language. The definition of an array in Vril is a sequence of elements of any type, which includes arrays (no type checking carried out) and the length being any Bril literal. 
 
 ### Initializing arrays in Vril
 Vril extends Bril to support arrays by adding an `init` operator to initialize an array of length `l` and set its elements to 0 as follows:
