@@ -39,7 +39,19 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
 2. Argument and destination type: For various operations we check if arguments and destination variables have the correct type. Something like `d: bool = add a b` where `a` and `b` are integers would raise an error for the destination variable.
 
-3. Redefined variables: We check if the destination variable has already been assigned to a different type in that context.  So `a: int = const 2; a: bool = const true` is not allowed but `a: int = const 2; a: int = const 5` is allowed. We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
+3. Redefined variables: We check if the destination variable has already been assigned to a different type in that context.  Hence the following set of instructions:
+
+   `a: int = const 2; `
+
+   `a: bool = const true` 
+
+   are not allowed but redefinitions on the same type is definitely possible:
+
+   `a: int = const 2;` 
+
+   `a: int = const 5`
+
+   We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
 
 4. Undefined variables: We check if the arguments to the instruction have defined variables using the set of variables mentioned before. A simple example would be an instruction like `a: int = const 5; c: int = add a b` where `b` was not defined before the instruction.
 
