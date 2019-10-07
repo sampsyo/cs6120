@@ -43,13 +43,13 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
    `a: int = const 2; `
 
-   `a: bool = const true` 
+   `a: bool = const true;` 
 
    are not allowed but redefinitions on the same type is definitely possible:
 
    `a: int = const 2;` 
 
-   `a: int = const 5`
+   `a: int = const 5;`
 
    We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
 
