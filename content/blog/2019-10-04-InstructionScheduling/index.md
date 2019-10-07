@@ -82,7 +82,7 @@ This criteria is broad enough to account for all serialization constraints. Depl
 
 | Instruction List | Dependency Dag | Reordered Instructions |
 | ---------------- | -------------- | --------------
-| ![](https://i.imgur.com/ZoPHlkv.png) | ![](https://i.imgur.com/Mkasxju.png)| ![](https://i.imgur.com/EZcKRdq.png)
+| <img src="ins1.png"> | <img src="dag.png">| <img src="ins2.png">
 
 
 This dag is created by scanning backward through the block, and for each instruction, finding the definitions or uses that precede it. As such, this construction costs O(n<sup>2</sup>) where n is the number of instructions in the basic block.
@@ -143,8 +143,9 @@ First, we did not quite understand some of the hazards this paper was concerned 
 
 However, the second hazard of "storing to any memory location followed by loading from any location" was puzzling as it is not clear why this would not work. Even if we considered the addresses to alias and assumed no store-to-load forwarding, it seems reasonable that the store would finish before the subsequent load and that the load would return the correct value. If we go a step further and assume memory accesses take multiple cycles, there still does not appear to be a problem as this is a read-after-write dependency, and the writing happens before the read. Another explanation could be that memory accesses could occur at different points in the pipeline, such as both before and after the execution stage. If an add instruction required a read from memory and then writing back to memory, and that add instruction was followed by a load, that load would have to stall until the add instruction's write finished, resulting in an interlock. However, this explanation would not work if we assumed a [PA-RISC](https://www.openpa.net/pa-risc_architecture.html) architecture as the only memory operations allowed are explicit loads and store. 
 
-The third hazard of "loading from memory followed by using *any* register as the target of an arithmetic/logical instruction or a load/store with address modification" (verbatim from the paper) was even more confusing. This seemed to imply that the memory stage included the one and only arithmetic logic unit (ALU) in the processor as it specifically mentioned load/stores with address modification (which we took to imply adding an offset to a base address register). We did not like this explanation so we looked up many HP Precision Architecture designs. In particular, [this architecture](http://hpmuseum.net/document.php?catfile=372) seemd to give a convincing explanation:
+The third hazard of "loading from memory followed by using *any* register as the target of an arithmetic/logical instruction or a load/store with address modification" (verbatim from the paper) was even more confusing. This seemed to imply that the memory stage included the one and only arithmetic logic unit (ALU) in the processor as it specifically mentioned load/stores with address modification (which we took to imply adding an offset to a base address register). We did not like this explanation so we looked up many HP Precision Architecture designs. In particular, [this architecture](http://hpmuseum.net/document.php?catfile=372) seemed to give a convincing explanation:
 
+<img src="pipeline.png">
 
 In this pipeline, it takes one cycle for the ALU to calculate address, then only in the next cycle is the ALU address result written to a register, and only in the cycle after that is the loaded data finally written to a register. Each stage is subdivided into two halves, where register writes can onyl happen in the first half and reads in the second. As such, an ALU operation cannot happen the cycle following a load/store address calculation since that value has not been written to a register yet, making an interlock necessary.
 
