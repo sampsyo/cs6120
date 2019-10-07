@@ -6,7 +6,7 @@ bio = """
 Horace He
 Gabriela C. Correa
 """
-[[extra.authors]]
+author = "Horace He and Gabriela C. Correa"
 +++
 
 Processing speed has long surpassed that of memory in modern computation.
@@ -24,14 +24,7 @@ problems faced in 1994 are very much present today: data transfer is the main
 limiting factor in computation.
 
 
-|   	|Numerical Wind Tunnel   	| Summit  	|
-|---	|---	|---	|
-| Processing Speed Per Node   	| 1.7GF   	| 40TF  	|
-| Data Transfer Speed  	| 421 MBps  	| 256 GBps  	|
-| Memory Size Per Node   	| 1 GB   	| 96 GB HBM2, 512 GB DDR4, 1600 GB NV |
-| Number of Nodes   	|166   	| 4608  	|
-| Total Processing Speed   	| 280 GF   	| 200 PF  	|
-| Total System Memory   	| 45 GB  	| > 10 PB  	|
+<img src="table.jpg" style="width: 100%">
 
 This table shows the fastest computer from when this paper was written (1994) and from today (2019). Note that the processing speeds continue to significantly outperform memory speeds.
 
@@ -57,7 +50,7 @@ main memory, solid state drives, hard disks, and long term tape system
 storage. The further the data gets from the processing units, the less we
 want to access it. It’s too far for the data to walk.
 
-<insert memory hierarchy figure>
+<img src="cache_hierarchy.png" style="width: 100%">
 This figure shows a typical memory hierarchy. In considering memory speeds,
 we must take into account the time it takes to get between storage, caches,
 registers, processors—in addition to how much data can sit at each point on
@@ -72,7 +65,7 @@ unified memory is currently an option for developers.
 #### Data Dependence
 Data dependence is an important concept within this article, so here we’ll spend a bit of time discussing it. Goff et al. put it very nicely in their paper Practical Dependence Testing:
 
-<insert data dependence image>
+<img src="data_dependence.png" style="width: 100%">
 
 # Loop Optimizations
 #### Loop Permutation
@@ -112,9 +105,19 @@ With DIM1=1024, DIM2=1024, and iters=1e3, we get an order of magnitude win for B
 A (Column-Major): 4916ms
 B (Row-Major): 485ms
 
-Loop permutation captures this optimization.
+Loop permutation captures this optimization. Intuitively, you could imagine
+the below picture when it comes to what's happening. Imagine that the grid
+represents a 2-dimensional array. However, since 2-dimensional arrays are
+actually 1-dimensional arrays in memory, the cache lines must align along a
+particular axis.
 
-<insert cache lines figure, as well as explanation>
+Now, compare the 2 access patterns (the blue line and the red line). The blue
+access pattern loads a single cache line and then accesses all of its
+elements before moving onto the next cache line. The red access pattern,
+however, loads a single cache line, accesses a single element, and then moves
+onto the next cache line.
+
+<img src="cache_lines.jpeg" style="width: 100%">
 
 #### Loop Reversal
 Loop Reversal simply reverses the order of a loop. This does 2 things. First,
@@ -205,9 +208,26 @@ Thus iterating in the optimal order for both arrays.
 ## Cost Model
 
 For class discussion, think about the following algorithm:
-<insert cost model picture>
 
-#Future Work
+<img src="cost_model.png" style="width: 100%">
+
+They use this cost model for determining the optimal sequence of loop fusion/fission/permutation to apply.
+
+# Future Work
+The loop optimizations presented here are still used everywhere. However,
+these are perhaps the more straightforward optimizations to make. In
+particular, they don't deal with any optimizations (besides loop reversal)
+that change the structure of a loop. For example, unrolling (and the
+vectorization opportunities that poses), as well as tiling.
+
+Incorporating these optimizations in an automated cost model is an ongoing
+problem. Several frameworks for reasoning about these optimizatons have been
+proposed (polyhedral optimization, Halide).
+
+In addition, more cost models have been proposed for handling these
+optimizations as well.
+
+
 
 
 
