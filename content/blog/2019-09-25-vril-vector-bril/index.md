@@ -1,6 +1,6 @@
 +++
 title = "Vril! Vector Bril"
-extra.author = "Helena Caminal, Sachille Atapattu and Tuan Ta"
+extra.author = "Helena Caminal and Sachille Atapattu"
 +++
 
 Why Vectors are cool to have!
@@ -135,5 +135,7 @@ Conclusion
 We have extended bril to support array types. We have added two new operations to move data in and out of the arrays so that we can emulate data movements between an array and what it would be a scalar register. We have also extended bril to support vector operations of two types: configuration and arithmetic. Configuration operations allow programs to modify a vector state and arithmetic operations perform operations on array arguments.
 
 The goal of this exercise was to understand how much an IR needs to change in order to express data-parallel operations. For that, we extended bril to be able to express vector operations and to compare their potential against a traditional scalar set of operations. For that we wrote a benchmark for vector-vector add (vvadd), which adds the elements of two arrays and stores their results into a third array in two versions: a scalar code and a vector code. The end goal is to verify that the CFG generated is very similar for both codes: it should contain the same number of basic blocks (BB). However, the vector code hops on the BB involved in the `for-loop` statement *vector length* times less than the scalar code. 
+
+* We'd like to acknowledge Tuan Ta, for continuous support with ideas and suggestions, and Adrian Sampson, for providing insightful comments to improve.
 
 [cs6120]: @/_index.md
