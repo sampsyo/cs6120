@@ -129,7 +129,8 @@ The overall complexity is O(n<sup>2</sup>). This is significantly better compare
 The authors implemented this instruction scheduler and made the following observations from benchmark results:
  - In practice, these heuristics effectively remove avoidable interlocks and run in approximately linear time.
  - The memory referencing assumptions greatly improve results, and effectiveness increases with better aliasing information (provided by other parts of the compiler).
- - The carry/borrow subgraph does not improve much for most programs. Significant improvements only occur when the program is computationally intensive. 
+ - The carry/borrow subgraph (the dag for carry/borrow dependencies) does not improve much for most programs. Significant improvements only occur when the program is computationally intensive. 
+   - It is unclear as to how they would improve scheduling as they are for constructed for correctness.
  - Using more versatile dags proposed by other literature only slightly improves the instruction scheduling effectiveness, despite them having significantly worse complexity.
 
 The referenced additional information on performance in the [[Joh86]](https://dl.acm.org/citation.cfm?id=13321) paper which tested load/store scheduling and showed a 5% improvement. It was published in the same proceedings by colleagues working on the same architecture, and this improvement was measured by the reduction in interlocks caused by load/store instructions. 
