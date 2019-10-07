@@ -140,4 +140,4 @@ Overall, this paper offers a simple and efficient way of improving performance b
 
 
 ### Other Remarks
-Modern high performance processors such as those manufactured by Intel and AMD use more complex pipelines and fancier hardware optimizations. Instructions are also broken down into micro-ops and the documentation for them is not always released by the company. This makes optimal instruction scheduling very hard on these modern processors. However, the algorithm proposed in this paper inspired a class of algorithm now we called list scheduling algorithm and they are used in modern compilers such as LLVM today for instruction scheduling.
+Modern high performance processors such as those manufactured by Intel and AMD use more complex pipelines and fancier hardware optimizations. Instructions are also broken down into micro-ops and the documentation for them is not always released by the company. This makes optimal instruction scheduling very hard on these modern processors. However, the algorithm proposed in this paper inspired a class of algorithm called list scheduling and they are used in modern compilers such as LLVM today.
