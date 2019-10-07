@@ -73,7 +73,7 @@ vl: int = setvl val
 is used to request `val` lanes to the IR and `setvl` returns `vl:=val` if `vl<maxvl` or `vl:=maxvl` if `vl>=maxvl`.
 We have also implemented only one arithmetic vector op `vadd` as a proof of concept:
 ```
-arr3: array vadd arr1 arr2
+arr3: array = vadd arr1 arr2
 ```
 Which takes two arrays as arguments and performs element-wise vector addition, and stores it into a third array.
 
