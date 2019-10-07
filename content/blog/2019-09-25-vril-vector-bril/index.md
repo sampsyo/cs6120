@@ -128,7 +128,7 @@ Given that the length of array is N=10 and vector length selected by Vrili at ex
 
 CFG for scalar array operation  | CFG for vector array operation
 :-------------------------:|:-------------------------:
-![](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_scalar_nv.png) | ![](https://github.com/sa2257/vril/blob/82e9da0eed50a98fc5285a32020b0ba59385e398/plots/array_vector_nv.png)
+<img src="array_scalar_nv.png" style="width: 100%"> | <img src="array_vector_nv.png" style="width: 100%"> 
 
 Conclusion
 --------------------------------------
