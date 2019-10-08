@@ -80,7 +80,7 @@ The type checker implementation, though straightforward, had a few challenges.
 
 We wrote a set of benchmarking programs to test our implementation for various types of rules defined in the design section above.
 The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as `*.out` corresponding to the input file `*.bril`. The user can simply run all test cases in a directory by running `turnt directory/*.bril`. For example, to run should-fail benchmark, one can just run `turnt test/type-check/should-pass/*.bril` at the main directory of Bril.
-Because should-pass cases are trivial, where we enumerate list existing operations, in the following table we only list tests cases that our type checker will report an error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
+Because should-pass cases are trivial, where we enumerate existing operations, in the following table we only list tests cases that our type checker will report an error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
 
 | Instruction | Type Checking Rule |Testing Code Snippet  |
 | ----------- | :-----------: | :-------------: |
@@ -90,9 +90,9 @@ Because should-pass cases are trivial, where we enumerate list existing operatio
 | Const       |    Cannot assign an integer const to a bool variable.    |            a: int =  const true;             |
 | Cond Branch |    Only takes bool variable as input (and 2 labels).     |     a: int = 1;<br/> br a here there;<br/> here: print a;<br/>there: jmp here; |
 
-Finally, though not required, we also implemented other checking passes as long as an input stream is parsable by bril2json. For example, `v0: boolean =const true;` is a legal statement for bril2json, but boolean is not an existing type in Bril, so our type checker will report the error. Such kind of checking pass includes type existence checking, number checking, argument existence checking, label existence checking and label repentance checking.
+Finally, even though this is not directly related to type checking, we also implemented other checking passes as long as an input stream is parsable by bril2json. For example, `v0: boolean =const true;` is a legal statement for bril2json, but boolean is not an existing type in Bril, so our type checker will report the error. The table below lists all these cases:
 
-| Instruction |               Type Checking Rule               |          Testing Code Snippet          |
+| Instruction |               Checking Rule               |          Testing Code Snippet          |
 | ----------- | :-----------------------------------------------------: | :-----------------------------------: |
 | Type existence       | The destination type is undefined.          | v0: boolean = const true; |
 | Argument Number       | The expected argument is 2 but only 1 is given.          |  v0: int = const 5;<br/> v1: int = add v0;  |
