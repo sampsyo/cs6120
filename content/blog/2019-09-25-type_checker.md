@@ -41,21 +41,19 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
 3. Redefined variables: We check if the destination variable has already been assigned to a different type in that context.  Hence the following set of instructions:
 
-   `a: int = const 2; `
-
-   `a: bool = const true;` 
+       a: int = const 2;
+       a: bool = const true;
 
    are not allowed but redefinitions on the same type is definitely possible:
 
-   `a: int = const 2;` 
-
-   `a: int = const 5;`
+       a: int = const 2; 
+       a: int = const 5;
 
    We do this by keeping a set of variables of each type (`int` and `bool`) defined in the function. This helps while checking existing definitions and possible redefinition errors.
 
 4. Undefined variables: We check if the arguments to the instruction have defined variables using the set of variables mentioned before. A simple example would be an instruction like `a: int = const 5; c: int = add a b` where `b` was not defined before the instruction.
 
-   Note: We haven't taken jumps / branches into consideration which implies if there was a jump instruction before where the variable was defined, we would still throw an error. In hindsight, this can be resolved by traversing the basic blocks in a topological order.
+   We haven't taken jumps/branches into consideration which implies if there was a jump instruction before where the variable was defined, we would still throw an error. 
 
 
 
@@ -64,7 +62,7 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 The type checker implementation, though straightforward, had a few challenges.
 1. The typing rules need to be designed carefully for each operation, including arithmetic, boolean, and control instructions. Take the following branch instruction as an example: `br b left right`. The type checker needs to go through all the existing boolean variables to ensure that `b` is predefined and `left` and `right` are valid labels in the code snippet. Also, though currently only two basic types are supported in Bril, there could be extensions for more types like list, stack etc. Thus, it is important to maintain modularity of arithmetic/boolean and control flow checking so that future updates could be made easily to support them.
 2. To ensure that the type checker works properly with labels, a first pass of the labels is designed. Through the first pass, all existing labels are saved and no duplicate ones are allowed to avoid conflicts. Though this almost doubles the type checking overhead, it further ensures the correctness of the program by static analysis.
-3. Keeping track of the line number and returning proper error message when encountered with an type checking error. To track the line number, the type checker works on the Bril text representation and is developed with its own parser. When scanning through the code line by line after the first pass, a line number is maintained during type checking to help the programmer debug. In order to maintain the line number with blank lines and comments, we take in the original code snippet and ignore these lines while updating it during type checking.
+3. Keeping track of the line number and returning proper error message when encountered with a type checking error. We implement a small logic on top of `briltxt` parser to keep a list of line numbers corresponding to lines without instructions which are found in the output of the parser. These lines could be a newline (`\n`) or a comment (`#`) or simply the ending braces of a function (`}`).  This list helps us keep track of the original line numbers of each instruction in the code when we scan through the `json` parsed output during out type checking pass. 
 
 
 
