@@ -2,13 +2,14 @@
 title = "Bril()"
 extra.author = "Gautam Mekkat, Eashan Garg, and Sameer Lal"
 extra.bio = """
+Gautam Mekkat is a senior undergraduate studying CS and ECE.
+Eashan Garg is a senior undergraduate studying CS and English.
+Sameer Lal is a CS M.Eng student. He studied ECE as an undergraduate.
 """
 +++
 
-## Bril()
-
 ### Goal
-Our goal for this project was to make function calls work. Functions reduce code duplication and allow programmers to abstract away common functionality. This simplifies the development and improves the readability of complex programs. To make functions even more useful, we introduce function parameters, return types, optional type annotations for parameters, nested function definitions, and a simple module system. We also offer the option to pass command-line arguments to the main function.
+Our goal for this project was to make function calls work. To make functions even more useful, we introduce function parameters, return types, optional type annotations for parameters, nested function definitions, and a simple module system. We also offer the option to pass command-line arguments to the main function.
 
 ### Design
 
@@ -27,6 +28,16 @@ Below is a Bril program that demonstrates this functionality.
       print v0;
     }
 
+Below is the JSON representation of the `call` instruction. It follows the same format as other instructions.
+
+    {
+      "args": [
+        "func"
+      ],
+      "op": "call"
+    }
+
+
 Since the interpreter scans function definitions before executing anything, functions can be defined in any order. The above program can be rewritten as:
 
     func {
@@ -40,19 +51,32 @@ Since the interpreter scans function definitions before executing anything, func
 
 
 #### Adding function parameters
-To add support for function parameters, we first update the grammars for function definitions and calls to take whitespace-delimited lists of variable names. The interpreter's `call` operation handler first extracts the values for all arguments from the current environment map. It then pre-populates the callee's environment with the function parameters mapped to these values. This new environment is then used when evaluating the called function.
+To add support for function parameters, we first update the grammars for function definitions and calls to take whitespace-delimited lists of variable names. The interpreter's `call` operation handler first extracts the values for all arguments from the current environment map. It then pre-populates the callee's environment with the function parameters mapped to these values. This new environment is then used when evaluating the called function. Since Bril does not do any static type-checking, we do not require types to be included with function parameters.
 
 Below is a Bril program that demonstrates the use of function parameters.
 
     # This program also prints out 100 and exits.
     main {
-      call print_double 50;
+      v0: int = const 50;
+      call print_double v0;
     }
     
     print_double x {
       v0: int = add x x;
       print v0;
     }
+
+Below is the JSON representation of the `call` instruction.
+
+    {
+      "args": [
+        "print_double",
+        "v0"
+      ],
+      "op": "call"
+    }
+
+The first argument in `"args"` the function name, followed by the arguments.
 
 #### Return types
 Without the ability to return data, our functions are not very useful. To add support for return types, we first update the grammar for function definitions to optionally take `: type` at the end of the header, and update the rule for `ret` to optionally take a variable name to return. We also overload the `call` operation to be both an effect operation and a value operation, since functions that do not return anything will be effect operations and those that do will be value operations.
@@ -71,6 +95,54 @@ Below is an example program that demonstrates this functionality.
       v0: int = const 100;
       ret v0;
     }
+
+Since we have made several changes to the JSON representation of the program, below is the JSON representation of the entire program.
+
+    {
+      "functions": [
+        {
+          "instrs": [
+            {
+              "args": [
+                "get_hundred"
+              ],
+              "dest": "v0",
+              "op": "call",
+              "type": "int"
+            },
+            {
+              "args": [
+                "v0"
+              ],
+              "op": "print"
+            }
+          ],
+          "name": "main"
+        },
+        {
+          "instrs": [
+            {
+              "dest": "v0",
+              "op": "const",
+              "type": "int",
+              "value": 100
+            },
+            {
+              "args": [
+                "v0"
+              ],
+              "op": "ret"
+            }
+          ],
+          "name": "get_hundred",
+          "type": "int"
+        }
+      ]
+    }
+
+Note that functions now can have a `type` key. For example, `get_hundred` has `type` set to `"int"`. Also, `ret` instructions can now have arguments, specified by the `args` key.
+
+**Note**: To maintain backward compatibility, we omit these keys if they are empty.
 
 Since we now have the ability to pass arguments to functions and get return values, we can now write some interesting Bril programs. Below is a Bril program that prints the 10th Fibonacci number.
 
@@ -104,7 +176,7 @@ Since we now have the ability to pass arguments to functions and get return valu
         ret ans;
     }
 
-**Note**: To call a function on the right-hand side of an assignment, the function must declare a return type. We choose to enforce this to improve readability. The following program will fail with the error message `function func does not return`.
+**Note**: To call a function on the right-hand side of an assignment, the function must declare a return type. Similarly, functions should not `ret` values if they do not specify a return type. We choose to enforce this to improve readability. The following program will fail with the error message `function func does not return`.
 
     # Fails!
     main {
@@ -116,6 +188,8 @@ Since we now have the ability to pass arguments to functions and get return valu
       v0: int = const 100;
       ret v0;
     }
+
+Changing the signature of `func` to `func: int` will fix the program.
 
 The opposite is allowed: functions that have a declared return type *may* be called as standalone instructions. The following program succeeds and prints 100.
 
@@ -165,9 +239,11 @@ Function definitions are now more complex, and with this added syntactic complex
     }
 
 #### Nested function definitions
-In the above example, `lte_one` is just a helper function for `fib`and is not used anywhere else. To avoid cluttering the global function definitions, it would be nice to only define functions where they are useful.
+In the above example, `lte_one` is just a helper function for `fib` and is not used anywhere else. To avoid cluttering the global function definitions, it would be nice to only define functions where they are useful.
 
 To do this, we introduced support for nested function definitions (i.e., function definitions within function definitions). First we add a new rule to the grammar. We add a new `instr` rule of the format `"def" func`, where `func` is the rule for normal function definitions. The `"def"` is there to avoid issues with labels (when the parser encounters `x:` it will not know if `x` is a label or a function with a return type). In the interpreter, we introduce the notion of a local function map. Previously, we had a global function map for the entire program. The local function map restricts access to a nested function to the immediate parent function.
+
+Note that these nested function definitions are **not** closures. Nested functions cannot access variables of their parents. This is an interesting potential future extension of the language, but the current purpose of nested function definitions is to improve code organization.
 
 We also change the `call` operation handler to first search the local map before searching the global map. Note that this means functions can be shadowed. Below is the above program updated with nested function definitions.
 
@@ -200,7 +276,7 @@ We also change the `call` operation handler to first search the local map before
     }
 
 #### Command-line arguments
-Adding support for command-line arguments is quite straightforward. We can use the `process.argv` variable to access arguments to `brili`. For each argument, we simply ensure that the argument is either an integer or a string containing "true" or "false", in which case we convert the string to the corresponding Boolean. We then pass these arguments to `main` the same way we would pass arguments to any other function.
+Adding support for command-line arguments is quite straightforward. We extend the interpreter to use the `process.argv` variable to access arguments to `brili`. For each argument, we simply ensure that the argument is either an integer or a string containing "true" or "false", in which case we convert the string to the corresponding Boolean. We then pass these arguments to `main` the same way we would pass arguments to any other function.
 
 We can update the above Fibonacci implementation to take in a command-line argument `n`, and print out `fib(n)`.
 
@@ -232,7 +308,8 @@ We can update the above Fibonacci implementation to take in a command-line argum
     }
 
 If the above program were in a file called `fib.bril`, we could run it by running:
-```bril2json < fib.bril | brili [n]```
+
+    bril2json < fib.bril | brili [n]
 
 #### Module system
 Lastly, we introduce a basic module system to allow for basic abstraction of functionality. The syntax for importing modules is `import MOD_NAME;`. All imports must be placed at the top of the Bril file, and `MOD_NAME.bril` should exist in the current working directory. After parsing the Bril file, in addition to returning the list of functions, we include a list of imported module names (we don't do anything else with the module names; this will become clear shortly). We added a new command in addition to `bril2json`and `ts2bril`, named `loadbril`. This command takes the new IR representation which includes the list of imported modules and recursively parses and loads each module. Circular imports *are* supported, as this is a very basic module system that simply adds all imported functions to the global namespace. (We considered adding namespaces for modules but decided that this would best be left for a separate project.) We also detect duplicate function definitions as the module system could make detecting these manually much more tedious.
