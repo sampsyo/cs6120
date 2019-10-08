@@ -190,7 +190,7 @@ details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau
 
 [[classes]]
 title = "Profiling"
-leader = "Qian & Helena"
+leader = "Helena"
 [[classes.readings]]
 name = "Efficient path profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
@@ -237,7 +237,7 @@ title = "Garbage Collection"
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Mark"
+leader = "Mark & Qian"
 [[classes.readings]]
 name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
