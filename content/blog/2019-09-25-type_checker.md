@@ -24,7 +24,7 @@ The goal of the project was to add a static type checker to find type errors, mu
 
 Bril currently supports 2 types, `int` and `bool`, which makes type checking relatively easy. Our type checker is defined such that an arithmetic operation like this:
 
- `a: int = add b c` 
+    a: int = add b c
 
 would raise an error if either `a` or `b` has type other than `int`. Similarly, boolean operations only accept all bool arguments and comparison operations have integer arguments but a boolean destination. These type definitions have been nicely defined [here](https://capra.cs.cornell.edu/bril/langref.html). During type checking, we also ensure that the variables in the instruction have been defined before in the program order. Conversely, we make sure that there isn't a redefinition of the variable using different types. For control flow operations, we ensure that labels are present in the code and are uniquely defined. This allows us to treat label strings as a separate type, invisible to the user. 
 
