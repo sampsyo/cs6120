@@ -53,7 +53,17 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
 4. Undefined variables: We check if the arguments to the instruction have defined variables using the set of variables mentioned before. A simple example would be an instruction like `a: int = const 5; c: int = add a b` where `b` was not defined before the instruction.
 
-   We haven't taken jumps/branches into consideration which implies if there was a jump instruction before where the variable was defined, we would still throw an error. 
+   We haven't taken jumps/branches into consideration which implies if there was a jump instruction before where the variable was defined, we would still throw an error. The example below, throws an error with our static type checker:
+   
+   ```
+   jmp label;
+   compute:
+   a: int = const 6;
+   c: int = add a b;
+   label:
+   b: int = const 5;
+   jmp compute;
+   ```
 
 
 
