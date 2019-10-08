@@ -71,7 +71,7 @@ The type checker implementation, though straightforward, had a few challenges.
 ## Evaluation and results
 
 We wrote a set of benchmarking programs to test our implementation for various types of rules defined in the design section above.
-The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as `*.out` corresponding to the input file `*.bril`. User can simply run all test cases in a directory by running `turnt directory/*.bril`. For example, to run should-fail benchmark, one can just run `turnt test/type-check/should-pass/*.bril` at the main directory of bril.
+The general test cases are classified into two sub-directories: [should-fail](https://github.com/tissue3/bril/tree/master/test/type-check/should-fail) and [should-pass](https://github.com/tissue3/bril/tree/master/test/type-check/should-pass). It has expected output named as `*.out` corresponding to the input file `*.bril`. The user can simply run all test cases in a directory by running `turnt directory/*.bril`. For example, to run should-fail benchmark, one can just run `turnt test/type-check/should-pass/*.bril` at the main directory of bril.
 Because should-pass cases are trivial, where we enumerate list existing operations, in the following table we only list tests cases that our type checker will report an error message. The second column of the table aims to help one understand why an error would be reported by our type checker.
 
 | Instruction | Type Checking Rule |Testing Code Snippet  |
