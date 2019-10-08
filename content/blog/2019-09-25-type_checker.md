@@ -51,7 +51,7 @@ We have a first pass in the algorithm which collects a list of labels and ensure
 
    `a: int = const 5;`
 
-   We do this by keeping a set of variables of each type (int and bool) defined in the function. This helps while checking existing definitions and possible redefinition errors.
+   We do this by keeping a set of variables of each type (`int` and `bool`) defined in the function. This helps while checking existing definitions and possible redefinition errors.
 
 4. Undefined variables: We check if the arguments to the instruction have defined variables using the set of variables mentioned before. A simple example would be an instruction like `a: int = const 5; c: int = add a b` where `b` was not defined before the instruction.
 
