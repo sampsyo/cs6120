@@ -9,7 +9,7 @@ Sameer Lal is a CS M.Eng student. He studied ECE as an undergraduate.
 +++
 
 ### Goal
-Our goal for this project was to make function calls work. To make functions even more useful, we introduce function parameters, return types, optional type annotations for parameters, nested function definitions, and a simple module system. We also offer the option to pass command-line arguments to the main function.
+Our goal for this project was to make function calls work. In addition, we introduce function parameters, return types, optional type annotations for parameters, nested function definitions, and a simple module system. We also offer the option to pass command-line arguments to the main function.
 
 ### Design
 
