@@ -12,9 +12,9 @@ author = "Horace He and Gabriela C. Correa"
 Processing speed has long surpassed that of memory in modern computation.
 Applications today deal with a massive amount of information that must at
 some point be held in memory. The overhead cost of transferring data
-continues to inhibit implementations if many applications. Furthermore, this task is becoming increasingly
-complex as computers depart from von Neumann towards heterogeneous
-architectures, inducing additional data transfer.
+continues to inhibit implementations if many applications. Furthermore, this
+task is becoming increasingly complex as computers depart from von Neumann
+towards heterogeneous architectures, inducing additional data transfer.
 
 *Compiler Optimizations for Improving Data Locality* by Carr, McKinley, and
 Tseng tackles this problem by suggesting this is a task for the compiler to
@@ -23,10 +23,17 @@ illustrates the differences in a computers circa this paper, and today. The
 problems faced in 1994 are very much present today: data transfer is the main
 limiting factor in computation.
 
-
 <img src="table.jpg" style="width: 100%">
 
-This table shows the fastest computer from when this paper was written (1994) and from today (2019). Note that the processing speeds continue to significantly outperform memory speeds.
+This table shows the fastest computer from when this paper was written (1994) and from today (2019).
+
+<img src="moore.jpg" style="width: 100%">
+
+This figure shows how CPU performance has outpaced memory performance, and
+how this gap shows no signs of closing. As a result of this massive
+difference in CPU performance and memory performance, more and more kinds and
+levels of caches have been introduced. This preponderance of caches has led
+to cache locality becoming a central factor in program performance.
 
 # Background!
 #### Memory Hierarchy
@@ -50,7 +57,8 @@ main memory, solid state drives, hard disks, and long term tape system
 storage. The further the data gets from the processing units, the less we
 want to access it. It’s too far for the data to walk.
 
-<img src="cache_hierarchy.png" style="width: 100%">
+<img src="memory_hierarchy.jpg" style="width: 50%">
+
 This figure shows a typical memory hierarchy. In considering memory speeds,
 we must take into account the time it takes to get between storage, caches,
 registers, processors—in addition to how much data can sit at each point on
@@ -204,7 +212,7 @@ Thus iterating in the optimal order for both arrays.
 
 For class discussion, think about the following algorithm:
 
-<img src="cost_model.png" style="width: 100%">
+<img src="cost_model.png" style="width: 80%">
 
 They use this cost model for determining the optimal sequence of loop fusion/fission/permutation to apply.
 
@@ -251,7 +259,7 @@ Note that in this implementation, although each element in `rows` will be
 loaded only once and reused until it's no longer needed, each element in
 `columns` will be loaded once for every single row.
 
-<img src="tiling_bad.png" style="width: 100%">
+<img src="tiling_bad.png" style="width: 80%">
 
 A rough estimate gives us 20 "bad" reads - each read from `columns` won't be
 in the cache, and the first read of `rows[x]` won't be in the cache either.
@@ -273,17 +281,12 @@ In code, that would translate to:
 
 ```
 int B = 8;
-for (int t = 0; t < NUMITERS; t++) {
-    for (int i = 0; i < n; i += B) {
-        for (int j = 0; j < n; j += B) {
-            for (int x = i; x < i + B; x++) {
-                for (int y = j; y < j + B; y++) {
+for (int t = 0; t < NUMITERS; t++)
+    for (int i = 0; i < n; i += B)
+        for (int j = 0; j < n; j += B)
+            for (int x = i; x < i + B; x++)
+                for (int y = j; y < j + B; y++)
                     a[x][y] = rows[x] * cols[y];
-                }
-            }
-        }
-    }
-}
 ```
 
 ### Defining the space of loop optimizations
