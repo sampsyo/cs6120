@@ -2,10 +2,6 @@
 title = "Compiler Optimizations for Improving Data Locality"
 [extra]
 latex = true
-bio = """
-Horace He
-Gabriela C. Correa
-"""
 author = "Horace He and Gabriela C. Correa"
 +++
 
