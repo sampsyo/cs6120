@@ -47,7 +47,7 @@ However, doing so conflates the roles of language designer and colorscheme desig
 
 Since Bril's syntax fits nicely into the base set of highlight groups, this was not a problem. 
 I'll admit, though, that I really wanted to italicize at least one syntax group, and although it's possible to minimally override a colorscheme in this way, any implementation is error prone, possibly version-dependent, and hard to understand and maintain (as is much of **Vimscript**).
-Thus, I focused my efforts on designing a the needed collection of `bril-` syntax groups.
+Thus, I focused my efforts on designing the needed collection of `bril-` syntax groups.
 
 #### Syntax Groups and Regions
 The most basic syntax group is a keyword, defined using the `syntax keyword` command.
