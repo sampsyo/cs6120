@@ -130,7 +130,7 @@ and I enjoyed pondering the feedback problem of language design for language too
 ### Design Considerations and Future Work
 As I've described it, a syntax highlighter's principal job is to give a meaningful visual presentation to an evolving syntax tree.
 In reality, developers have come to expect much more from a syntax highlighter, including:
-- Syntactically-aware code editing and navigation, such as automatic indentation, folding, variable renaming, etc...
+- Syntactically-aware code editing and navigation, such as automatic indentation, folding, variable renaming, etc.
 - Type checking and type information lookup
 - Code linting
 - etc.
