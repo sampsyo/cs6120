@@ -120,7 +120,7 @@ On the other hand, a literal string simply consists of the literal characters in
 If we attempt to factor out a regexp as a string, any escaped characters will be stored as 'escaped', rather than as characters.
 Splicing this faulty regexp into a program string will generate a faulty program string containing escaped characters.
 
-We can solve this by *escaping each 'escaping' backslash with a backslash, except for those backslashes that escape backlashes.* (it's no wonder the leading Vimscript tutorial recommends [beer](http://learnvimscriptthehardway.stevelosh.com/chapters/08.html) to accompany some of the exercises.)
+We can solve this by *escaping each 'escaping' backslash with a backslash, except for those backslashes that escape backlashes.* (It's no wonder the leading Vimscript tutorial recommends [beer](http://learnvimscriptthehardway.stevelosh.com/chapters/08.html) to accompany some of the exercises.)
 To avoid backslash hell, we can instead store regexps as literal strings, which can never escape characters.
 Later on, these can be spliced with program fragments that are also represented as string literals, rather than strings, to avoid escaping any hard-coded regexps.
 
