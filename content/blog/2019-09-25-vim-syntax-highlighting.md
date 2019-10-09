@@ -133,7 +133,7 @@ In reality, developers have come to expect much more from a syntax highlighter, 
 - Syntactically-aware code editing and navigation, such as automatic indentation, folding, variable renaming, etc...
 - Type checking and type information lookup
 - Code linting
-- etc..
+- etc.
 
 
 All of these tasks benefit from Vimscript's prowess at text manipulation and syntax extraction, and represent
