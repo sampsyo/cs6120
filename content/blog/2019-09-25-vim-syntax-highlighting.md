@@ -113,7 +113,7 @@ Regular expressions are powerful, but possibly too powerful; for instance, the `
 
 Finally, [metaprogramming](http://learnvimscriptthehardway.stevelosh.com/chapters/28.html) is idiomatic in Vimscript. 
 This is useful, since it allows us to factor out and reuse regexes from syntax group definitions into meta-strings. 
-However, Vimscript since makes a distinction between *strings* and *literal strings*, reasoning about "meta-strings" and "meta-literal-strings" can lead to hard to detect bugs.
+However, since Vimscript makes a distinction between *strings* and *literal strings*, reasoning about "meta-strings" and "meta-literal-strings" can lead to hard to detect bugs.
 
 Semantically, a Vimscript string consists of a list of characters and characters 'escaped' by a backslash. (hence "\" is an invalid string; it is a malformed character escape).
 On the other hand, a literal string simply consists of the literal characters in the string.
