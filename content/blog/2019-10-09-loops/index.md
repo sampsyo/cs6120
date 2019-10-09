@@ -220,12 +220,12 @@ creators](https://www.youtube.com/watch?v=3uiEyEKji0M). The first 15 minutes
 aren't related to Halide at all, and serve as a fantastic introduction. I'll
 provide some notes about important topics here.
 
-## Parallelism
+### Parallelism
 Parallelism across CPU cores is crucial for performance. Depending on how you
 compute your values, you may introduce serial dependencies that make it more
 difficult to parallelize your code.
 
-## Vectorization
+### Vectorization
 Vectorization refers to taking advantage of SIMD instructions in your
 hardware. These instructions can do things like "sum up the 4 values at
 `x[i]` through `x[i+4]`" significantly faster than doing them one element at
@@ -239,7 +239,7 @@ The fact that they operate on 8 or 16 numbers at a time also means that
 utilizing them requires some special case handling - for example, what if you
 have 18 elements?
 
-## Tiling
+### Tiling
 Imagine that we wished to compute a multiplication table of sorts. The code for that would look something like (an online example can be found [here](http://ideone.com/4HRl3F). Note that moreso than the other optimizations, tiling often depends on the particular hardware used):
 
 ```
@@ -286,14 +286,14 @@ for (int t = 0; t < NUMITERS; t++) {
 }
 ```
 
-## Defining the space of loop optimizations
+### Defining the space of loop optimizations
 Looking at all of these loop optimizations and the difficult ways in which
 they interact is a fairly daunting task. One avenue of active research is
 defining the space of loop optimizations. There are 2 primary efforts I'm
 aware of: the polyhedral model and Halide. Both of these models define a
 space of loop optimizations.
 
-## Cost Models
+### Cost Models
 Although the previous models mentioned allow you to express the space of
 legal loop transformations, they don't tell you what loop transformations you
 should be performing. Some recent work has focused on learning a cost model
