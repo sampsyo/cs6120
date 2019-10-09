@@ -12,7 +12,7 @@ author = "Horace He and Gabriela C. Correa"
 Processing speed has long surpassed that of memory in modern computation.
 Applications today deal with a massive amount of information that must at
 some point be held in memory. The overhead cost of transferring data
-continues to inhibit many. Furthermore, this task is becoming increasingly
+continues to inhibit implementations if many applications. Furthermore, this task is becoming increasingly
 complex as computers depart from von Neumann towards heterogeneous
 architectures, inducing additional data transfer.
 
@@ -56,16 +56,11 @@ we must take into account the time it takes to get between storage, caches,
 registers, processors—in addition to how much data can sit at each point on
 the way.
 
-Today, unified memory prevents the error-prone and time consuming process of
-allocating and moving data between CPUs and GPUs [5]. This pretty much
-handles the problems posed by Carr et al. in a very limited number of
-systems. The memory is still physically separated, yet in Kepler and CUDA 6
-unified memory is currently an option for developers.
-
 #### Data Dependence
-Data dependence is an important concept within this article, so here we’ll spend a bit of time discussing it. Goff et al. put it very nicely in their paper Practical Dependence Testing:
 
-<img src="data_dependence.png" style="width: 100%">
+There exists data dependence between two statements A and B if there is a path between the two, and both access the same memory location. Here we have a tree of making a peanut butter and jelly sandwich. In order to spread jelly on the bread, you need the bread; the two steps are dependent on each other. This extends to operations accessing memory locations, and thus we can build a data dependence tree.
+
+<img src="data_dependence_pbj.png" style="width: 100%">
 
 # Loop Optimizations
 #### Loop Permutation
@@ -74,7 +69,7 @@ Iterating over arrays in the wrong order is one of the easiest ways to cause
 a huge amount of cache misses. It’s also the cause of an endless [number](https://stackoverflow.com/questions/33722520/why-is-iterating-2d-array-row-major-faster-than-column-major) of [SO](https://stackoverflow.com/questions/13093155/c-2d-array-access-speed-changes-based-on-ab-order)
 [questions](https://stackoverflow.com/questions/9936132/why-does-the-order-of-the-loops-affect-performance-when-iterating-over-a-2d-arra).
 
-Take these two snippets of code (can also be found online [here](http://ideone.com/PUJhdP)).
+Take these two snippets of code (also be found online [here](http://ideone.com/PUJhdP)).
 
 A. Column-Major
 ```
@@ -132,7 +127,7 @@ Loading in each cache line takes a significant amount of time. If we have
 multiple loops, we run into the possibility that we will load a single cache
 line multiple times, wasting time.
 
-For example, take (online example can be found [here](http://ideone.com/OnbRXU)).
+For example, take this code (online example can be found [here](http://ideone.com/OnbRXU)):
 ```
 for (int i = 0; i < MAXN; i++)
         A[i] += j;
