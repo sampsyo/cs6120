@@ -35,8 +35,34 @@ Before we dive into POSH itself, we want to give a more detailed
 background on both how TLS works and the context in which it was envisioned.
 As we mentioned above, TLS relies on special hardware support for detecting
 data dependencies between threads running on different processor cores.
-Broadly, these kinds of features are known as Hardware Transactional Memory.
+Broadly, these kinds of features are known as Hardware Transactional Memory (HTM).
+At the [end of this article](#hardware-transactional-memory-aside) we've included a brief aside on HTM and its
+presence in modern processors for those who are interested.
 
+POSH assumes that hardware has support
+for the following features:
+ - Inputs to tasks are passed via memory, not registers
+ - Hardware automatically detects conflicting memory reads/writes
+   between the main thread and speculative tasks
+   and then automatically kills or restarts tasks
+ - The ISA extension has the `spawn` and `commit` primitives
+   for starting and ending task execution.
+
+Most papers exploiting HTM rely on a very similar set of assumptions
+and indeed, real HTM extensions have guarantees not unlike those listed here.
+The primary difference between these assumptions and reality are empirical limitations
+on code and working set size for speculative tasks.
+
+The goal for TLS (remember, HTM is the set of hardware features, while TLS
+is a software-level technique that utilizes those features),
+is to speculatively parallelize code by predicting which regions do
+not have real data dependencies. Existing compiler optimizations already
+attempt to identify such dependencies (e.g., [instruction scheduling](../instruction-scheduling))
+in order to improve performance. However, those optimizations must be
+conservative in order to preserve program semantics.
+Since TLS compilers can rely on runtime support from the hardware to preserve
+correctness, they can aggressively overestimate data independence to
+maximize potential parallelism.
 
 # Posh Optimizations
 
