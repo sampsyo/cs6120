@@ -3,7 +3,6 @@ title = "Bril Syntax Highlighting for Vim"
 extra.author = "Edwin Peguero"
 +++
 
-# bril-syntax: Syntax Highlighting for Bril in Vim
 This project aimed to provide syntax highlighting for Bril in the Vim text editor, with the goal of learning about the implementation process underlying this ubiquitous category of tools. Until now I've taken for granted this tooling across various editing environemnts and programming languages; so I felt that the ability to support my language design efforts might prove useful and interesting.
 
 ![](bril-syntax.png) 
@@ -68,10 +67,11 @@ syntax match brilComment "\#.*$"
 
 Vim provides one final level of generality with the notion of *syntax regions*.
 A syntax region is a region of text, delimited by regular expressions on both sides:
-```
-syntax region regionName start=startRegexp end=endRegexp contains=synGroup1,synGroup2,...
 
 ```
+syntax region regionName start=startRegexp end=endRegexp contains=synGroup1,synGroup2,...
+```
+
 When the *start* expression is detected, only those syntax groups *contained* in a region are checked. 
 The `contained` option removes top-level visibility from a syntax group, so that they are only parsed when their parent syntax region is parsed. 
 Together, these two mechanisms allow for hierarchical parsing of 'syntax-tree-like' syntax groups. 
