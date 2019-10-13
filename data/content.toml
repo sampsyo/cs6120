@@ -190,7 +190,7 @@ details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau
 
 [[classes]]
 title = "Profiling"
-leader = "TBD"
+leader = "Dietrich"
 [[classes.readings]]
 name = "Efficient path profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
@@ -206,7 +206,7 @@ details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
 [[classes]]
 title = "Tracing"
-leader = "Dietrich & Phil"
+leader = "Phil"
 [[classes.readings]]
 name = "Trace-based just-in-time type specialization for dynamic languages"
 details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
