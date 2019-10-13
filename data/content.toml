@@ -190,7 +190,7 @@ details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau
 
 [[classes]]
 title = "Profiling"
-leader = "Helena"
+leader = "TBD"
 [[classes.readings]]
 name = "Efficient path profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
