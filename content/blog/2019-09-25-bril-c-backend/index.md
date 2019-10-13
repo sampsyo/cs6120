@@ -8,7 +8,7 @@ extra.bio = """
 +++
 
 Bril is an educational compiler intermediate representation that is designed for this compiler course. While there is already a Bril interpreter written in
-Typescript called `brili`, it would be interesting to have other backends so that we can compare the performance and the implementation complexity. In this first project,
+TypeScript called `brili`, it would be interesting to have other backends so that we can compare the performance and the implementation complexity. In this first project,
 I built a backend that translates Bril into the C language and then use GCC to compile and execute the program.
 
 Why choose C?
