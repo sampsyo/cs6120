@@ -67,9 +67,37 @@ Since TLS compilers can rely on runtime support from the hardware to preserve
 correctness, they can aggressively overestimate data independence to
 maximize potential parallelism.
 
-The authors point out another, more subtle, benefit to TLS;
+```C
+...
+x = f(a);
+y = g(b);
+z = h(x,y);
+...
+```
+For example, in the above code snippet, the calls to functions `f` and `g`
+can probably be parallelized so that the operands to `h` are available as
+soon as possible. However, `f` and `g` may be side-effectful functions that
+modify shared memory; TLS using HTM is free to parallelize those two calls
+without fear of race conditions on that memory. A normal compiler would have
+to prove disjointness of their memory accesses to parallelize them automatically.
 
-# Posh Optimizations
+
+The authors point out another, more subtle, benefit to TLS: data prefetching.
+Even speculative tasks which violate data dependencies are likely to
+access data that will be useful to re-executions of that task.
+The authors assume (fairly) that the hardware primitives for squashing tasks
+will not rollback cache state; this implies that squashed tasks can
+still prefetch useful data into the cache. Re-executions of the failed
+task, or even future tasks may benefit from access to this cached data
+and see reduced memory access latency.
+
+<img src="prefetchExample.png" style="width:100%"/>
+
+This diagram from the POSH paper shows how "load times" in
+speculative tasks are not totally wasted during task failure.
+Executing a speculative load from memory improves the performance of loads in future tasks.
+
+# POSH Phases
 
 The POSH compiler optimization is broken into three phases;
  1) _Task Selection_: Chose speculative tasks based on program structure.
