@@ -63,6 +63,7 @@ mon = true
 
 [[days]]
 date = "October 9"
+notes = ["Design review: [BrilDB](../blog/brildb/), by Mark"]
 
 [[days]]
 date = "October 11"

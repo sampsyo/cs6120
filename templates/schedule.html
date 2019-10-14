@@ -30,6 +30,13 @@
       <td>{% if class.leader %}{{ class.leader }}{% endif %}</td>
       <td>
         {{ class.title }}
+        {% if day.notes %}
+        <ul>
+        {% for note in day.notes %}
+          <li>{{ note | markdown(inline=true) | safe }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
         {% if class.notes %}
         <ul>
         {% for note in class.notes %}
