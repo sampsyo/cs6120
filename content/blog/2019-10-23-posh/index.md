@@ -53,6 +53,9 @@ and indeed, real HTM extensions have guarantees not unlike those listed here.
 The primary difference between these assumptions and reality are empirical limitations
 on code and working set size for speculative tasks.
 
+
+# Sources of Performance Improvements of TLS
+
 The goal for TLS (remember, HTM is the set of hardware features, while TLS
 is a software-level technique that utilizes those features),
 is to speculatively parallelize code by predicting which regions do
@@ -64,14 +67,16 @@ Since TLS compilers can rely on runtime support from the hardware to preserve
 correctness, they can aggressively overestimate data independence to
 maximize potential parallelism.
 
+The authors point out another, more subtle, benefit to TLS;
+
 # Posh Optimizations
 
-Parallelize subroutines & loop iterations
+The POSH compiler optimization is broken into three phases;
+ 1) _Task Selection_: Chose speculative tasks based on program structure.
+ 2) _Spawn Hoisting_: Insert task initiation as early as possible via spawn instructions.
+ 3) _Task Refinement_: Use dynamic profiling to remove tasks that are unlikely to be beneficial.
 
-# Sources of Performance Improvements of TLS
 
-Parallel computation; Data pre-fecthing
-(Mention using value speculation to generate more parallel computation)
 
 # Posh Profiler & Heuristics
 
