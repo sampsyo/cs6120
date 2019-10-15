@@ -78,6 +78,7 @@ event = "Fall break"
 
 [[days]]
 date = "October 16"
+notes = ["Design review: [Shrimp](../blog/a-verification-backend/), by Sam & Rachit"]
 
 [[days]]
 date = "October 18"
@@ -91,6 +92,7 @@ date = "October 23"
 
 [[days]]
 date = "October 25"
+notes = ["Design review: [Bril2C](../blog/bril-c-backend/), by Wen-Ding"]
 
 [[days]]
 date = "October 28"
