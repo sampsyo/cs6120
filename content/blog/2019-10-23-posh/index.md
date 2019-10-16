@@ -1,13 +1,14 @@
 +++
 title = "POSH: A TLS Compiler that Exploits Program Structure"
-extra.author = "Josh Acay & Drew Zagieboylo"
+extra.author = "Drew Zagieboylo & Josh Acay"
 extra.bio = """
-  [Josh Acay](https://www.coskuacay.com/) is ...
-  [Drew Zagieboylo](https://www.cs.cornell.edu/~dzag/) is a 3rd year PhD student researching Security, HW design and Programming Languages. He enjoys rock climbing and gaming in his free time.
+  [Drew Zagieboylo](https://www.cs.cornell.edu/~dzag/) is a 3rd year PhD student researching Security, Hardware Design, and Programming Languages. He enjoys rock climbing and gaming in his free time.
+
+  [Josh Acay](https://www.coskuacay.com/) is a 3rd year PhD student whose research combines information flow control with cryptography to synthesize secure-by-construction distributed protocols.
 """
 +++
 
-The development of multicore processor architectures in the 2000's led to
+The development of multicore processor architectures in the 2000s led to
 significant advancements in the performance of parallel computing. As a
 software developer, if you could split your program or your data into
 discrete chunks, you could send different pieces off to different cores
@@ -16,11 +17,12 @@ and have all of the processing done in parallel.
 Naturally, software developers, compiler writers, and hardware architects
 all began to wonder: _"Can we somehow use these extra cores to speed
 up sequential, non-parallelizable workloads?"_
-One proposed technique to answer this question is "Thread-Level Speculation" (TLS).
+One proposed technique to answer this question is _Thread-Level Speculation_ (TLS).
 TLS allows software to run portions of a sequential program in parallel while
 retaining the original sequential semantics. The key idea is that special hardware
-support will detect when any of these parallel tasks have misbehaved; in that case,
-the hardware will rollback or otherwise hide the behavior of such "speculative tasks."
+support will detect when any of these parallel tasks misbehave and either rollback
+the effects of such "speculative tasks" or hide the "bad" behavior form other tasks
+somehow.
 
 In general, choosing where to insert these tasks so that they are likely to
 succeed and actually provide speedup over serial execution is a difficult problem.
@@ -41,14 +43,14 @@ presence in modern processors for those who are interested.
 
 POSH assumes that hardware has support
 for the following features:
- - Inputs to tasks are passed via memory, not registers
+ - Inputs to tasks are passed via memory, not registers.
  - Hardware automatically detects conflicting memory reads/writes
    between the main thread and speculative tasks
-   and then automatically kills or restarts tasks
+   and then automatically kills or restarts tasks.
  - The ISA extension has the `spawn` and `commit` primitives
    for starting and ending task execution.
 
-Most papers exploiting HTM rely on a very similar set of assumptions
+Most papers exploiting HTM rely on a very similar set of assumptions,
 and indeed, real HTM extensions have guarantees not unlike those listed here.
 The primary difference between these assumptions and reality are empirical limitations
 on code and working set size for speculative tasks.
@@ -110,8 +112,11 @@ The POSH compiler optimization is broken into three phases;
 
 How to remove tasks that are likely to not help and just create overhead
 
-# Evalutaion
+# Evaluation
 
+Here we evaluate.
+
+# Appendix
 
 ### Hardware Transactional Memory Aside
 
@@ -140,7 +145,7 @@ which normally ensures that memory writes to the same address are eventually pro
 between cores. Unfortunately, cache coherency can be [notoriously complex](https://doi.org/10.1109/2.55497),
 especially in the face of ambiguously defined and/or weak memory models.
 One might reasonably expect adding new synchronization features to introduce bugs
-and/or interact unexpected with existing weak memory guarantees.
+and/or interact unexpectedly with existing weak memory guarantees.
 Furthermore, relying on cache coherency drastically limits size of datasets read or written by hardware transactions;
 in [most systems](https://researcher.watson.ibm.com/researcher/files/us-rodaira/ISCA2015_ComparisonOfHTM.pdf) the write set must fit entirely inside the L1 cache.
 
