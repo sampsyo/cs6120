@@ -7,15 +7,15 @@ extra.bio = """Hongbo Zhang is a first PhD student in computer science. He is in
 
 Double-checked locking is a software design pattern for 
 reducing the overhead of acquiring a lock.
-The program checks locking criteria, 
+The program checks locking criteria first, 
 and acquires the lock only if the check indicates that locking is required.
 
-Typically, Double-checked locking is used for **lazy initialization**
+Typically, double-checked locking is used for **lazy initialization**
 in multi-threaded environments,
 which is a commonly used tactic for delaying the object initialization 
 until the first time it is accessed.
 Since only the first access requires locking,
-so double-checked locking is used to avoid locking overhead of subsequent accesses.
+so double-checked locking can be used to avoid locking overhead of subsequent accesses.
 
 ### Single-threading lazy initialization won't work in multi-threading
 
@@ -33,7 +33,7 @@ class Foo {
 ```
 
 This code works for single thread, but if the code is run in multithreading,
-    two or more threads could find that `helper` is `null`, 
+    two or more threads could find that `helper` is `null` at the same time, 
     and create multiple copies of `Helper` object.
 This can even cause memory leak in some languages, such as C++.
 
@@ -65,7 +65,7 @@ What we want is like following:
 
 1. check if the object is initialized without lock.
 If it is, then return the object immediately.
-2. acquire the lock and check if the object is initialized again.
+2. acquire the lock and check again if the object is initialized.
 If another thread have grabbed lock before, 
    the current thread can see the object is created, and return the object.
 3. otherwise, the current thread will create the object and return.
@@ -96,8 +96,8 @@ Some compilers, memory systems, or processors may reorder the instructions,
 
 Some people came up with another fix for this issue with a memory barrier.
 A memory barrier is a type of instruction that can make the compiler and processor
-enforce the ordering, so that the instructions behind the memory barrier will
-not be executed before the instructions prior the barrier.
+enforce the ordering, so that the instructions on one side of the memory barrier will
+not be reordered to the other side of the barrier.
 
 ```Java
 class Foo {
@@ -136,7 +136,7 @@ synchronized section and executed before the object initialization is done.
 
 ### Volatile in JDK5
 
-Java introduced volatile since JDK5. 
+Java introduced "volatile" since JDK5. 
 A "volatile" makes the variable be stored and accessed in main memory.
 Every read of a volatile is from main memory.
 Every write of a volatile is to main memory.
@@ -148,7 +148,7 @@ cannot be reordered after the write to the volatile variable.
 * The reads/writes of other variables after a read from a volatile variable
 cannot be reordered before the read from the volatile variable.
 
-With this new feature, the double-checked locking is fixed by simply changing
+With this new feature, the double-checked locking issue is resolved by simply changing
 the `helper` to volatile, since it guarantees that the initialization of the
 object `new Helper()` happens before the assignment to the `helper`.
 
