@@ -102,15 +102,41 @@ Executing a speculative load from memory improves the performance of loads in fu
 # POSH Phases
 
 The POSH compiler optimization is broken into three phases;
- 1) _Task Selection_: Chose speculative tasks based on program structure.
- 2) _Spawn Hoisting_: Insert task initiation as early as possible via spawn instructions.
- 3) _Task Refinement_: Use dynamic profiling to remove tasks that are unlikely to be beneficial.
+  1) _Task Selection_: Chose speculative tasks based on program structure.
+  2) _Spawn Hoisting_: Place task initiation (spawn instructions) as early as possible.
+  3) _Task Refinement_: Use dynamic profiling to remove tasks that are unlikely to be beneficial.
 
+The first step is chopping up the program into tasks that will benefit
+from being run concurrently.
+Doing this optimally is NP-hard as you might expect, so POSH has to resort
+to heuristics.
+The heuristic it uses is to leverage the existing high level program structure: 
+each subroutine call and loop iteration is a candidate task.
+The assumption is that subroutine code is generally independent of
+the rest of the code and from other subroutines,
+and so are the iterations of a loop
+(if it has any hope of benefitting from parallelism).
+This phase identifies the beginning point of each task
+(the end point is implicitly determined by the start of the next task),
+and POSH inserts spawn and commit instructions accordingly.
 
+In the spawn hoisting phase, POSH tries to move spawn instructions as early
+as possible without violating dependencies or changing program behavior.
+Spawning tasks early increases opportunities for parallel execution and
+prefetching, but there are limits to how far we can move them.
+For example, it is not sensible to spawn a thread before the assignment
+of its input variables, or move the spawn instruction outside a conditional
+statement since that could result in unnecessary code execution.
+
+The final phase uses profiling and simple syntactic criteria, such as task
+size and number of inputs, to remove tasks that do not improve performance.
+Instead, these pieces of the program are executed straight line.
 
 # Posh Profiler & Heuristics
 
 How to remove tasks that are likely to not help and just create overhead
+
+TODO: Drew: is this covered by the previous section?
 
 # Evaluation
 
