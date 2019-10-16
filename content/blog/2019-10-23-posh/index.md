@@ -160,3 +160,11 @@ numerous bug reports have caused them to [disable it on a number of processors](
 Furthermore, the [limitations of TSX](https://blog.ret2.io/2019/06/26/attacking-intel-tsx/)
 and other such extensions often make using them impractical, unstable and/or insecure.
 
+However, some low-level code *does* utilize HTM to implement
+efficient libraries for high performance computing. In these instances,
+developers are targeting very specific architectures with very detailed
+models of the processor and memory systems. Since developers in
+this domain are already concerned with the finnicky details that often
+make HTM transactions impractical, HTM does offer utility as a more flexible
+and performant synchronization primitive.
+
