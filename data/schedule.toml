@@ -86,6 +86,7 @@ date = "October 18"
 [[days]]
 date = "October 21"
 mon = true
+notes = ["Design Review: [Functions & PBT](../blog/function-calls/), by Alexa & Greg"]
 
 [[days]]
 date = "October 23"
