@@ -2,7 +2,7 @@
 title = "Double-Checked Locking is Broken"
 extra.author = "Hongbo Zhang"
 extra.author_link = "https://www.cs.cornell.edu/~hongbo/"
-extra.bio = """Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architectures. He is also okay archer shooting recurve bow."""
+extra.bio = """Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architecture. He is also an okay archer shooting recurve bow."""
 +++
 
 Double-checked locking is a software design pattern for 
@@ -15,7 +15,7 @@ in multi-threaded environments,
 which is a commonly used tactic for delaying the object initialization 
 until the first time it is accessed.
 Since only the first access requires locking,
-so double-checked locking can be used to avoid locking overhead of subsequent accesses.
+double-checked locking can be used to avoid locking overhead of subsequent accesses.
 
 ### Single-threading lazy initialization won't work in multi-threading
 
@@ -32,10 +32,10 @@ class Foo {
 }
 ```
 
-This code works for single thread, but if the code is run in multithreading,
+This code works for a single thread, but if the code is run in multithreading,
     two or more threads could find that `helper` is `null` at the same time, 
     and create multiple copies of `Helper` object.
-This can even cause memory leak in some languages, such as C++.
+This can even cause a memory leak in some languages, such as C++.
 
 ### Always-synchronized solution is slow
 
@@ -61,14 +61,14 @@ However, we only need this section of code to be synchronized for the first time
 
 ### Double-checked locking is broken 
 
-What we want is like following:
+What we want is like the following:
 
-1. check if the object is initialized without lock.
+1. Check if the object is initialized without locking.
 If it is, then return the object immediately.
-2. acquire the lock and check again if the object is initialized.
-If another thread have grabbed lock before, 
+2. Acquire the lock and check again if the object is initialized.
+If another thread has grabbed the lock before, 
    the current thread can see the object is created, and return the object.
-3. otherwise, the current thread will create the object and return.
+3. Otherwise, the current thread will create the object and return.
 
 With the guideline above, we will get a code like following:
 
@@ -127,7 +127,7 @@ in the synchronized section is done.
 
 Unfortunately, the lock releasing is a one-way memory barrier on many processors.
 It only enforces that the instructions in the synchronized section 
-must be executed before lock releasing.
+must be executed before lock is released.
 The instruction `helper=h` behind the memory barrier could still be moved into 
 synchronized section and executed before the object initialization is done.
 
@@ -136,8 +136,8 @@ synchronized section and executed before the object initialization is done.
 
 ### Volatile in JDK5
 
-Java introduced "volatile" since JDK5. 
-A "volatile" makes the variable be stored and accessed in main memory.
+Java introduced "volatile" in JDK5. 
+A `volatile` qualifier makes the variable be stored and accessed in main memory.
 Every read of a volatile is from main memory.
 Every write of a volatile is to main memory.
 
@@ -237,7 +237,7 @@ with the memory barrier.
 
 ### Static Singleton
 
-If the `helper` is static, i.e. all the instances of class `Foo` shares the 
+If the `helper` is static, i.e., all the instances of class `Foo` share the 
 same instance of `helper`, defining the `helper` in a static field of a separate
 class will solve the problem.
 
@@ -273,8 +273,8 @@ independently of other threads.
 
 A thread local can be used to maintain the state of "whether the state has gone
 through the synchronized initialization". 
-Since if a thread has gone through the synchronized initialized once,
-it can be confident about that object is already initialized.
+If a thread has gone through the synchronized initialization once,
+it can be confident that that object is already initialized.
 
 Inside the synchronized initialization section, 
 only the first thread will find the object is `null` and initialized object.
@@ -350,4 +350,4 @@ When analyzing the correctness of multi-threaded programs,
 it requires the considerations of multiple components, 
 including compilers, systems, and processors.
 On the other hand, when designing compilers, systems, or processors,
-it also needs to take consideration of common used design pattern.
+one also needs to take into consideration commonly used design patterns.
