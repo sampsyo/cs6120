@@ -16,9 +16,9 @@ In multi-threaded environments, initialization is usually not thread safe,
 so locking is required to protect the critical section.
 Since only the first access requires locking,
 double-checked locking is used to avoid locking overhead of subsequent accesses.
-However, on many languages and hardware, design can be unsafe. 
+However, on many languages and hardware, the design can be unsafe. 
 
-### Single-threading lazy initialization won't work in multi-threading
+### Single-threaded lazy initialization won't work in multi-threading
 
 If we were writing single-threaded code, we could write a lazy initialization 
 like this:
@@ -43,7 +43,7 @@ This can even cause a memory leak in some languages, such as C++.
 <img src="lazy-init-no-lock.png" style="width: 100%;">
 
 As shown in the graph above, 
-either different threads running concurrently on single processor (e.g. thread 1 and thread 2), 
+either different threads running concurrently on single processor (e.g., thread 1 and thread 2), 
 or running in parallel on different processors simultaneously (e.g. thread 3 and thread 4),
 multiple copies of `helper` could be created.
 
@@ -107,14 +107,14 @@ class Foo {
 }
 ```
 
-This tactic is call double-checked locking.
+This tactic is called double-checked locking.
 
 ### Double-checked locking is broken 
 
 However, this code is not guaranteed to work.
 
 `helper = new Helper()` is not an atomic operation,
-it consists multiple instructions allocating space, initializing fields of the object,
+it consists of multiple instructions allocating space, initializing fields of the object,
 and assigning address to `helper`. 
 
 In order to show what is really happening there,
@@ -163,7 +163,7 @@ class Foo {
 }
 ```
 
-This reordering is legal, since there is no data dependency between `helper = ptr`
+This reordering is legal because there is no data dependency between `helper = ptr`
 and the instructions for initializing fields. 
 However, this reordering, in some certain execution order, 
     could result in other threads seeing a non-null value of `helper` 
@@ -248,7 +248,7 @@ class Foo {
 ### Explicit Memory Barrier
 
 The previous fix with two synchronized sections does not work 
-because releasing lock is an implicit "one-way" memory barrier.
+because releasing a lock is an implicit "one-way" memory barrier.
 It is possible to make the double-checked locking actually work with an
 explicit memory barrier.
 For example, in C++11 we can safely implement double-checked locking with 
@@ -300,7 +300,7 @@ If this operation is atomic, the double-checked locking will work.
 #### 32-bit Primitive Variables
 
 Read and write operations of most primitive variables 
-(except `long` and `double` since they are 64-bit)are atomic.
+(except `long` and `double` since they are 64-bit) are atomic.
 If the initialized value is a 32-bit primitive variable,
    assignment to the variable will only happen once the data is available.
 Since the write operation is atomic, 
@@ -418,7 +418,7 @@ All subsequent accesses will get the same copy of `helper` without synchronizati
 
 ### Thread Local
 
-`ThreadLocal` is a variable that each thread will have its own copy of the
+`ThreadLocal` is a variable where each thread will have its own copy of the
 thread local variable.
 Each thread can only access and modify its own copy of a thread local variable
 independently of other threads.
