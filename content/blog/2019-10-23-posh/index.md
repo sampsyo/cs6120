@@ -140,7 +140,50 @@ TODO: Drew: is this covered by the previous section?
 
 # Evaluation
 
-Here we evaluate.
+The paper has an extensive evaluation section looking at:
+  1) Impact of selecting tasks based on different types code structure,
+  2) Speedup due to prefetching,
+  3) Effectiveness of the profiler,
+
+The overall evaluation methodology is to generate code using some configuration
+of the compiler, and look at statistics (e.g. time or memory behavior).
+All experiments are run on a simulator as TLS enabled hardware does not exist.
+
+To evaluate the impact of selecting tasks based on different types of code structure,
+the authors generate tasks from subroutines only, loops only, and from both subroutines
+and loops. They observe that using both is necessary for the best results as can be in
+the following graph:
+
+<img src="performance.png" style="width:100%"/>
+
+As we mentioned earlier, most of the speedup comes from executing code in parallel, but
+even when correct parallel execution is not possible and tasks get squashed, memory accesses
+they make have the effect of prefetching data that the re-executions are likely to use.
+To evaluate the impact of prefetching, they modify the simulator so that data brought
+into the processor cache by squashed tasks are marked as invalid.
+Comparing the speedup gained with prefetching and without in the graph before,
+they claim 26% of the speedup is due to prefetching.
+
+<img src="prefetch.png" style="width:100%"/>
+
+The final stage of the compiler removes tasks that degrade performance.
+This stage uses a profiler (which is essentially an interpreter that 
+keeps track of clock cycles) to determine which tasks are detrimental.
+The following graphs shows the importance of using the profiler:
+without it, some programs are _slowed down_ due to the overhead of
+managing tasks.
+The profiler significantly improves performance, and realizes the
+"do no harm" principle of compiler optimization.
+
+<img src="doNoHarm.png" style="width:100%"/>
+
+## Evaluation of Evaluation
+
+The paper has a solid evaluation which asks (and answers) all the questions we
+might want asked.
+The only problem with the evaluation is that it is based on "eyeball statistics".
+No formal null hypothesis testing is done, instead, the authors point at a graph
+and say "the bars are usually higher in this case".
 
 # Appendix
 
