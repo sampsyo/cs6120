@@ -252,13 +252,16 @@ Instead of synchronization, the author argues in favor of a paradigm that allows
 >As a result of the high cost of these hardware instructions, and the even higher cost of the pthread primitives built on them, there are a small number of cases in which synchronization performance is critical, and more careful and direct use of the hardware primitives, together with less constrained use of shared variables, is essential. In some cases it may also be necessary to avoid deadlock issues inherent in lock-based programming[7], or desirable because a different parallel programming model is preferable for an application (cf. [32]).
 
 To demonstrate this claim, the author compares the performance of an implementation of the Sieve of Eratosthenes algorithm and a tracing garbage collector implemented under the synchronization and data raceful paradigm.
-Two implementations of synchronized versions are evaluated: one using mutexes, and another using spinlocks.
+
+Four implementations are evaluated when run with 1, 2, and 4 threads.  
+Two of these use synchronization: one using mutexes, and another using spinlocks.  
 These are compared to two implementations with data races: one that makes use of atomic memory operations, and one that unsafely uses ordinary memory operations.
 
 ![alt text](images/sieve-bit-array.png "Sieve of Eratosthenes Performance")
+
 ![alt text](images/gc.png "Tracing Garbage Collector Performance")
 
-The results indicate that there are applications for which allowing data races can be improve performance, motivating the formal specification of programs with data races.
+The results indicate that there are applications for which allowing data races can be improve performance in a multi-processor, motivating the formal specification of programs with data races.
 
 ## Formal Model for Data Races
 To allow data races, the language standard must provide a memory model for programs with data races.
