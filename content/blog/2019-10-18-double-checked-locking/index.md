@@ -290,7 +290,7 @@ The memory barriers guarantee that
 ### Atomic Operation
 
 An atomic operation will either happen completely, or it does not happen at all.
-This is no intermediate state, so that the side effects op an atomic operations
+This is no intermediate state, so that the side effects of an atomic operation
 will not be visible until the operation is complete.
 
 In previous analysis, we have seen that `h = new Helper()` can be interleaved
@@ -300,12 +300,12 @@ If this operation is atomic, the double-checked locking will work.
 #### 32-bit Primitive Variables
 
 Read and write operations of most primitive variables 
-(except `long` and `double since they are 64-bit)are atomic.
+(except `long` and `double` since they are 64-bit)are atomic.
 If the initialized value is a 32-bit primitive variable,
    assignment to the variable will only happen once the data is available.
 Since the write operation is atomic, 
-other threads will either see a ready-to-use value or 0,
-there is no middle state of "initializing".
+other threads will either see a ready-to-use value or 0.
+There is no middle state of "initializing".
 
 ```Java
 class Foo {
@@ -324,7 +324,7 @@ class Foo {
 
 #### Volatile
 
-Since JDK 5, we can make reads and writes for any variable atomic by declearing
+Since JDK 5, we can make reads and writes for any variable atomic by declaring
 it as a volatile variable.
 Every read of a volatile will invalidate cached value and 
 load it from main memory.
@@ -382,7 +382,7 @@ class Foo {
 }
 ```
 
-In cases that the `helper` in already initialized, 
+In cases that the `helper` is already initialized, 
 this optimization can reduce one volatile read by returning the local variable.
 
 
