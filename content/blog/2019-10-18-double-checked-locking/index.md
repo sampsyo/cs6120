@@ -43,9 +43,9 @@ This can even cause a memory leak in some languages, such as C++.
 <img src="lazy-init-no-lock.png" style="width: 100%;">
 
 As shown in the graph above, 
-either different threads running concurrently on single processor (e.g., thread 1 and thread 2), 
-or running in parallel on different processors simultaneously (e.g. thread 3 and thread 4),
-multiple copies of `helper` could be created.
+when threads either run concurrently on single processor (e.g., thread 1 and thread 2), 
+or run in parallel on different processors simultaneously (e.g. thread 3 and thread 4),
+they can create multiple copies of `helper`.
 
 ### Always-synchronized solution is slow
 
@@ -182,7 +182,7 @@ assigning to `helper`,
 some people came up with another fix with a `synchronized` to enforce ordering,
 since `synchronized` is an implicit memory barrier that enforces the instructions
 inside the synchronized section to be executed before exiting the section 
-(i.e. releasing the lock).
+(i.e., releasing the lock).
 
 ```Java
 class Foo { 
@@ -251,8 +251,10 @@ The previous fix with two synchronized sections does not work
 because releasing a lock is an implicit "one-way" memory barrier.
 It is possible to make the double-checked locking actually work with an
 explicit memory barrier.
-For example, in C++11 we can safely implement double-checked locking with 
-`std::atomic` and `std::atomic_thread_fence`.
+For example, [Preshing][] has provided an implementation of double-checked locking with 
+`std::atomic` and `std::atomic_thread_fence` in C++ 11.
+
+[Preshing]: https://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/
 
 ```C++
 class Foo {
@@ -271,7 +273,7 @@ class Foo {
                     helper.store(h, std::memory_order_relaxed);
                 }
             }
-            return tmp;
+            return h;
         }
 };
 ```
@@ -296,31 +298,6 @@ will not be visible until the operation is complete.
 In previous analysis, we have seen that `h = new Helper()` can be interleaved
 because it is not an atomic operations.
 If this operation is atomic, the double-checked locking will work.
-
-#### 32-bit Primitive Variables
-
-Read and write operations of most primitive variables 
-(except `long` and `double` since they are 64-bit) are atomic.
-If the initialized value is a 32-bit primitive variable,
-   assignment to the variable will only happen once the data is available.
-Since the write operation is atomic, 
-other threads will either see a ready-to-use value or 0.
-There is no middle state of "initializing".
-
-```Java
-class Foo {
-    private int magicNumber = 0;
-    public int getMagicNumber() {
-        if (magicNumber == 0) {
-            synchronized(this) {
-                if (magicNumber == 0)
-                    magicNumber = GetMagicNumber();
-            }
-        }
-        return helper;
-    }
-}
-```
 
 #### Volatile
 
@@ -385,6 +362,38 @@ class Foo {
 In cases that the `helper` is already initialized, 
 this optimization can reduce one volatile read by returning the local variable.
 
+#### 32-bit Primitive Variables
+
+[Pugh et al.][] claimed that the double-checked locking can work safely for 32-bit
+primitives.
+
+```Java
+class Foo {
+    private int magicNumber = 0;
+    public int getMagicNumber() {
+        if (magicNumber == 0) {
+            synchronized(this) {
+                if (magicNumber == 0)
+                    magicNumber = GetMagicNumber();
+            } 
+        }
+        return helper;
+    }
+}
+```
+
+However, this specific case highly depends on the Java memory model.
+The C/C++ equivalent of the above code is not safe.
+The [Java documentation][] specifies that 
+read and write operations of most primitive variables 
+(except `long` and `double` since they are 64-bit) are atomic.
+But it is still not completely clear why it is safe and
+how it is different from volatile primitive variables.
+
+[Pugh et al.]: https://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
+[Java documentation]: https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
+
+
 
 ### Static Singleton
 
@@ -405,18 +414,21 @@ class Foo {
 ```
 
 This is known as **initialization-on-demand holder idiom**, 
-which is a safe and efficient concurrent lazy initialization 
+which is considered as a safe and efficient concurrent lazy initialization 
 for all Java versions.
 
-As specified by the Java language,
-static classes are not initialized until the first time it is referenced.
-At the first time it is referenced,
-   Java static class initializer is triggered.
-Since the static initializer is thread safe,
-    only one copy of the object will be created.
-All subsequent accesses will get the same copy of `helper` without synchronization overhead.
+As the [Java documentation][] specifies,
+a lock is used to ensure synchronized access to object initialization status 
+(uninitialized/initializing/initialized/erroneous state).
+However, if all subsequent references to the object requires lock synchronization,
+it is just equivalent to the "always-synchronized" solution above.
+Unfortunately, it is still unclear how Java provides an efficient 
+asynchronize access to initialized objects.
 
 ### Thread Local
+
+Alexander Terekhov provided an implementation of double-checked locking using
+thread local variables.
 
 `ThreadLocal` is a variable where each thread will have its own copy of the
 thread local variable.
@@ -456,7 +468,7 @@ compared with the "ideal" design:
 instead of having only the first thread enter the synchronized section
 and initialize the object,
 each thread is required to enter the synchronized section exactly once
-and change its own per-thread state (i.e. the thread local variable) 
+and change its own per-thread state (i.e., the thread local variable) 
     to prevent future access of the synchronized section.
 However, the performance in the long run is still acceptable.
 
@@ -488,4 +500,5 @@ Code structures and variable names are modified for consistency in this post.
 6. [Double-Checked Locking is Fixed In C++11](https://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/)
 7. [C++ Reference: Atomic Thread Fence](https://en.cppreference.com/w/cpp/atomic/atomic_thread_fence)
 8. [Java Documentation: Atomic Access](https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html)
+9. [Java Documentation: Initialization Procedure](https://docs.oracle.com/javase/specs/jls/se13/html/jls-12.html#jls-12.4.2)
 
