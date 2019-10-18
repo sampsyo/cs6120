@@ -423,7 +423,7 @@ a lock is used to ensure synchronized access to object initialization status
 However, if all subsequent references to the object requires lock synchronization,
 it is just equivalent to the "always-synchronized" solution above.
 Unfortunately, it is still unclear how Java provides an efficient 
-asynchronize access to initialized objects.
+unsynchronized access to initialized objects.
 
 ### Thread Local
 
