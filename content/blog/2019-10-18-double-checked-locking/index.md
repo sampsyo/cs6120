@@ -408,13 +408,13 @@ This is known as **initialization-on-demand holder idiom**,
 which is a safe and efficient concurrent lazy initialization 
 for all Java versions.
 
-* **Lazy Initialization**: as specified by the Java language,
-    the static class `HelperSingleton` is not initialized until 
-    the first time it is referenced.
-* **Safe**: the Java static class initializers is thread safe.
-* **Efficient**: all subsequent calls of `getHelper` will return the initialized
-    `helper` without any synchronization overhead.
-
+As specified by the Java language,
+static classes are not initialized until the first time it is referenced.
+At the first time it is referenced,
+   Java static class initializer is triggered.
+Since the static initializer is thread safe,
+    only one copy of the object will be created.
+All subsequent accesses will get the same copy of `helper` without synchronization overhead.
 
 ### Thread Local
 
