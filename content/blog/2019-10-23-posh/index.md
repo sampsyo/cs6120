@@ -110,9 +110,9 @@ The first step is chopping up the program into tasks that will benefit
 from being run concurrently.
 As you might expect, doing this optimally is NP-hard, so POSH has to resort
 to heuristics.
-Its primariy heuristic leverages the existing high level program structure;
+Its primarily heuristic leverages the existing high level program structure;
 each subroutine call and loop iteration is considered a candidate task.
-The authors justify this with some intution:
+The authors justify this with some intuition:
 ```
 All these programmer-generated structures are taken
 as hints to delineate code sections with a relatively independent and
@@ -124,11 +124,11 @@ The former problem is addressed by _Task Refinement_ but POSH ignores
 the latter source of imprecision.
 
 During task selection, POSH inserts the special `spawn` and `commit`
-instructions, as well as task begin labels to divy up the program
+instructions, as well as task begin labels to divvy up the program
 according to the above heuristic. A subtle optimization included in
 this phase is the introduction of [software value prediction](https://people.apache.org/~xli/papers/vpw03-software-value-prediction.pdf).
 Although POSH doesn't focus on their implementation of software value
-prediction, we include another [aside on how svp works](#software-value-prediction).
+prediction, we include another [aside on how SVP works](#software-value-prediction).
 
 In the _Spawn Hoisting_ phase, POSH tries to move spawn instructions as early
 as possible without violating dependencies or changing program behavior.
@@ -154,13 +154,13 @@ using some configuration of the compiler, and look at statistics (e.g. execution
 For the most part, their tests are concerned with the reduction in total execution
 time compared to the sequential execution.
 All experiments are run on a simulator as hardware with support for TLS
-was not comercially available at the time.
+was not commercially available at the time.
 
 While the authors do extensively break down their evaluation,
 we'll simply summarize some of the tests they run and our takeaways
 from their results.
 
-First the test POSH's various optimizations:
+First they test POSH's various optimizations:
  1) Impact of choosing subroutine vs. loops as tasks
  2) Effect of using [software value prediction](#software-value-prediction)
  3) Importance of using the profiler to eliminate tasks
@@ -207,7 +207,7 @@ On the other hand, the opposite may be true *or* they may represent a good sprea
 
 Given the breakdowns that the authors provide, it seems likely that the most significant
 contribution of POSH is its dynamic profiler, which allows their other optimizations
-to be aggresively optimistic. While hardware support does prevent TLS from impacting
+to be aggressively optimistic. While hardware support does prevent TLS from impacting
 correctness, it doesn't prevent TLS from being a bad idea. The POSH profiler fills this
 gap instead and allows techniques like software value prediction and the structured
 program heuristic to be utilized without hurting performance.
@@ -263,7 +263,7 @@ However, some low-level code *does* utilize HTM to implement
 efficient libraries for high performance computing. In these instances,
 developers are targeting very specific architectures with very detailed
 models of the processor and memory systems. Since developers in
-this domain are already concerned with the finnicky details that often
+this domain are already concerned with the finicky details that often
 make HTM transactions impractical, HTM does offer utility as a more flexible
 and performant synchronization primitive.
 
@@ -278,11 +278,11 @@ becomes very limited.
 Value prediction transforms this sequential execution into
 a potentially parallel one by creating data dependencies between
 the original variable and a prediction variable. Value prediction
-prodcues code with the following invariant:
+produces code with the following invariant:
 
 *Let x be some variable in the program, pred(x) is its predicted
 value and real(x) is its real value. A TLS task that reads pred(x)
-will be squashed whenever real(x) != pred(x)*
+will be squashed whenever real(x) != pred(x).*
 
 The following example from [Li et al.](https://people.apache.org/~xli/papers/vpw03-software-value-prediction.pdf)
 shows how the newly spawned task will be squashed whenever `pred_x` is not equal to the correct value.
