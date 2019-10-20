@@ -27,7 +27,7 @@ In essence, a back-edge is what brings us from the end $A$ of the loop back to t
 
 ### Detection
 
-To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py`. 
+To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py` within our three functions. Back-edges are identified with `get_backedges` which takes in a map of successors and the dominator tree. `loopsy` finds the natural loop associated with an input back-edge. Every natural loop associated with a back-edge is then identified this way within `natloops` which is the main function. 
 
 ```python
 from cfg import *
