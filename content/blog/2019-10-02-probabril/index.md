@@ -8,7 +8,7 @@ Oliver is a CS PhD student in theory at Cornell, who does decision theory, categ
 """
 [[extra.authors]]
 name = "Oliver Richardson"
-link = "https://www.cs.cornell.edu/~oli/"  # Links are optional.
+link = "https://www.cs.cornell.edu/~oli/"
 [[extra.authors]]
 name = "Michael Roberts"
 +++
