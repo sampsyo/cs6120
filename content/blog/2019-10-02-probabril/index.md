@@ -3,7 +3,7 @@ title = "Probabril"
 [extra]
 latex = true
 bio = """
-Oliver is a CS PhD student in theory at Cornel, who does decision theory, category theory, and
+Oliver is a CS PhD student in theory at Cornell, who does decision theory, category theory, and
  spends far too much time on assignments after the due date.
 """
 [[extra.authors]]
