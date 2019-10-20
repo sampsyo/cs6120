@@ -23,18 +23,25 @@ Skip to the end to optimize your very own `bril` program!
 
 All loops considered here are **natural loops**—that is, a cycle with one entry and a **back-edge**. Back-edges are defined as an edge $A \longrightarrow B$ for tail $A$ and head $B$, such that $B$ dominates $A$.  Natural loops are then defined as the smallest set of vertices $L$ with $A,B \el L$ such that for each vertex $v \el L$ we have $v=B$ or PREDS($v$)$\subseteq L$.
 
-In essence, a back-edge is what brings us from the end $A$ of the loop back to the beginning $B$. If the loop has more than one entry, it is not a natural loop. 
+In essence, a back-edge is what brings us from the end $A$ of the loop back to the beginning $B$. If the loop has more than one entry, it is not a natural loop. Below is an illustration of a natural loop and its back-edge. 
 
 ### Detection
 
-To find the loop invariant code, first we must detect all natural loops.
+To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py`. 
 
 ```python
-def natloops(blocks): #input backedge
-    pred,succ = edges(blocks)
-    dom = get_dom(succ,list(blocks.keys())[0])
-    for source,sink in get_backedges(succ,dom):
-        yield loopsy(source,sink,pred) # natloops
+from cfg import *
+from dom import *
+from df import *
+
+def get_backedges(successors,domtree):
+    backedges = set()
+    for source,sinks in successors.items():
+        for sink in sinks:
+            if sink in domtree[source]:
+                backedges.add((source,sink))
+
+    return backedges
 
 def loopsy(source,sink,predecessors):
     worklist = [source]
@@ -48,7 +55,15 @@ def loopsy(source,sink,predecessors):
                 worklist.append(p)
     loop.add(sink)
     loop.add(source)
+   
     return loop
+
+def natloops(blocks): #input backedge
+    pred,succ = edges(blocks)
+    dom = get_dom(succ,list(blocks.keys())[0])
+    for source,sink in get_backedges(succ,dom):
+        yield loopsy(source,sink,pred) # natloops
+
 ```
 
 ### Invariance
