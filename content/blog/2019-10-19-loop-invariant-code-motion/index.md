@@ -17,9 +17,9 @@ bio = """
 """
 +++
 
+Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them.
 
-Loop Invariant Code Motion hoists what doesn't need to be in the loop—invariant code—out of the loop. This optimization cuts down the number of instructions executed, by making sure unecessary repetition is avoided. To implement this we first identified natural loops and the invariant code within them. After moving the invariant code outside of their original natural loop, 
-
+After discussing how to see what can move, we’ll illustrate how code is moved, and 
 
 # Loop
 
@@ -60,6 +60,7 @@ Code may be marked as loop invariant if
 
 # Motion
 
+
 Now we know how to spot what can move, let's move it!
 
 ### Loop in a Loop in a Loop
@@ -68,4 +69,6 @@ Now we know how to spot what can move, let's move it!
 
 ### Super nested loops
 
+# Try it!
+Demo for people to see results on their own `bril` code
 ### eof
