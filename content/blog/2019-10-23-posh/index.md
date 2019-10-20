@@ -38,7 +38,7 @@ background on both how TLS works and the context in which it was envisioned.
 As we mentioned above, TLS relies on special hardware support for detecting
 data dependencies between threads running on different processor cores.
 Broadly, these kinds of features are known as Hardware Transactional Memory (HTM).
-At the [end of this article](#hardware-transactional-memory-aside) we've included a brief aside on HTM and its
+At the [end of this article](#hardware-transactional-memory) we've included a brief aside on HTM and its
 presence in modern processors for those who are interested.
 
 POSH assumes that hardware has support
@@ -108,53 +108,81 @@ The POSH compiler optimization is broken into three phases;
 
 The first step is chopping up the program into tasks that will benefit
 from being run concurrently.
-Doing this optimally is NP-hard as you might expect, so POSH has to resort
+As you might expect, doing this optimally is NP-hard, so POSH has to resort
 to heuristics.
-The heuristic it uses is to leverage the existing high level program structure: 
-each subroutine call and loop iteration is a candidate task.
-The assumption is that subroutine code is generally independent of
-the rest of the code and from other subroutines,
-and so are the iterations of a loop
-(if it has any hope of benefitting from parallelism).
-This phase identifies the beginning point of each task
-(the end point is implicitly determined by the start of the next task),
-and POSH inserts spawn and commit instructions accordingly.
+Its primariy heuristic leverages the existing high level program structure;
+each subroutine call and loop iteration is considered a candidate task.
+The authors justify this with some intution:
+```
+All these programmer-generated structures are taken
+as hints to delineate code sections with a relatively independent and
+sizable amount of work.
+```
+In reality, not all subroutines or loop iterations are independent
+*and* there are other sections of code which may be parallelizable.
+The former problem is addressed by _Task Refinement_ but POSH ignores
+the latter source of imprecision.
 
-In the spawn hoisting phase, POSH tries to move spawn instructions as early
+During task selection, POSH inserts the special `spawn` and `commit`
+instructions, as well as task begin labels to divy up the program
+according to the above heuristic. A subtle optimization included in
+this phase is the introduction of [software value prediction](https://people.apache.org/~xli/papers/vpw03-software-value-prediction.pdf).
+Although POSH doesn't focus on their implementation of software value
+prediction, we include another [aside on how svp works](#software-value-prediction).
+
+In the _Spawn Hoisting_ phase, POSH tries to move spawn instructions as early
 as possible without violating dependencies or changing program behavior.
 Spawning tasks early increases opportunities for parallel execution and
 prefetching, but there are limits to how far we can move them.
 For example, it is not sensible to spawn a thread before the assignment
-of its input variables, or move the spawn instruction outside a conditional
+of its input variables. Neither is it clearly beneficial to
+move the spawn instruction outside a conditional
 statement since that could result in unnecessary code execution.
 
 The final phase uses profiling and simple syntactic criteria, such as task
-size and number of inputs, to remove tasks that do not improve performance.
+size and number of inputs, to remove tasks that probably don't improve performance.
 Instead, these pieces of the program are executed straight line.
-
-# Posh Profiler & Heuristics
-
-How to remove tasks that are likely to not help and just create overhead
-
-TODO: Drew: is this covered by the previous section?
+The profiling methodology is to use test inputs and simulate the parallel
+execution of the program with a sequential interpreter, while keeping
+track of how many dynamic instructions each task executes and how often
+it would have to be squashed by the hardware.
 
 # Evaluation
 
-The paper has an extensive evaluation section looking at:
-  1) Impact of selecting tasks based on different types code structure,
-  2) Speedup due to prefetching,
-  3) Effectiveness of the profiler,
+The overall evaluation methodology is to optimize some of the SPECint benchmarks
+using some configuration of the compiler, and look at statistics (e.g. execution time or memory behavior).
+For the most part, their tests are concerned with the reduction in total execution
+time compared to the sequential execution.
+All experiments are run on a simulator as hardware with support for TLS
+was not comercially available at the time.
 
-The overall evaluation methodology is to generate code using some configuration
-of the compiler, and look at statistics (e.g. time or memory behavior).
-All experiments are run on a simulator as TLS enabled hardware does not exist.
+While the authors do extensively break down their evaluation,
+we'll simply summarize some of the tests they run and our takeaways
+from their results.
 
-To evaluate the impact of selecting tasks based on different types of code structure,
-the authors generate tasks from subroutines only, loops only, and from both subroutines
-and loops. They observe that using both is necessary for the best results as can be in
-the following graph:
+First the test POSH's various optimizations:
+ 1) Impact of choosing subroutine vs. loops as tasks
+ 2) Effect of using [software value prediction](#software-value-prediction)
+ 3) Importance of using the profiler to eliminate tasks
 
 <img src="performance.png" style="width:100%"/>
+In the first case, they observe that the best performance comes from parallelizing
+both loops and subroutines. Since these measurements involve tests that *do* use the
+profiler (which hopefully eliminates tasks that make things worse),
+it makes sense that *more candidates* for parallelization means *more performance*.
+
+Value prediction makes a big difference in some cases, but less in others;
+but the same theory as before should apply here. Value prediction allows for
+more chances to parallelize, so it should improve performance as long as the
+profiler identifies when it might be a bad idea.
+
+The following graphs shows the importance of using the profiler:
+without it, some programs are _slowed down_ due to the overhead of
+managing tasks.
+The profiler significantly improves performance, and realizes the
+"do no harm" principle of compiler optimization.
+
+<img src="doNoHarm.png" style="width:100%"/>
 
 As we mentioned earlier, most of the speedup comes from executing code in parallel, but
 even when correct parallel execution is not possible and tasks get squashed, memory accesses
@@ -166,28 +194,30 @@ they claim 26% of the speedup is due to prefetching.
 
 <img src="prefetch.png" style="width:100%"/>
 
-The final stage of the compiler removes tasks that degrade performance.
-This stage uses a profiler (which is essentially an interpreter that 
-keeps track of clock cycles) to determine which tasks are detrimental.
-The following graphs shows the importance of using the profiler:
-without it, some programs are _slowed down_ due to the overhead of
-managing tasks.
-The profiler significantly improves performance, and realizes the
-"do no harm" principle of compiler optimization.
 
-<img src="doNoHarm.png" style="width:100%"/>
-
-## Evaluation of Evaluation
+## Evaluation Takeaways
 
 The paper has a solid evaluation which asks (and answers) all the questions we
-might want asked.
-The only problem with the evaluation is that it is based on "eyeball statistics".
-No formal null hypothesis testing is done, instead, the authors point at a graph
-and say "the bars are usually higher in this case".
+might want asked. Our primary gripe with their evaluation is that it is based on "eyeball statistics".
+No formal null hypothesis testing is done; instead, the authors point at a graph
+and say "the bars are usually higher in this case". Additionally, it's unclear if
+the SPECint benchmarks are really a representative use case for real code. In theory, these
+are meant to test the sequential integer performance of CPUs and may have few opportunities for parallelism.
+On the other hand, the opposite may be true *or* they may represent a good spread of optimizability.
+
+Given the breakdowns that the authors provide, it seems likely that the most significant
+contribution of POSH is its dynamic profiler, which allows their other optimizations
+to be aggresively optimistic. While hardware support does prevent TLS from impacting
+correctness, it doesn't prevent TLS from being a bad idea. The POSH profiler fills this
+gap instead and allows techniques like software value prediction and the structured
+program heuristic to be utilized without hurting performance.
+
+If HTM were actually widely usable by general purpose programs, then POSH would likely
+be an effective optimization for automatically speeding up sequential code!
 
 # Appendix
 
-### Hardware Transactional Memory Aside
+### Hardware Transactional Memory
 
 Before transactional memory, hardware support for parallel computing
 was limited to synchronization primitives such as [`atomic compare-and-swap`](https://en.wikipedia.org/wiki/Compare-and-swap)
@@ -237,3 +267,49 @@ this domain are already concerned with the finnicky details that often
 make HTM transactions impractical, HTM does offer utility as a more flexible
 and performant synchronization primitive.
 
+### Software Value Prediction
+
+In TLS, there are some code regions which could be parallelized,
+but they involve potentially predictable data dependencies.
+For example, in a `while` loop, the iteration condition may not
+be known before executing the entire body of the loop and thus parallelism
+becomes very limited.
+
+Value prediction transforms this sequential execution into
+a potentially parallel one by creating data dependencies between
+the original variable and a prediction variable. Value prediction
+prodcues code with the following invariant:
+
+*Let x be some variable in the program, pred(x) is its predicted
+value and real(x) is its real value. A TLS task that reads pred(x)
+will be squashed whenever real(x) != pred(x)*
+
+The following example from [Li et al.](https://people.apache.org/~xli/papers/vpw03-software-value-prediction.pdf)
+shows how the newly spawned task will be squashed whenever `pred_x` is not equal to the correct value.
+Specifically, this code ensures that the original thread will update `pred_x` to be correct before it commits, forcing
+a read-write dependency on that variable.
+
+```C
+      pred_x = x; //initialize prediction
+Loop: x = pred_x; //use prediction
+      pred_x = f(x); //generate prediction
+      spawn Loop;
+       … = foo(x);
+       x = …;
+      if (x != pred_x) //verify prediction
+        pred_x = x; //recover misprediction
+      commit();
+ if (cont) goto Loop;
+```
+
+The POSH authors don't go into any real detail on their prediction mechanism
+beyond what we've described here. While they do evalute its effectiveness,
+we have no idea what kind of algorithm they're using to choose prediction values.
+
+Another downside of prediction is that it involves more runtime overhead in
+generating predictions. Not only do the instructions used to produce predictions
+slow down execution, but the prediction code likely accesses a shared data structure that
+could increase the number of failed tasks due to races on that.
+It would be a great idea for the POSH profiler to
+also take into account this execution information
+(_note it does account for the potential task squashing, just not the instruction overhead_).
