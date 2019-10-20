@@ -97,7 +97,7 @@ It is in this sense that **Threads Cannot Be Implemented as a Library**: if the 
 
 
 ## Three Optimizations that Break Pthreads
-The authors identify three compiler optimizations that break otherwise well-defined Pthreads programs:
+The authors identify three compiler optimizations that break otherwise well-defined Pthreads programs. All these examples use the "opaque functions" where the compiler is not allowed to reorder memory operations across locks, but things can go wrong anyway!
 
 ### Concurrent modification
 
