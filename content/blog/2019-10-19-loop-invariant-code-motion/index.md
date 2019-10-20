@@ -2,20 +2,18 @@
 title = "Out of the Loop!"
 [extra]
 latex = true
+bio = """
+[Rolph Recto](https://twitter.com/rolphrecto) is a third-year graduate student studying
+the intersection of programming languages, security, and distributed systems. Likes climbing, scifi, and halo-halo.[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal.
+"""
 [[extra.authors]]
 name = "Rolph Recto"
 link = "https://twitter.com/rolphrecto"
-bio = """
-[Rolph Recto](https://twitter.com/rolphrecto) is a third-year graduate student studying
-the intersection of programming languages, security, and distributed systems. Likes climbing, scifi, and halo-halo.
-"""
 [[extra.authors]]
 name = "Gabriela Calinao Correa"
 link = "https://twitter.com/elalaCorrea"
-bio = """
-[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal.
-"""
 +++
+
 
 Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them. 
 
@@ -23,9 +21,7 @@ Skip to the end to optimize your very own `bril` program!
 
 # Loop
 
-All loops considered here are **natural loops**. That is, a cycle with one entry and a back-edge. Back-edges are defined as an edge `$A\longrightarrowB$` for tail `$A$` and head `$B$`, such that `$B$` dominates `$A$`
-
-A **backedge**
+All loops considered here are **natural loops**. That is, a cycle with one entry and a **back-edge**. Back-edges are defined as an edge $A \longrightarrow B$ for tail $A$ and head $B$, such that $B$ dominates $A$.  Natural loops are then defined as the smallest set of vertices $L$ with $A,B \el L$ such that for each vertex $v \el L$ we have $v=B$ or PREDS($v$)$\subseteq L$.
 
 ### Detection
 
