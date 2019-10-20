@@ -17,7 +17,8 @@ bio = """
 """
 +++
 
-Loop Invariant Code Motion hoists what doesn't need to be in the loop---invariant code---out of the loop. This optimization cuts down the number of instructions executed, by making sure unecessary repetition is avoided. To implement this we first identified natural loops and the invariant code within them. After moving the invariant code outside of their original natural loop, 
+
+Loop Invariant Code Motion hoists what doesn't need to be in the loop—invariant code—out of the loop. This optimization cuts down the number of instructions executed, by making sure unecessary repetition is avoided. To implement this we first identified natural loops and the invariant code within them. After moving the invariant code outside of their original natural loop, 
 
 
 # Loop
