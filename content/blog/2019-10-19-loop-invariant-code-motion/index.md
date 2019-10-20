@@ -13,19 +13,17 @@ the intersection of programming languages, security, and distributed systems. Li
 name = "Gabriela Calinao Correa"
 link = "https://twitter.com/elalaCorrea"
 bio = """
-[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal. 
+[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal.
 """
 +++
 
-Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them.
+Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them. 
 
-After discussing how to see what can move, we’ll illustrate how code is moved, and 
+Skip to the end to optimize your very own `bril` program!
 
 # Loop
 
-
-What is a **natural loop**?
-
+All loops considered here are **natural loops**. That is, a cycle with one entry and a back-edge. Back-edges are defined as an edge $A\longrightarrowB$ for tail $A$ and head $B$, such that $B$ dominates $A$
 
 A **backedge**
 
@@ -71,4 +69,5 @@ Now we know how to spot what can move, let's move it!
 
 # Try it!
 Demo for people to see results on their own `bril` code
-### eof
+
+<!---eof--->
