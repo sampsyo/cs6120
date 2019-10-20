@@ -23,7 +23,7 @@ Skip to the end to optimize your very own `bril` program!
 
 # Loop
 
-All loops considered here are **natural loops**. That is, a cycle with one entry and a back-edge. Back-edges are defined as an edge $A\longrightarrowB$ for tail $A$ and head $B$, such that $B$ dominates $A$
+All loops considered here are **natural loops**. That is, a cycle with one entry and a back-edge. Back-edges are defined as an edge `$A\longrightarrowB$` for tail `$A$` and head `$B$`, such that `$B$` dominates `$A$`
 
 A **backedge**
 
@@ -69,5 +69,4 @@ Now we know how to spot what can move, let's move it!
 
 # Try it!
 Demo for people to see results on their own `bril` code
-
 <!---eof--->
