@@ -81,7 +81,7 @@ I built an abstract interpreter which exactly (to reiterate: neither approximate
 To the language specification I have added three instructions,
 
  - `flip` : an instruction which stores a random boolean in its target destination
- - `obv` : an observe primative, used for conditioning, which can be thought of as an assert --- if it fails, the world and any mass on it are destroyed, netting a sub-deistribution. If one thinks of programs as being normalized distributions (that is, conditioned on a program finishing), then this mass is re-distributed to the other runs, and this instruction is equivalent to ra restart of the program.
+ - `obv` : an observe primative, used for conditioning, which can be thought of as an assert---if it fails, the world and any mass on it are destroyed, netting a sub-distribution. If one thinks of programs as being normalized distributions (that is, conditioned on a program finishing), then this mass is re-distributed to the other runs, and this instruction is equivalent to a restart of the program.
  - `clear` : clears the environment variables. `obv` can be compiled to a branch which restarts the program, with a `clear`. 
 
 ### Background on Exact Inference
