@@ -1,6 +1,6 @@
 +++
 title = "Threads Cannot Be Implemented as Libraries"
-extra.author = "Neil Adit", "Edwin Peguero"
+extra.author = "Neil Adit and Edwin Peguero"
 +++
 
 Attempts have been made to append thread support onto languages that lack thread semantics via a library that is paired with an informal thread semantics. Effectively, this introduces threads into a host language that remains oblivious to their presence.
