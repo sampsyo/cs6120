@@ -293,7 +293,7 @@ Below is its output (with the constant field removed so that it fits more cleanl
 [ 'done', Map { 'y' => 1n, 'x' => false } ] 0.5
 ```
 
-Even though there is still some symmetry left to be desired (a more satisfying solution could be given by widening perhaps), note that assembling a picture like this via monte carlo would take an insane number of samples. Effectively we have done power iteration, but for a space which we did not know was finite beforehand.
+Even though there is still some symmetry left to be desired (a more satisfying solution could be given by widening perhaps), note that assembling a picture like this via Monte Carlo would take an insane number of samples. Effectively we have done power iteration, but for a space which we did not know was finite beforehand.
 
 
 ## Random Testing
