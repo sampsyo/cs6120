@@ -3,42 +3,36 @@ title = "Threads Cannot Be Implemented as Libraries"
 extra.author = "Neil Adit and Edwin Peguero"
 +++
 
-Attempts have been made to append thread support onto languages that lack thread semantics via a library that is paired with an informal thread semantics. Effectively, this introduces threads into a host language that remains oblivious to their presence.
+Attempts have been made to append thread support onto languages that lack thread semantics via a library that is paired with an informal thread semantics. 
+A thread library can provide functions for creating and deleting threads and interacting with mutex locks.
+Effectively, this introduces threads into a host language that remains oblivious to their presence.
 
 Due to this obliviousness to threads, compilers may perform optimizations that inadverdently change the behavior of a multi-threaded program with respect to the thread library's specification.
-In other words, thread-oblivious compilers may perform optimizations that preserve 'single-threaded' behavior without additionally preserving the thread library's notion of 'multi-threaded' behavior.
-It is in this sense that "threads cannot be implemented as libraries"; rather, they must be implemented in the language specification.
+In other words, thread-oblivious compilers may perform optimizations that preserve "single-threaded" behavior without additionally preserving the thread library's notion of "multi-threaded" behavior.
+Any consumer of a thread library will necessarily depend on special compiler support, the correctness of which isn't enforced by the language specification.
+It is in this sense that "threads cannot be implemented as a library"; rather, they must be implemented in the language specification.
 
-This paper examines the case of the widely used C/C++ Pthreads library, demonstrating three kinds of compiler optimizations that can break valid Pthreads programs.
+This paper examines the case of the widely used C/C++ Pthreads library during the time of its writing (2004), demonstrating three kinds of compiler optimizations that can break valid Pthreads programs.
 
-Afterwards, the author argues for a relaxed model for threads that eschews a race-free, critical-section based thread-programming paradigm in favor of one that allows data races and relies on atomic operations.
-In particular, they demonstrate performance improvements due to this paradigm shift in an implementation of the Sieve of Eratosthenes and in a garbage collector.
+Afterwards, the author argues that languages with threads should additionally define the behavior of lock-free programs with data races, rather than only programs without data races.
+In particular, they compare running lock-free algorithms with and without locks to demonstrate the cost of locks using two examples: an implementation of the Sieve of Eratosthenes and a tracing garbage collector.
 
 Finally, the author comments on ongoing efforts towards adding a formal thread model to the C++ standard based on the Java Memory Model.
 
 ## Semantics of Pthreads: Threads Implemented as a Library
 
-The Pthreads standard informally specifies the semantics for concurrent threads as follows:
+The 2004 Pthreads standard informally specified the semantics for concurrent threads as follows:
 
 > "Applications shall ensure that access to any **memory location** by more than one thread of control (threads or processes) is restricted such that ***no thread of control can read or modify a memory location while another thread of control may be modifying it***.
 > Such access is restricted using functions that synchronize thread execution and also synchronize memory with respect to other threads. The following functions synchronize memory with respect to other threads:
 >
-> ...,
->
-> pthread mutex lock(),
->
-> ...,
->
-> ...,
-> pthread mutex unlock(), ...
->
+> pthread_mutex_lock(),
+> pthread_mutex_unlock(),
 > [Many other synchronization functions listed]"
 
 
-Thus, a Pthreads program is well-defined if it lacks **data races**.
-
-This specification might seem precise at first glance, but *how can we determine whether a program has a race?*
-We require a semantics for threaded programs in order to evaluate whether an execution trace contains a data race, but this semantics is itself given in terms of a data race! Thus, Pthreads provides a *circular definition* for thread semantics.
+According to this Pthreads standard, a threaded program is well-defined if it lacks **data races**.
+A data race occurs when two threads concurrently operate on a memory location and at least one of these operations modifies its contents.
 
 Conceptually, this circularity is resolved by an implementation-defined thread semantics.
 Intuitively, we may expect an implementation akin to the **sequential consistency** (SC) model, which interprets a threaded program as an interleaving of instructions across threads, such that intra-thread instruction order is preserved.
