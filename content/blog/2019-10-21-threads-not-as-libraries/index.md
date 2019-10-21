@@ -5,7 +5,7 @@ extra.author = "Neil Adit and Edwin Peguero"
 
 Attempts have been made to append thread support onto languages that lack thread semantics via a library that is paired with an informal thread semantics. Effectively, this introduces threads into a host language that remains oblivious to their presence.
 
-Due to this obliviousness to threads, compilers may perform optimizations that inadverdently change the behavior of a multi-threaded program with respect to the thread library's specification.
+Due to this obliviousness to threads, compilers may perform optimizations that inadvertently change the behavior of a multi-threaded program with respect to the thread library's specification.
 In other words, thread-oblivious compilers may perform optimizations that preserve 'single-threaded' behavior without additionally preserving the thread library's notion of 'multi-threaded' behavior.
 It is in this sense that "threads cannot be implemented as libraries"; rather, they must be implemented in the language specification.
 
@@ -25,12 +25,12 @@ The Pthreads standard informally specifies the semantics for concurrent threads 
 >
 > ...,
 >
-> pthread mutex lock(),
+> pthread_mutex_lock(),
 >
 > ...,
 >
 > ...,
-> pthread mutex unlock(), ...
+> pthread_mutex_unlock(), ...
 >
 > [Many other synchronization functions listed]"
 
@@ -82,7 +82,7 @@ Thus, since the above example contains data races, any compiler-chosen behavior 
 To facilitate the writing of race-free, well-defined Pthreads programs, Pthreads offers synchronization primitives such as the **memory barrier** and the **mutex**.
 Synchronization enables the containment of shared memory operations in programmer-defined **critical sections**, where memory operations are defined to be *mutually exclusive*.
 
-Since C++ is thread-oblivous, compilers are not guaranteed to respect the semantics of synchronization primitives.
+Since C++ is thread-oblivious, compilers are not guaranteed to respect the semantics of synchronization primitives.
 In particular, reads and writes to shared variables may be *moved out of critical sections*, introducing data races and, subsequently, undefined behavior.
 Thus, Pthreads relies on special support from compilers. 
 
@@ -140,9 +140,9 @@ makes bit-fields great for efficiently packing data.
 Consider the following concurrent field assignments:
 
 ```c
-x.a = 42; //thread1
+x.a = 42; //thread 1
 ...
-x.b = 37; //thread2
+x.b = 37; //thread 2
 ```
 
 At first glance, one might expect the above program to be race free, since both concurrent writes appear to access distinct variables.
