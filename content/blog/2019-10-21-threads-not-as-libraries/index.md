@@ -111,9 +111,9 @@ if (x==1) ++y;
 if (y==1) ++x;
 ```
 
-Since there is no way under SC that either `x` or `y` can be read and modified concurrently, this program does not contain data races, and is therefore well-defined.
+Since there is no way under SC that either `x` or `y` can be read and modified concurrently, this program does not contain data races, and is therefore well-defined. Hence, the result of any SC execution of this program would be `x==0` and `y==0`. 
 
-Since the compiler can perform any optimization that preserves 'single-threaded' correctness, it may opt to perform a "speculative" optimization as follows:
+Since the code does not contain any Pthreads operations around which the compiler is restricted to perform reordering optimizations, it can transform the code in anyway that preserves "single-threaded" correctness. In this process, it may opt to perform a "speculative" optimization as follows:
 ```c
 // Thread 1
 ++y; if (x != 1) --y;
@@ -123,17 +123,21 @@ Since the compiler can perform any optimization that preserves 'single-threaded'
 ```
 
 This introduces a data race, since both `x` and `y` are concurrently read and modified. 
-Thus, the originally well-defined program is transformed into one that is undefined.
+Thus, the originally well-defined program is transformed into one that is undefined. This program that looks race-free to the programmer can now segfault or run `rm -rf /` or whatever!
 
 ### Rewriting of Adjacent Data
 
-Given the following struct definition:
+Consider the following struct definition containing bit-fields:
 
 ```c
 struct {int a:17; int b:15} x;
 ```
+Bit-fields have a fixed number of contiguous bits in memory allocated to them.
+In the above case, `a` has been allocated 17 bits followed by `b` which has
+been allocated 15 bits. All these bits are adjacent memory locations, which
+makes bit-fields great for efficiently packing data.
 
-A compiler may generate a data race from the following concurrent field assignments:
+Consider the following concurrent field assignments:
 
 ```c
 x.a = 42; //thread1
@@ -169,15 +173,15 @@ struct { char a; char b; char c; char d; char e; char f; char g; char h; } x;
 And a program that concurrently writes to adjacent fields:
 ```c
 // Thread 1
-x.a = ‘a’ 
+x.a = 'a' 
 
  // Thread 2
-x.b = ‘b’; x.c=’c’; x.d=’d’; x.e=’e’; x.f=’f’; x.g=’g’; x.h=’h’;
+x.b = 'b'; x.c='c'; x.d='d'; x.e='e'; x.f='f'; x.g='g'; x.h='h';
 ```
 
 A compiler that targets a 64-bit machine can optimize space usage by transforming Thread 2 as follows (assuming `x` is 64-bit aligned):
 ```c
-x = ‘hgfedcb\0’ | x.a;
+x = 'hgfedcb\0' | x.a;
 ```
 
 This optimization generates a data race, since both `x.a` and `x` share the same memory location and are concurrently modified.
@@ -195,7 +199,7 @@ After operating on this promoted value, it must then **demote** it by moving the
 Such promotion/demotion operations are costly, and especially so in a loop.
 
 Register promotion is an optimization that aims to minimize the cost of promotion/demotion operations in a loop by maximizing data locality at the register level.
-Put another way, it aims to ‘factor out’ promotions in a loop.
+Put another way, it aims to "factor out" promotions in a loop.
 This optimization transforms a loop by first speculatively promoting the value from a shared variable accessed in the loop into a new, local variable, before the loop. 
 Next, all usages of the shared variable are replaced by this new promoted variable within the loop. 
 Finally, the promoted variable is demoted after the loop.
