@@ -59,7 +59,7 @@ on code and working set size for speculative tasks.
 # Sources of Performance Improvements of TLS
 
 The goal for TLS (remember, HTM is the set of hardware features, while TLS
-is a software-level technique that utilizes those features),
+is a software-level technique that utilizes those features)
 is to speculatively parallelize code by predicting which regions do
 not have real data dependencies. Existing compiler optimizations already
 attempt to identify such dependencies (e.g., [instruction scheduling](../instruction-scheduling))
