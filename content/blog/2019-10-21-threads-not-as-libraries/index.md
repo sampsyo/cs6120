@@ -254,7 +254,7 @@ x = r;
 ```
 
 In this case, register promotion has introduced reads and writes to `x` outside
-the critical section guraded by locks. For instance, assume thread 1 has aquired the
+the critical section guarded by locks. For instance, assume thread 1 has acquired the
 lock and is modifying register `r` ; concurrently thread 2 performs a read
 operation on register `r1` right  before the `pthread_mutex_lock()` function call. 
 This is clearly a data race which has been introduced by the compiler since it had 
