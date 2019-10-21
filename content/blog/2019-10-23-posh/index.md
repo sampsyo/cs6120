@@ -88,7 +88,7 @@ The authors point out another, more subtle, benefit to TLS: data prefetching.
 Even speculative tasks which violate data dependencies are likely to
 access data that will be useful to re-executions of that task.
 The authors assume (fairly) that the hardware primitives for squashing tasks
-will not rollback cache state; this implies that squashed tasks can
+will not roll back cache state; this implies that squashed tasks can
 still prefetch useful data into the cache. Re-executions of the failed
 task, or even future tasks may benefit from access to this cached data
 and see reduced memory access latency.
