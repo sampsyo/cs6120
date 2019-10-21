@@ -188,8 +188,8 @@ This optimization generates a data race, since both `x.a` and `x` share the same
 
 
 Since the writing of this paper, the C/C++ standard has been expanded to address this problem.
-Specifically, the C11 standard defines the memory locations of structure fields as follows:
->A bit-field and an adjacent non-bit-field member are in **separate memory locations**. The same applies to two bit-fields, if one is declared inside a nested structure declaration and the other is not, or if the two are separated by a zero-length bit-field declaration, or if they are separated by a non-bit-field member declaration. It is **not safe** to concurrently update two non-atomic bit-fields in the same structure if all members declared between them are also (non-zero-length) bit-fields, no matter what the sizes of those intervening bit-fields happen to be.
+Specifically, the [C11 standard](https://wiki.sei.cmu.edu/confluence/display/c/CON32-C.+Prevent+data+races+when+accessing+bit-fields+from+multiple+threads) defines the memory locations of structure fields as follows:
+> A bit-field and an adjacent non-bit-field member are in **separate memory locations**. The same applies to two bit-fields, if one is declared inside a nested structure declaration and the other is not, or if the two are separated by a zero-length bit-field declaration, or if they are separated by a non-bit-field member declaration. It is **not safe** to concurrently update two non-atomic bit-fields in the same structure if all members declared between them are also (non-zero-length) bit-fields, no matter what the sizes of those intervening bit-fields happen to be.
 
 
 ### Register Promotion
