@@ -253,7 +253,12 @@ for (...) {
 x = r; 
 ```
 
-In this case, register promotion introduces unsynchronized reads and writes to `x`, creating a data race.
+In this case, register promotion has introduced reads and writes to `x` outside
+the critical section guraded by locks. For instance, assume thread 1 has aquired the
+lock and is modifying register `r` ; concurrently thread 2 performs a read
+operation on register `r1` right  before the `pthread_mutex_lock()` function call. 
+This is clearly a data race which has been introduced by the compiler since it had 
+no notion of thread semantics baked into the language.
 
 
 ## Allowing Data Races
