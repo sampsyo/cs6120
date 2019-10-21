@@ -21,7 +21,7 @@ One proposed technique to answer this question is _Thread-Level Speculation_ (TL
 TLS allows software to run portions of a sequential program in parallel while
 retaining the original sequential semantics. The key idea is that special hardware
 support will detect when any of these parallel tasks misbehave and either roll back
-the effects of such "speculative tasks" or hide the "bad" behavior form other tasks
+the effects of such "speculative tasks" or hide the "bad" behavior from other tasks
 somehow.
 
 In general, choosing where to insert these tasks so that they are likely to
