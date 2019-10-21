@@ -67,6 +67,7 @@ Although this behavior is less intuitive, a weaker model than SC is necessary fo
 
 ## Pthreads’ Partial Memory Model
 Pthreads’ memory model is SC in the absence of data races.
+This model is known as the *data race freedom implies sequential consistency* (DRF => SC) model.
 In the presence of data races, however, the memory model is **formally undefined**: any behavior is allowed.
 
 In other words, Pthreads allows any behavior for programs with data races. 
@@ -287,6 +288,6 @@ The results indicate that there are applications for which allowing data races c
 To allow data races, the language standard must provide a memory model for programs with data races.
 Java, as a safe language, provides such a model, so the author expressed optimism about the possibility of adapting its model for use in the C++ standard.
 
-Fast-forwarding to the present, however, we see that the problem of defining data races in C++ turned out to be intractable.
-Nowadays, the C++ standard incorporates the Pthreads model, stating that data race freedom implies sequential consistency, a model known as **DRF => SC** (“data race freedom implies sequential consistency”).
+Fast-forwarding to the present, however, we see that data races were indeed defined in C11, but only for concurrent atomic operations; data races involving concurrent "non-atomic" accesses remain undefined in the standard.
+Thus, the standard defines a stronger version of the **DRF => SC** model.
 
