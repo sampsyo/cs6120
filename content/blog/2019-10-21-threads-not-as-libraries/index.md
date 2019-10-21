@@ -61,8 +61,9 @@ SC is an example of a **memory model**, a specification for the behavior of memo
 Rather than use SC, however, most compilers implement a *weaker* memory model that allows for behaviors satisfying `r1 == r2 == 0`.
 
 Although this behavior is less intuitive, a weaker model than SC is necessary for two reasons:
-- hardware may reorder memory operations in such a way that contradicts the SC model.
-- thread-oblivious compiler optimizations don’t need to preserve SC. Thus, it is legal for memory operations reordering to break SC.
+- Hardware may reorder memory operations in such a way that contradicts the SC model.
+- Important compiler optimizations rely on memory reorderings. To disable these is to significantly regress the quality of code.
+- Thread-oblivious compiler optimizations don’t need to preserve SC. Thus, it is legal for memory operations reordering to break SC.
 
 
 ## Pthreads’ Partial Memory Model
@@ -71,12 +72,18 @@ This model is known as the *data race freedom implies sequential consistency* (D
 In the presence of data races, however, the memory model is **formally undefined**: any behavior is allowed.
 
 In other words, Pthreads allows any behavior for programs with data races. 
+
+Thus, since the above example contains data races, any compiler-chosen behavior satisfies the specification, including one for which `r1 == r2 == 0` holds.
+In principle, however, this also includes entirely unexpected behaviors, such as `r1 == 42 && r2 == -1`, segfaulting, and even formatting your disk!
+
 The reason behind this design decision is explained as follows:
 >Formal definitions of the memory model were *rejected as unreadable by the vast majority of programmers*.
 >In addition, most of the formal work in *the literature has concentrated on the memory as provided by the hardware as opposed to the application programmer* through the compiler and runtime system.
 >It was believed that a simple statement intuitive to most programmers would be most effective
 
-Thus, since the above example contains data races, any compiler-chosen behavior satisfies the specification, including one for which `r1 == r2 == 0` holds.
+Recognizing the design of a clear, correct, and portable memory model for programs with data races as a complex, open research question, Pthreads opted to remove them altogether.
+
+Thus, mechanisms for removing data races are mandatory for ensuring reasonable Pthread program behavior.
 
 
 ## Fighting Compilers for Well-Defined Behavior
@@ -84,14 +91,12 @@ To facilitate the writing of race-free, well-defined Pthreads programs, Pthreads
 Synchronization enables the containment of shared memory operations in programmer-defined **critical sections**, where memory operations are defined to be *mutually exclusive*.
 
 Since C++ is thread-oblivious, compilers are not guaranteed to respect the semantics of synchronization primitives.
-In particular, reads and writes to shared variables may be *moved out of critical sections*, introducing data races and, subsequently, undefined behavior.
-Thus, Pthreads relies on special support from compilers. 
+In particular, one might fear that reads and writes to shared variables be reordered by the compiler such that they are *moved out of critical sections*, introducing data races and, subsequently, undefined behavior.
 
-Pthreads-compatible compilers generally attempt to preserve synchronization semantics by restricting memory reorderings around synchronization primitives, such as `pthread_mutex_lock()`.
-To this end, such compilers model Pthread library calls as **opaque functions**: functions with hidden implementations that are assumed to potentially modify all shared, global variables.
-Since the compiler cannot soundly move memory operations across opaque function calls, this strategy precludes unsafe memory-reordering optimizations.
+Thankfully, memory operations cannot be directly moved across synchronization calls (e.g., `pthread_mutex_lock()`), since Pthread library functions are treated as **opaque functions**: functions with hidden implementations that are assumed to potentially modify any shared, global variable.
 
-Unfortunately, as we'll see ahead, optimizations may still break thread semantics under this strategy by introducing data races.
+This treatment precludes unsafe memory-reordering optimizations, but it unfortunately doesn't suffice.
+As we'll see ahead, optimizations may still break thread semantics by introducing data races.
 This suggests that optimizations cannot be made to preserve thread semantics through heuristics: they must instead be disallowed by formally incorporating thread semantics into the language specification.
 It is in this sense that **Threads Cannot Be Implemented as a Library**: if the language doesn't specify the behavior of threads, optimizations cannot be guaranteed to preserve the thread library's specification, even if they sometimes do in practice.
 
