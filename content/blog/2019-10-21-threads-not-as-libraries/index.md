@@ -162,6 +162,17 @@ In the case above, a compiler targeting a 32-bit machine may choose to have the 
 
 Thus, both fields `x.a` and `x.b` share memory location `x`, causing a data race when concurrently modified.
 
+Since the writing of this paper, the C/C++ standard has been expanded to address this problem.
+Specifically, the [C11 standard](https://wiki.sei.cmu.edu/confluence/display/c/CON32-C.+Prevent+data+races+when+accessing+bit-fields+from+multiple+threads) defines the memory locations of structure bit-fields as follows:
+> A bit-field and an adjacent non-bit-field member are in **separate memory locations**. The same applies to two bit-fields, if one is declared inside a nested structure declaration and the other is not, or if the two are separated by a zero-length bit-field declaration, or if they are separated by a non-bit-field member declaration. It is **not safe** to concurrently update two non-atomic bit-fields in the same structure if all members declared between them are also (non-zero-length) bit-fields, no matter what the sizes of those intervening bit-fields happen to be.
+
+This implies that the current C11 standards explicitly states that a concurrent
+execution of statements like `x.a=42` and `x.b=37` will lead to data races since
+the two operations write to the "same" memory location. So, this is not a
+well-defined program even before the compiler chooses to optimize it using 32
+bit stores.
+
+
 As mentioned, this problematic transformation over adjacent bit-fields is motivated by architectural constraints. 
 However, a compiler can also deploy this transformation as a memory-saving optimization over adjacent fields.
 
@@ -185,12 +196,12 @@ x = 'hgfedcb\0' | x.a;
 ```
 
 This optimization generates a data race, since both `x.a` and `x` share the same memory location and are concurrently modified.
+The C11 standard also talks about this optimization in case of adjacent fields
+with different memory location:
 
+> Two threads of execution can update and access separate memory locations without interfering with each other.
 
-Since the writing of this paper, the C/C++ standard has been expanded to address this problem.
-Specifically, the [C11 standard](https://wiki.sei.cmu.edu/confluence/display/c/CON32-C.+Prevent+data+races+when+accessing+bit-fields+from+multiple+threads) defines the memory locations of structure fields as follows:
-> A bit-field and an adjacent non-bit-field member are in **separate memory locations**. The same applies to two bit-fields, if one is declared inside a nested structure declaration and the other is not, or if the two are separated by a zero-length bit-field declaration, or if they are separated by a non-bit-field member declaration. It is **not safe** to concurrently update two non-atomic bit-fields in the same structure if all members declared between them are also (non-zero-length) bit-fields, no matter what the sizes of those intervening bit-fields happen to be.
-
+This clearly implies that the compiler is no longer allowed, as of 2011, to perform the above "bad" optimizations, so the code is safe.
 
 ### Register Promotion
 
