@@ -150,7 +150,7 @@ it would have to be squashed by the hardware.
 # Evaluation
 
 The overall evaluation methodology is to optimize some of the SPECint benchmarks
-using some configuration of the compiler, and look at statistics (e.g. execution time or memory behavior).
+using some configuration of the compiler, and look at statistics (e.g., execution time or memory behavior).
 For the most part, their tests are concerned with the reduction in total execution
 time compared to the sequential execution.
 All experiments are run on a simulator as hardware with support for TLS
