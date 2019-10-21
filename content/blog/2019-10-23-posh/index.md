@@ -110,7 +110,7 @@ The first step is chopping up the program into tasks that will benefit
 from being run concurrently.
 As you might expect, doing this optimally is NP-hard, so POSH has to resort
 to heuristics.
-Its primarily heuristic leverages the existing high level program structure;
+Its primary heuristic leverages the existing high level program structure;
 each subroutine call and loop iteration is considered a candidate task.
 The authors justify this with some intuition:
 ```
