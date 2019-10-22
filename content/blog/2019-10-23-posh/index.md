@@ -107,17 +107,18 @@ The POSH compiler optimization is broken into three phases;
   3) _Task Refinement_: Use dynamic profiling to remove tasks that are unlikely to be beneficial.
 
 The first step is chopping up the program into tasks that will benefit
-from being run concurrently.
-As you might expect, doing this optimally is NP-hard, so POSH has to resort
-to heuristics.
+from being run concurrently. This is similar to the _balanced min-cut_
+problem, where you want to find a set of weighted paths through a graph such that
+they are approximately equal and minimal. In TLS, the nodes are instructions
+and the edge weigths take into account execution time and other runtime overheads.
+As you might expect, doing this optimally is NP-hard, so POSH has to resort to heuristics.
 Its primary heuristic leverages the existing high level program structure;
 each subroutine call and loop iteration is considered a candidate task.
 The authors justify this with some intuition:
-```
-All these programmer-generated structures are taken
-as hints to delineate code sections with a relatively independent and
-sizable amount of work.
-```
+> _All these programmer-generated structures are taken_
+> _as hints to delineate code sections with a relatively independent and_
+> _sizable amount of work._
+
 In reality, not all subroutines or loop iterations are independent
 *and* there are other sections of code which may be parallelizable.
 The former problem is addressed by _Task Refinement_ but POSH ignores
@@ -220,8 +221,8 @@ be an effective optimization for automatically speeding up sequential code!
 ### Hardware Transactional Memory
 
 Before transactional memory, hardware support for parallel computing
-was limited to synchronization primitives such as [`atomic compare-and-swap`](https://en.wikipedia.org/wiki/Compare-and-swap)
-or [`store-conditional`](https://en.wikipedia.org/wiki/Load-link/store-conditional).
+was limited to synchronization primitives such as [atomic compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap)
+or [store-conditional](https://en.wikipedia.org/wiki/Load-link/store-conditional).
 Transactional Memory was meant to accelerate the common use case for such
 primitives: atomic software transactions, consisting of a potentially unbounded number of instructions.
 
@@ -280,8 +281,8 @@ a potentially parallel one by creating data dependencies between
 the original variable and a prediction variable. Value prediction
 produces code with the following invariant:
 
-*Let x be some variable in the program, pred(x) is its predicted
-value and real(x) is its real value. A TLS task that reads pred(x)
+*Let x be some variable in the program, pred(x) be its predicted
+value and real(x) be its real value. A TLS task that reads pred(x)
 will be squashed whenever real(x) != pred(x).*
 
 The following example from [Li et al.](https://people.apache.org/~xli/papers/vpw03-software-value-prediction.pdf)
