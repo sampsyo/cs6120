@@ -83,7 +83,7 @@ arr3: array = vadd arr1 arr2 idx
 Which takes two arrays as arguments and performs element-wise vector addition to `vl` elements starting at element `idx`, and stores it into a third array. For now, if `arr1`, `arr2`, and `arr3` have different lengths, as long as elements in indices `i:i+vl-1` are valid for the three arrays (two sources and destination), the operation is valid. 
 
 ### Other types on arrays
-We have not implemented any array type checking on arrays. While we expect the programmer to only use integer values on array elements, there may not be any error thrown if they stored other types. Vector arithmetic or logic operations have undefined behavior for these cases. We left type checking for future work. 
+We have not implemented any array type checking on arrays. While we expect the programmer to only use integer values on array elements; there may not be any error thrown if they stored other types. Vector arithmetic or logic operations have undefined behavior for these cases. We left type checking for future work. 
 
 ### Simulating vector ops in Vrili (Vril interpreter)
 We have extended Brili to interpret vector operations.
