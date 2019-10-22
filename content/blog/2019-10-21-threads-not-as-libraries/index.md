@@ -293,6 +293,22 @@ The results indicate that there are applications for which allowing data races c
 To allow data races, the language standard must provide a memory model for programs with data races.
 Java, as a safe language, provides such a model, so the author expressed optimism about the possibility of adapting its model for use in the C++ standard.
 
-Fast-forwarding to the present, however, we see that data races were indeed defined in C11, but only for concurrent atomic operations; data races involving concurrent "non-atomic" accesses remain undefined in the standard.
-Thus, the standard defines a stronger version of the **DRF => SC** model.
+Fast-forwarding to the present, we see that, indeed, the [C11 standard](http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf) defines the behavior of data races between atomic operations. 
+This is accomplished by a *redefinition* of data races that doesn't include concurrent atomic operations:
+> Two expression evaluations conflict if one of them modifies a memory location and the other one reads or modifies the same memory location.
+> ...
+> The execution of a program contains a data race if it contains two conflicting actions in different threads, **at least one of which is not atomic**, and neither happens before the other. Any such data race results in undefined behavior.
 
+Thus, concurrent, atomic operations are no longer considered a data race.
+Instead, they are often denoted as **race conditions**, and are well-defined.
+
+Given data race freedom under this redefinition, C11 formally defines thread semantics as SC (*usually*):
+> Under a hosted implementation, a program can have more than one thread of execution (or thread) running concurrently. 
+> The execution of each thread proceeds as defined by the remainder of this standard. 
+> The execution of the entire program consists of an execution of all of its threads. 
+> Under a freestanding implementation, it is implementation-defined whether a program can have more than one thread of execution.
+> ...
+> The execution can usually be viewed as an **interleaving of all of the threads**. 
+> However, some kinds of atomic operations, for example, allow executions inconsistent with a simple interleaving as described below
+
+Thus, the standard now formally specifies the **DRF => SC** model.
