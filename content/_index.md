@@ -1,5 +1,6 @@
 +++
 title = "Advanced Compilers β"
+template = "home.html"
 +++
 # CS 6120: Advanced Compilers β
 

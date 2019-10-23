@@ -21,13 +21,17 @@ You are also totally welcome to work alone.
 
 ## Projects
 
-Here are the projects that we've announced so far:
+There are four projects:
 
 1. [Make Something Cool for Bril.][p1]
 2. [Implement an Optimization.][p2]
+3. [Write an LLVM Pass.][p3]
+4. [Implement Something.][p4]
 
 [p1]: @/project/1.md
 [p2]: @/project/2.md
+[p3]: @/project/3.md
+[p4]: @/project/4.md
 
 
 ## Proposal
@@ -93,6 +97,7 @@ Your writeup should answer these questions in excruciating, exhaustive detail:
 * Were you successful? (Report rigorously on your empirical evaluation.)
 
 To submit your report, open a pull request in [the course’s GitHub repository][gh] to add your post to the blog.
+In your PR description, please include “closes #N” where N is the issue number for your proposal.
 The repository README has instructions.
 
 [gh]: https://github.com/sampsyo/cs6120

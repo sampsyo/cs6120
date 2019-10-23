@@ -8,13 +8,11 @@ extra.bio = """
 """
 +++
 
-## Project Report 1: LLVM JIT Compiler for Bril 
-
 Bril is a concise intermediate representation language, which is powerful enough to describe most common arithmetic operations (e.g., add, mul, div, and other control flow instructions). In this project, we aim to extend the reachability of Bril IR to different backend devices by compiling Bril programs to LLVM IR. We execute the generated LLVM IR via LLVM execution engine to verify its functional correctness. Finally, we compare the runtime between LLVM JIT compilation and Bril interpreter.
 
 ### Methodology 
 
-To compile a Bril program into LLVM IR, we first take the program in JSON format and have it analyzed by our compiler. The overall workflow is similar to what we do for data flow analysis in class. One thing to notice here is that, during the class, we have not mentioned static single assignment (SSA), wihch is an IR property requiring each variable to be assigned exactly once. Multiple assignments to same variable create new versions for that variable. SSA is essential when we have multiple assignments to a single variable. Namely, we need to create phi nodes in cases where we have branches. However, Bril is not an SSA-form IR where multiple assignments overwrite the variable without creating new identifiers. To compile the Bril IR into SSA-form LLVM IR, we make each assignement a unique memory store. Similarly, each variable read becomes a memory load.
+To compile a Bril program into LLVM IR, we first take the program in JSON format and have it analyzed by our compiler. The overall workflow is similar to what we do for data flow analysis in class. One thing to notice here is that, during the class, we have not mentioned static single assignment (SSA), wihch is an IR property requiring each variable to be assigned exactly once. Multiple assignments to same variable create new versions for that variable. SSA is essential when we have multiple assignments to a single variable. Namely, we need to create phi nodes in cases where we have branches. However, Bril is not an SSA-form IR where multiple assignments overwrite the variable without creating new identifiers. To compile the Bril IR into SSA-form LLVM IR, we make each assignment a unique memory store. Similarly, each variable read becomes a memory load.
 
 1. Create a basic block mapping: Given the Bril IR in JSON representation, we create empty LLVM basic blocks according to block labels. Meanwhile, we maintain a mapping between label strings and LLVM basic block pointers. We also create a flag to mark whether a basic block is used or not.
 2. Insert instructions into blocks: We traverse the empty basic blocks and insert instructions into them. Each basic block should end with a valid terminator (i.e., jmp, br, or ret). The insertion process will terminate after encountering the first terminator. All following instructions under the same label will be ignored since this code is dead and will not be executed in any condition. 
@@ -38,7 +36,7 @@ b2:
  In this section, we briefly describe the implementation details for each step in LLVM code generation process. To get a global idea of how different components are linked and executed in the program, we need a data structure recording basic blocks and the actual values each instruction takes. Here is a list of the data structure we create. Basically, we categorize them into two classes: one is for block level and the other for instruction level.
 
 ```c++
-using BasicBlockFlag_T = pair<llvm::BasicBlock, bool> ;
+using BasicBlockFlag_T = pair<llvm::BasicBlock, bool>;
 using BasicBlockMap_T = map<string, BasicBlockFlag_T>;
 using VarToVal_T = map<string, llvm::Value>;
 ```
@@ -124,4 +122,4 @@ By observing the generated LLVM code, we can see that at the very end of branch 
   }
 ```
 
-After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and Bril Interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. For the test program with a regular for loop iteratively computing one multiply operation for 1 billion times, the LLVM interpreter run about 10 times faster than Bril interpreter. The average runtime is 0.47 seconds and 0.05 seconds for Bril and LLVM interpreter respectively. The LLVM execution engine achieves approximately 1000x speedup over the Bril interpreter without optimizing the loop inside. We can expect higher speedup if the loop is optimized away. 
+After verifying the correctness of the code generator, we also compare the performance of LLVM simulation and the Bril interpreter. The performance is measured with profiling tool in Linux and C++. We run the same program for 10 times and take the average runtime. For the test program with a regular for loop iteratively computing one multiply operation for 1 billion times, the LLVM interpreter runs about 10 times faster than the Bril interpreter. The average runtime is 0.47 seconds and 0.05 seconds for Bril and LLVM interpreter respectively. The LLVM execution engine achieves approximately 1000x speedup over the Bril interpreter without optimizing the loop inside. We can expect higher speedup if the loop is optimized away.
