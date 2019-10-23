@@ -52,9 +52,8 @@ of four instructions, and a label.
 ```
 
 The semantics of the bundle is if `c1 && c2 && ...` is true, execute the
-instructions, otherwise jump to the label. For real hardware, this would require
-having a write buffer that tracked the changes from the instructions and throw
-out the changes if the conditional computed in parallel was false.
+instructions, otherwise jump to the label. In hardware, this can be implemented
+by guarding the write-back stage with the value of the conditional.
 
 ## Superblock Scheduling
 
@@ -100,10 +99,10 @@ b3:
 ```
 
 In the fast case (when `v7` is true), the program will compute both `v1` and
-`v4` in parallel. If `v7` is false, the program switches back to normal execution,
-computing the `v1` and `v4` sequentially. A superblock compiler might choose
-to make various part of the "slow" program paths traces themselves, trading
-off program size for speed.
+`v4` in parallel. If `v7` is false, the program switches back to normal
+execution, computing the `v1` and `v4` sequentially. A superblock compiler
+might choose to make various part of the "slow" program paths traces
+themselves, trading off program size for speed.
 
 ### List Scheduling
 
@@ -112,8 +111,31 @@ off program size for speed.
 
 ## Implementation
 
+For our project, we implemented four things:
+
+- **Bril Extension**: We extended the Bril interpreter by adding a "group"
+   instruction which has the semantics described above. The interpreter simply
+   executes the instructions in the group if the conditionals are true and
+   otherwise jumps to the label. We also add a "bundle counter" to track
+   the number of instructions executed in the interpreter. Each bundle and
+   instruction counts as one.
+
+- **Implement control and data flow analysis**: We implemented a passes to generate
+  the CFG of the Bril program and a straightforward live variable analysis.
+  Both of these analysis are used by the Superblock scheduling algorithm to
+  correctly incorporate branches into a trace.
+
+- **Superblock scheduling**: **TODO(sam)**
+
+- **Generating valid programs from traces**: Once we have a program trace, we
+  change the programs to correctly jump into and out of traces. We also duplicate
+  the code in the trace to correctly work for the slow program path.
+
 ## Evaluation
 
 ### Cost Model
 
 ### Comparison to Compaction
+
+## Conclusion
+
