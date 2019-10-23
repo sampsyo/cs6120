@@ -16,7 +16,7 @@ In this blog, we describe our implementation and empirical evaluation of diverge
 
 ## The SPMD Programming Model
 
-SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). A programmer describes parallelization at a coarse-grain level (i.e. over the entire program). This contrasts a standard C+SIMD programming model which requires a fine-grained specification of when parallelization is desired (i.e. at the single-instruction level). One can think of SPMD model as a higher-level of abstraction of the SIMD model: in certain processors, SPMD will be compiled down to the SIMD model. 
+SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). A programmer describes parallelization at a coarse-grain level (i.e. at the level of an entire program). This contrasts a standard C+SIMD programming model which requires a fine-grained specification of when parallelization is desired (i.e. at the single-instruction level). One can think of SPMD model as a higher-level of abstraction of the SIMD model: in certain processors, SPMD will be compiled down to the SIMD model. 
 
 While the coarse-grain specification of parallelization provides productivity, it also aggressively generates vector instructions. An obvious SPMD compilation procedure would generate a vector instruction for every instruction in the SPMD program. However, not every instruction needs to be parallelized. There are frequently values unknown at runtime, but constant across each parallel work-item. For example, memory indices and loop indices might be constant across lanes even though the instructions using them will not be redundant. In these cases, scalar instructions are optimal. A scalar instruction performs one operation for each parallel lane and can later broadcast the single value to future vector instructions.
 
@@ -197,14 +197,15 @@ Our evaluation metric on our imaginary hardware is the number of ALU ops require
 
 #### Benchmarks
 
-We evaluate the effectiveness of the divergence optimizations on synthetic benchmarks. We take benchmark inspiration from the examples in [these](https://ieeexplore.ieee.org/document/6494995) [papers](https://hal.inria.fr/hal-00909072v2/document). We vectorize over the outer-loop of the benchmarks and we unroll the inner loops of the benchmarks because we do not support most control flows. The number of ALU ops for the baseline and optimized version of each benchmark is shown in the table below.
+We evaluate the effectiveness of the divergence optimizations on synthetic benchmarks. We take benchmark inspiration from the examples in [these](https://ieeexplore.ieee.org/document/6494995) [papers](https://hal.inria.fr/hal-00909072v2/document). All benchmarks have a 2D loop nest. We vectorize over each outer loop and unroll over each inner loop because we do not support most control flows. We manually unroll twice for each benchmark as it allows us to get a sense of the dynamic ALU ops without actually running the program. The number of ALU ops for the baseline and optimized version of each benchmark is shown in the table below.
 
 |     Benchmark    | Description | Baseline Ops | Optimized Ops | Improvement (%) |
 | ------------- | ------------| ------------- | ------------ | ---------- |
 | FIR  | 2D FIR filter | 60 | 53 | 12
 | FIR-pred | 2D FIR filter with single conditional | 87 | 81 | 7
+| Synthetic | Sum of (a[outer] * b[inner]) / c[inner] | 53 | 39 | 26
 
-The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks.
+The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks. It's hard to say exactly what a fair comparison would be because we don't know what a SPMD front-end would actually emit. For example, loads that aren't contiguous use `gather` (can't use `vload`). In the case where each address is the same (i.e. indexed by the inner loop iterator), the `gather` can be turned into a `lw`. It's possible this is obvious enough for a SPMD front-end to do automatically. We don't have a SPMD to Bril compiler, so we can't truly quantify a realistic improvement.
 
 
 ## Shortcomings
@@ -221,4 +222,4 @@ Our benchmark selection was weak for two reasons. First, as described above, we 
 
 ## Conclusion
 
-We implemented divergence analysis and optimizations based on that analysis. We focused on swapping expensive vector instructions for cheaper scalar instructions when the vector instruction did redundant work. We quantify our optimization by counting the ALU Ops consumed by the un-optimized baseline and optimized version. Our results show an 9.5% reduction in ALU Ops on average.
+We implemented divergence analysis and optimizations based on that analysis. We focused on swapping expensive vector instructions for cheaper scalar instructions when the vector instruction did redundant work. We quantify our optimization by counting the ALU Ops consumed by the un-optimized baseline and optimized version. Our results show an overall reduction in ALU Ops.
