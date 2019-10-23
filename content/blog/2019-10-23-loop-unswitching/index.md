@@ -99,8 +99,7 @@ Now if $$v_t \not \in V_L$$, we can unswitch this loop.  In the case of multiple
 Once we have selected a subset of nodes in the CFG to be unswitched, we need to actually reorder the blocks.  At a high level, we implement the following reordering:
 
 
-<img src="switched.png" style="width: 100%">
-
+< DIAGRAM >
 
 In the above diagram, we have the following:
 * Before Loop Code:  This block represents all code before the start of the for loop
@@ -114,8 +113,7 @@ In the above diagram, we have the following:
 
 To implement unswitching, we want to move the ```Conditional t``` block outside the for loop, create branches for each destination (in Bril, we are limited to two branches), and replicate the contents inside of the loop.  We wish to do surgury in such a way to only to disrupt nodes involving the loop, leaving the rest of the CFG intact.  A high level control flow is as follows for post-unswitching operation:
 
-<img src="unswitched.png" style="width: 100%">
-
+<< DIAGRAM >> 
 In particular, we have the following blocks:
 * Before loop code: This is the same block as before and contains the contents of the program before we enter the loop
 * Conditional t:  This block contains one instruction, namely the branching instruction that involves the independent boolean.  Based on the value of the boolean, it connects to either the "if" or "else" blocks, each block containing its own for loop.
