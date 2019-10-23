@@ -87,7 +87,7 @@ With superblock scheduling, the code example above can be turned into:
 
 ```
 b1:
-  [ v7; v1: int = add v2 v3, v4: int = add v2 v0; slow ]
+  [ v7 : v1: int = add v2 v3, v4: int = add v2 v0 : slow ]
   br v7 b2 b3
 slow:
   v1: int = add v2 v3
@@ -105,19 +105,20 @@ might choose to make various part of the "slow" program paths traces
 themselves, trading off program size for speed.
 
 ### List Scheduling
-List scheduling is a simple heuristic based algorithm that takes a list of
-instructions and returns a list of VLIW instructions. We start by presenting
-a high level overview of the algorithm and then we will go into more detail
-about each part. We first build a dataflow graph
-that represents the dependencies between instructions. Then a heuristic assigns
-each instruction in the graph a priority. We initialize a queue with all the instructions
-that have no predecessors in the graph. Then, until we have scheduled all the instructions,
+List scheduling is a simple heuristic based algorithm that performs compaction
+on a chunk of code.
+It takes a list of instructions and a directed acyclic graph (DAG) representing the
+scheduling constraints between instructions, and returns a list of bundles. 
+We start by presenting a high level overview of the algorithm and then we will go into more detail
+about how we build the DAG. First, a heuristic assigns each instruction in the graph a priority. 
+Then initialize a queue with all the instructions
+that have no predecessors in the graph. Until we have scheduled all the instructions,
 we do the following in a loop:
-- Form an empty VLIW instruction
+- Make an bundle
 - Take the instruction from the queue with the highest priority
-- Add it to the VLIW instruction if compatible
+- Add it to the bundle if compatible
 - Continue taking instructions from the queue until either the queue is empty or the instruction 
-is incompatible with the current VLIW instruction.
+is incompatible with the current bundle.
 - For each element that we scheduled, check if their successors now have all their predecessors scheduled
 and add them to the queue
 
