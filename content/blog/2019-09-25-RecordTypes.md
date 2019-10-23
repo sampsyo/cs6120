@@ -1,0 +1,220 @@
++++
+title = "Record Types!"
+[[extra.authors]]
+name = "Katy Voor"
+link = "https://github.com/kavoor"  
+[[extra.authors]]
+name = "Henry Liu"
+link = "https://www.linkedin.com/in/liuhenry4428/"  
++++
+
+The goal was to design and implement record types (aka structs). We decided on immutable record types using a nominal type system. We initially planned to implement record type declaration (that are named), record type instantiation, and record type accessing, but later decided to additionally implement _with statements_ to improve usability. To achieve this, we made additions to the bril interpreter `brili.ts` as well as adding new types to the language definition in `bril.ts`. The following code will be provided in human-readable bril and semantic additions will be followed by their JSON representations as well. We upgrade the `bril2json` tool to allow translations from human-readable Bril into JSON. 
+
+### Immutability
+We decided to make record types immutable as it is considered best practice to make value types immutable. One key reason is that mutation of a value type only changes that specific copy. This is morally equivalent to creating a new record as the other copies remain unchanged. Therefore, when thinking about values, it is logical to think of this new record as a different value, and thus, not a mutation at all.
+
+### Declaring a Record Type
+    type <record type name>  = 
+        {<field1 name> : <field1 type> ; <field2 name> : <field2 type> ; … };
+
+Where
+`type` is a new keyword,
+`<record type name>` is an identifier,
+`<field# name>` is an identifier, and
+`<field# type>` is a type name, which may be either a primitive type or a previously declared record type.
+
+In JSON:
+```json
+{
+    "recordname": "<record type name>",
+    "op": "recorddef",
+    "fields": {
+        "<field1 name>": "<field1 type>",
+        "<field2 name>": "<field2 type>",
+        ...
+    }
+}
+```
+
+We decided on this format to mirror OCaml [record type declarations](https://v1.realworldocaml.org/v1/en/html/records.html). However, unlike OCaml, we disallow recursive record types (i.e. a record type that may contain itself) as that would require complicated recursive types as well as a notion of nullable references, which are outside of the scope of this project.
+
+### Instantiation
+To instantiate a new record with a previously declared record type, we use the following format:
+
+    <variable name>  : <record type> = 
+        record {<field1 name> : <field1 value>; <field2 name> : <field2 value>};
+Where:
+`<variable name>` is an identifier,
+`<record type>` is a previous declared record type,
+`<record>` is new keyword,
+`<field# name>` is the field name used in the record type definition, and
+`<field# value>` is an identifier for an existing variable matching the field type
+
+In JSON:
+```json
+{
+    "dest": "<variable name>",
+    "fields": {
+        "<field1 name>": "<field1 value>",
+        "<field2 name>": "<field2 valuie>",
+        ...
+    },
+    "op": "recordinst",
+    "type": "<record type>"
+}
+```
+
+We decided to introduce the `record` opcode. Note that the ordering of field name and value pairs do not matter, as long as they match with the definiton’s field names and types. We also only allow field values to be existing variables to match the semantics of current operations. The structure of this statement was designed to match record type declarations as much as possible. 
+
+### Nominal vs Structural Typing
+One of the main design decisions was whether we wanted to use nominal or structural typing to typecheck records. When defining a nested record, it is required to first define the nested record and assign it to a variable. Then, you can define the outer record with the field initialized to the variable holding the nested record. When type-checking these nested records, we need to look up the type of the outer record from our type environment, and step through the fields, one by one, comparing the signature with the type returned from the lookup of the initializing variable. We use the following example to illustrate nominal typing:
+
+
+```
+type Dog = {age: int; isAsleep: bool};
+type Person = {class: int; dog: Dog};
+v0: int = const 3;
+v1: bool = const false;
+Milo: Dog = record {age: v0; isAsleep: v1};
+v2: int = const 4120;
+AndrewMyers: Person = record {class: v2; dog: Milo};
+```
+
+Consider the case for checking the variable initializing a nested record, i.e., `Milo`. With nominal typing, if we expected a type, Dog, and we looked up the variable to have type ‘Dog’, we know this must have been previously typechecked when it was defined and added to our environment. Therefore it still must typecheck, due to immutability. This sort of _shallow type-checking_ falls out of nominal subtyping. 
+
+Along with the ability to quickly verify any type, nominal subtyping allows us to reject a nested record's type if it does not match the signature’s record type name without recursive checks. In a structural typing world, the name of the type bound to the initializing variable is not enough to reject a type. If the declared type did not match, we would need to recursively check all of the fields of the value bound to our initializing variable, and compare these with the type signature recursively. This is much slower.
+
+### Access
+We use the dot operator to access a field of a record:
+
+    <variable name> : <type> = <record> . <field>
+
+Where:
+`<variable name>` is a valid identifier that takes on the value of the indicated field, and
+`<record>` is the name of an instance of a record with a field name `<field>` that has type `<type>`
+Note that there is a space before and after the dot. This is strictly necessary as dot is a valid character for a variable name and we decided that it would be horrible for backwards compatibility if we changed variable naming rules. In hindsight, a `get` instruction with a `record` and `field` argument would have been a better choice as that is more in line with existing syntax.
+
+In JSON:
+```json
+{
+    "src": "<record>",
+    "dest": "<variable name>",
+    "args": [
+        "<record>",
+        "<field>"
+    ],
+    "op": "access",
+    "type": "<type>"
+}
+```
+
+We chose this format because using the dot operator to access fields is very common in modern programming languages.
+
+### *With* Syntax
+While immutable data structures allow you to more easily reason about how values flow through your program, these currently immutable records are cumbersome to change. 
+For example, to change one field, you must recreate the entire record. While we do want a new record to be created, copying variables between two records is overly tedious. 
+As such, we decided to implement a with syntax, similar to OCaml in which the user just needs to specify a record name as the base, and then the fields desired to be changed, along with the new value. This maintains immutability, without so much tedium.
+
+We use the following syntax:
+
+    <new record>: <record type> = 
+        <old record> with {<field1 name>: <field1 value>; <field2 name>: <field2 value> … };
+
+Where:
+`<new record>` is the name of the new record,
+`<record type>` is the same type as `<old record>`,
+`with` is a new keyword,
+`<field# name>` must match with a field in `<type>`, and
+`<field# value>` must be a variable with a type that matches its field name.
+
+Within the braces, the user may specify 0 to n field name and value pairs, where n is the total number of fields in the record type.
+
+In JSON:
+```json
+{
+    "dest": "<new record>",
+    "src": "<old record>",
+    "type": "<record type>",
+    "op": "recordwith",
+    "fields": {
+        "<field1 name>": "<field1 value>",
+        "<field2 name>": "<field2 value>",
+        ...
+    }
+}
+```
+
+This syntax was designed to have a similar format as record instantiation. 
+
+### Evaluation
+
+The two main goals of record types are to allow Bril to logically group and use related data points as well as to serve as a valuable language feature. These would be useful when compiling higher-level languages that utilize a similar data structure like records in OCaml or structs in C into Bril. 
+
+To satisfy the first goal, we implemented immutable nominal record types. This implementation includes record declaration, instantiation, and access. Decisions about which operations to include in our design were influenced by the operations available on record data types in higher-level languages. 
+
+To evaluate the functionality of our implementation, we created a suite of tests that covered each of these operations, as well as combinations of these operations.
+
+The primary operation not supported by our record type specification that is supported by some higher-level language record types is mutation. While our record types do not support mutation as discussed, this does not significantly hinder Bril's ability to compile higher-level languages that support this feature. 
+
+Consider the following C code that declares a struct and provides a method to update.
+```
+struct Person {
+   int age;
+   bool isAsleep;
+};
+
+int main(void) {
+    Person Henry = { 20, false };
+    Henry.age += 1;
+    return 0;
+}
+```
+Compiling this program to Bril may look something like this:
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 20;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: int = const 21;
+Henry: Person = Henry with {age: v2};
+```
+As shown in this example, mutable record types can be transformed into immutable records in Bril without significant effort. Therefore, lack of this operation does not compromise this goal.
+
+For the second goal, to evaluate record types as a language feature in Bril, we consider how this functionality translates to Bril.
+We found that creating new records was a tedious process if the record was large, so we implemented *with* statements in addition to the features mentioned above for situations where one wanted to duplicate a record with a few changes. It should be noted that it is bad form to use a with statement with no fields because that would be identical to referencing the old record with `… = id oldRecordName`.
+
+We were successful in this aspect as creating a new record from an existing one with this syntax is more concise and easier to reason about than copying over every field. This is an advantage in an IR as we can logically think about a single _with statement_ and a sequence of functionally equivalent statements that copy variables in the same way.
+
+Consider the blocks of code below. These programs duplicate a record with one field changed.
+Here we show what this would look like without _with statements_. 
+
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: bool = const true;
+v3: int = Henry . age;
+AwakeHenry: Person = record {age: v3; isAsleep: v2};
+```
+Here we use the *with* syntax.
+```
+type Person = {age: int; isAsleep: bool};
+v0: int = const 21;
+v1: bool = const false;
+Henry: Person = record {age: v0; isAsleep: v1};
+v2: bool = const true;
+AwakeHenry: Person = Henry with {isAsleep: v2};
+```
+It is worth noting that the size of code required to duplicate a record without _with statements_ scales linearly with the size of the record. In contrast, the size of code required to duplicate a record with _with statements_ only increases with the size of the changes. Therefore, record types are successful as a language feature as they integrate well with current syntax and do not impose unnecessary code bloat. 
+
+Overall, record types implement the basic operations necessary to use them effectively and they increase Bril's ability to compile higher-level languages. 
+
+### Notable Challenges
+One of the challenging aspects of this project was to think about how our design decisions interact to help us reach the aformentioned goals.
+
+One our goals was to make Bril able to compile a larger set of programs in higher-level languages that use record data types. Questions like "Does immutability hinder Bril's ability to compile mutable record types?" or "What are the strengths of nominal vs. structural typing when designing an IR vs. a higher-level language?" were challenging as they involve considering how different aspects of our design interact.
+
+Our second goal was to add a valuable language feature. One aspect of this added value is extensibility. When designing the declaration instruction, we wanted an instruction that could generalize to type aliases, in the event that we decide to add these in the future. One of the challenges here is that when making our design decisions, not only did we consider the current state of the language, but we also tried to predict what features may be useful in the future.
+
+A different challenge was debugging the TypeScript interpreter as it was very difficult to trace errors as the source TypeScript gets compiled into a separate JavaScript file. Debugging the parser in briltxt was not too bad as the new statement formats were pretty straightforward and we did not have to modify existing semantics. 
