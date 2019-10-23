@@ -4,7 +4,9 @@ title = "Out of the Loop!"
 latex = true
 bio = """
 [Rolph Recto](https://twitter.com/rolphrecto) is a third-year graduate student studying
-the intersection of programming languages, security, and distributed systems. Likes climbing, scifi, and halo-halo.[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal.
+the intersection of programming languages, security, and distributed systems. Likes climbing, scifi, and halo-halo. 
+
+[G.C.C.](https://twitter.com/elalaCorrea) is a fourth-year graduate fellow taking pictures of atoms. Likes electrons, microscopes, and pandesal.
 """
 [[extra.authors]]
 name = "Rolph Recto"
@@ -14,6 +16,11 @@ name = "Gabriela Calinao Correa"
 link = "https://twitter.com/elalaCorrea"
 +++
 
+Sometimes, loops do more work than they really *have* to. Take for example, the snippet of code below:
+
+```
+
+```
 
 Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them. 
 
@@ -32,13 +39,13 @@ To find the loop invariant code, first we must detect all natural loops. To acco
 ```python
 ### detect back-edges
 def get_backedges(successors,domtree):
-  backedges = set()
-  for source,sinks in successors.items():
-    for sink in sinks:
-      if sink in domtree[source]:
-        backedges.add((source,sink))
+    backedges = set()
+    for source,sinks in successors.items():
+        for sink in sinks:
+            if sink in domtree[source]:
+                backedges.add((source,sink))
 
-  return backedges
+    return backedges
 
 
 ### get natural loops
@@ -54,6 +61,7 @@ def loopsy(source,sink,predecessors):
                 worklist.append(p)
     loop.add(sink)
     loop.add(source)
+
     return loop
 ```
 
@@ -65,36 +73,44 @@ To begin with, we find all reaching definitions
 ```python
 ### apply reaching definitions analysis
 def reachers(blocks):
-  rins, routs = df_worklist(blocks, ANALYSIS["rdef"])
-  return rins,routs
+    rins, routs = df_worklist(blocks, ANALYSIS["rdef"])
+
+    return rins,routs
 
 
 ### get variable information for reaching definitions
 def reaching_def_vars(blocks, reaching_defs):
-  rdef_vars = {}
+rdef_vars = {}
 
-  for blockname, rdefs_block in reaching_defs.items():
+for blockname, rdefs_block in reaching_defs.items():
     block = blocks[blockname]
     block_rdef_vars = []
     for rdef_blockid, rdef_instr in rdefs_block:
-      block_rdef_vars.append( \
-          (rdef_blockid, rdef_instr, blocks[rdef_blockid][rdef_instr]["dest"]))
+        block_rdef_vars.append( \
+            (rdef_blockid, rdef_instr, blocks[rdef_blockid][rdef_instr]["dest"]))
 
-    rdef_vars[blockname] = block_rdef_vars
+rdef_vars[blockname] = block_rdef_vars
 
-  return rdef_vars
+return rdef_vars
 ```
 
 which then gives us the information to detect loop-invariant instructions using `invloop`.
 
+
 # Motion
 
 
+order _basic_ blocks may be moving blocks where they shouldn't be
+make the block map also include the block ordering
+
 Now we know how to spot what can move, let's move it!
+
+### Block ordering
+
+# Evaluation
 
 ### Loop in a Loop in a Loop
 
-#### How do we fix this?
 
 ### Super nested loops
 
