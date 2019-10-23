@@ -8,27 +8,27 @@ extra.author = "Philip Bedoukian"
 
 ## Problem Statement
 
-Actually maybe the two models are opposite (in SPMD vector is first class citizen, in SIMD scalar is first class citizen) Middle-end optimizations to make one closer to the other
+Parallel programming models must make tradeoffs between productivity and performance. Coarse-grain parallelization models like Single-Program Multiple-Data (SPMD) allow for high productivity, but over-generates expensive vector instructions when a cheaper scalar instruction would suffice. Conversely, fine-grain parallelization models such as C with SIMD intrinsics (C+SIMD) compiles to conservative scalar instructions by default, but requires additional programmer effort to manually insert vector instructions.
 
-Parallel programming models must make tradeoffs between productivity and performance. Coarse-grain parallelization models like Single-Program Multiple-Data (SPMD) allow for high productivity, but over-generates expensive vector instructions when a cheaper scalar instruction would suffice. On the otherhand, fine-grain parallelization models such as C with SIMD intrinsics (C+SIMD) compile to more effective instructions, but requires more programmer effort to manually insert vector instructions.
+Divergence optimization seeks to provide the best-case performance of C+SIMD while maintaining the productivity of SPMD. The SPMD front-end still over-generates vector instructions, but a middle-end pass statically identifies unnecessary vector instructions and converts them into more efficient scalar instructions. We can do this conversion when each work-item in the vector instruction does the same computation. In the [literature](https://dl.acm.org/citation.cfm?id=3314902), divergence analysis has been shown to improve execution time by 1.5% on average for real GPU programs.
 
-Divergence optimization seeks to provide the performance of C+SIMD while maintaining the productivity of SPMD. The SPMD front-end still over-generates vector instructions, but a middle-end pass statically identifies unnecessary vector instructions and converts them into a more efficient scalar instructions. In this blog, we describe our implementation and empirical evaluation of divergence optimizations at the middle-end of the compiler stack.
+In this blog, we describe our implementation and empirical evaluation of divergence optimizations at the middle-end of the compiler stack.
 
 ## The SPMD Programming Model
 
-SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). A programmer specifies parallelization at a coarse-grain level (i.e. over the entire program). This contrasts a standard C+SIMD programming model which requires fine-grained specification of when parallelization is desired (i.e. at the single-instruction level). One can think of SPMD model as a higher-level of abstraction of the SIMD model: in certain hardware SPMD will be compiled down to the SIMD model. 
+SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). A programmer describes parallelization at a coarse-grain level (i.e. over the entire program). This contrasts a standard C+SIMD programming model which requires a fine-grained specification of when parallelization is desired (i.e. at the single-instruction level). One can think of SPMD model as a higher-level of abstraction of the SIMD model: in certain processors, SPMD will be compiled down to the SIMD model. 
 
-While the coarse-grain specification of parallelization provides productivity, it also over-aggressively generates parallel instructions. An obvious SPMD compilation procedure would generate a parallel instruction for every instruction in the SPMD program. However, not every instruction needs to be parallelized! There are frequently values unknown at runtime, but constant across each parallel work-item. For example memory and loop indices might be constant across lanes even though the instructions using them will not be redundant. In these cases, the most optimal instructions may be a scalar instruction that does one operation for each parallel lane and can later broadcast the single value to future vector instructions.
+While the coarse-grain specification of parallelization provides productivity, it also aggressively generates vector instructions. An obvious SPMD compilation procedure would generate a vector instruction for every instruction in the SPMD program. However, not every instruction needs to be parallelized. There are frequently values unknown at runtime, but constant across each parallel work-item. For example, memory indices and loop indices might be constant across lanes even though the instructions using them will not be redundant. In these cases, scalar instructions are optimal. A scalar instruction performs one operation for each parallel lane and can later broadcast the single value to future vector instructions.
 
 ## Target Architecture
 
 ### Hardware
 
-We target a simplified version of the GPU architecture described in IGC. Each core contains a single ALU with a vector length of four as well as scalar, vector, and predicate register files. A SIMD instruction will use operands from the vector register and all lanes of the ALU. Predicate registers can be used to mask off certain lanes of the vector instructions in the face of minor control flow. Scalar instructions will use the scalar register and only a single lane of the ALU. While a scalar instruction and a redundant vector instruction completes in the same amount of time, a scalar instruction will consume less energy than the vector instruction. Less dynamic energy is required to read a scalar register than a vector one and use only a single lane of the ALU than each lane. Also the vector register pressure is reduced, if more instructions use scalar ones instead.
+We target a simplified version of the GPU architecture described in [IGC](https://dl.acm.org/citation.cfm?id=3314902). Each core contains a single ALU with a vector length of four as well as scalar, vector, and predicate register files. A SIMD instruction will use operands from the vector register and all lanes of the ALU. Predicate registers can be used to mask off certain lanes of the vector instructions when there is control flow. Scalar instructions will use a scalar register and only a single lane of the ALU. A scalar instruction and an equivalent vector instruction will complete in the same amount of time, but a scalar instruction will consume less energy than the vector instruction. Less dynamic energy is required to read a scalar register than a vector one and to use only a single lane of the ALU rather than each lane. We will save energy anytime we can replace a vector instruction with an equivalent scalar one.
 
 ### ISA
 
-Predication was added to Bril to target the aforementioned hardware building upon the vector instructions added in Project 1. A new instruction `vcmp` writes to a predicate register. A predicate register and its complement can be optionally specified before a vector instructions to mask of lanes of the arithmetic operations. Finally, two vector registers can be merged using the mask from a predicate register using a `vphi` instruction. An alternate implementation would be to remove the merge instruction and write to the same register directly at different indices. However, the former approach plays nicer with the SSA format.
+Predication was added to Bril to target the aforementioned hardware building upon the vector instructions added in Project 1. A new instruction `vcmp` writes to a predicate register. A predicate register and its complement can be optionally specified before a vector instruction to mask off certain lanes of the ALU. Finally, two vector registers can be merged using the mask from a predicate register with a `vphi` instruction. An alternate implementation would be to remove the merge instruction and write to the same register directly at different indices. However, the former approach plays nicer with the SSA format.
 
 ```python
 # initialize vectors
@@ -68,7 +68,7 @@ Each vector instruction supported is enumerated along with a description below.
 
 ## Divergence Analysis
 
-Divergence analysis statically determines whether a vector instruction has redundant lanes of computation. In the following code, if `vec0` and `vec1` are vectors with the same element in each index, then the vector add will do the *exact* same work in each lane of the ALU. It would be much more efficient to do a single scalar (single-lane) `add` instruction instead.
+Divergence analysis statically determines whether a vector instruction has redundant lanes of computation. In the following code, if `vec0` and `vec1` are vectors with the same element in each index, then the vector add will do the **exact** same work in each lane of the ALU. It would be much more efficient to do a single scalar (single-lane) `add` instruction instead.
 
 ```python
 # initialize vectors
@@ -88,24 +88,25 @@ An instruction is assumed to be convergent (not divergent) by default. We traver
 | Instruction is `vload`  | Unknown values are loaded into each element of a vector register |
 | Any data dependency is divergent  | An incoming edge in the dataflow graph is already divergent due to one of the previous conditions |
 
+It's possible that during runtime the vectors might not be divergent. For example, a `vload` may load in contiguous elements with the same values. However, there is no way to optimize for this case offline.
 
 ## Divergence Optimizations
 
 ### Instruction Swapping
 
-Once we know which instruction are divergent and which are not, we can optimize the code on an instruction-by-instruction basis. In the previous Bril example, every vector instruction is convergent. Therefore we can swap each vector instruction with a more energy-efficient scalar instruction. The optimization is shown below. 
+Once we know which instructions are divergent and which are not, we can optimize the code on an instruction-by-instruction basis. In the previous Bril example, every vector instruction is convergent. Therefore we can swap each vector instruction with a more energy-efficient scalar instruction. The optimization is shown below. 
 
 ```python
-# initialize vectors
+# initialize vectors -> initialize scalars
   vec0_s: int = id v0;
   vec1_s: int = id v1;
 
-# add vectors
+# add vectors -> add scalars
   vec2_s: int = add vec0_s vec1_s;
 
 ```
 
-We implement a 'swap table' that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length when doing the swap. Our swap table is given below along with a description of each instruction reproduced from above.
+We implement a 'swap table' that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of the swap. Our swap table is given below along with a description of each instruction reproduced from above.
 
 |     Vector Instruction    | Description | Scalar Instruction |
 | ------------- | ------------- | ------------- |
@@ -123,17 +124,17 @@ We implement a 'swap table' that matches a vector instruction with a functionall
 | vcmp  | pred = a[i] == b[i]  | Can't optimize |
 | vphi  | c[i] = pred ? a[i] : b[i]  | Can't optimize |
 
-Notably, we can't optimize across `vload` and `vstore` instructions because different memory addresses are always accessed. However, in certain cases a `gather` and `scatter` can access the exact same memory location if the address vector is the same for each, in this case the access will be redundant, which will waste memory energy and potentially performance. Even though we optimize it in the compiler, it is also likely that the hardware implementation would also check this and avoid the redundant load.
+Notably, we can't optimize across `vload` and `vstore` instructions because different memory addresses are always accessed. However, in certain cases a `gather` and `scatter` can access the exact same memory location if the address vector is the same for each. In this case, the access will be redundant, which will waste memory energy and potentially execution time. Even though we perform the `scatter`/`gather` optimization in the compiler, it is likely that the hardware implementation would also detect this case and avoid the redundant accesses.
 
 ### Vector Regeneration
 
-It's possible that the instruction swapping will create a register type mismatch between future vector instructions that use the vector result of that instruction. For this reason, a second pass is added to the optimization algorithm. After the scalar instructions have been, created we traverse each instruction in program order and detect when a vector argument points to a scalar register. Upon detection, an `s2vb` instruction is generated that effectively casts a scalar value to a vector value. The faulting instruction argument is then updated to the vector value produced by this instruction.
+It's possible that an instruction swap will create a register type mismatch between the result of the optimized instruction and future vector instructions that use the result. For this reason, a second pass is added to the optimization algorithm. After the scalar instructions have been created, we traverse each instruction in program order and detect when a vector argument points to a scalar register. Upon detection, an `s2vb` instruction is generated to effectively cast a scalar value to a vector value. The faulting instruction argument is then updated to the new vector value produced by this instruction.
 
 The benefits of replacing a vector with a scalar also outweighs the extra `s2vb` instruction. For example, a vector instruction with length four consumes three more ALU ops than a scalar instruction while an additional `s2vb` only consumes a single ALU op (we assume single-op broadcast). The overall benefit is then two ALU ops worth of energy savings.
 
 ### Predication Removal
 
-Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the following Bril example. The predicate `p0` is divergent because it's input `vec2` and `vec3` and divergent. However, the predicated vector instructions `vec4` and `vec5` and convergent because their inputs are convergent.
+Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the Bril example below. The predicate `p0` is divergent because it's input `vec2` and `vec3` are divergent. However, the predicated vector instructions `vec4` and `vec5` are convergent because their inputs are convergent.
 
 ```python
 # convergent vectors
@@ -151,7 +152,7 @@ Predicated vector instructions can also be simplified even in the case of a dive
 
 ```
 
-Thus, the code inside the predicate can be optimized, and the predicate can be removed because there are no longer lanes to remove. The values still need to be merge after the predicate though to produce a result vector.
+Thus, the code inside the predicate can be optimized, and the predicate can be removed because there are no longer lanes to mask out. The values still need to be merged afterwards according to the predicate to produce a result vector.
 
 ```python
 # convergent vectors -> scalars
@@ -192,11 +193,11 @@ We test the correctness of the optimizations using [Turnt](https://github.com/cu
 
 #### Metric
 
-Our evaluation metric on our imaginary hardware is the number of ALU ops requires by the program. Generally, each vector instruction consumes four ALU ops and each scalar instruction consumes a single ALU op. In this model, a scalar instruction is exactly four times as energy efficient as a redundant vector instruction. We argue this is a good proxy metric for energy consumption if only the dynamic energy consumption of the ALU is considered and no other parts of the processor are consider (like memory and on-chip network).
+Our evaluation metric on our imaginary hardware is the number of ALU ops requires by the program. Generally, each vector instruction consumes four ALU ops and each scalar instruction consumes a single ALU op. In this model, a scalar instruction is exactly four times as energy efficient as a redundant vector instruction. We argue this is a good proxy metric for energy consumption if only the dynamic energy consumption of the ALU is considered and no other parts of the processor are considered (like memory access and on-chip network).
 
 #### Benchmarks
 
-We evaluate the effectiveness of the divergence optimizations on synthetic benchmarks. We take inspiration from the examples in [these](https://ieeexplore.ieee.org/document/6494995) [papers](https://hal.inria.fr/hal-00909072v2/document). We vectorize over the outer-loop of the benchmarks. We unroll the inner loops of the benchmarks because we do not support most control flows. The number of ALU ops for the baseline and optimized version of each benchmark is shown in the table below.
+We evaluate the effectiveness of the divergence optimizations on synthetic benchmarks. We take benchmark inspiration from the examples in [these](https://ieeexplore.ieee.org/document/6494995) [papers](https://hal.inria.fr/hal-00909072v2/document). We vectorize over the outer-loop of the benchmarks and we unroll the inner loops of the benchmarks because we do not support most control flows. The number of ALU ops for the baseline and optimized version of each benchmark is shown in the table below.
 
 |     Benchmark    | Description | Baseline Ops | Optimized Ops | Improvement (%) |
 | ------------- | ------------| ------------- | ------------ | ---------- |
@@ -206,12 +207,18 @@ We evaluate the effectiveness of the divergence optimizations on synthetic bench
 The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks.
 
 
-## Failures
+## Shortcomings
 
 ### SSA
 
-Implemented `phi`, but did not implement SSA transformations.
+The code must be in SSA form to perform divergence analysis on programs with arbitrary control flow. A control dependence can be converted into a data dependence with a `phi` instruction. These data dependencies fit naturally into the dataflow algorithm used in divergence analysis.
 
-### Weak Benchmarks
+We were not able to implement transformations to and from SSA although we did successfully implement a `phi` instruction. To work around this limitation, we manually wrote our tests and benchmarks in an SSA-like form.
 
-Need SPMD code to map to Bril. Hard to tell how useful in real code. Intel claims ~5% improvement on their benchmarks.
+### Synthetic Benchmarks
+
+Our benchmark selection was weak for two reasons. First, as described above, we had to manually code in SSA form which made usage of many programs challenging. The second challenge was that we could not use a high-level language to create Bril programs. The current TypeScript front-end does not support vector instructions nor the SPMD model. 
+
+## Conclusion
+
+We implemented divergence analysis and optimizations based on that analysis. We focused on swapping expensive vector instructions for cheaper scalar instructions when the vector instruction did redundant work. We quantify our optimization by counting the ALU Ops consumed by the un-optimized baseline and optimized version. Our results show an 9.5% reduction in ALU Ops on average.
