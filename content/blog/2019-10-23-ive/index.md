@@ -131,8 +131,25 @@ to have the same entry block, but we ignore them in our implementation.
 Our implementation correctness should be correct regardless of these subtleties
 but may not be as optimal.
 
-### Useful Dataflow Analyses
+### Identifying Induction Variables
 
+Once we find loops, then we need to figure out which variables exactly *are*
+induction variables. We divide IVs into two categories: _basic_ induction variables;
+and other induction variables. The most common examples of IVs are the
+loop variables that are only used for loop tests (say `i` in the following code):
+```C
+for (int i = 0; i < 100; i++) {
+  //do something without updating i
+}
+```
+However, basic IVs are more generally defined:
+> A basic induction variable, X, is a variable whose only
+>  updates within the loop are of the form X = X + c.
 
+In Bril, since you can't actually inline constants into instructions,
+you also have to do some sort of analysis to determine which operands
+represent constants. We define "constant" to mean any variable which
+has only 1 reaching definition and it is either a `const` operation
+or a loop invariant variable. 
 
 # Evalutaing our Optimizations
