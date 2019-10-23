@@ -53,3 +53,20 @@ of four instructions, and a label.
 
 The semantics of the bundle is if `c1 && c2 && ...` is true, execute the
 instructions, otherwise jump to the label. In a real machine
+
+## Superblock Scheduling
+
+### Compaction
+
+### List Scheduling
+
+### Trace Scheduling
+
+
+## Implementation
+
+## Evaluation
+
+### Cost Model
+
+### Comparison to Compaction
