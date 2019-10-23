@@ -3,6 +3,7 @@ title = "Induction Variable Optimizations"
 extra.author = "Daniel Weber & Drew Zagieboylo"
 extra.bio = """
   [Daniel Weber](https://github.com/Dan12) is an MEng student interested in programming languages, distributed systems, and the inner workings of computers.
+
   [Drew Zagieboylo](https://www.cs.cornell.edu/~dzag/) is a 3rd year PhD student researching Security, Hardware Design, and Programming Languages. He enjoys rock climbing and gaming in his free time.
 """
 +++
@@ -188,4 +189,45 @@ Our code doesn't consider `x` an induction variable because
 of our very approximate heuristic: "`x` is updated twice in the
 loop, so it may not be an IV".
 
-# Evalutaing our Optimizations
+### Liveness
+
+Since induction variable elmination is meant to delete unnecessary
+variable assigments, we need to be truly sure that those induction variables
+are not used outside of the loop's scope. We use a [liveness dataflow analysis](https://en.wikipedia.org/wiki/Live_variable_analysis)
+to compute all of the "live-ins" and "live-outs" of every basic block.
+
+Unfortunately, this isn't enough for eliminating "useless" induction variables.
+Consider the following Bril-esque C program:
+```C
+int max = 10;
+int result = 0;
+int i = 0;
+LOOP:
+  if (result < max*2) //live-ins = [result, i, max]
+    goto BODY;
+  else 
+    goto END; //live-outs = [result, i]
+BODY:
+  result = result + 2; //live-ins = [result, i]
+  i = i + 1;
+  goto LOOP; //live-outs = [result, i]
+END: // live-ins = [result]
+return result;
+```
+Even though `i` is used only to update itself,
+a standard liveness analysis says that `i` must be both a live-out and a live-in
+for all of the loop blocks. This prevents local dead code analyses from removing the useless update: `i = i + 1`.
+
+Instead of local liveness, we need to consider the live-outs _of the entire loop_.
+Therefore, when considering the liveness of basic induction variables we don't check
+the live-outs of any one basic block. Instead, we union all of the live-ins of the
+loop's successors. If `i` is not in that set of variables, we know that no code
+which executes after the loop will use `i` and we can safely delete it.
+
+In the example above, the only successor to the loop is the `END` block
+and therefore the only live-out of the loop is `result`.
+
+### Strength Reduction Implementation
+
+Strength reduction targets _derived_ IVs
+# Evaluating our Optimizations
