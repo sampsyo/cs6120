@@ -1,9 +1,9 @@
 +++
 title = "Loop Unrolling Optimization"
 extra.author = "Sameer Lal"
-extra.email = "s j l 3 2 8@cornell.edu"
+extra.email = "s( goawayhacker )jl328@cornell.edu"
 extra.bio = """
-[Sameer Lal](https://github.com/sameerlal) is a Masters of Engineering student in the Computer Science. He studied ECE and Math in his undergrad.  He is interested in probability-related things.
+[Sameer Lal](https://github.com/sameerlal) is a Master of Engineering student in Computer Science. He studied Electrical and Computer Engineering and Math in his undergrad.  He is interested in probability-related things.
 """
 extra.latex = true
 +++
@@ -122,17 +122,116 @@ In particular, we have the following blocks:
 * End of program:  This block is identical to the ```End of Program``` block in the original CFG.
 
 ### Implementation
-Implementing unrolling requires favoring generality over specificity.  
 
+Fine-grain details on the implementation can be found [here.](https://github.com/sameerlal/bril/blob/master/bril-txt/unroll_opt.py)
 
+Implementing unrolling requires favoring generality over specificity.  As before, we begin by loading in a bril file, converting to json format and then storing the control flow graph by keeping track of edges.  Next, we run a dominator analysis so we can achieve in constant time a list of blocks that dominate a particular block.  We run the loop finding algorithm as mentioned before, and then verify that it is switchable by examining conditional variables and checking to see if that variable has been used before.  We mark these blocks to be reordered and then pass the CFG into the unswitching algorithm.
 
+In my implementation, I stored the program as a dictionary mapping from block name to contents.  The unswitching algorithm takes in this mapping and produces a new mapping that is eventually converted to json and then to a Bril program.
+
+Since there are multiple duplicated blocks, we first create two hashes, one for each block, that act as suffixes for duplicated blocks.  For instance if ``` hash(if) = 083``` and ```hash(else) = 061``` then the two bypass blocks are named:  ``` bypass083``` and ```bypass061```.  This eliminates the possibility of branching to the incorrect branch, since all block names are guaranteed to be unique.  Now we are ready to create the blocks and modify branches for reordering.
+
+We first create the ```conditional t``` block, whose name has already been extracted.  
+
+Next, we create the loop logic blocks.  We copy the contents of the original program's loop logic, duplicate the block, and append the appropriate hashing suffix to its label.  The ```conditional t``` block that we just created will flow to both of these blocks, so we will need to modify the names of the branches there.
+
+```
+    if_for_loop_logic = loop_logic  + hash(if)
+    contents[if_for_loop_logic] = contents[loop_logic]
+
+    else_for_loop_logic = loop_logic  + hash(else)
+    contents[else_for_loop_logic] = contents[loop_logic]
+```
+   
+    
+Now we are ready to create the loop body blocks.  Here, the contents should include instructions that dominates the ```conditional t``` block and is also dominated by the big loop block.  Here, we use set intersections in the domination dictionary.
+    
+Now, as an additional optimization, we reorder these blocks according to the original CFG.  I will delegate the details of this for those interested to the linked code above.
+    
+In one body block, we include the contents of the ```if``` block, and in the other body block, we include the contents of the ```else``` block.  Finally, we add instructions that are dominated by each of those blocks to be part of the body block.  Combining all of this, as well as performing surgery on the branch instruction names completes the construction of the ```if loop body``` and ```else loop body``` blocks.
+
+Next, we create the additional blocks, namely the ```jmp``` and ```bypass``` blocks that lead to the end of the program.  Creating these blocks requires surgery on the original instructions, as well as rename hashing, since it is not always guaranteed that the last instruction in a block is a ```jump``` instruction.  For instance, both of the following are valil Bril programs:
+```
+blockone:
+    x: int = const 0;
+    jmp blocktwo;
+blocktwo:
+    print x;
+```
+
+and
+```
+blockone:
+    x: int = const 0;
+blocktwo:
+    print x;
+```
+so we need to guarantee that these two blocks are placed next to each other when we output the new optimized program.  
+
+Finally, we connect the bypass blocks to the end of the program, which we leave intact.   
+
+The last step is to overwrite the original mapping from block name to contents with our new block dictionary and output the resulting Bril program.
 
 ## Implementation Difficulties
 
+There were quite a few difficulties that arose during implementation due to the nature of the Bril programming language.
+
+As alluded to before, since Bril does not require jumps at the end of blocks, we need to be careful about reordering blocks in the final Bril program.  Furthermore, this optimization is designed to run after other optimizations, so we would ideally like to keep the majority of the program untouched to prevent overwriting.  This involves a fair amount of bookkeeping especially when these situations occur within the loop body.  
+
+Traditionally, loop unrolling operates on SSA form, and due to time restriction, I was not able to write an SSA translater.  Thus this optimization assumes a prior SSA run.  One example of why we might want SSA form is dead code elimination.  It is possible that after dead code elimination, a branch within a loop becomes independent of the loop body.
+
+Another shortcoming of this optimization is that it currently only operates on natural loops, and in particular, does not operate on nested loops.  That is, programs in the form:
+```
+b = True
+for i in range(10):
+    for j in range(10):
+        if b then:
+            do something()
+        else:
+            do something else()
+```
+will not be completely unrolled since the conditional statement lies inside of a nested for loop.  Instead, the conditional will be unrolled outside of the first for loop, which only midly decreases the numbeer of branches.  Implementing this is not too difficult to do, though it requires  additional abstractions for nested for loops.
 
 
-## Evaluation and results
+## Results and Evaluation 
 
+##### Results
+The results of this optimization were quite interesting.  I primarily evaluated the code on percentage difference in the number of branches.  To do this, I modified the Bril Typescript interpreter to keep track of the number of branches for each run.  For a program:
+```
+    for _ in range(maxiter):
+        prebody
+        if b:
+            ifbody
+        else:
+            elsebody
+        postbody
+```
+and its unswitched version:
+```
+    if b:
+        for _ in range(maxiter):
+            prebody
+            ifbody
+            postbody
+    else:
+        for _ in range(maxiter):
+            prebody
+            ifbody
+            postbody
+```
+the improvement comes from eliminating branches in the "if...else" decision.  Through testing, one loop unrolling produces a decrease in the number of branches of approximately 14%, on average.  
 
+This result is highly dependent on the structure of the program.  For instance, after unrolling, ```ifbody``` and ```elsebody``` can separately be optimized which would compound the results even further.  The results from the benchmark tests assume that the loops CANNOT be independently optimized, so our claimed average can be thought to be a lower bound on the decrease in the number of branches.
 
-By and large, we have implemented the checker satisfying all of our defined behaviors. But we don't know if that's exhaustive for all possible errors (not necessarily type errors). We would be very happy if someone comes up with more cases and reaches out to us by mail or GitHub issues.
+In literature, benchmarking code unswitching involves measuring the increase in code size.  In my implementation, code size roughly doubled for each unrolling which is consistent with the literature.
+
+##### Evaluation 
+
+This optimization was tested on many programs both on defined behavior and undefined behavior.  The testing suite I generated tests on the following (though not limited to) attributes:
+* Should a conditional be unrolled?
+* Simple/Complex blocks before/after conditional
+* Non-unrolled branches before conditional to be unrolled
+* Blocks with no terminating jump instructions
+* Loops in which unrolling leads to worse performance.
+
+I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by e-mail, which I have included at the top of this post.
