@@ -107,39 +107,51 @@ might choose to make various part of the "slow" program paths traces
 themselves, trading off program size for speed.
 
 ### List Scheduling
-List scheduling is a simple heuristic based algorithm that performs compaction
-on a chunk of code.
-It takes a list of instructions and a directed acyclic graph (DAG) representing the
-scheduling constraints between instructions, and returns a list of bundles. 
+
+List scheduling is a heuristic-based algorithm that performs compaction
+on a sequence of instructions. It takes a directed acyclic graph (DAG) representing the
+scheduling constraints (such as read-write dependencies) between instructions, and returns a list of bundles.
+
 We start by presenting a high level overview of the algorithm and then we will go into more detail
-about how we build the DAG. First, a heuristic assigns each instruction in the graph a priority. 
+about how we build the DAG. First, a heuristic assigns each instruction in the graph a priority.
 Then initialize a queue with all the instructions
 that have no predecessors in the graph. Until we have scheduled all the instructions,
 we do the following in a loop:
-- Make an bundle
-- Take the instruction from the queue with the highest priority
-- Add it to the bundle if compatible
-- Continue taking instructions from the queue until either the queue is empty or the instruction 
+- Make an bundle.
+- Take the instruction from the queue with the highest priority.
+- Add it to the bundle if compatible i.e. has no conflicts with the bundle.
+- Continue taking instructions from the queue until either the queue is empty or the instruction
 is incompatible with the current bundle.
-- For each element that we scheduled, check if their successors now have all their predecessors scheduled
-and add them to the queue
+- For each element that we scheduled, check if their successors now have all their predecessors scheduled and add them to the queue
 
-The important property of this algorithm is that it doesn't schedule an instruction until all
-of it's predecessors in the DAG have been scheduled. In order to maintain program correctness,
-we have to make sure that the predecessor relationship in the DAG respects data dependencies
-between instructions.
+The algorithm schedules a instruction only after all of its predecessors in the
+DAG have been scheduled. This means that to maintain program correctness,
+the predecessor relation must respect data dependencies.
 
-If we were just considering basic blocks, we can do this just by looking at what an instruction
-reads and writes. Let `i`, `j` be two instructions such that `i` comes before `j`. If `i` reads from
-variable `x` and `j` writes to `x`, then we never want to reorder `j` before `i`. We can encode this by
-making `i` a predecessor of `j` in the DAG. Similarly, if `i` writes to some variable `x`, 
-and `j` reads from `x`, then we want to make sure that `j` is never scheduled before `i` so that `j`
-will see the writes to `x`. We can again encode this by making `i` a predecessor of `j`.
+```
+v1: int = id x;
+x: int = const 10;
+```
 
-This would be enough for basic blocks. However, traces in general can have multiple basic blocks
-and they can contain branch instructions (although only one branch body will be in the trace).
-Importantly, this means that it is possible to exit from the middle of a trace. Because of this,
-we have to be careful about what we move above potential exit points. Consider the following trace fragment:
+In the program above, we cannot reorder the instructions because the second
+instruction writes to `x` while the first reads from it. We can encode this
+constraint in the DAG by making the first instruction a predecessor of the second.
+
+### Generating Superblock
+
+The superblock algorithm generates a sequence of instruction and DAG that are
+used by the list scheduling algorithm to generate a program trace. This means
+that the superblock algorithm has to encode additional dependencies in the DAG
+to allow an unmodified list scheduling algorithm to work.
+
+The core insight with the superblock algorithm adding the DAG constraint that
+all the live out variables in a branch "read" from the conditional. This
+means that a write in a conditional cannot be moved outside it and in case
+a program exits from the middle of a trace, it will never observe the writes
+from a compacted branch body.
+
+For example,
+
 ```
   ...
   v6: bool = gt v4 v5;
@@ -151,8 +163,11 @@ for.body.2:
   result: int = id v9;
   ...
 ```
-When we consider this as a trace, we ignore the label and assume that the branch will jump to `for.body.2`.
-If we just use the dependency rules discussed above, the following is a valid reordering:
+
+When we consider this as a trace, we ignore the label and assume that the
+branch will jump to `for.body.2`. Without the constraint on the conditional,
+the following is valid reordering according to the list scheduling algorithm.
+
 ```
   ...
   v6: bool = gt v4 v5;
@@ -163,17 +178,15 @@ If we just use the dependency rules discussed above, the following is a valid re
   br v6 for.body.2 for.end.2;
   ...
 ```
-BAD BAD BAD BAD  
-It's possible that the assumption that we jumped to `for.body.2` is false and we have to jump to `for.end.2`.
-If this happens, then the `for.end.2` block will see writes to `result` that it shouldn't have.
 
-To fix this, we say that a `br` instruction reads everything that is live below it. This prevents writes to
-live variables from being moved above the `br` instruction.
+However, `v6` can be false which means we should have jumped to `for.end.2`
+instead but since the read was moved above the branch, `for.end.2` will observe
+the write to `result` which it shouldn't in the normal case.
 
 The other important ingredient in this algorithm is the heuristic that assigns priorities to instructions.
 We follow [Fisher's](https://people.eecs.berkeley.edu/~kubitron/courses/cs252-S12/handouts/papers/TraceScheduling.pdf)
 example and use the **highest levels first** heuristic. The priority of each node is the depth of the longest chain
-in the dependency DAG. He claim's close to "optimal in practical environments" with this heuristic.
+in the dependency DAG. He claims close to "optimal in practical environments" with this heuristic.
 Given more time, it would be interesting to explore how changing this heuristic effects the results
 of trace scheduling.
 
