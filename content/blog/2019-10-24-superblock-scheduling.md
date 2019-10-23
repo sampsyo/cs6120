@@ -73,7 +73,8 @@ b1:
   v1: int = add v2 v3
   br v7 b2 b3
 b2:
-  v4: int = add v2 v0
+  v4: int = add v2 v0 // not live out of b2
+  ...
 b3:
   ...
 ```
@@ -93,7 +94,8 @@ slow:
   v1: int = add v2 v3
   br v7 b2 b3
 b2:
-  v4: int = add v2 v0
+  v4: int = add v2 v0 // not live out of b2
+  ...
 b3:
   ...
 ```
@@ -189,12 +191,16 @@ For our project, we implemented four things:
    the number of instructions executed in the interpreter. Each bundle and
    instruction counts as one.
 
-- **Implement control and data flow analysis**: We implemented a passes to generate
+- **Implement control and data flow analysis**: We implemented a pass to generate
   the CFG of the Bril program and a straightforward live variable analysis.
   Both of these analysis are used by the Superblock scheduling algorithm to
   correctly incorporate branches into a trace.
 
-- **Superblock scheduling**: **TODO(sam)**
+- **Superblock scheduling**: We generate a trace for the input program. We don't
+  do anything smart for this; we just generate the longest trace we can from the
+  entry block for each function. We use the live variable information to
+  generate the DAG for the trace as described above and then run list scheduling 
+  to compact the trace.
 
 - **Generating valid programs from traces**: Once we have a program trace, we
   change the programs to correctly jump into and out of traces. We also duplicate
