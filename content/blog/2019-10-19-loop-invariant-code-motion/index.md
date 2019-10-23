@@ -45,11 +45,16 @@ All loops considered here are **natural loops**—that is, a cycle with one entr
 
 In essence, a back-edge is what brings us from the tail of the loop $A$ to the beginning $B$.
 The cycle surrounding this backedge is our loop, where the entrypoint is the start of the cycle.
-If the loop has only one entry, it is a natural loop. Below is an illustration of a natural loop and its back-edge. 
+If the loop has only one entry, it is a natural loop. Below is an illustration of a natural loop and its back-edge. The natural loop is highlighted, with a labeled back-edge.
 
-### Detecting natural loops
+<img src="natloop.jpeg" style="width: 70%">
 
-To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py` within our three functions. Back-edges are identified with `get_backedges`, taking in a map of successors and the dominator tree. `loopsy` finds the natural loop associated with an input back-edge. 
+In the case that an edge connected *entry* and *body*, this would no longer be a natural loop.
+ 
+
+### Detecting Natural Loops
+To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py` within our three functions. Back-edges are identified with `get_backedges`, and `loopsy` finds the natural loop associated with an input back-edge.
+
 
 ```python
 ### detect back-edges
@@ -81,7 +86,7 @@ def loopsy(source,sink,predecessors):
 ```
 
 ### Detecting loop invariants
-An instruction within a natural loop is marked loop-invariant if its arguments are defined outside of the natural loop. Alternately, if the instruction’s arguments are defined once—and that definition is loop invariant—then the instruction may be marked as loop-invariant.
+An instruction within a natural loop is marked loop-invariant if its arguments are defined outside of the natural loop. Alternately, if the instruction’s arguments are defined once—and that definition is loop invariant—then the instruction may be marked as loop-invariant. Our goal is to find these loop invariants so that we may mark them as movable.
 
 To begin with, we find all reaching definitions
 
@@ -122,7 +127,7 @@ Now we know how to spot what can move, let's move it!
 
 ### Block ordering
 
-# Evaluation
+
 
 ### Loop in a Loop in a Loop
 
