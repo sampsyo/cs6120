@@ -114,6 +114,103 @@ Now we know how to spot what can move, let's move it!
 
 ### Super nested loops
 
+
+# Evaluation
+
+We evaluated our optimization on a suite of benchmarks by instrumenting the
+Bril interpreter to count the number of instructions it executes for each
+benchmark. We chose to evaluate our optimization this way instead of
+comparing the time it takes for the interpreter to obviate measurement biases
+that might arise. By abstracting away performance in terms of the number of 
+instructions executed, we give a fair comparison between non-optimized and
+optimized Bril programs: no matter the environment in which they are executed,
+a Bril program that executes fewer instructions performs better than an
+equivalent Bril program that executes more instructions.
+
+RETURNS are not counted
+
+
+
 # Try it!
 Demo for people to see results on their own `bril` code
+
+results are the same between non-optimized and optimized versions for all benchmarks
+
+test
+no. of instructions executed for non-optimized version
+no. of instructions executed for optimized version
+
+examples/df_test/cond.bril
+9
+9
+
+examples/df_test/fact.bril
+62
+55
+
+examples/dom_test/loopcond.bril
+117
+108
+
+examples/lvn_test/clobber-fold.bril
+10
+10
+
+examples/lvn_test/clobber.bril
+10
+10
+
+examples/lvn_test/commute.bril
+6
+6
+
+examples/lvn_test/idchain.bril
+5
+5
+
+examples/lvn_test/idchain-prop.bril
+5
+5
+
+examples/lvn_test/nonlocal.bril
+7
+7
+
+examples/lvn_test/reassign.bril
+3
+3
+
+examples/lvn_test/redundant.bril
+6
+6
+
+examples/lvn_test/redundant-dce.bril
+6
+6
+
+examples/tdce_test/combo.bril
+6
+6
+
+examples/tdce_test/diamond.bril
+6
+6
+
+examples/tdce_test/double-pass.bril
+6
+6
+
+examples/tdce_test/reassign.bril
+6
+6
+
+examples/tdce_test/reassign-dkp.bril
+6
+6
+
+examples/tdce_test/simple.bril
+5
+5
+
+
 <!---eof--->
