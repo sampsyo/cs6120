@@ -59,7 +59,7 @@ int j = 0;
 int s = 0; //2*i when i == 0
 for (int i = 0; i < 100; i++) {
   j = s;
-  s = s + 2;
+  s = s + 2; //+2 since i gets incremented by 1 each iteration
 }
 ```
 After [some other common compiler optimizations](https://en.wikipedia.org/wiki/Copy_propagation),
@@ -67,7 +67,7 @@ we can get this simpler version:
 ```C
 int j = 0;
 for (int i = 0; i < 100; i++) {
-  j = j + 2; //+2 since i gets incremented by 1 each iteration
+  j = j + 2;
 }
 return j;
 ```
@@ -79,29 +79,31 @@ the way for other IV optimizations.
 
 ### Induction Variable Elimination
 
+In many programs, IVs can be redundant.
+For instance, a common programming idiom is to introduce
+a variable only to use as a loop guard (such as `i` in the following program).
 ```C
-...
 int max = 10;
 int result = 0;
 for (int i = 0; i < max; i++) {
-    result++;
+    result += 2;
 }
 return result;
 ```
-
-Simplifies to:
-
+In this example, we can eliminate the `i` variable
+by replacing its uses with another basic induction variable `result` to get:
 ```C
 int max = 10;
 int result = 0;
-for (; result < max; result++) {}
+for (; result < max*2; result+=2) {}
 return result;
 ```
-
+This obviously removes extraneous code by combining the "loop counting"
+part of the loop with the actual work that it's doing.
 
 # Implementing Induction Variable Optimizations
 
-It turns out that IV analysis require a large number 
+It turns out that IV analyses require a large number 
 of other static analyses before even thinking about optimization.
 
 ### Finding Loops
@@ -122,34 +124,68 @@ with backedge annoations.
 <img src="cfg.png" style="width:50%"/><img src="dom.png" style="width:50%"/>
 On the left hand side we have the control flow graph where its only backedge
 is represented as a dashed line. The right hand side picture shows all of the
-dominators; each red line means "source is dominated by the sink". As you can see,
+dominators; each red line can be read as "is dominated by". As you can see,
 the only edge in the CFG which is the reverse of an edge in the dominator graph
 is the backedge from `body` to `loop`.
 
 There are some other subtleties here with nested loops or two loops which happen
-to have the same entry block, but we ignore them in our implementation.
-Our implementation correctness should be correct regardless of these subtleties
-but may not be as optimal.
+to have the same entry block. We elide these into single loops to avoid
+incorrectly re-writing induction variables while only looking at one loop at a time.
+This approximation of loop structure prevents our analysis from finding some
+optimization opportunities but preserves correctness.
 
 ### Identifying Induction Variables
 
 Once we find loops, then we need to figure out which variables exactly *are*
 induction variables. We divide IVs into two categories: _basic_ induction variables;
-and other induction variables. The most common examples of IVs are the
+and _derived_ induction variables. The most common examples of IVs are the
 loop variables that are only used for loop tests (say `i` in the following code):
 ```C
 for (int i = 0; i < 100; i++) {
-  //do something without updating i
+  A[i] = 0;
 }
 ```
 However, basic IVs are more generally defined:
 > A basic induction variable, X, is a variable whose only
->  updates within the loop are of the form X = X + c.
+>  updates within the loop are of the form X = X + _c_, where
+>  _c_ is loop-invariant.
 
-In Bril, since you can't actually inline constants into instructions,
-you also have to do some sort of analysis to determine which operands
-represent constants. We define "constant" to mean any variable which
-has only 1 reaching definition and it is either a `const` operation
-or a loop invariant variable. 
+In Bril, _c_ is always a variable (as opposed to an inlined constant) so we need to do some sort
+of analysis to determine if instruction operands are loop-invariant.
+We use a [reaching definition](https://en.wikipedia.org/wiki/Reaching_definition)
+analysis to find such variables. We consider any variable to be loop-invariant
+if: 1) all of its definitions which reach the loop entrance originate outside
+the loop; or 2) it has only one reaching definition which is a `const` expression.
+
+In our implementation we only identify a subset of basic IVs, specifically those
+that are updated precisely once inside the loop. We did this for simplicity,
+since it greatly reduces the complexity of future IV optimizations.
+An elegant way to deal with this complexity would be to run IV optimizations on
+[SSA](https://en.wikipedia.org/wiki/Static_single_assignment_form) code,
+since all variables have only one definition.
+
+In addition to basic IVs, derived IVs are also eligible for optimization.
+A derived IV is:
+> A variable with exactly _one_ definition inside the loop whose value is
+> a linear function of loop-invariants and a basic IV.
+
+There are several methods for finding _derived_ IVs, the most
+general one being a dataflow analysis. We decided to implement a simpler
+but probably less efficient and less complete
+approach that just involved scanning all of the
+definitions in the loop and collecting a set of definitions which satisfy
+the above constraints.
+
+In Bril, in particular, our algorithm can be 
+_very_ approximate. Since each definition can only implement
+one operation, there may be derived IVs which are comprised of multiple
+Bril defintions. For example, in Bril, `x = 3*i + 4` looks like:
+```C
+x:int = mul i three; //three has been defined as const 3
+x:int = add x four;  //four has been defined as const 4
+```
+Our code doesn't consider `x` an induction variable because
+of our very approximate heuristic: "`x` is updated twice in the
+loop, so it may not be an IV".
 
 # Evalutaing our Optimizations
