@@ -18,9 +18,22 @@ link = "https://twitter.com/elalaCorrea"
 
 Sometimes, loops do more work than they really *have* to. Take for example, the snippet of code below:
 
+```python
+for i in range(10):
+    x = 3
+    y = y + x
+print(y)
+```
+where what we really want is 
+
+```python
+x = 3
+for i in range(10):
+    y = y + x
+print(y)
 ```
 
-```
+The first snippet redundantly sets `x = 3` for *every iteration* when this constant assignment only necessary to do once. This problem scales with larger programs—so how can we remove redundant calculations?
 
 Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them. 
 
@@ -28,9 +41,11 @@ Skip to the end to optimize your very own `bril` program!
 
 # Loop
 
-All loops considered here are **natural loops**—that is, a cycle with one entry and a **back-edge**. Back-edges are defined as an edge $A \longrightarrow B$ for tail $A$ and head $B$, such that $B$ dominates $A$.  Natural loops are then defined as the smallest set of vertices $L$ with $A,B \el L$ such that for each vertex $v \el L$ we have $v=B$ or PREDS($v$)$\subseteq L$.
+All loops considered here are **natural loops**—that is, a cycle with one entry and a **back-edge**. Back-edges are defined as an edge $A \longrightarrow B$ for tail $A$ and head $B$, such that $B$ dominates $A$.  Natural loops are then defined as the smallest set of vertices $L$ with $A,B \in L$ such that for each vertex $v \in L$ we have $v=B$ or PREDS($v$)$\subseteq L$.
 
-In essence, a back-edge is what brings us from the end $A$ of the loop back to the beginning $B$. If the loop has more than one entry, it is not a natural loop. Below is an illustration of a natural loop and its back-edge. 
+In essence, a back-edge is what brings us from the tail of the loop $A$ to the beginning $B$.
+The cycle surrounding this backedge is our loop, where the entrypoint is the start of the cycle.
+If the loop has only one entry, it is a natural loop. Below is an illustration of a natural loop and its back-edge. 
 
 ### Detecting natural loops
 
@@ -115,6 +130,11 @@ Now we know how to spot what can move, let's move it!
 ### Super nested loops
 
 
+###
+
+# bugs and bonuses
+Dead code elimination, for a very specific subset of things—to avoid edge cases in our own implementation.
+
 # Evaluation
 
 We evaluated our optimization on a suite of benchmarks by instrumenting the
@@ -128,8 +148,6 @@ a Bril program that executes fewer instructions performs better than an
 equivalent Bril program that executes more instructions.
 
 RETURNS are not counted
-
-
 
 # Try it!
 Demo for people to see results on their own `bril` code
