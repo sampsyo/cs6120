@@ -118,8 +118,7 @@ The second common view of a probabilistic program is as a Markov chain. In a ver
 ##### Projecion into Eigenspaces
 Given an oracle for computing the eigenvectors of this transition matrix $\mathbf T$, the right thing to do is clear:
 
-$$ \lim_{n \to \infty}  \mathbf T^n \vec s  = \lim_{n \to \infty}  \mathbf U \Sigma^n \mathbf V^T \vec s
-    = \mathbf U_k \Sigma^n \mathbf V_k^T \vec s $$
+$$ \lim_{n \to \infty}  \mathbf T^n \vec s  = \lim_{n \to \infty}  \mathbf U \Sigma^n \mathbf V^T \vec s $$
 
 where $\mathbf U \Sigma \mathbf V^T$ is the singular decomposition of $\mathbf T$---that is, $\mathbf U$ and $\mathbf V$ are unitary and $\Sigma$ is a diagonal matrix of the singular values of $\mathbf T$. Because we know $\mathbf T$ is a (sub)stochastic matrix, we know that it can have no eigenvalue greater than 1, and if the program has any chance of returning, the return statement corresponds to an eigenvector that does in fact have corresponding eigenvalue 1. It is easy to see that any singular value that is less than 1 will ultimately go to zero, and so really we are just projecting the start state $\vec s$ into the eigenspace associated to the eigenvalue 1. If there are $k$ dimension of this eigenspace, we can write the previous equation as
 
