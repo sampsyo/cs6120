@@ -1,10 +1,8 @@
 +++
-title = "Loop Unrolling Optimization"
-extra.author = "Sameer Lal"
-extra.email = "s( goawayhacker )jl328@cornell.edu"
-extra.bio = """
-[Sameer Lal](https://github.com/sameerlal) is a Master of Engineering student in Computer Science. He studied Electrical and Computer Engineering and Math in his undergrad.  He is interested in probability-related things.
-"""
+title = "Loop Unswitching"
+[extra]
+bio = """
+[Sameer Lal](https://github.com/sameerlal) is a Master of Engineering student in Computer Science. He studied Electrical and Computer Engineering and Math in his undergrad.  He is interested in probability-related fields.
 extra.latex = true
 +++
 
@@ -83,16 +81,16 @@ back_edges = []
 This creates a cycle.  Next, we find all nodes in between these two nodes by populating a stack with predecessors, until we have reached the beginning of the loop.
 
 ##### Deciding unswitchability
-Now, we need to decide if this loop is unswitchable.  Recall that in order to unswitch loops, we need to ensure that the condition is independent of the loop's body during execution.  That is, the conditional statement we are unrolling cannot be modified in the loop.  This allows us to write deterministic code.
+Now, we need to decide if this loop is unswitchable.  Recall that in order to unswitch loops, we need to ensure that the condition is independent of the loop's body during execution.  That is, the conditional statement we are unswitching cannot be modified in the loop.  This allows us to write deterministic code.
 
 To implement this,  we adopt the following notation[1].  Let $$v_s$$ denote the set of variables defined by statements, and let $$v_a$$ denote the set of variables defined by arguments.  Now let $$V_b = v_a \cup v_s$$ be the union of the two for a block $$b$$, and let $$V_L = \cup_i V_{b_i}$$ denote the set of variables entirely in the loop.  Now suppose we have a branching statement on condition $$t$$:
 ```
 br t if then;
 ```
-Now if $$v_t \not \in V_L$$, we can unroll this loop.  In the case of multiple conditional statements that can be unrolled, as we traditionally do in literature, we pick one uniformly at random.
+Now if $$v_t \not \in V_L$$, we can unswitch this loop.  In the case of multiple conditional statements that can be unswitched, as we traditionally do in literature, we pick one uniformly at random.
 
-##### Implementing Unrolling
-Once we have selected a subset of nodes in the CFG to be unrolled, we need to actually reorder the blocks.  At a high level, we implement the following reordering:
+##### Implementing Unswitching
+Once we have selected a subset of nodes in the CFG to be unswitched, we need to actually reorder the blocks.  At a high level, we implement the following reordering:
 
 
 < DIAGRAM >
@@ -107,7 +105,7 @@ In the above diagram, we have the following:
 * Loop body (2):  This contains the entire loop body following the conditional t.
 * End of Program: This block contains all code after the loop.  In particular, it may contain additional loops with conditionals, that we are not optimizing.
 
-To implement unrolling, we want to move the ```Conditional t``` block outside the for loop, create branches for each destination (in Bril, we are limited to two branches), and replicate the contents inside of the loop.  We wish to do surgury in such a way to only to disrupt nodes involving the loop, leaving the rest of the CFG intact.  A high level control flow is as follows for post-unrolling operation:
+To implement unswitching, we want to move the ```Conditional t``` block outside the for loop, create branches for each destination (in Bril, we are limited to two branches), and replicate the contents inside of the loop.  We wish to do surgury in such a way to only to disrupt nodes involving the loop, leaving the rest of the CFG intact.  A high level control flow is as follows for post-unswitching operation:
 
 << DIAGRAM >> 
 In particular, we have the following blocks:
@@ -125,7 +123,7 @@ In particular, we have the following blocks:
 
 Fine-grain details on the implementation can be found [here.](https://github.com/sameerlal/bril/blob/master/bril-txt/unroll_opt.py)
 
-Implementing unrolling requires favoring generality over specificity.  As before, we begin by loading in a bril file, converting to json format and then storing the control flow graph by keeping track of edges.  Next, we run a dominator analysis so we can achieve in constant time a list of blocks that dominate a particular block.  We run the loop finding algorithm as mentioned before, and then verify that it is switchable by examining conditional variables and checking to see if that variable has been used before.  We mark these blocks to be reordered and then pass the CFG into the unswitching algorithm.
+Implementing unswitching requires favoring generality over specificity.  As before, we begin by loading in a bril file, converting to json format and then storing the control flow graph by keeping track of edges.  Next, we run a dominator analysis so we can achieve in constant time a list of blocks that dominate a particular block.  We run the loop finding algorithm as mentioned before, and then verify that it is switchable by examining conditional variables and checking to see if that variable has been used before.  We mark these blocks to be reordered and then pass the CFG into the unswitching algorithm.
 
 In my implementation, I stored the program as a dictionary mapping from block name to contents.  The unswitching algorithm takes in this mapping and produces a new mapping that is eventually converted to json and then to a Bril program.
 
@@ -178,7 +176,7 @@ There were quite a few difficulties that arose during implementation due to the 
 
 As alluded to before, since Bril does not require jumps at the end of blocks, we need to be careful about reordering blocks in the final Bril program.  Furthermore, this optimization is designed to run after other optimizations, so we would ideally like to keep the majority of the program untouched to prevent overwriting.  This involves a fair amount of bookkeeping especially when these situations occur within the loop body.  
 
-Traditionally, loop unrolling operates on SSA form, and due to time restriction, I was not able to write an SSA translater.  Thus this optimization assumes a prior SSA run.  One example of why we might want SSA form is dead code elimination.  It is possible that after dead code elimination, a branch within a loop becomes independent of the loop body.
+Traditionally, loop unswitching operates on SSA form, and due to time restriction, I was not able to write an SSA translater.  Thus this optimization assumes a prior SSA run.  One example of why we might want SSA form is dead code elimination.  It is possible that after dead code elimination, a branch within a loop becomes independent of the loop body.
 
 Another shortcoming of this optimization is that it currently only operates on natural loops, and in particular, does not operate on nested loops.  That is, programs in the form:
 ```
@@ -190,7 +188,7 @@ for i in range(10):
         else:
             do something else()
 ```
-will not be completely unrolled since the conditional statement lies inside of a nested for loop.  Instead, the conditional will be unrolled outside of the first for loop, which only midly decreases the numbeer of branches.  Implementing this is not too difficult to do, though it requires  additional abstractions for nested for loops.
+will not be completely unswitched since the conditional statement lies inside of a nested for loop.  Instead, the conditional will be unswitched outside of the first for loop, which only midly decreases the numbeer of branches.  Implementing this is not too difficult to do, though it requires  additional abstractions for nested for loops.
 
 
 ## Results and Evaluation 
@@ -219,19 +217,19 @@ and its unswitched version:
             ifbody
             postbody
 ```
-the improvement comes from eliminating branches in the "if...else" decision.  Through testing, one loop unrolling produces a decrease in the number of branches of approximately 14%, on average.  
+the improvement comes from eliminating branches in the "if...else" decision.  Through testing, one loop unswitching produces a decrease in the number of branches of approximately 14%, on average.  
 
-This result is highly dependent on the structure of the program.  For instance, after unrolling, ```ifbody``` and ```elsebody``` can separately be optimized which would compound the results even further.  The results from the benchmark tests assume that the loops CANNOT be independently optimized, so our claimed average can be thought to be a lower bound on the decrease in the number of branches.
+This result is highly dependent on the structure of the program.  For instance, after unswitching, ```ifbody``` and ```elsebody``` can separately be optimized which would compound the results even further.  The results from the benchmark tests assume that the loops CANNOT be independently optimized, so our claimed average can be thought to be a lower bound on the decrease in the number of branches.
 
-In literature, benchmarking code unswitching involves measuring the increase in code size.  In my implementation, code size roughly doubled for each unrolling which is consistent with the literature.
+In literature, benchmarking code unswitching involves measuring the increase in code size.  In my implementation, code size roughly doubled for each unswitching which is consistent with the literature.
 
 ##### Evaluation 
 
 This optimization was tested on many programs both on defined behavior and undefined behavior.  The testing suite I generated tests on the following (though not limited to) attributes:
-* Should a conditional be unrolled?
+* Should a conditional be unswitched?
 * Simple/Complex blocks before/after conditional
-* Non-unrolled branches before conditional to be unrolled
+* Non-unswitched branches before conditional to be unswitched
 * Blocks with no terminating jump instructions
-* Loops in which unrolling leads to worse performance.
+* Loops in which unswitching leads to worse performance.
 
 I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by e-mail, which I have included at the top of this post.
