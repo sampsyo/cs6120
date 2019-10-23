@@ -79,10 +79,6 @@ the way for other IV optimizations.
 
 ### Induction Variable Elimination
 
-
-
-# Examples:
-
 ```C
 ...
 int max = 10;
@@ -101,3 +97,42 @@ int result = 0;
 for (; result < max; result++) {}
 return result;
 ```
+
+
+# Implementing Induction Variable Optimizations
+
+It turns out that IV analysis require a large number 
+of other static analyses before even thinking about optimization.
+
+### Finding Loops
+
+For instance, IV optimizations are all loop optimizations, which
+means we need to identify loops. Natural loops are denoted by sets
+of basic blocks that all have a common entry point *and* a "backedge"
+in the control flow graph. This backedge corresponds to a branch or
+jump in the CFG that goes back to the beginning of the loop.
+Finding loops requires finding backedges, which it turns out
+requires calculating dominators. A backedge is defined as
+any edge in the control flow graph where the source vertex
+_is dominated by_ the sink. Therefore to even start thinking about
+optimizing we need to calculate the dominators and do a brief
+reachability analysis. See the pictures below for an example CFG
+with backedge annoations.
+
+<img src="cfg.png" style="width:50%"/><img src="dom.png" style="width:50%"/>
+On the left hand side we have the control flow graph where its only backedge
+is represented as a dashed line. The right hand side picture shows all of the
+dominators; each red line means "source is dominated by the sink". As you can see,
+the only edge in the CFG which is the reverse of an edge in the dominator graph
+is the backedge from `body` to `loop`.
+
+There are some other subtleties here with nested loops or two loops which happen
+to have the same entry block, but we ignore them in our implementation.
+Our implementation correctness should be correct regardless of these subtleties
+but may not be as optimal.
+
+### Useful Dataflow Analyses
+
+
+
+# Evalutaing our Optimizations
