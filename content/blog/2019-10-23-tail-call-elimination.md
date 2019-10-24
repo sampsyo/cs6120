@@ -205,18 +205,18 @@ big to handle. `n` is the argument passed to the recursive function.
 `loop` is a Bril program that simply loops `n` times using recursion. `factorial`
 is a tail recursive implementation of factorials. `mutual_rec` is a program that
 checks whether a program is even or odd in a mutually recursive way. The code for
-these can be found at (TODO: INSERT LINK HERE).
+these can be found [here](https://github.com/sampsyo/bril/pull/37).
 
 **Percentage Change in Memory Usage Using TCE**
 |            |   n = 1  |  n = 100 | n = 10000 | n = 100000 |
-|:----------:|:--------:|:--------:|:---------:|:----------:|
+|------------|----------|----------|-----------|------------|
 |    loop    |   +0.1%  |   -2.7%  |   -31.1%  |   -79.5%   |
 |  factorial |   +0.2%  |   -2.5%  |   -79.1%  |     X      |
 | mutual_rec |   +0.2%  |   +13.8% |   -31.2%  |   -78.4%   |
 
 **Percentage Change in Execution Time Using TCE**
 |            |   n = 1  |  n = 100 | n = 10000 | n = 100000 |
-|:----------:|:--------:|:--------:|:---------:|:----------:|
+|------------|----------|----------|-----------|------------|
 |    loop    |  +2.1%   |   +2.2%  |   -10%    |   -29.8%   |
 |  factorial |  +1.1%   |   +5.5%  |   -1.6%   |      X     |
 | mutual_rec |  +1.1%   |   -1%    |   +5.7%   |   +5.07%   |
