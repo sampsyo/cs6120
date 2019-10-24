@@ -10,7 +10,7 @@ extra.bio = """
 
 ## Project Report 2: Loop Unrolling with Bril
 
-One key idea behind compiler optimization is to exploit the parallelism within a program. The most straightforward method is by optimizing loops. There exist many loop optimization techniques, including loop unrolling, reordering, tiling, pipelining, etc. Each technique can bring different effects to the given program. In this project, we focus on finding the pros and cons brought by loop unrolling with [Bril](https://github.com/sampsyo/bril) programs. We implement two methods for unrolling, which are static analysis and dynamic profiling, respectively.
+One key idea behind compiler optimization is to exploit the parallelism within a program. The most straightforward method is by optimizing loops. There exist many loop optimization techniques, including loop unrolling, reordering, tiling, pipelining, etc. Each technique can bring different effects to the given program. In this project, we focus on finding the pros and cons brought by loop unrolling with [Bril](https://github.com/sampsyo/bril) programs. We implement two methods for unrolling, which are static analysis and dynamic profiling, respectively. The source code can be found [here](https://github.com/seanlatias/bril/tree/arrays).
 
 ### Methodology 
 
@@ -53,6 +53,9 @@ with less than 1k instructions.
 The key idea of dynamic profiling is to estimate the loop status by simulating the loop execution. Since the loop trip count may depend on different conditions, it will hard to infer the loop bound without the information from actual execution environment. For example, induction variable being udpated indirectly can make the unrolling problem complicated. An intuitive way of simplifying the problem is to proflie the loops before unrolling. Here we extend the data flow analysis pass to support dynamic profiling, i.e. we maintain a status table to track the update history for each variables and . By refering to the table and locate the update history of the back-edge related instructions and basic blocks, we can easily infer various information needed, e.g. trip count, induction variable as well as loop stride. Here to simplify the analysis, we assume all loops to be unrolled are natural loops, namely the program can only enter the loop from the header. Under the assumption that the loop bound is invariant in multiple runs, the basic blocks in the loop body will be repliacted for trip bound times. Back edges (i.e. jmps) and condition check statements will be removed form originla bril program.
 
 ### Implementation details
+
+#### External Packages
+In this project, we use two external packages. The first one is the array extension of Bril, whose source code can be found [here](https://github.com/Checkmate50/bril/tree/arrays). The second one is the C code generation for Bril. The source code can be found [here](https://github.com/xu3kev/bril2c).
 
 #### Static Analysis 
 This section details how we implement the static loop unrolling pass. We first state our definition of "regular loops" that
@@ -118,10 +121,9 @@ placement. What we actually do is to remove the labels of all but the first dupl
 
 The dynamic profiling based unrolling pass consists of two parts mainly: loop status analysis, program structure re-construction. In the loop status analysis part, we created a variable table to track the defition and usage for each varible. The table is used as a look-up table for loop analysis and basic block replication in later stages. The variable table can be extended to record the data dependency between different varibles, and this information can be used to realize loop normalization, copy propagation and such. With the update information for each variables, we then iterate all the back edges in the control flow graph and unroll the loops accordingly. Note that the back edges are stored in a dictionary and need to be processed in order to make sure the loops can be unrolled correctly (e.g. for nested loops, the inner most loop needs to be unrolled first). In the last step, we replicate the loop body and remove the condition branch instructions as well as the back edges to construct the new unrolled program.
 
-
 ### Experiment Results
 
-We use the hand-written test programs to verify the correctness of our loop unrolling passes and measure performance improvements. The functioanl correctness of the unrolled code can be verified with bril intepreter. To evaluate the performance between original and unrolled programs, we converted the bril code from json representation to C using the [Bril C back end](https://github.com/Checkmate50/bril) from Dietrich Geisler. We use GCC to compile the C program without any optimization (``-O0``), run it for 10000 times with bash loop to measure the total time consumption. Experiments are performed on a server with an 2.20GHz Intel Xeon processor and 128GB memory. All programs are single-thread. 
+We use the hand-written test programs to verify the correctness of our loop unrolling passes and measure performance improvements. The functioanl correctness of the unrolled code can be verified with bril intepreter. To evaluate the performance between original and unrolled programs, we converted the bril code from json representation to C using the Bril C back end. We use GCC to compile the C program without any optimization (``-O0``), run it for 10000 times with bash loop to measure the total time consumption. Experiments are performed on a server with an 2.20GHz Intel Xeon processor and 128GB memory. All programs are single-thread. 
 
 #### Static Analysis Evaluation
 The pass can successfully unroll the loops in our test programs. For the "double loop" test case, the pass correctly identifies the inner loop and unrolls it. Execution time of the original and unrolled versions are as follows:
@@ -139,3 +141,6 @@ large tripcount (2000) and compare the performance again. To enable this we modi
 
 #### Dynamic Profiling Evaluation
 The pass can run successfully in different test cases including consecutive loops and double loops. In this section we mainly focus on the performance perspective. We construct a vector add program with large trip count numbers (2000), which can benefit loop unrolling and out-of-order execution of modern processors. The original and unrolled program takes 9.111s and 8.341s (measured with linux time utility in usr time) for 10000 execution.
+
+### Other Features
+We also improve the constant propagation method provided. With this improvement, we can now perform arithmetic simplification. This pass can be applied after loop unrolling, which can potentially improve the performance by reducing the number of arithmetic operations.
