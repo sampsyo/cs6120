@@ -1,9 +1,9 @@
 +++
-title = "Loop Unswitching"
+title = "The Loop Unswitching Optimization"
 [extra]
 latex = true
 bio = """
-  [Sameer Lal](https://github.com/sameerlal) is a Master of Engineering student in Computer Science. He studied Electrical and Computer Engineering and Math in his undergrad.  He is interested in probability-related fields."""
+  [Sameer Lal](https://github.com/sameerlal) is a Master of Engineering student in Computer Science. He studied Electrical and Computer Engineering and Math in his undergraduate also at Cornell.  He is interested in probability-related fields."""
 [[extra.authors]]
 name = "Sameer Lal"
 +++
@@ -17,7 +17,8 @@ latex = true
 
 
 ## Goal
-For this project, I wanted to implement the loop unswitching optimization. Loop unswitching involves detecting conditional expressions inside of loops whose condition is independent of the loop's body, and then moving the condition outside of the loop with the replicated loop's body inside each branch of the conditional.  In other words, consider the following snippet of code:
+For this project, I implemented the loop unswitching optimization. Loop unswitching involves detecting conditional expressions inside of loops whose condition is independent of the loop's body. This condition is then moved outside of the loop, and the loop's body is replicated inside of each branch.  Consider the following snippet of code:
+
 ```
 bool b = false
 x,y,z = 0
@@ -28,7 +29,7 @@ for _ in range(100):
         y <= y + 1
         z <= z + 1
 ```
-Now since b is never modified or read inside of the loop's body, we can "unswitch" this code to the following:
+Since b is never modified or read inside of the loop's body, we can "unswitch" this code to the following:
 ```
 bool b = false
 x,y,z = 0
@@ -40,12 +41,15 @@ else:
         y <= y + 1
         z <= z + 1
 ```
-Though code size has effectively doubled, we prevent the need to check the conditional statement while inside of the loop.  This leads to less branching and allows for additional optimizations within each loop body.
+Though code size has effectively doubled, we have now prevented the need to check the conditional statement while inside the loop's body.  This leads to less branching and allows for additional, separate optimizations within each branch.
 
 In this project, I implemented loop unswitching for Bril.
 
 ## Design and Implementation
-This optimization primarily involves loops, so the first step is to specify a contract for the representation of loops in Bril.  Note that other representations are allowed, but will need to be preprocessed into the following format before the loop unswitching optimization occurs:
+
+This optimization primarily involves loops, so the first step is to specify a contract for the representation of loops in Bril.  Note that other representations are allowed, though they will need to be preprocessed into the following format before the loop unswitching optimization occurs.  This is a matter of updating the Bril.
+
+The for loop:
 
 ```
 for( int c = 0; c < max; c += i):
@@ -54,7 +58,7 @@ z = 11111
 print(x)
 print(z)
 ```
-is represented as:
+is represented in Bril as:
 ```
 main:
   i: int = const 1;
@@ -73,9 +77,9 @@ exitbranch:
   print z;
 }
 ```
-Most importantly, logic containing whether to enter the loop is encoded in the block "loopstart."  From here, the program either branches to the loop's body which can consist of any number of blocks (here it is "loopbody") or it exits the loop and continues through the rest of the program (here, "exitbranch").  
+Most importantly, logic containing whether to enter the loop is encoded in the block "loopstart."  From here, the program either branches into the loop's body which can consist of any number of blocks (here it is "loopbody") or it exits the loop and continues through the rest of the program in the block "exitbranch".
 
-There is also a standing assumption that we are working with Bril programs that have been transformed into SSA form.  Though this implementation does not require SSA form, it may not optimize conditionals that would otherwise be apparent.
+There is also a standing assumption that we are working with Bril programs that have been transformed into SSA form.  Though this implementation does not require SSA form, it may miss unswitches.
 ### Design
 
 ##### Loop Detection
@@ -92,11 +96,11 @@ Backedges indicate the presence of cycles.  Next, we find all nodes in between t
 ##### Deciding unswitchability
 Now, we need to decide if this loop is unswitchable.  Recall that in order to unswitch loops, we need to ensure that the condition is independent of the loop's body during execution.  That is, the conditional statement we are unswitching cannot be modified in the loop.  This allows us to write deterministic code.
 
-To implement this,  we adopt the following notation, borrowed from Matthew John Surawski of Rochester Institute of Technology.  Let $v_s$ denote the set of variables defined by statements, and let $v_a$ denote the set of variables defined by arguments.  Now let $V_b = v_a \cup v_s$ be the union of the two for a block $b$, and let $V_L = \cup_i V_{b_i}$ denote the set of variables entirely in the loop.  Now suppose we have a branching statement on condition $t$:
+To implement this,  we adopt the following notation, borrowed from Matthew John Surawski of Rochester Institute of Technology.  Let $v_s$ denote the set of variables defined by statements, and let $v_a$ denote the set of variables defined by arguments.  Now let $V_b = v_a \cup v_s$ be the union of the two for a given block $b$, and let $V_L = \cup_i V_{b_i}$ denote the set of variables entirely in the loop.  Now suppose we have a branching statement on condition $t$:
 ```
 br t if then;
 ```
-Now if $v_t \not \in V_L$, we can unswitch this loop.  In the case of multiple conditional statements that can be unswitched, as we traditionally do in literature, we pick one uniformly at random.
+Now if $v_t \not \in V_L$, we can unswitch this loop!  In the case of multiple conditional statements that can be unswitched, as we traditionally do in literature, we pick one uniformly at random.
 
 ##### Implementing Unswitching
 Once we have selected a subset of nodes in the CFG to be unswitched, we need to actually reorder the blocks.  At a high level, we implement the following reordering:
@@ -106,15 +110,15 @@ Once we have selected a subset of nodes in the CFG to be unswitched, we need to 
 
 In the above diagram, we have the following:
 * Before Loop Code:  This block represents all code before the start of the for loop
-* For loop logic:  This consists of logic involving whether or not to enter the for loop's body.  Usually, this encodes code such as: ```for(int i=0; i<n; ++i). ```
+* For Loop Logic:  This consists of logic involving whether or not to enter the for loop's body.  Usually, this encodes code such as: ```for(int i=0; i<n; ++i). ```
 * Loop Body (1):  This contains the entire loop body up until conditional t.  In particular, it can consist of many blocks, branches, conditionals, and nonconditional jumps.
 * Conditional t:  This block consists of exactly one line of instruction which is in the form ``` br b if else``` where ```b``` is the branching boolean that is independent of the loop's body. 
-* If Body: This block contains the contents of the ```if``` branch if ```b``` is true.
-* Else Body:  This block contains the contents of the ```else``` branch if ```b``` is false.
+* If Body: This block contains the contents of the ```if``` branch when ```b``` is true.
+* Else Body:  This block contains the contents of the ```else``` branch when ```b``` is false.
 * Loop body (2):  This contains the entire loop body following the conditional t.
 * End of Program: This block contains all code after the loop.  In particular, it may contain additional loops with conditionals, that we are not optimizing.
 
-To implement unswitching, we want to move the ```Conditional t``` block outside the for loop, create branches for each destination (in Bril, we are limited to two branches), and replicate the contents inside of the loop.  We wish to do surgury in such a way to only to disrupt nodes involving the loop, leaving the rest of the CFG intact.  A high level control flow is as follows for post-unswitching operation:
+To implement unswitching, we want to move the ```Conditional t``` block outside the for loop, create branches for each destination (in Bril, we are limited to two branches), and replicate the contents inside of the loop.  We wish to perform surgery in such a way to only to disrupt nodes involving the loop, leaving the rest of the CFG intact.  A high level control flow is as follows for post-unswitching operation:
 
 <img src="switched.png" style="width: 60%">
 
@@ -126,17 +130,17 @@ In particular, we have the following blocks:
 * Else for loop logic:  This block is identical to the previous block, except it branches to either ```Else loop body``` or ```bypass``` depending on the loop invariant. 
 * If loop body:  This contains all code in the ``if`` branch of the original CFG.  In particular, this block contains code that is ```Loop body (1)``` $\cup$ ```If body``` $\cup$ ```Loop body (2)```.  This block then automatically branches to a newly created block, ```jmp loop```.
 * Else loop body: Similarly, this block contains code in the ```else``` branch of the original CFG:  ```Loop body (1)``` $\cup$ ```Else body``` $\cup$ ```Loop body (2)```.  This block then automatically branches to a newly created block (separate from the previous one), ```jmp loop```.
-* jmp loop:  There are two of these blocks, and each acts as a proxy that feeds back into the loop logic.  Essentially, we delegate logic involving entering the loop through this block.  Futher optimizations can make use of this dummy block, though in this implementation, it contains exactly one jmp instruction.
+* Jmp loop:  There are two of these blocks, and each acts as a proxy that feeds back into the loop logic.  Essentially, we delegate logic involving entering the loop through this block.  Further optimizations can make use of this dummy block, though in this implementation, the block only contains a jump instruction.
 * Bypass:  Both bypass blocks also delegate the program flow to the end of program block, essentially exiting the loop.
 * End of program:  This block is identical to the ```End of Program``` block in the original CFG.
 
 ### Implementation
 
-Fine-grain details on the implementation can be found [here.](https://github.com/sameerlal/bril/blob/master/bril-txt/unroll_opt.py)
+Fine-grain details on the implementation in Python can be found [here.](https://github.com/sameerlal/bril/blob/master/bril-txt/unroll_opt.py)
 
-Implementing unswitching requires favoring generality over specificity.  As before, we begin by loading in a bril file, converting to json format and then storing the control flow graph by keeping track of edges.  Next, we run a dominator analysis so we can achieve in constant time a list of blocks that dominate a particular block.  We run the loop finding algorithm as mentioned before, and then verify that it is switchable by examining conditional variables and checking to see if that variable has been used before.  We mark these blocks to be reordered and then pass the CFG into the unswitching algorithm.
+Implementing unswitching requires favoring generality over specificity.  We begin by loading a Bril file and storing the control flow graph by keeping track of edges.  Next, we run a dominator analysis so we can achieve, in constant time, a dictionary of blocks that dominate a particular block.  We run the loop finding algorithm as mentioned before, and then verify that it is switchable by examining conditional variables and checking to see if that variable has been used before.  We mark these blocks to be reordered and then pass the CFG into the unswitching algorithm.
 
-In my implementation, I stored the program as a dictionary mapping from block name to contents.  The unswitching algorithm takes in this mapping and produces a new mapping that is eventually converted to json and then to a Bril program.
+In my implementation, I stored the program as a dictionary mapping from block name to contents.  The unswitching algorithm takes in this mapping and produces a new mapping that is eventually converted to a Bril program.
 
 Since there are multiple duplicated blocks, we first create two hashes, one for each block, that act as suffixes for duplicated blocks.  For instance if ``` hash(if) = 083``` and ```hash(else) = 061``` then the two bypass blocks are named:  ``` bypass083``` and ```bypass061```.  This eliminates the possibility of branching to the incorrect branch, since all block names are guaranteed to be unique.  Now we are ready to create the blocks and modify branches for reordering.
 
@@ -159,7 +163,7 @@ Now, as an additional optimization, we reorder these blocks according to the ori
     
 In one body block, we include the contents of the ```if``` block, and in the other body block, we include the contents of the ```else``` block.  Finally, we add instructions that are dominated by each of those blocks to be part of the body block.  Combining all of this, as well as performing surgery on the branch instruction names completes the construction of the ```if loop body``` and ```else loop body``` blocks.
 
-Next, we create the additional blocks, namely the ```jmp``` and ```bypass``` blocks that lead to the end of the program.  Creating these blocks requires surgery on the original instructions, as well as rename hashing, since it is not always guaranteed that the last instruction in a block is a ```jump``` instruction.  For instance, both of the following are valil Bril programs:
+Next, we create the additional blocks, namely the ```jmp``` and ```bypass``` blocks that lead to the end of the program.  Creating these blocks requires surgery on the original instructions, as well as rename hashing, since it is not always guaranteed that the last instruction in a block is a ```jump``` instruction.  For instance, both of the following are valid Bril programs:
 ```
 blockone:
     x: int = const 0;
@@ -234,6 +238,8 @@ This result is highly dependent on the structure of the program.  For instance, 
 
 In literature, benchmarking code unswitching involves measuring the increase in code size.  In my implementation, code size roughly doubled for each unswitching which is consistent with the literature.
 
+Overall, this project was a success, and the natural extension is to extend this optimization to work for nested loops.
+
 ##### Evaluation 
 
 This optimization was tested on many programs both on defined behavior and undefined behavior.  The testing suite I generated tests on the following (though not limited to) attributes:
@@ -241,6 +247,6 @@ This optimization was tested on many programs both on defined behavior and undef
 * Simple/Complex blocks before/after conditional
 * Non-unswitched branches before conditional to be unswitched
 * Blocks with no terminating jump instructions
-* Loops in which unswitching leads to worse performance.
+* Nested if/else conditionals should never be unswitched
 
-I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by e-mail, which I have included at the top of this post.
+I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by e-mail.
