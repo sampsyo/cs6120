@@ -131,7 +131,6 @@ We only rename jumps that target the loop header if they are outside the loop. T
 
 ### Instruction list generation
 
-Next is to generate a new list of instructions for the function body. To do this, we initially order the basic blocks. The order must follow several constraints, including that fall-through blocks occur post-
 
 Next is to generate a new list of instructions for the function body. To do this, we initially order the basic blocks. The order must follow several constraints: the first and last basic blocks of the original program remain in place. Fall-throughs between basic blocks and the original function are also respected.
 
