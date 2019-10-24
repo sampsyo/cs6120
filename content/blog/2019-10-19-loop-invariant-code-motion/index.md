@@ -18,7 +18,7 @@ link = "https://twitter.com/elalaCorrea"
 
 
 
-<img src="plan.jpeg" style="width: 100%">
+
 
 
 Sometimes, loops do more work than they really *have* to. Take for example, the snippet of code below:
@@ -41,6 +41,12 @@ print(y)
 The first snippet redundantly sets `x = 3` for *every iteration* when this constant assignment only necessary to do once. This problem scales with larger programs—so how can we remove redundant calculations?
 
 Loop Invariant Code Motion hoists what doesn't need to be in the loop (invariant code) out of the loop. This optimization cuts down the number of instructions executed, by ensuring unnecessary repetition is avoided. Our implementation first identifies movable components, then iteratively moves them. 
+
+
+The flow of information in our project follows the following visual outline. First we identify natural loops utilizing the top row of blocks
+
+<img src="plan.jpeg" style="width: 100%">
+
 
 Skip to the end to optimize your very own `bril` program!
 
