@@ -237,4 +237,12 @@ Our implementation attempts to apply this optimization to
 all derived IVs in the program. You could imagine using some heuristic
 to decide which IVs will result in the most benefit from strength
 reduction 
+
 # Evaluating our Optimizations
+
+In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output information about the total number of instructions executed and how many instructions of each type were executed. This gave us a good idea of dynamic instruction count and the distribution of that dynamic instruction count. This is not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will give a significant (if any) real time speedup of an interpreted program. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations) and reducing the dynamic instruction count in some cases.
+
+In order to get some measurements for our optimization, we created a test suite of several different types of programs. On type of program is a "sanity check" program, which is a small program that we could run our optimization on as a sanity check to make sure we were doing things correctly. The other type of program is a "real world" program, which is supposed to represent a real world task in order to see what kind of performance improvements we can get on more realistic programs.
+
+Here are the results
+
