@@ -257,7 +257,7 @@ algorithm to optimize _derived_ IV `x = (i, a, b)`:
  2) Replace the one assignment to `x` in the loop with `x = f`
  3) Immediately following the update to `i`, insert the update `f = f + a`
 
-Again our implementation is somewhat naive and inserts a number of `id`
+Our implementation is somewhat naive and inserts a number of `id`
 and other instructions which can be eliminated by copy propagation.
 Step (3) from the above algorithm is simplified since we ensure that
 basic induction variables are updated only once in the loop. If we were to
@@ -265,38 +265,58 @@ allow multiple updates to `i` we'd need to follow the correct update to `i`.
 
 ### Basic induction variable elimination
 
-Basic induction variable elimination was done in 2 passes. First, a derived induction variable was chosen to replace the basic induction variable. We could have used some kind of heuristic both for deciding wether or not to replace the basic induction variable and which derived induction variable to replace it with. For simplicity, we decided to replace a basic induction variable with the first derived induction variable of its family that we found. After performing strength reduction on the derived induction variable, we went through and replaced all of the comparisons involving the basic induction variable and a loop invariant variable with an equivalent comparison of the derived induction variable and a linear function of the loop invariant variable.
+After running strength reduction, we attempted to eliminate all basic induction variables from the program.
+We chose to run this following strength reduction since that optimization often removes dependencies on basic IVs.
+The first step of IVE is to chose a derived IV to replace the basic IV. This was another opportunity for applying
+heuristics to guide our optimizations; instead, we chose which derived IV to use arbitrarily.
+Once we picked this IV, we iterated over all comparisons in the loop which used the basic IV as an argument
+and a loop-invariant variable as the other argument.
+For each of these comparisons we replaced the basic IV with the derived IV and inserted instructions
+to compute the appropriate value of the other argument. Since the other argument was loop-invariant,
+we lifted these instructions outside of the loop (this is very similar to step (1) of strength reduction).
 
-For example, this C code:
+For example, in this C code, if `k` is an IV of the form `(i,3,5)` and `n` is loop-invariant:
 ```C
 if (i < n) {
   ...
 }
 ```
-Gets translated into
+We can replace `i` and `n` in this conditional with the following:
 ```C
 if (k < 3*n + 5) {
   ...
 }
 ```
-If `k` is an induction variable of the form `<i,3,5>`.
 
-This transformation potentially means that the only time `i` is read in the loop is when it is used to update itself. In other words, after doing the comparison replacement, the only expression involving `i` in the loop might be `i = i + 1`. If this is the case, we can remove this assignment. There is one subtlety to consider before doing this: we have to make sure that `i` is not live on exit from the loop. Note that this is different from `i` not being in the live out set of a loop block.
+This transformation removes uses of `i` and can likely eliminate all uses _except_ for the use in the write to itself (`i = i + c`). If this is the case, and `i` is not a live-out of the loop we can remove this assignment (as mentioned before, global DCE won't normally remvoe this update). Our implementation does delete such dead code.
+Note that, even if `i` is a live-out it's sometimes possible to push this `i = i + c` update to the _end_ of the loop so that it is not part of the loop body; however we didn't implement this due to its complexity and questionable utility.
 
-Once we have done this, we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to `0`, this can usually be eliminated with a round of constant propagation.
+At this point we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to a constant, this can probably be eliminated with constant propagation and simple dead code elimination.
 
 # Evaluating our Optimizations
 
-In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output information about the total number of instructions executed and how many instructions of each type were executed. This gave us a good idea of dynamic instruction count and the distribution of that dynamic instruction count. This is not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will give a significant (if any) real time speedup of an interpreted program. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations) and reducing the dynamic instruction count in some cases.
+In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output the breakdown of dynamically executed instructions by opcode. This allowed us to quantify both the effect on total dynamic instruction count and validate the impact of strength reduction. Nevertheless, these results are not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will yield a significant (if any) real time speedup. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations).
 
-In order to get some measurements for our optimization, we created a test suite of several different types of programs. On type of program is a "sanity check" program, which is a small program that we could run our optimization on as a sanity check to make sure we were doing things correctly. The other type of program is a "real world" program, which is supposed to represent a real world task in order to see what kind of performance improvements we can get on more realistic programs.
 
-Here are the results
+In order to get some measurements for our optimization, we created a test suite of several different types of programs. One type of program is a "sanity check" program, which is a small program on which we could predict how our optimizations would perform. These helped us validate the correctness of our optimizations. The other type of program is a "real world" program, which is supposed to represent a real world task in order to see what kind of performance improvements we can get on more realistic programs.
 
-| Program  | Total ICBase | Total IC Opt | mul Count Base | mul Count Opt | add Count Base | add Count Opt | ptradd Count Base | ptradd Cont Opt | id Count Base | id Count Opt |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| array  | 113 | 136 | 17 | 5 | 24  | add | 16  | 16  | 2 | 18  |
-| fib    | 642 | 700 | 0  | 4 | 194 | 98  | 146 | 150 | 0 | 144 |
-| induct | 95  | 118 | 0  | 2 | 24  | 24  | 16  | 18  | 2 | 18  |
-| strength | 187 | 193 | 30 | 3 | 60 | 60 | 0   | 0   | 0 | 30  |
-| mat_mul_8 | 10828 | 11076 | 2048 | 541 | 2632 | 2704 | 1728 | 1728 | 3 | 1539 |
+The following table breaks down dynamic instructions counts for each of the programs we tested:
+
+| Program  | Loop Iterations | Total ICBase | Total IC Opt | mul Count Base | mul Count Opt | add Count Base | add Count Opt | ptradd Count Base | ptradd Cont Opt | id Count Base | id Count Opt |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| array | 8 | 95  | 118 | 0  | 2 | 24  | 24  | 16  | 18  | 2 | 18  |
+| array_mul  | 8 | 113 | 136 | 17 | 5 | 24  | 40 | 16  | 16  | 2 | 18  |
+| strength | 30 | 187 | 193 | 30 | 3 | 60 | 60 | 0   | 0   | 0 | 30  |
+| strength_large | 1000 | 6007 | 6013 | 1000 | 3 | 2000 | 2000 | 0 | 0 | 0 | 1000 |
+| fib    | 48 | 642 | 700 | 0  | 4 | 194 | 98  | 146 | 150 | 0 | 144 |
+| mat_mul_8 | 512 | 10828 | 11076 | 2048 | 541 | 2632 | 2704 | 1728 | 1728 | 3 | 1539 |
+
+
+### Test Descriptions:
+ - array: Accesses several arrays with an index variable for each array.
+ - array_mul: The same as _array_ but the acceses use multiplication to calculate array offsets.
+ - strength: A simple loop that should be a good candidate for strength reduction.
+ - strength_large: Strength but executing more loop iterations.
+ - fib: Calculates the first 50 fibonacci numbers and stores them into an array.
+ - mat_mul_8: Multiplies two 8x8 matricies. Note that this test starts with 588 matrix initialization instructions which are common to all executions (none of the initializers are multiplies).
+
