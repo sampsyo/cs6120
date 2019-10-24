@@ -16,6 +16,11 @@ name = "Gabriela Calinao Correa"
 link = "https://twitter.com/elalaCorrea"
 +++
 
+
+
+<img src="plan.jpeg" style="width: 100%">
+
+
 Sometimes, loops do more work than they really *have* to. Take for example, the snippet of code below:
 
 ```python
@@ -87,7 +92,7 @@ def loopsy(source,sink,predecessors):
     return loop
 ```
 
-<img src="plan.jpeg" style="width: 100%">
+
 
 ### Detecting loop invariants
 An instruction within a natural loop is marked loop-invariant if its arguments are defined outside of the natural loop. Alternately, if the instruction’s arguments are defined once—and that definition is loop invariant—then the instruction may be marked as loop-invariant. Our goal is to find these loop invariants so that we may mark them as movable.
