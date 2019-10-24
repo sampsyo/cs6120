@@ -7,6 +7,8 @@ extra.bio = """
   [subtweets](https://twitter.com/notypes/status/1170037148290080771) his advisor and [annoys tenured professors](https://twitter.com/natefoster/status/1074401015565291520).
 
   Sam Thomas is a senior undergraduate student at Cornell. He is applying to Grad Schools for applied PL.
+
+
 """
 +++
 
@@ -192,7 +194,6 @@ of trace scheduling.
 
 ### Trace Scheduling
 
-
 ## Implementation
 
 For our project, we implemented four things:
@@ -222,8 +223,18 @@ For our project, we implemented four things:
 ## Evaluation
 
 ### Cost Model
+We evaluated our superblock optimization implementation using two metrics: instruction count
+and number of runtime instructions implemented. For the instruction count, we ignored labels
+counted bundles as a single instruction. We had a simple runtime cost model where both instruction
+and bundles had a cost of one to run.
 
-### Comparison to Compaction
+### Comparison to Local Compaction
+We compared against unoptimized code as a baseline and then against local compaction. We expected
+that we should be able to beat local compaction for runtime cost but not instruction count.
+Our baseline cost for factorial was 272. With local compaction, the cost was 171 and with superblock
+scheduling, our cost was down to 133. Superblock optimization used 17 instructions while local compaction
+used 16 instructions. In general, superblock optimization increases code size because it sometimes
+has to duplicate code to maintain correctness.
 
 ## Conclusion
 
