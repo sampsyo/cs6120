@@ -141,7 +141,7 @@ The existing code in the repository that computes dominator trees throws an exce
 When we have an order for basic blocks we concatenate them to create a new list of instructions. Further post-processing to remove empty preheaders is then executed. Finally we have our new instruction list!
 
 # Evaluation
-We evaluated our optimization on a suite of benchmarks by instrumenting the `bril` interpreter to count the number of instructions it executes. Our optimization are evaluated this way, as opposed to comparing execution times. This avoids measurement biases that might arise. 
+We evaluated our optimization on a suite of benchmarks by instrumenting the `bril` interpreter to count the number of instructions it executes. Our optimization are evaluated this way, as opposed to comparing execution times. This avoids measurement biases that might arise through timing. 
 
 By abstracting away performance in terms of the number of instructions executed, we give a fair comparison between non-optimized and optimized `bril` programs: no matter the environment in which they are executed, a `bril` program that executes fewer instructions performs better than an equivalent `bril` program that executes more instructions.
 
@@ -192,7 +192,7 @@ Our optimizer is implemented in `examples/loop.py`. This program takes in a `bri
 bril2txt < test.bril | python loop.py | bril2txt
 ```
 
-Replace `test.bril with any program you would like to optimize.
+Replace `test.bril` with any program you would like to optimize.
 
 
 <!---
