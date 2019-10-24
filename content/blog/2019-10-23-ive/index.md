@@ -258,14 +258,14 @@ algorithm to optimize _derived_ IV `x = (i, a, b)`:
  3) Immediately following the update to `i`, insert the update `f = f + a`
 
 Again our implementation is somewhat naive and inserts a number of `id`
-and other instructions which can be eliminated by copy propagation.
+and other instructions, some of which can be eliminated by copy propagation.
 Step (3) from the above algorithm is simplified since we ensure that
 basic induction variables are updated only once in the loop. If we were to
 allow multiple updates to `i` we'd need to follow the correct update to `i`.
 
 ### Basic induction variable elimination
 
-Basic induction variable elimination was done in 2 passes. First, a derived induction variable was chosen to replace the basic induction variable. We could have used some kind of heuristic both for deciding wether or not to replace the basic induction variable and which derived induction variable to replace it with. For simplicity, we decided to replace a basic induction variable with the first derived induction variable of its family that we found. After performing strength reduction on the derived induction variable, we went through and replaced all of the comparisons involving the basic induction variable and a loop invariant variable with an equivalent comparison of the derived induction variable and a linear function of the loop invariant variable.
+Basic induction variable elimination was done in 2 passes. First, a derived induction variable was chosen to replace the basic induction variable. We could have used some kind of heuristic both for deciding whether or not to replace the basic induction variable and which derived induction variable to replace it with. For simplicity, we decided to replace a basic induction variable with the first derived induction variable that shared the same base variable name as the basic induction variable. After performing strength reduction on the derived induction variable, we went through and replaced all of the comparisons involving the basic induction variable and a loop invariant variable with an equivalent comparison of the derived induction variable and a linear function of the loop invariant variable.
 
 For example, this C code:
 ```C
@@ -281,7 +281,7 @@ if (k < 3*n + 5) {
 ```
 If `k` is an induction variable of the form `<i,3,5>`.
 
-This transformation potentially means that the only time `i` is read in the loop is when it is used to update itself. In other words, after doing the comparison replacement, the only expression involving `i` in the loop might be `i = i + 1`. If this is the case, we can remove this assignment. There is one subtlety to consider before doing this: we have to make sure that `i` is not live on exit from the loop. Note that this is different from `i` not being in the live out set of a loop block. This completes the second pass of induction variable elimination.
+After this transformation, it is often the case that `i` is only read in the loop when it is used to update itself. In other words, after doing the comparison replacement, the only expression involving `i` in the loop might be `i = i + 1`. If this is the case, we can remove this assignment. There is one subtlety to consider before doing this: we have to make sure that `i` is not live on exit from the loop. Note that this is different from `i` not being in the live out set of a loop block. This completes the second pass of induction variable elimination.
 
 Once we have done this, we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to `0`, this can usually be eliminated with a round of constant propagation.
 
