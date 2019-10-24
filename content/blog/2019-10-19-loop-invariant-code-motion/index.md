@@ -196,5 +196,21 @@ examples/tdce_test/simple.bril
 5
 5
 
+examples/tdce_test/skipped.bril
+4
+4
+
+examples/loop_test/depend.bril
+158
+159
+
+examples/loop_test/fibonacci.bril
+78
+79
+
+examples/loop_test/nest.bril
+147
+130
+
 
 <!---eof--->
