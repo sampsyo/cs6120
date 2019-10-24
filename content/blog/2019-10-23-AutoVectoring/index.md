@@ -7,10 +7,6 @@ link = "https://github.com/kavoor"
 name = "Henry Liu"
 link = "https://www.linkedin.com/in/liuhenry4428/"  
 +++
----
-title: 'Project documentation template'
-disqus: hackmd
----
 
 ## Introduction
 Modern processors have support for [SIMD](https://en.wikipedia.org/wiki/SIMD) instructions, which allow for efficient vector operations. We can leverage this feature to optimize loops that operate iteratively on arrays by changing operations that act on single array elements into vector operations that act on multiple array values in one instruction. 
