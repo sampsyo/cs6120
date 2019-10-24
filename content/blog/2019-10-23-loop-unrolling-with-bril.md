@@ -57,7 +57,7 @@ The key idea of dynamic profiling is to estimate the loop status by simulating t
 #### External Packages
 In this project, we use two external packages. The first one is the array extension of Bril, whose source code can be found [here](https://github.com/Checkmate50/bril/tree/arrays). The second one is the C code generation for Bril. The source code can be found [here](https://github.com/xu3kev/bril2c).
 
-#### Static Analysis 
+#### Static Analysis
 This section details how we implement the static loop unrolling pass. We first state our definition of "regular loops" that
 can be unrolled by our pass. A "regular loop" should have the following properties other than the ones mentioned in the 
 input specification section:
@@ -123,9 +123,13 @@ The dynamic profiling based unrolling pass consists of two parts mainly: loop st
 
 ### Experiment Results
 
-We use the hand-written test programs to verify the correctness of our loop unrolling passes and measure performance improvements. The functioanl correctness of the unrolled code can be verified with bril intepreter. To evaluate the performance between original and unrolled programs, we converted the bril code from json representation to C using the Bril C back end. We use GCC to compile the C program without any optimization (``-O0``), run it for 10000 times with bash loop to measure the total time consumption. Experiments are performed on a server with an 2.20GHz Intel Xeon processor and 128GB memory. All programs are single-thread. 
+We use the hand-written test programs to verify the correctness of our loop unrolling passes and measure performance improvements. The functioanl correctness of the unrolled code can be verified with bril intepreter. To evaluate the performance between original and unrolled programs, we converted the bril code from json representation to C using the Bril C back end. We use GCC to compile the C program without any optimization (``-O0``), run it for 10000 times with bash loop to measure the total time consumption. Experiments are performed on a server with an 2.20GHz Intel Xeon processor and 128GB memory. All programs are single-thread. The benchmarks can be found [here](https://github.com/seanlatias/bril/tree/arrays/test/unroll).
 
 #### Static Analysis Evaluation
+The program is located [here](https://github.com/seanlatias/bril/blob/arrays/examples/loop_unroll.py). To execute the pass, run the following command.
+
+``python loop_unroll.py output.json < input.json``
+
 The pass can successfully unroll the loops in our test programs. For the "double loop" test case, the pass correctly identifies the inner loop and unrolls it. Execution time of the original and unrolled versions are as follows:
 
 | Benchmark | Original (s) | Unrolled (s) |
@@ -140,6 +144,10 @@ because the loop tripcounts in the test programs are all very small. As a result
 large tripcount (2000) and compare the performance again. To enable this we modify our loop unrolling pass to allow unrolling very large loops. In terms of the sizes of the executables, the unrolled version is 12.7x larger than the original version. The original and unrolled program uses 3.693s and 3.755s, repectively. There is still no significant performance benefit. The possible reason is that the control flow of our test examples is too regular and can be perfectly predicted by the branch predictor in modern processors. Since the processor is pipelined, we do not observe significant performance improvement even after we remove the redundant branches after unrolling. For most benchmarks we actually observe slowdowns, which possibly result from instruction cache misses caused by larger executable sizes. 
 
 #### Dynamic Profiling Evaluation
+The program is located [here](https://github.com/seanlatias/bril/blob/arrays/examples/dyn.py). To execute the pass, run the following command.
+
+``python dyn.py < input.json > output.json``
+
 The pass can run successfully in different test cases including consecutive loops and double loops. In this section we mainly focus on the performance perspective. We construct a vector add program with large trip count numbers (2000), which can benefit loop unrolling and out-of-order execution of modern processors. The original and unrolled program takes 9.111s and 8.341s (measured with linux time utility in usr time) for 10000 execution.
 
 ### Other Features
