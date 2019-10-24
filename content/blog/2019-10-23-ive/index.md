@@ -193,7 +193,9 @@ loop, so it may not be an IV".
 
 Since induction variable elmination is meant to delete unnecessary
 variable assigments, we need to be truly sure that those induction variables
-are not used outside of the loop's scope. We use a [liveness dataflow analysis](https://en.wikipedia.org/wiki/Live_variable_analysis)
+are not used outside of the loop's scope (or ensure that we update its final
+output value at the end of the loop).
+We use a [liveness dataflow analysis](https://en.wikipedia.org/wiki/Live_variable_analysis)
 to compute all of the "live-ins" and "live-outs" of every basic block.
 
 Unfortunately, this isn't enough for eliminating "useless" induction variables.
@@ -219,8 +221,9 @@ a standard liveness analysis says that `i` must be both a live-out and a live-in
 for all of the loop blocks. This prevents local dead code analyses from removing the useless update: `i = i + 1`.
 
 Instead of local liveness, we need to consider the live-outs _of the entire loop_.
-Therefore, when considering the liveness of basic induction variables we don't check
-the live-outs of any one basic block. Instead, we union all of the live-ins of the
+Therefore, when considering the liveness of IVs that we're trying to eliminate,
+we don't check the live-outs of any one basic block.
+Instead, we union all of the live-ins of the
 loop's successors. If `i` is not in that set of variables, we know that no code
 which executes after the loop will use `i` and we can safely delete it.
 
@@ -229,5 +232,9 @@ and therefore the only live-out of the loop is `result`.
 
 ### Strength Reduction Implementation
 
-Strength reduction targets _derived_ IVs
+Strength reduction targets _derived_ IVs, specifically.
+Our implementation attempts to apply this optimization to
+all derived IVs in the program. You could imagine using some heuristic
+to decide which IVs will result in the most benefit from strength
+reduction 
 # Evaluating our Optimizations
