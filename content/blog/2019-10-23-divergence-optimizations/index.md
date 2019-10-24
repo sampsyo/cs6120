@@ -6,6 +6,8 @@ extra.bio = """
 extra.author = "Philip Bedoukian"
 +++
 
+The code used in this blog post is hosted [here](https://github.com/pbb59/bril/tree/proj2).
+
 ## Problem Statement
 
 Parallel programming models must make tradeoffs between productivity and performance. Coarse-grain parallelization models like Single-Program Multiple-Data (SPMD) allow for high productivity, but aggressively generate vector instructions when cheaper scalar instructions would suffice. Conversely, fine-grain parallelization models such as C with SIMD intrinsics (C+SIMD) compiles to conservative scalar instructions by default, but requires additional programmer effort to manually insert vector instructions.
