@@ -94,21 +94,6 @@ An instruction within a natural loop is marked loop-invariant if its arguments a
 
 To begin with, we find all reaching definitions
 
-```python
-
-### get variable information for reaching definitions
-def reaching_def_vars(blocks, reaching_defs):
-    rdef_vars = {}
-    for blockname, rdefs_block in reaching_defs.items():
-        block = blocks[blockname]
-        block_rdef_vars = []
-        for rdef_blockid, rdef_instr in rdefs_block:
-            block_rdef_vars.append( \
-                (rdef_blockid, rdef_instr, blocks[rdef_blockid][rdef_instr]["dest"]))
-    rdef_vars[blockname] = block_rdef_vars
-
-    return rdef_vars
-```
 
 which then gives us the information to detect loop-invariant instructions using `invloop`.
 
