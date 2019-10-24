@@ -246,3 +246,10 @@ In order to get some measurements for our optimization, we created a test suite 
 
 Here are the results
 
+| Program  |  # insns before op | insn counts before op | # insns before op | insn counts before op |
+|:-:|:-:|:-:|:-:|:-:|
+| array  | 113  | const: 4, mul: 17, load: 2, lt: 9, free: 2, br: 9, ptradd: 16, alloc: 2, id: 2, print: 2, jmp: 8, add: 24, store: 16  |  136 | const: 4, mul: 5, load: 2, lt: 9, free: 2, br: 9, ptradd: 16, alloc: 2, id: 18, print: 2, jmp: 10, store: 16, ret: 1, add: 40 |
+| fib | 642 | const: 5, load: 97, lt: 49, free: 1, br: 49, ptradd: 146, alloc: 1, print: 1, jmp: 48, store: 50, ret: 1, add: 194 | 700 | const: 5, mul: 4, load: 97, free: 1, br: 49, ptradd: 150, alloc: 1, ptrlt: 49, id: 144, print: 1, jmp: 50, store: 50, ret: 1, add: 98 |
+| induct | 95 | const: 3, load: 2, lt: 9, free: 2, br: 9, ptradd: 16, alloc: 2, id: 2, print: 2, jmp: 8, add: 24, store: 16 | 118 | const: 3, mul: 2, load: 2, lt: 9, free: 2, br: 9, ptradd: 18, alloc: 2, id: 18, print: 2, jmp: 10, store: 16, ret: 1, add: 24 |
+| mat_mul_8 | 10828 | const: 271, mul: 2048, load: 1537, lt: 657, free: 3, br: 657, ptradd: 1728, alloc: 3, id: 3, print: 1, jmp: 584, add: 2632, store: 704 | 11076 | const: 271, mul: 541, load: 1537, lt: 657, free: 3, br: 657, ptradd: 1728, alloc: 3, id: 1539, print: 1, jmp: 730, store: 704, ret: 1, add: 2704 |
+| strength  | 187  | add: 60, const: 4, mul: 30, lt: 31, br: 31, print: 1, jmp: 30  |  193 |  const: 4, mul: 3, lt: 31, br: 31, id: 30, print: 1, jmp: 32, ret: 1, add: 60 |
