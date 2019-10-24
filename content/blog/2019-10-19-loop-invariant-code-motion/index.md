@@ -53,6 +53,8 @@ In the case that an edge connected *entry* and *body*, this would no longer be a
  
 
 ### Detecting Natural Loops
+
+
 To find the loop invariant code, first we must detect all natural loops. To accomplish this, we make use of control flow graphs from `cfg.py` and dominator trees from `dom.py` within our three functions. Back-edges are identified with `get_backedges`, and `loopsy` finds the natural loop associated with an input back-edge.
 
 
@@ -84,6 +86,8 @@ def loopsy(source,sink,predecessors):
 
     return loop
 ```
+
+<img src="plan.jpeg" style="width: 100%">
 
 ### Detecting loop invariants
 An instruction within a natural loop is marked loop-invariant if its arguments are defined outside of the natural loop. Alternately, if the instruction’s arguments are defined once—and that definition is loop invariant—then the instruction may be marked as loop-invariant. Our goal is to find these loop invariants so that we may mark them as movable.
