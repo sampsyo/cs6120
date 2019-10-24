@@ -283,7 +283,7 @@ If `k` is an induction variable of the form `<i,3,5>`.
 
 This transformation potentially means that the only time `i` is read in the loop is when it is used to update itself. In other words, after doing the comparison replacement, the only expression involving `i` in the loop might be `i = i + 1`. If this is the case, we can remove this assignment. There is one subtlety to consider before doing this: we have to make sure that `i` is not live on exit from the loop. Note that this is different from `i` not being in the live out set of a loop block.
 
-Once we have done this, we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the loop pre-header. However, if `i` is initialized to `0`, this can usually be eliminated with a round of constant propegation.
+Once we have done this, we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to `0`, this can usually be eliminated with a round of constant propagation.
 
 # Evaluating our Optimizations
 
