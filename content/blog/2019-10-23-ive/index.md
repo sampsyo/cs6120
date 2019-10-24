@@ -297,8 +297,7 @@ At this point we have successfully removed all traces of `i` from the loop. `i` 
 
 In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output the breakdown of dynamically executed instructions by opcode. This allowed us to quantify both the effect on total dynamic instruction count and validate the impact of strength reduction. Nevertheless, these results are not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will yield a significant (if any) real time speedup. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations).
 
-
-In order to get some measurements for our optimization, we created a test suite of several different types of programs. One type of program is a "sanity check" program, which is a small program on which we could predict how our optimizations would perform. These helped us validate the correctness of our optimizations. The other type of program is a "real world" program, which is supposed to represent a real world task in order to see what kind of performance improvements we can get on more realistic programs.
+In order to get some measurements for our optimization, we created a test suite of several different types of programs. One type of program is a "sanity check" program, which is a small program on which we could predict how our optimizations would perform. These helped us validate the correctness of our optimizations. The other type of program is a "real world" program, which is supposed to represent a real world task in order to see what kind of performance improvements we can get on more realistic programs. Of the programs below only `fib` and `mat_mul_8` are what we would consider "real world" programs (although they are of course still small examples).
 
 The following table breaks down dynamic instructions counts for each of the programs we tested:
 
@@ -320,3 +319,35 @@ The following table breaks down dynamic instructions counts for each of the prog
  - fib: Calculates the first 50 fibonacci numbers and stores them into an array.
  - mat_mul_8: Multiplies two 8x8 matricies. Note that this test starts with 588 matrix initialization instructions which are common to all executions (none of the initializers are multiplies).
 
+### Evaluation Conclusions
+
+We conclude from the above results that our strength reduction optimization is very successful at replacing multiplications with additions and additions with copy instructions; however on programs with few loop iterations, it's unclear whether or not this optimization will be "worth it." However, the generation of so many `id` instructions (and our analysis of the outputs of the toy programs) suggests that future optimization passes would be able to eliminate many of the ineffeciently-generated instructions here. After executing those passes, it is likely that total instruction count overhead would disappear.
+
+The second half of our pass, which eliminated basic induction variables, we believe had little impact.
+Unfortunately, our implementation was structured such that it is difficult to test one without the other; we only removed uses of a variable when we applied strength reduction to one of its derivatives. However, this is easy to intuit and our manual inspection of the code confirms this. Removing the update to a single basic IV corresponds to removing *# of loop iteration* instructions. While this is at least an improvement that scales with execution time, it is still minor.
+
+### Evaluation Weaknesses
+
+Our evaluation (and implementation) have a few salient weaknesses. First, we should have evaluated against all of our test programs on a number of different inputs. We neglected to do this primarily because of time and the triviality of the results. Obviously removing instructions from the inner loop bodies would reduce the occurrences of costly instructions *more* as the number of loop iterations increases. To demonstrate, we included the *strength_large* example in our suite. In this case, the additional overhead (even without copy prop or dce) was only 7 instructions but vastly reduced the number of multiplications.
+
+Originally we sought out to implement general induction variable elimination optimizations; unfortunately strength reduction ended up being our primary success. For instance, a canonical use case for IVE is transforming:
+```C
+int[] A,B;
+for (int i=i1=i2=0; i < max; i++) {
+ A[i1++] = B[i2++];
+}
+```
+Into:
+```C
+int[] A,B;
+for(int i=0; i < max; i++) {
+ A[i] = B[i];
+}
+```
+Our implementation will not successfully execute this optimization (this case is essentially the `array` test from our test suite).
+In this example `i`, `i1` and `i2` are all basic induction variables. Our implementation relies on replacing one basic IV with a derived IV
+from its family. In this example, the optimization requires replacing one basic IV with another. We would have liked to implement this optimization given more time since it covers the most common case for induction variable elimination. Lacking this feature explains why we saw some useful optimization in the `array_mul` test but nothing in the `array` test.
+
+### Correctness
+
+We also added a set of correctness tests to verify that running our induction variable optimizations did not break anything. We paid particular attention to including programs with multiple loops that had interesting control structure. For example, we included programs that had loops with branches and multiple backedges corresponding to the same loop entry point. All of our correctness regression tests pass, so our optimizations are (_hopefully_) sound.
