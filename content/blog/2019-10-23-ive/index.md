@@ -263,6 +263,28 @@ Step (3) from the above algorithm is simplified since we ensure that
 basic induction variables are updated only once in the loop. If we were to
 allow multiple updates to `i` we'd need to follow the correct update to `i`.
 
+### Basic induction variable elimination
+
+Basic induction variable elimination was done in 2 passes. First, a derived induction variable was chosen to replace the basic induction variable. We could have used some kind of heuristic both for deciding wether or not to replace the basic induction variable and which derived induction variable to replace it with. For simplicity, we decided to replace a basic induction variable with the first derived induction variable of its family that we found. After performing strength reduction on the derived induction variable, we went through and replaced all of the comparisons involving the basic induction variable and a loop invariant variable with an equivalent comparison of the derived induction variable and a linear function of the loop invariant variable.
+
+For example, this C code:
+```C
+if (i < n) {
+  ...
+}
+```
+Gets translated into
+```C
+if (k < 3*n + 5) {
+  ...
+}
+```
+If `k` is an induction variable of the form `<i,3,5>`.
+
+This transformation potentially means that the only time `i` is read in the loop is when it is used to update itself. In other words, after doing the comparison replacement, the only expression involving `i` in the loop might be `i = i + 1`. If this is the case, we can remove this assignment. There is one subtlety to consider before doing this: we have to make sure that `i` is not live on exit from the loop. Note that this is different from `i` not being in the live out set of a loop block.
+
+Once we have done this, we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to `0`, this can usually be eliminated with a round of constant propagation.
+
 # Evaluating our Optimizations
 
 In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output information about the total number of instructions executed and how many instructions of each type were executed. This gave us a good idea of dynamic instruction count and the distribution of that dynamic instruction count. This is not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will give a significant (if any) real time speedup of an interpreted program. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations) and reducing the dynamic instruction count in some cases.
