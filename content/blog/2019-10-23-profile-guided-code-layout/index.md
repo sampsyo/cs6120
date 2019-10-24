@@ -18,7 +18,7 @@ The design of these optimizations is closely related to the optimizations discus
 ## Defining Code Locality
 Before moving further, it is important to clearly define what "code locality" means. Typically, the goal of code layout optimizations is to improve instruction cache and instruction TLB utilization. When an instruction is loaded into an instruction cache, a block of instructions are loaded into the cache. To improve cache utilization, we want to minimize the number of times we load into the instruction cache. In other words, we want sequences of instructions that frequently run together to live close together in the code.
 
-That being said, there are many factors that make measuring this metric difficult for this project. Firstly, since Bril is interpreted, we do not actually load Bril instructions directly into the instruction cache. I considered lower Bril programs to LLVM and evaluating those programs, but that leads into the second problem: I am one person running Bril programs on one machine. The results I find for my machine will not be consistent with other machines, so the results would be misleading. Because of this, I use a different metric to measure code locality: instruction pointer jumps. Improving code layout in a typical program will decrease the number of instruction pointer jumps, since frequently executing code lives close together. I introduced an imaginary instruction pointer to the Bril interpreter that is set to the index of the currently executing instruction. Every time an instruction is executed, we can compare the current instruction pointer location to the previous instruction pointer location to determine the number of instruction pointer jumps.
+That being said, there are many factors that make measuring this metric difficult for this project. Firstly, since Bril is interpreted, we do not actually load Bril instructions directly into the instruction cache. I considered lower Bril programs to LLVM and evaluating those programs, but that leads into the second problem: I am one person running Bril programs on one machine. The results I find for my machine will not be consistent with other machines, so the results would be misleading. Because of this, I use a different metric to measure code locality: *instruction pointer jumps*. Improving code layout in a typical program will decrease the number of instruction pointer jumps, since frequently executing code lives close together. I introduced an imaginary instruction pointer to the Bril interpreter that is set to the index of the currently executing instruction. Every time an instruction is executed, we can compare the current instruction pointer location to the previous instruction pointer location to determine the number of instruction pointer jumps.
 
 ## Profiling
 
@@ -130,8 +130,62 @@ Below is the workload we will use to profile the program.
 Now, if we run `brilprofile` on the program with the above workload, we will get the following call graph.
 
 <p align="center">
-  <img src="call-graph.png" style="width: 100px">
+  <img src="call-graph.png" style="width: 95px">
 </p>
+
+The function reordering algorithm will place `main` before `multiply`, since `main` calls `multiply` and not the other way around.
+
+Below is the basic block graph for `main`.
+
+<p align="center">
+  <img src="main-block-graph.png" style="width: 450px">
+</p>
+
+The basic block reordering algorithm will first coalesce `start` and `cont` and then prepend `b1` to that chain. Since `end` cannot be added to this chain, it will remain on its own. Combining the chains will lead to a final block order of `b1`, `start`, `cont`, and `end`.
+
+Below is the basic block graph for `multiply`.
+
+<p align="center">
+  <img src="multiply-block-graph.png" style="width: 450px">
+</p>
+
+This is very similar to the weighted CFG for `main`. The output block order is the same: `b1`, `start`, `cont`, and `end`.
+
+Putting all this together, the optimized Bril program is below (after running *both* function reordering and block reordering).
+
+```
+main {
+  zero: int = const 0;
+  one: int = const 1;
+  val: int = const 1;
+start:
+  exp_zero: bool = eq exp zero;
+  br exp_zero end cont;
+cont:
+  val: int = call multiply val base;
+  exp: int = sub exp one;
+  jmp start;
+end:
+  print val;
+  ret ;
+}
+multiply {
+  zero: int = const 0;
+  one: int = const 1;
+  curr: int = id zero;
+start:
+  b_zero: bool = eq b zero;
+  br b_zero end cont;
+cont:
+  curr: int = add curr a;
+  b: int = sub b one;
+  jmp start;
+end:
+  ret curr;
+}
+```
+
+Now we will explore the evaluation of these optimizations.
 
 ## Evaluation
 I evaluated these optimizations by comparing the total number of instruction pointer jumps for the unoptimized and optimized programs on a given workload. On average, I found that function reordering did *not* decrease the total number of instruction pointer jumps and that basic block reordering decreased the number of instruction pointer jumps by approximately 20% (TODO). Since the two optimizations do not interfere with each other, I also evaluated the combination of function reordering and basic block reordering, and found its performance to comaprable to that of basic block reordering. In most cases, however, basic block reordering outperformed the rest.
@@ -144,5 +198,68 @@ To conduct a thorough and rigorous evaluation of these optimizations, I ran them
 
 I considered testing the optimized programs with a different "testing" workload but decided that this would not fairly evaluate the optimizations. Since we make the assumption that sample workloads are representative of real-world workloads, we should stick to that assumption.
 
-Below is a graph showing the total number of instruction pointer jumps for 7 representative programs on a certain workload. The last two programs do not contain any functions. Programs and workloads can be found [here](https://github.com/Blue9/bril/tree/project-2/workload).
+Below is a graph showing the total number of instruction pointer jumps for 6 representative programs on three different workloads. The last two programs do not contain any functions. Programs and workloads can be found [here](https://github.com/Blue9/bril/tree/project-2/workload).
 
+<p align="center">
+  <img src="code-layout-evaluation.png" style="width: 100%">
+</p>
+
+Note that the error bars for most programs are very small. The "Loop" test had quite large error bars, and this is because one of the workloads led to the program always exiting and never entering the loop. As a result, its block reordering performance only gave a 0.6% increase in performance. This is important to note because it shows how the performance of the code layout optimizations is sensitive to the workloads.
+
+From the above, we can see that the basic block reordering optimization consistently decreases the number of instruction pointer jumps by 10-20% (with the exception of the first test, which could not benefit from branch reordering), but the function reordering optimization is all over the place. For "Fib", the function reordering optimization increased the number of instruction pointer jumps by approximately 51% on average. Let's investigate this further. Below is the "Fib" benchmark.
+
+```
+main (n:int) {
+    v1: int = call fib n;
+    print v1;
+}
+le_one (n: int): bool {
+    one: int = const 1;
+    lto: bool = le n one;
+    ret lto;
+}
+fib n: int {
+    base: bool = call le_one n;
+    br base return continue;
+return:
+    ret n;
+continue:
+    one: int = const 1;
+    prev: int = sub n one;
+    prev2: int = sub prev one;
+    fib1: int = call fib prev;
+    fib2: int = call fib prev2;
+    ans: int = add fib1 fib2;
+    ret ans;
+}
+```
+
+And below is the `optimized` program returned by the function reordering algorithm.
+
+```
+main (n:int) {
+    v1: int = call fib n;
+    print v1;
+}
+fib n: int {
+    base: bool = call le_one n;
+    br base return continue;
+return:
+    ret n;
+continue:
+    one: int = const 1;
+    prev: int = sub n one;
+    prev2: int = sub prev one;
+    fib1: int = call fib prev;
+    fib2: int = call fib prev2;
+    ans: int = add fib1 fib2;
+    ret ans;
+}
+le_one (n: int): bool {
+    one: int = const 1;
+    lto: bool = le n one;
+    ret lto;
+}
+```
+
+Intuitively, this reordering makes sense. `main` calls `fib`, and `fib` calls `le_one`. However, note the location in `fib` where `le_one` is called. It is at the very top of the function—the first line in fact. As a result, when this call is made, the instruction pointer has to go down the entirety of `fib` to get to `le_one`, and then it has to go all the way back when `le_one` returns. In the original program, the instruction pointer only had to traverse the length of `le_one`, which is considerably shorter than `fib`. This demonstrates one of the core weaknesses of this function reordering algorithm. It assumes that all functions are of the same length and that on average, function calls are made halfway through a function. However, in real programs, this is rarely the case. I think it would be interesting to explore this further and see how we could incorporate the size of functions as well as the location of function calls to improve function ordering.
