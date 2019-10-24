@@ -116,7 +116,7 @@ Let's first take a look at how basic block reordering and function reordering
 are done, and then we'll run through an example from start to end.
 
 ### Basic Block Reordering
-Basic block reordering uses the weighted control flow graph to determine which
+Basic block reordering uses a weighted control flow graph to determine which
 basic blocks should be close to each other. We want basic blocks that frequently
 run one after another to live closer together. As a result, it makes sense to
 co-locate basic blocks that have higher-weighted edges. To do this, I followed a
@@ -141,9 +141,9 @@ it must always be a target node, and its chain must be explicitly placed at the
 top of the function.
 
 ### Function Reordering
-Function reordering uses the weighted call graph to order functions. The
-approach is similar to that of basic block reordering. I followed the approach
-laid out by [Ottoni and
+Function reordering uses a weighted call graph to determine an improved function
+order. The approach is similar to that of basic block reordering. I followed the
+approach laid out by [Ottoni and
 Maher](https://research.fb.com/publications/optimizing-function-placement-for-large-scale-data-center-applications-2/),
 with some modifications to account for the limitations of the Bril interpreter.
 Function reordering works as follows:
