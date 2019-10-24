@@ -189,6 +189,16 @@ Our code doesn't consider `x` an induction variable because
 of our very approximate heuristic: "`x` is updated twice in the
 loop, so it may not be an IV".
 
+### Induction Variable Representation
+
+In most compilers, induction variables have a standard representation,
+which we also adopt. Every induction variable is symboliclly stored
+as a tuple of the form `(i, a, b)` where `i` is a _base IV_.
+You can read this as `induction variable x = ai + b`; a neat consequence
+of this representation is that base induction variables are all of the form `(i, 1, 0)`
+since `i = i*1 + 0`. In our compiler, `a` and `b` can be the name of any loop-invariant variable.
+This representation is easy to serialize into a sequence of Bril instructions.
+
 ### Liveness
 
 Since induction variable elmination is meant to delete unnecessary
@@ -230,13 +240,28 @@ which executes after the loop will use `i` and we can safely delete it.
 In the example above, the only successor to the loop is the `END` block
 and therefore the only live-out of the loop is `result`.
 
+
 ### Strength Reduction Implementation
 
 Strength reduction targets _derived_ IVs, specifically.
 Our implementation attempts to apply this optimization to
-all derived IVs in the program. You could imagine using some heuristic
-to decide which IVs will result in the most benefit from strength
-reduction 
+all derived IVs in the program. Since strength reduction can
+increase the total dynamic instruction count (in some cases)
+and code size (in all cases) you might imagine 
+using some heuristic to decide when to apply this optimization.
+
+Otherwise, our implementation is very standard and follows this
+algorithm to optimize _derived_ IV `x = (i, a, b)`:
+ 1) Before the beginning of the loop, create a fresh variable `f` and
+    initialize it to `f = a*i + b`
+ 2) Replace the one assignment to `x` in the loop with `x = f`
+ 3) Immediately following the update to `i`, insert the update `f = f + a`
+
+Again our implementation is somewhat naive and inserts a number of `id`
+and other instructions which can be eliminated by copy propagation.
+Step (3) from the above algorithm is simplified since we ensure that
+basic induction variables are updated only once in the loop. If we were to
+allow multiple updates to `i` we'd need to follow the correct update to `i`.
 
 ### Basic induction variable elimination
 
