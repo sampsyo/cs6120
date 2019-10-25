@@ -315,9 +315,15 @@ but decided that this would not fairly evaluate the optimizations. Since we make
 the assumption that sample workloads are representative of real-world workloads,
 we should stick to that assumption.
 
-Below is a graph showing the total number of instruction pointer jumps for 6
-representative programs on three different workloads. The last two programs do
-not contain any functions. Programs and workloads can be found
+Below is a graph showing the results of function and block reordering for 6
+representative programs on three different workloads. Each bar represents the
+corresponding program's average *normalized* number of instruction pointer jumps
+for the workloads, and the error bars represent the standard error. To normalize
+the instruction pointer jumps, I divided by the unoptimized program's number of
+instruction pointer jumps. This makes it easier to compare results for different
+workloads, as larger workloads will naturally have more total instruction
+pointer jumps. The last two programs do not contain any functions. Programs and
+workloads can be found
 [here](https://github.com/Blue9/bril/tree/project-2/workload).
 
 <p align="center">
