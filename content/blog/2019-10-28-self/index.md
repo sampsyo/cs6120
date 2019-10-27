@@ -30,26 +30,37 @@ extreme -- *everything* in self is a message to an object. This includes
 Java-like method calls on object *as well as* control structures like loops
 and conditionals.
 
+>  **Note**: Self's multi-argument methods have the form:
+>  ```
+>  ( |
+>        IfTrue: trueBlock IfFalse: falseBlock = ( trueBlock value ).
+>  | )
+>  ```
+>  allowing for multiple named arguments. In Self parlance, the method name
+>  is read as `IfTrue:IfFalse:` and is invoked by placing the arguments after
+>  each : separated name. See the [Self documentation][self-doc] for more information.
+
 For example, the Self condition `IfTrue:IfFalse:` is a method invocation on
-the boolean object `true` and `false`. This means that a simple conditional:
+the boolean object `true` and `false`. For an C-style conditional like the
+following:
 
 ```
 if (x) 1 else 2
 ```
 
-in Self parlance (written with JavaScript-esque syntax) looks like this:
+the self invocation will look like:
 
 
 ```
-x.If({ true: () => 1, false: () => 2 })
+x IfTrue: [ 1 ] IfFalse: [ 2 ]
 ```
 
-The run-time behavior of this program is invoking the method `IfTrue` on the
-object `x`, which can be a `true` or `false` but is not required to be those,
-and execute the "thunk" (a function with no argument) corresponding to the true
-or the false branch.  Note that `x` is not required to be `true` or `false`.
-Any Self object can define the `If` method and specify its conditional
-behavior.
+The run-time behavior of this program is invoking the method `IfTrue:IfFalse:`
+on the object `x`, which can be a `true` or `false` but is not required to be
+those, and execute the "thunk" (a function with no argument) corresponding to
+the true or the false branch.  Note that `x` is not required to be `true` or
+`false`.  Any Self object can define the `IfTrue:IfFalse:` method and specify its
+conditional behavior.
 
 Considering this dynamism, a Self compiler must:
 
@@ -66,9 +77,9 @@ invocations, the essence of the paper can be summarized as:
 >  When type information for an object is available, generate specialized code
 >  and let inlining and compiler optimizations work their magic.
 
-The ideas described in the paper have influenced the design of modern JITs for
-JavaScript which use a lot of [similar features][jit] to improve JavaScript execution
-times.
+The ideas in the paper have been widely adopted in modern JITs for dynamic
+languages like JavaScript ([IonMonkey][jit]) as well as seemingly static languages
+like Java ([HotSpot][]).
 
 ### Object Layout
 
@@ -174,3 +185,5 @@ first generation Self compiler ran at 3.3 MiMS or a message executing every 300n
 [self]: http://www.selflanguage.org/
 [jit]: https://hacks.mozilla.org/2017/02/a-crash-course-in-just-in-time-jit-compilers/
 [v8-no-tail]: https://bugs.chromium.org/p/v8/issues/detail?id=4698
+[self-doc]: http://handbook.selflanguage.org/4.5/langref.html#slot-descriptors
+[hotspot]: https://www.oracle.com/technetwork/java/javase/tech/index-jsp-136373.html
