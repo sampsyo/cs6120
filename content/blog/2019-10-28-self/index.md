@@ -135,6 +135,43 @@ due to control flow splits, _message splitting_ generates specialized code for
 possible receiver types and guards them using type tests. If the type of
 receiver matches, fast code can be executed.
 
+For example, the following Self program
+
+```
+x > y
+```
+
+corresponds to the method invocation:
+
+```
+x["lessThan"](y)
+```
+
+which can be specialized as:
+
+```
+if (typeof(x) == 'integer' && typeof(y) == 'integer') {
+  Integer.lessThan(x, y)  // Integer is the root object for all integers
+}
+else {
+  x["lessThan"](y)
+}
+```
+
+and further inline the call to the root `Integer` object.
+
+```
+if (typeof(x) == 'integer' && typeof(y) == 'integer') {
+  cmp(x, y) // cmp is a single instruction
+}
+else {
+  x["lessThan"](y)
+}
+```
+
+If the Self compiler can guarantee that `x` has the type `integer`, it can
+_inline_ the comparison and remove the guard.
+
 ### Programming Environment Support
 
 The Self compiler supports _incremental recompilation_ and _source-level
