@@ -1,0 +1,176 @@
+ +++
+title = "Trace-based Just-in-Time Type Specialization for Dynamic Languages"
+extra.bio = """
+  Philip Bedoukian is a 3rd year PhD student in ECE. His research focuses on reconfigurable hardware.
+"""
+extra.author = "Philip Bedoukian"
++++
+
+## Dynamic Languages
+
+Statically-compiled languages force the programmer to abide by the restrictions of the ISA. For example, languages like C, Java, and Perl require type information to be specified by the programmer. The hardware only knows how to do arithmetic between certain type combinations, so type knowledge are a requirement when compiling for that hardware. In the RISC-V ISA, an integer addition compiles to `add` instruction while a single-precision floating point addition compiles to `fadd.s` instruction.
+
+Dynamic languages allow the programmer to free themselves from the strict requirements of the ISA. In languages like JavaScript and Python, a programmer does not need to specify whether a type is an int or a float. However, this code cannot be directly compiled because there is no instruction for untyped operations in ISAs. Instead, the programmer's code is streamed to a module known as the interpreter. First, the source code is compiled to *bytecode*. A bytecode instruction is neither machine instructions nor lines of source code, but rather something in between. A bytecode instruction consists of behavior (much like a machine instruction opcode, but also includes other information from the source language that would not be encoded in a machine instruction. Each bytecode instruction is evaluated by the interpreter, by (1) checking type information and opcode and (2) jumping to a function that evaluates that operation.
+
+
+## Problem - Dynamic Languages are Slow
+
+Consider a single iteration of vvadd as a motivating example. Each iteration we load two values from memory, add them, and store the result back to memory. TODO markdown code sections? But does it highlight asm?
+
+<img src="c-vvadd.png" alt="C vvadd" width="50%" >
+
+A C compiler would statically compile this iteration to the following RISCV instructions assuming the types of the arrays were `int`.
+
+<img src="static-vvadd.png" alt="Interpreter Performance" width="25%" >
+
+If we compiled the interpreter to machine code, it might look something like the following.
+
+<img src="interp-vvadd.png" alt="Interpreter Performance" width="60%">
+
+Notice the same `lw`, `add`, and `sw` are present in the code, but we have to jump to the appropriate function to execute them. The interpreter overhead is, thus, everything that isn't the instructions required by vvadd. For every instruction in vvadd, it requires seven additional instructions and incurs a penalty few cycles due to the additional branches (~10 cycles per instruction). For this reason, interpreters are an order of magnitude slower than statically compiled code.
+
+## Solution - Just-in-Time Compiler
+
+This paper tries and successfully improves the performance of dynamic languages by using a Just-in-Time Compiler (JIT). The core idea is the following: 
+
+```
+In a single iteration of a loop, every instruction must have a known type as it would in a non-dynamic language.
+```
+
+In the case of vvadd, if on every iteration the types are `int` then we don't actually need the flexibility of the interpreter. Instead, we can compile the bytecode during run-time to machine instructions where the type of each instruction is `int`. The run-time compilation procedure will greatly resemble the ahead-of-time compilation procedure of non-dynamic languages. Generally we only want to spend time compiling code that is run multiple times (i.e. in a loop).
+
+Unlike an ahead-of-time compiler, a JIT makes assumptions about the type information about the code and speculatively emits machine instructions. If our assumptions were wrong, we need to fall back to the interpreter. The JIT compiler then must also insert *guards* that detect when type information is wrong and jumps to the interpreter. The state machine below describes the high-level process.
+
+<img src="state-machine.png" alt="Interpreter Performance" width="100%">
+
+Machine code emitted by a JIT might look something like the following. There are fewer 'overhead' instructions (just two) than in the interpreter version.
+
+<img src="guard-vvadd.png" alt="Interpreter Performance" width="40%">
+
+## TraceMonkey
+
+*TraceMonkey* is the JIT proposed by the authors and roughly follows the high-level ideas described above. The main steps of TraceMonkey are *interpreting*, *recording*, *compilation*, *native execution*, *aborting*.
+
+### Interpreting
+
+The default state of TraceMonkey is to execute bytecode via an interpreter. This yields correct, but slow execution of a users program.
+
+### Recording
+
+When TraceMonkey detects a loop (simply a back-edge), it begins to record a trace. For each bytecode instruction, one or more *LIR* instructions are generated along with type guards. *LIR* instructions directly map to machine instructions, but are ISA agnostic.
+
+```c
+// Source Code
+c = add a b;
+
+// LIR Trace
+guard typeof(a) == int;
+guard typeof(b) == int; 
+int c = add_int a b;
+```
+
+Traces inherently can only follow a single path within a loop iteration. No type information is known about the paths that we not taken, so we can't generate machine code from them. Therefore guards must also check branch conditions. In the following example, two possible traces can be generated from the code.
+
+```c
+// Source code
+if (a == true) {
+  c++;
+}
+else {
+  c--;
+}
+
+// LIR Trace 1
+
+guard a == true;
+int c = add_int c 1;
+
+// LIR Trace 2
+
+guard a == false;
+int c = add_int c -1;
+
+```
+
+To avoid confusion, keep in mind that there are four types of code in TraceMonkey. 1) Source code, 2) Bytecode, 3) LIR, and 4) Machine code. Only bytecode and machine code are executed, while source code and LIR are only meant to compiled down to a lower level code.
+
+### Compilation
+
+The LIR traces must first be compiled to machine code to execute natively on the processor. This compilation needs to be much faster than static compilation because it occurs during runtime. The authors propose limiting the number of code optimizations performed to keep the compilation runtime in check. For example, register allocation uses a greedy algorithms. Although the authors did not evaluate this, greedy algorithms generally give non-optimal results, but have an excellent accuracy (compared to best) per time ratio.
+
+The compiled traces are stored in a trace buffer for later use by the interpreter.
+
+```c
+// LIR code
+guard a == true;
+int c = add_int c 1;
+
+// Machine code
+addi t0 x0 1;
+bne  t1 t0 abort;
+addi t2 t2 1;
+
+```
+
+### Native Execution
+
+The interpreter can execute traces when certain conditions are met. Effectively, the interpreter cedes program control to the generated native machine instructions. The performance of this code should approach that of static code, but is somewhat held back by the low-effort optimizations and additional guard instructions. However, the performance is much better than running in the interpreter.
+
+### Aborting
+
+Whenever a guard fails, we must abort from the current trace because our assumptions were wrong. For example if we thought the type of a value was `int`, but the value turned out to be a `float` future instructions will have incorrect behavior. A simple example is shown below.
+
+```c 
+
+lw  t0 0(s0); // unexpected float!
+add t1 t0 t1; // actually need a fadd instruction!
+
+```
+
+The un-optimized version of this mechanism always jumps backs to the interpreter to decide how to proceed. The interpreter can then record a new trace and start executing machine code from that in future iterations. Effectively, the enumerated steps will repeat in the same order.
+
+
+## Optimizations
+
+The authors lower-level implementation of the ideas described above are the main contributions of this paper. They develop multiple optimizations to make traces less likely to abort. Aborts incur a high performance penalty, so the fewer aborts the faster the user program will run. They also develop techniques to reduce the amount of storage required for the compiled traces. 
+
+#### Typed Traces
+
+Each trace is a basic block that has one entry node. The interpreter will only enter this basic block if tye types of the input variables to the block type check. This is more efficient than entering the trace and immediately aborting because the incoming types were incorrect. In the case of multiple traces, the interpreter has the ability to decide which trace to run based on the input variable types and the trace signature (i.e. the type of each variable as would be given in a C function call).
+
+#### Linked Traces
+
+A trace is a single forward path. A naive approach would jump back to the interpreter at the end and have the interpreter re-execute the compiled trace. A trace can be expanded to include its jump back path if the loop is deemed *type-stable* i.e. the type does not change over most iterations.
+
+A trace can also jump to another similar trace that has different live-in input types. This can occur is there is a particular pattern detected between different traces i.e. input types goes from `int` to `float` to `string`.
+
+#### Trace Branches
+
+As previously mentioned a trace can only contain information about a single path through the loop. If machine code encounters a different conditional branch path, it needs to abort. However, it doesn't necessarily need to abort back to the interpreter. If there is another trace that starts from the side path, we could jump directly to this other trace. 
+
+The diagram below presents two traces. The vertical trace (the root trace) is called directly from the interpreter, while the slanted trace is called from the root trace when a certain branch condition is met. These arrangements form tree-like structures called *trace trees*.
+
+<img src="tree-with-branch.png" alt="Interpreter Performance" width="50%">
+
+Jumping to another trace instead of aborting back to the interpreter is much more efficient.
+
+#### Nested Traces
+
+Traces always consist of a single forward path and end on a backwards path. In the case of a loop nest, instructions will be recorded from a single path of through both loops. If there are any conditionals that are post-dominated by the outer loop, then the outer loop instructions can be compiled multiple times (one for each branch path). This increases the amount of storage required for reach trace.
+
+The authors propose to effectively perform function outlining on nested loops. One trace can effectively call another trace as the interpreter would.
+
+<img src="nest-trees.png" alt="Interpreter Performance" width="50%">
+
+#### Blacklisting
+
+Specific traces are not worth generating and are prevented from being recorded in run.
+
+## Evaluation
+
+
+
+## Questions
+
+
+
