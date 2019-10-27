@@ -133,7 +133,7 @@ most of program is a sequence of dynamic calls.
 
 The Self compiler performs two optimizations, message _inlining_ and
 _splitting_ to enable efficient execution. Message _inlining_ works in a similar
-fashion to customized compilation -- If the type of a receiver is know, either
+fashion to customized compilation -- if the type of a receiver is known, either
 at initial compilation through a dataflow analysis or at runtime, inline the
 method body at the call location. When type information for an object is lost
 due to control flow splits, _message splitting_ generates specialized code for
