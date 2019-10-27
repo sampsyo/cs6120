@@ -140,7 +140,7 @@ Each trace is a basic block that has one entry node and no inner control flow. T
 
 A trace is a single forward path. A naive approach would jump back to the interpreter at the end of the trace and have the interpreter re-execute the same compiled trace. A trace can be expanded to include its jump back path if the loop is deemed *type-stable* i.e. the type information does not change over consecutive iterations.
 
-A trace can also jump to another similar trace that has different that uses different input types. This can occur is there is a particular pattern detected between different traces i.e. if input types go from `int` to `float` to `string` consistently, we would want to link the three traces together.
+A trace can also jump to another similar trace that has different that uses different input types. This can occur is there is a particular pattern detected between different traces, i.e., if input types go from `int` to `float` to `string` consistently, we would want to link the three traces together.
 
 #### Trace Branches
 
