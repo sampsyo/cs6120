@@ -37,7 +37,7 @@ This paper tries and successfully improves the performance of dynamic languages 
 In a single iteration of a loop, every instruction must have a known type as it would in a non-dynamic language.
 ```
 
-In the case of vvadd, if on every iteration the types are `int` then we don't actually need the flexibility of the interpreter. Instead, we can compile the bytecode during run-time to machine instructions where the type of each instruction is `int`. The run-time compilation procedure will greatly resemble the ahead-of-time compilation procedure of non-dynamic languages. Generally we only want to spend time compiling code that is run multiple times (i.e. in a loop).
+In the case of vvadd, if on every iteration the types are `int` then we don't actually need the flexibility of the interpreter. Instead, we can compile the bytecode during run-time to machine instructions where the type of each instruction is `int`. The run-time compilation procedure will greatly resemble the ahead-of-time compilation procedure of non-dynamic languages. Generally we only want to spend time compiling code that is run multiple times (i.e., in a loop).
 
 Unlike an ahead-of-time compiler, a JIT makes assumptions about the type information of the bytecode and speculatively emits machine instructions. If our assumptions were wrong, we need to fall back to the interpreter. The JIT compiler then must also insert *guards* that detect when type information is wrong and will jump back to the interpreter. The state machine below describes the high-level process.
 
