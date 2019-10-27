@@ -175,8 +175,8 @@ On average, Self was 2-3x faster than the Smalltalk implementation and 4x slower
 than the original C programs.
 
 The authors also describes a new metric to measure the performance of an object
-oriented programming language - _Millions of Messages per Second (MiMS)_ which
-corresponds to MIPS. To compute the MiMS of a specific virtual machine, divide
+oriented programming language -- _Millions of Messages per Second (MiMS)_ which
+analogous to MIPS. To compute the MiMS of a specific virtual machine, divide
 the number of messages the benchmark sends by its total running time. The
 first generation Self compiler ran at 3.3 MiMS or a message executing every 300ns.
 
