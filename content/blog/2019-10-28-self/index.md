@@ -44,7 +44,7 @@ in Self parlance (written with JavaScript-esque syntax) looks like this:
 x.If({ true: () => 1, false: () => 2 })
 ```
 
-The runtime behavior of this program is invoking the method `IfTrue` on the
+The run-time behavior of this program is invoking the method `IfTrue` on the
 object `x`, which can be a `true` or `false` but is not required to be those,
 and execute the "thunk" (a function with no argument) corresponding to the true
 or the false branch.  Note that `x` is not required to be `true` or `false`.
