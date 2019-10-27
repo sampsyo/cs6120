@@ -43,7 +43,7 @@ Unlike an ahead-of-time compiler, a JIT makes assumptions about the type informa
 
 <img src="state-machine.png" alt="Interpreter Performance" width="100%">
 
-Machine code emitted by a JIT might look something like the following. Notice that there are fewer 'overhead' instructions than in the interpreter version (just two instead of seven).
+Machine code emitted by a JIT might look something like the following. Notice that there are fewer "overhead" instructions than in the interpreter version (just two instead of seven).
 
 <img src="guard-vvadd.png" alt="Interpreter Performance" width="40%">
 
