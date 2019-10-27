@@ -182,7 +182,7 @@ Could an ISA be designed that does not require machine instructions to include t
 
 This paper was written at the beginning of the multi-core processor era. Could multiprocessing improve the JIT performance?
 
-Is it wasteful for billions of computers to 'learn' the same traces when they load a webpage? Could anything be done to remedy this?
+Is it wasteful for billions of computers to "learn" the same traces when they load a webpage? Could anything be done to remedy this?
 
 
 
