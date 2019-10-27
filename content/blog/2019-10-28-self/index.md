@@ -95,13 +95,18 @@ prototypes.
 A naive layout scheme for objects would copy all fields from a prototype and
 end up wasting a lot of space describing potentially shared behaviors. The Self
 compiler minimizes space usage of _clones_ derived from the same prototype by
-using _clone families_. A cloned object only stores its modifiable fields in its
-object and points to the clone family for its prototype. If the instance ever
-overrides one of its methods, the creates a new clone family to preserve
+using _clone families_. Each cloned has an "allocation map" which stores its
+modifiable fields and has a pointer to its parent. The allocation map hierarchy
+mirrors the inheritance hierarchy in a program.
+If the instance ever
+overrides one of its parents' methods, the compiler creates a new clone family to preserve lookup
 semantics and propagate behavior changes to all clones of a prototype.
 
 <img src="without-maps.png" alt="drawing" width="300"/>
 <img src="with-maps.png" alt="drawing" width="300"/>
+
+An allocation scheme without maps (left) and with maps (right). The scheme on
+right saves more memory.
 
 ### Customized Compilation
 
