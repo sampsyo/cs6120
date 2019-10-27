@@ -20,6 +20,9 @@ for the [Self][] programming language.
 > We have developed and implemented techniques that double the performance of
 > the dynamically-typed object oriented languages.
 
+Due to the lack of a compiler name, I refer to the compiler presented in this
+paper as "the Self compiler".
+
 
 ## The Challenge
 
@@ -117,6 +120,29 @@ from Java parlance). Compared to a traditional ISA, the bytecode supports
 high-level constructs like message `SEND` (invoke a method on a receiver).
 It is worth noting that the description of the Self bytecode predates the Java
 Virtual Machine (JVM) and directly inspired it.
+
+### Segregation & Tagging
+
+Finding object references is one of the most common operations a runtime for an
+object oriented (OO) language has to perform. It is used for everything from
+garbage collection to reflection in modern OOP. The central challenge in
+finding objects is disambiguating pointers from integers since they look almost
+identical. A naive approach would be adding header information to pointers
+and parsing it at runtime. This incurs a runtime overhead of parsing headers
+and dramatically slowing down the runtime.
+
+The Self compiler _segregates_ the layout of byte arrays (which can confused as
+object references) and object references. Byte arrays are allocated from the
+top of the heap space while object references are allocated from bottom. The
+runtime can then completely skip objects beyond the object reference space
+boundary.
+
+The Self compiler also _tags_ integers and floating point numbers to disambiguate
+them from references. By default, two MSB bits are used to denote whether a
+machine word is an integer, a floating point number, a reference, or a header
+for an object. Integers and floating numbers are directly encoded into the
+remaining 30 bits, allowing them to be directly used after performing a single
+logical shift.
 
 ### Customized Compilation
 
