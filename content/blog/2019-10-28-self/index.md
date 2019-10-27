@@ -25,7 +25,7 @@ for the [Self][] programming language.
 
 The term "dynamic language" is mostly commonly associated with modern scripting
 languages like Python and JavaScript. Self, a much older language developed
-at the famed Xerox PARC labs takes the philosophy of dynamism to a logical
+at the famed Xerox PARC labs, takes the philosophy of dynamism to a logical
 extreme -- *everything* in self is a message to an object. This includes
 Java-like method calls on object *as well as* control structures like loops
 and conditionals.
