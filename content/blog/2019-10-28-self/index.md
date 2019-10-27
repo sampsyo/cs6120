@@ -108,6 +108,16 @@ semantics and propagate behavior changes to all clones of a prototype.
 An allocation scheme without maps (left) and with maps (right). The scheme on
 right saves more memory.
 
+### Bytecode
+
+The Self compiler and runtime come with a bytecode format for executing compiled
+programs. Instead of executing a structured AST, the compiler defines a set of
+core "instructions" for the runtime (more commonly known as a "Virtual Machine"
+from Java parlance). Compared to a traditional ISA, the bytecode supports
+high-level constructs like message `SEND` (invoke a method on a receiver).
+It is worth noting that the description of the Self bytecode predates the Java
+Virtual Machine (JVM) and directly inspired it.
+
 ### Customized Compilation
 
 The rampant dynamism in Self programs forces compilers to conservatively
