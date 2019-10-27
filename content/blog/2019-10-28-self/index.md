@@ -126,7 +126,7 @@ receiver matches, fast code can be executed.
 
 ### Programming Environment Support
 
-The Self compiler support _incremental recompilation_ and _source-level
+The Self compiler supports _incremental recompilation_ and _source-level
 debugging_ by keeping track of the provenances of various method
 specializations in a map.
 
