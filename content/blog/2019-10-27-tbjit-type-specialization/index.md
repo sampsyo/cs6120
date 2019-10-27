@@ -53,7 +53,7 @@ Machine code emitted by a JIT might look something like the following. Notice th
 
 ### Interpreting
 
-The default state of TraceMonkey is to execute bytecode via an interpreter. This yields correct, but slow execution of a users program.
+The default state of TraceMonkey is to execute bytecode via an interpreter. This yields correct but slow execution of a users program.
 
 ### Recording
 
