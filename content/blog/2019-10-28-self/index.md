@@ -174,9 +174,15 @@ _inline_ the comparison and remove the guard.
 
 ### Programming Environment Support
 
-The Self compiler supports _incremental recompilation_ and _source-level
-debugging_ by keeping track of the provenances of various method
-specializations in a map.
+Unlike most modern languages, the Self language was designed to support tight
+integration and exploratory programming in and IDE. Programmers were expected
+and encouraged to inspect programs at runtime and dynamically modify the IDE
+itself _while the program was executing_ to allow for better exploration.
+
+This features require fast recompilation and debugging capabilities from any
+Self runtime and compiler. The compiler in the paper supports both _incremental
+recompilation_ and _source-level debugging_ by keeping track of the provenances
+of various method specializations in a map.
 
 Incremental Recompilation occurs when the compiler observes a change in the
 programming environment and invalidates compiled methods associated with the
