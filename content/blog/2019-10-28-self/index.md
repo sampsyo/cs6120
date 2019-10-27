@@ -28,7 +28,7 @@ languages like Python and JavaScript. Self, a much older language developed
 at the famed Xerox PARC labs, takes the philosophy of dynamism to a logical
 extreme -- *everything* in self is a message to an object. This includes
 Java-like method calls on object *as well as* control structures like loops
-and conditionals.
+and conditionals [^1].
 
 >  **Note**: Self's multi-argument methods have the form:
 >  ```
@@ -223,8 +223,11 @@ analogous to MIPS. To compute the MiMS of a specific virtual machine, divide
 the number of messages the benchmark sends by its total running time. The
 first generation Self compiler ran at 3.3 MiMS or a message executing every 300ns.
 
+[^1]: If this sounds suspiciously similar to JavaScript, it is because the design
+of JavaScript is directly inspired by Self.
 
-[paper]: https://dl-acm-org.proxy.library.cornell.edu/citation.cfm?id=74884
+
+[paper]: https://dl.acm.org/citation.cfm?id=74884
 [self]: http://www.selflanguage.org/
 [jit]: https://hacks.mozilla.org/2017/02/a-crash-course-in-just-in-time-jit-compilers/
 [v8-no-tail]: https://bugs.chromium.org/p/v8/issues/detail?id=4698
