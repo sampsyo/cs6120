@@ -14,7 +14,7 @@ link = "https://rachitnigam.com"
 
 [An Efficient Implementation of Self, a Dynamically-Typed Object-Oriented
 Language Based on Prototypes][paper] presents techniques for runtime
-compilation, now more commonly referred to as Just In Time (JIT) compilation,
+compilation, now more commonly referred to as just-in-time (JIT) compilation,
 for the [Self][] programming language.
 
 > We have developed and implemented techniques that double the performance of
