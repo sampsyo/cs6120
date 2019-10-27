@@ -17,7 +17,11 @@ Dynamic languages allow the programmer to free themselves from the strict requir
 
 Consider a single iteration of vector-vector add (vvadd) as a motivating example. In each iteration, we load two values from memory, add them, and store the result back to memory. TODO markdown code sections? But does it highlight asm?
 
-<img src="c-vvadd.png" alt="C vvadd" width="50%" >
+```C
+for (i = 0; i < N; i++) {
+  c[i] = a[i] + b[i];
+}
+```
 
 A C compiler would statically compile this iteration to the following RISC-V instructions assuming the types of the arrays were `int`.
 
