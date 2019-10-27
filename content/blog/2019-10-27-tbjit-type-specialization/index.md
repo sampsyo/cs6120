@@ -17,7 +17,7 @@ Dynamic languages allow the programmer to free themselves from the strict requir
 
 Consider a single iteration of vector-vector add (vvadd) as a motivating example. In each iteration, we load two values from memory, add them, and store the result back to memory. TODO markdown code sections? But does it highlight asm?
 
-```C
+```c
 for (i = 0; i < N; i++) {
   c[i] = a[i] + b[i];
 }
@@ -91,7 +91,6 @@ int c = add_int c 1;
 // LIR Trace 2
 guard a == false;
 int c = add_int c -1;
-
 ```
 
 To avoid confusion, keep in mind that there are four types of code in TraceMonkey. 1) Source code, 2) Bytecode, 3) LIR, and 4) Machine code. Only bytecode and machine code are executed, while source code and LIR are only meant to compiled down to the subsequent code level.
@@ -111,7 +110,6 @@ int c = add_int c 1;
 addi t0 x0 1;
 bne  t1 t0 abort;
 addi t2 t2 1;
-
 ```
 
 ### Native Execution
@@ -123,10 +121,8 @@ The interpreter can execute traces when certain conditions are met. Effectively,
 Whenever a guard fails, we must abort from the current trace because our assumptions were wrong. For example if we thought the type of a value was `int`, but the value turned out to be a `float` future instructions will have incorrect behavior. A simple example is shown below.
 
 ```c 
-
 lw  t0 0(s0); // unexpected float!
 add t1 t0 t1; // actually need a fadd instruction!
-
 ```
 
 The un-optimized version of this mechanism always jumps backs to the interpreter to decide how to proceed. The interpreter can then record a new trace and start executing machine code from that in future iterations. Effectively, the enumerated steps will repeat in the same order.
