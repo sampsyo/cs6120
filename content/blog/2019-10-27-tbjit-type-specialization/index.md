@@ -134,7 +134,7 @@ The authors lower-level implementation of the ideas described above are the main
 
 #### Typed Traces
 
-Each trace is a basic block that has one entry node and no inner control flow. The interpreter will only enter this basic block if the types of the input variables to the block type check. This is more efficient than entering the trace and immediately aborting because the incoming types were incorrect. In the case of multiple traces, the interpreter has the ability to decide which trace to run based on the input variable types and the trace signature (i.e. the type of each variable as would be given in a C function call).
+Each trace is a basic block that has one entry node and no inner control flow. The interpreter will only enter this basic block if the types of the input variables to the block type check. This is more efficient than entering the trace and immediately aborting because the incoming types were incorrect. In the case of multiple traces, the interpreter has the ability to decide which trace to run based on the input variable types and the trace signature (i.e., the type of each variable as would be given in a C function call).
 
 #### Linked Traces
 
