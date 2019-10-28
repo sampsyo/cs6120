@@ -63,7 +63,7 @@ The default state of TraceMonkey is to execute bytecode via an interpreter. This
 
 ### Recording
 
-When TraceMonkey detects a loop (simply a back-edge in the control-flow graph), it begins to record a trace. For each bytecode instruction, one or more *LIR* instructions are generated along with type guards. LIR instructions directly map to machine instructions, but are ISA agnostic.
+When TraceMonkey detects a loop (simply a back-edge in the control-flow graph), it begins to record a trace. For each bytecode instruction, one or more LIR instructions are generated along with type guards. LIR instructions directly map to machine instructions, but are ISA agnostic.
 
 ```c
 // Bytecode (not typed)
@@ -94,6 +94,8 @@ int c = add_int c 1;
 guard a == false;
 int c = add_int c -1;
 ```
+
+Each individual trace can be much shorter than the original program and can forgo any control flow in favor of specialized guards.
 
 ### Compilation
 
