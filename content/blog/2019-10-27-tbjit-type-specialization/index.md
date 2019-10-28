@@ -35,11 +35,11 @@ Notice the same `lw`, `add`, and `sw` are present in the code, but we have to ju
 
 ## Solution - Just-in-Time Compiler
 
-This paper tries and successfully improves the performance of dynamic languages by using a Just-in-Time Compiler (JIT). The core idea is the following: 
+Just-in-Time Compilers (JITs) provide speedups to dynamic languages. Although previously proposed, this paper optimizes and popularizes tracing JITs for accelerating dynamically typed languages. The authors demonstrate the effectiveness a tracing JIT in a real-world environment, namely the Mozilla Firefox web browser.
 
-```
-In a single iteration of a loop, every instruction must have a known type as it would in a non-dynamic language.
-```
+The core idea exploited in tracing JITs is the following: 
+
+> A loop tends to have similar type information across multiple iterations.
 
 In the case of vvadd, if on every iteration the types are `int` then we don't actually need the flexibility of the interpreter. Instead, we can compile the bytecode during run-time to machine instructions where the type of each instruction is `int`. The run-time compilation procedure will greatly resemble the ahead-of-time compilation procedure of non-dynamic languages. Generally we only want to spend time compiling code that is run multiple times (i.e., in a loop).
 
