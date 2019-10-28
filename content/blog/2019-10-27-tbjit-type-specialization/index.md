@@ -99,7 +99,7 @@ Each individual trace can be much shorter than the original program and can forg
 
 ### Compilation
 
-The LIR traces must first be compiled to machine code to execute natively on the processor. This compilation needs to be much faster than static compilation because it occurs during runtime. The authors propose limiting the number of code optimizations performed to keep the compilation runtime reasonable. For example, register allocation uses a greedy algorithm. Although the authors did not evaluate this, greedy algorithms generally give non-optimal results, but have an excellent accuracy (compared to oracle) per time ratio.
+The LIR traces must first be compiled to machine code to execute natively on the processor. This compilation needs to be much faster than static compilation because it occurs during runtime. The authors propose limiting the number of code optimizations performed to keep the compilation runtime reasonable. For example, register allocation uses a greedy algorithm. Greedy algorithms generally give non-optimal results, but may be the only type of algorithm that could fit into the small time budget.
 
 The compiled traces are stored in a trace buffer for later use by the interpreter.
 
