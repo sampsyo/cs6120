@@ -31,7 +31,7 @@ If instead we ran the program using an interpreter, we would execute the followi
 
 <img src="interp-vvadd.png" alt="Interpreter Performance" width="60%">
 
-Notice the same `lw`, `add`, and `sw` are present in the code, but we have to jump to the appropriate function to execute them. The interpreter overhead is, thus, everything that isn't the instructions required by vvadd. For every instruction in vvadd, it requires seven additional interpreter instructions and incurs a penalty of a few cycles due to the additional branches. In total, we can estimate it takes about 10 cycles to execute an equivalent machine instruction on the interpreter. For this reason, interpreters are an order of magnitude slower than statically compiled code.
+Notice the same `lw`, `add`, and `sw` are present in the code, but we have to jump to the appropriate function to execute them. The interpreter overhead is, thus, everything that isn't the instructions required by vvadd. For every instruction in vvadd, it requires seven additional interpreter instructions and incurs a penalty of a few cycles due to the additional branches. In total, we can estimate that it takes at least 10 cycles to execute an equivalent machine instruction on the interpreter. Many real-world interpreters perform additional operations that will increase the overhead even more. For these reasons, interpreters are generally an order of magnitude slower than statically compiled code.
 
 ## Solution - Just-in-Time Compiler
 
