@@ -55,13 +55,15 @@ Machine code emitted by a JIT might look something like the following. Notice th
 
 *TraceMonkey* is the JIT proposed by the authors and roughly follows the high-level ideas described above. The main steps of TraceMonkey are *interpreting*, *recording*, *compilation*, *native execution*, and *aborting*.
 
+To avoid confusion, keep in mind that there are four types of code in TraceMonkey: 1) Source code, 2) Bytecode, 3) Low-level intermediate representation (LIR), and 4) Machine code. Only bytecode and machine code are executed, while source code and LIR are only meant to compiled down to the subsequent code level.
+
 ### Interpreting
 
 The default state of TraceMonkey is to execute bytecode via an interpreter. This yields correct but slow execution of a users program.
 
 ### Recording
 
-When TraceMonkey detects a loop (simply a back-edge in the control-flow graph), it begins to record a trace. For each bytecode instruction, one or more *LIR* instructions are generated along with type guards. *LIR* instructions directly map to machine instructions, but are ISA agnostic.
+When TraceMonkey detects a loop (simply a back-edge in the control-flow graph), it begins to record a trace. For each bytecode instruction, one or more *LIR* instructions are generated along with type guards. LIR instructions directly map to machine instructions, but are ISA agnostic.
 
 ```c
 // Bytecode (not typed)
@@ -92,8 +94,6 @@ int c = add_int c 1;
 guard a == false;
 int c = add_int c -1;
 ```
-
-To avoid confusion, keep in mind that there are four types of code in TraceMonkey. 1) Source code, 2) Bytecode, 3) LIR, and 4) Machine code. Only bytecode and machine code are executed, while source code and LIR are only meant to compiled down to the subsequent code level.
 
 ### Compilation
 
