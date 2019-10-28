@@ -342,7 +342,7 @@ consistently decreases the number of instruction pointer jumps by 10-20% (with
 the exception of the first test, which could not benefit from branch
 reordering), but the function reordering optimization is inconsistent. For
 "Fib", the function reordering optimization increased the number of instruction
-pointer jumps by approximately 69% on average. Below is the "Fib" benchmark.
+pointer jumps by approximately 59% on average. Below is the "Fib" benchmark.
 
 ```
 main (n:int) {
