@@ -109,7 +109,7 @@ guard a == true;
 int c = add_int c 1;
 
 // Machine code
-addi t0 x0 1;
+addi t0 x0 1; // put 'true' into a register
 bne  t1 t0 abort;
 addi t2 t2 1;
 ```
