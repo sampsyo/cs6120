@@ -127,7 +127,7 @@ lw  t0 0(s0); // unexpected float!
 add t1 t0 t1; // actually need a fadd instruction!
 ```
 
-The un-optimized version of this mechanism always jumps backs to the interpreter to decide how to proceed. The interpreter can then record a new trace and start executing machine code from that in future iterations. Effectively, the enumerated steps will repeat in the same order.
+The un-optimized version of this mechanism always jumps backs to the interpreter to decide how to proceed. The interpreter can then record a new trace and start executing machine code from that in future iterations. Effectively, the enumerated steps will repeat in the same order. The optimized version of this process is described in the Linked Traces section below.
 
 
 ## Optimizations
