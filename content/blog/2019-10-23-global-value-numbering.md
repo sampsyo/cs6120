@@ -57,25 +57,80 @@ Difficulties:
 ## Evaluation
 
 
-1. Evaluating correctness: LLVM GVN tests that use only the features that Bril has.
+1. Correctness
+
+### Briggs, Cooper, and Simpson
 
 Our implementation does not produce the same output as LLVM on all tests because 1) Bril operations require that all operands are registers and 2) LLVM GVN has more features.
 
-Discuss `test/gvn/briggs-et-al-fig-5.bril`.
+The following example, from [Value Numbering][], by Briggs, Cooper, and Simpson, illustrates how GVN removes redundant instructions across basic blocks:
+
+```
+void main(a0 : int, b0 : int, c0 : int, d0 : int, e0 : int, f0 : int) {
+B1:
+  u0 : int = add a0 b0;
+  v0 : int = add c0 d0;
+  w0 : int = add e0 f0;
+  cond : bool = const true;
+  br cond B2 B3;
+B2:
+  x0 : int = add c0 d0;
+  y0 : int = add c0 d0;
+  jmp B4;
+B3:
+  u1 : int = add a0 b0;
+  x1 : int = add e0 f0;
+  y1 : int = add e0 f0;
+  jmp B4;
+B4:
+  u2 : int = phi u0 u1 B2 B3;
+  x2 : int = phi x0 x1 B2 B3;
+  y2 : int = phi y0 y1 B2 B3;
+  z0 : int = add u2 y2;
+  u3 : int = add a0 b0;
+}
+```
+
+Our implementation removes the redundant additions in blocks `B2` and `B3`. It also removes from block `B4`: 1) the meaningless phi node `u2 : int = phi u0 u1 B2 B3;`, which has arguments that are always equal, and 2) the redundant phi node `y2 : int = phi y0 y1 B2 B3;`, which is identical to the phi node that precedes it.  Here is the full output, which matches the correct output in the paper:
+
+```
+void main(a0 : int, b0 : int, c0 : int, d0 : int, e0 : int, f0 : int) {
+B1:
+  u0: int = add a0 b0;
+  v0: int = add c0 d0;
+  w0: int = add e0 f0;
+  cond: bool = const true;
+  br cond B2 B3;
+B2:
+  jmp B4;
+B3:
+  jmp B4;
+B4:
+  x2: int = phi v0 w0 B2 B3;
+  z0: int = add u0 x2;
+  ret ;
+}
+```
+
+### Copy propagation
+
+### Constant folding
 
 2. Trying to get fewer instructions.
 
+We compared the numbers of instructions in the original Bril programs in SSA form and in the same programs after running GVN and trivial dead code elimination (TDCE).
+
 | Test program | Original | SSA form | After only LVN | After only GVN |
 | :---        |    :----:   | :----: |  :----: |
-| `test/gvn/across-basic-blocks.bril` | 8 | 8 | 8 | 7 |
-| `test/gvn/copy-propagation.bril` | 5 | 2 | 2 | 2 |
 | `test/gvn/constant-folding-tau-example.bril` | 26 | 37 | 37 | 35 |
 | `test/gvn/constant-folding-calpoly-example.bril` | 27 | 25 | 25 | 22 |
 | `test/gvn/add-commutativity.bril` | 6 | 6 | 6 | 5 |
-| `test/gvn/constant_propagation.bril` | 5 | 2 | 2 | 2 |
-| `test/gvn/cyclic-phi-handling.bril` | 16 | 22 | 22 | 22 |
-| `test/gvn/divide-by-zero.bril` | 5 | 6 | 6 | 6 |
-| `test/gvn/equivalent-phis.bril` | 27 | 25 | 25 | 25 |
-| `test/gvn/redundant-store-across-block.bril` | 10 | 8 | 8 | 8 |
+| `test/gvn/copy-propagation.bril` | 5 | 6 | 6 | 3 |
+| `test/gvn/constant_propagation.bril` | 5 | 6 | 6 | 4 |
+| `test/gvn/across-basic-blocks.bril` | 8 | 8 | 8 | 7 |
 
+3. LLVM GVN tests that use more features than Bril has.
 
+GVN provides the base for a number of additional optimizations, most of which we have not yet implemented.
+
+[value numbering]: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.36.8877&rep=rep1&type=pdf
