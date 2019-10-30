@@ -284,7 +284,7 @@ For each of a number of Bril test programs, we report in the following graph:
 1. The number of instructions after converting to SSA, converting out of SSA, and running Bril's existing [trivial dead code elimination][] (TDCE), shown in blue.
 2. The number of instructions after converting to SSA, running GVN, converting out of SSA, and running TDCE, shown in red.
 
-<img src="eval-correctness.png" width="500"/>
+<img src="eval-correctness.pdf" width="500"/>
 
 3. Bigger benchmarks with TypeScript frontend and comparison with LVN
 
@@ -301,7 +301,7 @@ In addition to the metrics in the preceding graph, we also report the number of 
 [fizz buzz]: https://en.wikipedia.org/wiki/Fizz_buzz
 [local value numbering]: https://github.com/sampsyo/bril/blob/master/examples/lvn.py
 
-<img src="eval-ts.png" width="500"/>
+<img src="eval-ts.pdf" width="500"/>
 
 4. LLVM GVN tests that use more features than Bril has.
 
