@@ -106,6 +106,45 @@ For now, we work around this case by assigning a default value to to the variabl
 
 ## Global value numbering
 
+There are two main approaches to global value numbering, as described in [Value Numbering][], Briggs, Cooper, and Simpson, 1997, both of which ultimately require input code in SSA form.
+Hash-based techniques, like those used in local value numbering, hash operations and find redundant values by comparing to previously hashed operations.
+Partitioning algorithms, on the other hand, divide all operations into equivalence classes.
+
+We chose to implement hash-based value numbering because it allows for copy propagation extensions and operates on the dominator tree computed during covnersion to SSA.
+While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately.
+A distinct SSA conversion allows more optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
+
+We implemented the following pseudocode, adapted from Figure 4 of the aforementioned paper, so called because it is a 'dominator-based value numbering technique'.
+A value's name is the SSA variable name, which is guaranteed to be unique by SSA, for which it was first computed.
+The algorithm requires a program's dominator tree and traverses blocks in reverse postorder.
+
+```
+DVNT_GVN(block b):
+  for each phi node in b:
+    remove and continue if meaningless or redundant
+    set the value number for the remaining phi node to be the assigned variable name
+    add phi node to the hash table
+
+  for each assignment:
+    get value numbers for each operand
+    simplify the expression if possible
+    if the expression has been computed before:
+      set the value number for the assigned variable to the expression's value number
+    else:
+      set the value number for the expression to be the assigned variable name
+      add the expression to the hash table
+
+  for each child c of b in the control flow graph:
+    replace all phi node operands in c that were computed in this block with their value numbers
+
+  for each child c of b in the dominator tree:
+    DVNT_GVN(c)
+
+  remove all values hashed during this function call
+```
+
+[value numbering]: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.36.8877&rep=rep1&type=pdf
+
 ### Copy propagation
 
 ### Constant folding
