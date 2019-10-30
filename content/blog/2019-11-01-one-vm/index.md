@@ -20,10 +20,10 @@ Sports betting is a fast business, so you want your code to run quickly.  You st
 
 Your company is impressed start using _QuantPL_ which they claim is a more intuitive approach in scripting models.  But soon, they start to notice that it's a lot slower than their previous models.
 
-You now have to design a bytecode format and interpreter, and when they complain even more, you write a JIT compiler.  Now it's fast, and you hear that rival company _Quant2Bet_ has developed a language _Quant2PL_ that's even faster using something called Truffle and Kraal, so now you're stuck in modifying your programming language from the beginning.  You decide this isn't worth your time, quit your job, and join _Quant2Bet_ instead who bought you out for $1,000,000.
+You now have to design a bytecode format and interpreter, and when they complain even more, you write a JIT compiler.  Now it's fast, and you hear that rival company _Quant2Bet_ has developed a language _Quant2PL_ that's even faster using something called Truffle and Graal, so now you're stuck in modifying your programming language from the beginning.  You decide this isn't worth your time, quit your job, and join _Quant2Bet_ instead who bought you out for $1,000,000.
 
 # A Solution
-[One VM to Rule Them All][paper] presents an architecture which allows implementing new programming languages within a common framework, allowing for language-agnostic optimizations.  Instead of designing the entire stack for a new programming language, you can just focus in creating a parser and AST interpreter.  Now, you can reuse functionality from existing Virtual Machines and your language is already fast and optimized.
+[One VM to Rule Them All][paper] (2013) presents an architecture which allows implementing new programming languages within a common framework, allowing for language-agnostic optimizations.  Instead of designing the entire stack for a new programming language, you can just focus in creating a parser and AST interpreter.  Now, you can reuse functionality from existing Virtual Machines and your language is already fast and optimized.
 
 ## Background
 * A __Java Virtual Machine (JVM)__ is a virtual machine that allows computers to run programming languages that compile to Java bytecode.
@@ -111,49 +111,76 @@ Currently, this infrastructure is prototyped in a subset of Java.
 The __Truffle API__ is the main interface to implement the AST.  The __Truffle Optimizer__ involves partial evaluation.  The __VM Runtime Services__ provides basic VM services which includes Graal.  
 
 The authors suggest two main deployment scenarios:
+
 > __Java VM__:  The current implementation is in Java so it can technically run on any Java VM.  This is especially useful for debugging and low cost.
+
 > __Graal VM__:  This provides API access to the compiler, so the guest language runs with partial evaluation.  This uses Graal as its dynamic compiler and is extremely fast.  It is useful for integrating the guest language in a current Java environment.
-
-# Merits and Shortcomings:
-
-This is an interesting idea that definitely is worth exploring when implementing the backend for a new programming language.  The Truffle and Kraal ecosystem are unlike others and provide 
 
 
 # A Survey on Languages
 The following languages have been tested by the authors:
 > __JavaScript__:
+
 > __Ruby__:
+
 > __Python__:
+
 > __J and R__:
+
 >__Functional__:
 
-# Related Work
+# Merits and Shortcomings:
+
+## Merits
+This is an interesting idea that definitely is worth exploring when implementing the backend for a new programming language.  The main merit of Truffle is the ease of implementing a new programming langauge.  The developer only has to implement an AST interpreter, and Truffle handles the rest of the heavy lifting.  The main merit of Graal is its ease of pairing with Truffle.  Graal itself is an impressive compiler which can run both JIT or AOT, has many optimizations as previously discussed and can convert Truffle ASTs into native code.
+
+Most of Truffle/Graal is available open-source!  This is a huge merit!
+
+## Shortcomings
+
+One shortcoming I noticed was the amount of memory needed for this ecosystem during runtime.  At deoptimization points, metadata is stored, the partially evaluated AST is reloaded and the original AST is also kept in memory.  This is a lot of information and the different speculative optimization add even more memory usage.  Running this compiler will consume a lot of RAM which can be costly and may even outweigh performance.  This is not to mention the memory cost of Truffle and Graal themselves at runtime.  Currently, [SubstrateVM][substrate] is a suggested solution to this shortcoming.  But SubstrateVM itself has many shortcomings, including dynamic class loading/unloading, finalizers, [etc][short].
+
+
+One shortcoming involves the author's solution to the dynamic dispatching problem.  The authors describe keeping a counter, and only after the counter reaches a threshold, the AST is compiled.  This means that peak performance only occurs after many iterations of the program, when node rewriting is unlikely.  For programs are not run as frequently, this is a major shortcoming because the execution count for each branch may never even reach the said threshold.  
+
+# Current Computing Landscape
+Both [Twitter][twitter] and [Goldman Sachs][gs] have prototyped integrating Truffle/Graal into their stack.  
 
 
 
 
+# Final Thoughts
+
+
+The paper is interesting in its claims, though it fails to provide benchmark tests.  The main benchmark I was surprised that the paper did not include is how guest language performance using the Truffle/Graal ecosystem compares with the LLVM compiler.  In particular, I would have liked to see a runtime comparison between the two, and a qualitative description of the overhead in producing LLVM IR from the guest language as compared to creating the AST interpreter.  This, I believe, is a natural benchmark which the paper does not include.  
+
+Similar papers during this time tested Truffle JVM.  At the time of this paper, Topaz was approximately 10x faster than Ruby 2.0.  Truffle is about 20x faster than Ruby 2.0.
+
+It actually took a lot of searching, and eventually I found a [talk by Thomas Wuerthinger][talk] at Devoxx which shows the following performance measures.  Maybe these weren't measured at the time of publishing this paper, or the authors were wary of displaying results that are marginally the same as their counterparts.
+
+< Insert Image >
 
 
 
+This paper also markets Truffle/Graal as the first of its kind, but in its references, it acknowledgs that it is actually not.  I mainly attribute this to the fact that the paper was published out of Oracle Labs and there may have been conflicts of interest between academics and industry-minded folks.  In fact, on the [ycombinator][ycomb] message board, many developers refuse to even consider using a product by Oracle.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Related Reading
+[Metropolis][metropolis] which tries to implement Java using Java.
+[Top 10][ten] things to do with GraalVM.
 
 
 
 [paper]: https://dl.acm.org/citation.cfm?id=2509581
 [graal]: https://github.com/oracle/graal
 [36]: https://dl.acm.org/citation.cfm?id=1064996
+[substrate]: https://github.com/oracle/graal/tree/master/substratevm
+[short]: https://githubcom/oracle/graal/blob/master/substratevm/LIMITATIONS.md
+[twitter]: https://www.youtube.com/watch?v=ZbccuoaLChk
+[gs]: https://www.ivonet.nl/2018/10/23/codeone/Tuesday/DEV6082__one-vm-to-rule-them-all-lessons-learned-with-truffle-and-graal/
+[ycomb]: [https://news.ycombinator.com/item?id=6232240]
+[metropolis]:http://openjdk.java.net/projects/metropolis/
+[ten]:https://chrisseaton.com/truffleruby/tenthings/
+[metropolis]:http://openjdk.java.net/projects/metropolis/
+[talk]: https://www.youtube.com/watch?v=8AYESZIaacg
