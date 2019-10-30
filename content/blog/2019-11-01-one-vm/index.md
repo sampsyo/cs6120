@@ -18,7 +18,7 @@ You are the latest hire for the startup company _QuantBet_ which specializes in 
 
 Sports betting is a fast business, and you want your code to run quickly.  You begin your project by developing a parser for _QuantPL_ and an Abstract Syntax Tree (AST) interpreter.  
 
-Your colleagues are impressed by your work with _QuantPL_ which they claim is more intuitive when scripting models.  But soon, they start to notice that it's a lot slower than what they're use to.
+Your colleagues are impressed by your work with _QuantPL_ which they claim is more intuitive when scripting models.  But soon, they start to notice that it's a lot slower than what they're used to.
 
 You think about developing a real VM.  This would require spending a lot of time designing a run-time system in C without causing memory leaks.  You think about using Java instead as your backend.  You may have to even design a bytecode format and interpreter.  If they complain more, you'll have to hire others to help you write a JIT compiler.  This is a slow, costly and painful process.
 
