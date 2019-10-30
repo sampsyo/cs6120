@@ -22,7 +22,7 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 If you follow [PL Twitter™️][pltwitter], you may have seen this tweets go by from our very own [Adrian][]:
 
-<img src="twitter.png" width="300"/>
+<img src="twitter.jpg" width="300"/>
 
 What, you may ask, is value numbering, and how is it so mind-blowing? 
 
@@ -50,6 +50,8 @@ While a programmer may not want to explicitly memoize every intermediate value a
 The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations. 
 For example, we extend our value numbering to do both [copy propagation][copy] and [constant folding][const].
 
+[pltwitter]: https://twitter.com/paul_pearce/status/1056684865846861824
+[Adrian]: https://www.cs.cornell.edu/~asampson/
 [copy]: https://en.wikipedia.org/wiki/Copy_propagation
 [const]: https://en.wikipedia.org/wiki/Constant_folding
 
