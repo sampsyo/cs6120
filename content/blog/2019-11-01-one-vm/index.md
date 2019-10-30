@@ -39,7 +39,7 @@ You hear that rival company _Quant2Bet_ has developed a language _Quant2PL_  tha
 This paper claims the following:
 * A method of rewriting nodes in which an AST node can rewrite itself into a more specialized or general node.  Nodes capture constructs of the guest language, such as addition or division.  
 * An optimizing compiler that takes in the structure of an interpreter and turns it into a compiler that emits bytecode.  In Graal, the compiler is written in a subset of Java.
-* A method called _speculative assumption_ in which heuristics determine the probability of executing certain sections of code.  For less frequent sections, deoptimization disregards compiled codde and switches to execution using interpretation.
+* A method called _speculative assumption_ in which heuristics determine the probability of executing certain sections of code.  For less frequent sections, deoptimization disregards compiled code and switches to execution using interpretation.
 
 
 The combination of these claims result in high performance from an interpreter without the need of implementing a language-specific compiler.
@@ -135,7 +135,7 @@ The authors suggest two main deployment scenarios:
 # A Survey on Languages
 The following languages have been tested by the authors: JavaScript, Ruby, Python, J, and R.  We will expand upon the first two as they pose interesting points.
 
-__JavaScript__ has many implementations, several which are of high performance.  Node rewritting is used for type specialization and inline caching.  Type specialization has been described before in the int/double example for addition.  Inline caching seeks to optimize operations that are performed on specific-type objects.  The implementation of this is similar to pattern matching in functional languages such as `Haskell` or `OCaml`.
+__JavaScript__ has many implementations, several which are of high performance.  Node rewriting is used for type specialization and inline caching.  Type specialization has been described before in the int/double example for addition.  Inline caching seeks to optimize operations that are performed on specific-type objects.  The implementation of this is similar to pattern matching in functional languages such as `Haskell` or `OCaml`.
 
 __Ruby__ is even more interesting.  Ruby allows to redefine any method, so naturally, deoptimization can be applied to invalidate compiled nodes.  Most notably, [later papers][oracle] indicate that Ruby implemented with Truffle is 45x faster than MRI (C backend).  Truffle JVM is also approximately 2x faster than [Topaz][topaz].  
 
@@ -146,7 +146,7 @@ One question I'd like to pose is do these results change if the backend compiler
 # Merits and Shortcomings:
 
 ### Merits
-This is an interesting idea that definitely is worth exploring when implementing the backend for a new programming language.  The main merit of Truffle is the ease of implementing a new programming langauge.  The developer only has to implement an AST interpreter, and Truffle handles the rest of the heavy lifting.  The main merit of Graal is its ease of pairing with Truffle.  Graal itself is an impressive compiler which can run both JIT or AOT, has many optimizations as previously discussed and can convert Truffle ASTs into native code.  Graal is also easily extendable for new optimizations.
+This is an interesting idea that definitely is worth exploring when implementing the backend for a new programming language.  The main merit of Truffle is the ease of implementing a new programming language.  The developer only has to implement an AST interpreter, and Truffle handles the rest of the heavy lifting.  The main merit of Graal is its ease of pairing with Truffle.  Graal itself is an impressive compiler which can run both JIT or AOT, has many optimizations as previously discussed and can convert Truffle ASTs into native code.  Graal is also easily extendable for new optimizations.
 
 Most of Truffle/Graal is available open-source!
 
@@ -167,7 +167,7 @@ __PyPy__ is runs much quicker than Python.  Python is normally interpreted in CP
 
 __Metacircular VMs__ are written in the guest language instead of the host language.  This allows sharing between the host and guest systems.  
 
-__Self Optimizing Interpreters__ rely on improving interpretation performance during execution.  This paper claims that since compilers analyze larger portions of the code, it can perform global optimizatoins that an intepreter is not able to do.
+__Self Optimizing Interpreters__ rely on improving interpretation performance during execution.  This paper claims that since compilers analyze larger portions of the code, it can perform global optimizations that an interpreter is not able to do.
 
 It would be interesting to quantify this statement and develop interpreter optimizations to combine with Graal.  I curious to see if interpreter optimizations in general make a significant difference. 
 
@@ -183,7 +183,7 @@ It actually took a lot of searching, and eventually I found a [talk by Thomas Wu
 
 
 
-This paper also markets Truffle/Graal as the first of its kind, but in its references, it acknowledgs that it is actually not.  I mainly attribute this to the fact that the paper was published out of Oracle Labs and there may have been conflicts of interest between academics and industry-minded folks.  In fact, on a [YCombinator][ycomb] message board thread, developers openly refuse to even consider using a product by Oracle.
+This paper also markets Truffle/Graal as the first of its kind, but in its references, it acknowledges that it is actually not.  I mainly attribute this to the fact that the paper was published out of Oracle Labs and there may have been conflicts of interest between academics and industry-minded folks.  In fact, on a [YCombinator][ycomb] message board thread, developers openly refuse to even consider using a product by Oracle.
 
 
 
