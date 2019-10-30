@@ -94,8 +94,8 @@ In particular, Bril’s ecosystem already had a utility for getting the dominato
 Our implementation additionally extending the dominance tree such that every list of children was ordered relative to a reverse post-order traversal of the control flow graph.
 
 In later testing (using an example, `test/gvn/constant-folding-tau-example.bril`, ported from the [class notes of Prof. Mooly Sagiv of Tel Aviv University)][tau], we found one minor bug with our SSA implementation. 
-Bril programs do not have a type checker and thus are fairly aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other. 
-The base SSA algorithm does not account for this, thus we fail to properly rename in the second step of our algorithm. 
+Bril programs do not have a type checker and are aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other. 
+The base SSA algorithm does not account for this, so we fail to properly rename in the second step of our algorithm. 
 For now, we work around this case by assigning a default value to to the variable before we branch. 
 
 [ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
