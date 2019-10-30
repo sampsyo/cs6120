@@ -41,12 +41,13 @@ Because local value numbering only considers one basic block at a time, the comp
 This clean assumption breaks when considering multiple basic blocks.
 If `x` is assigned to in two different predecessors of the block we are currently processing, looking up the value number for any assignment involving `x` on the right hand side becomes impossible!
 
-Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to _static single assignment (SSA) form_. 
+Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to _static single assignment (SSA)_ form. 
 In SSA, every variable name can only be assigned to once. 
 Reassignments to the same variable in the original code are translated to assignments to new variable names. 
 Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
 SSA form relies on a special additional instruction, canonically called `phi` nodes (evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
 
+We followed a standard algorithm
 
 For example, consider the following Bril code:
 
@@ -54,10 +55,10 @@ For example, consider the following Bril code:
 start:
   br cond left right;
 left:
-  x: int = const 1;
+  x : int = const 1;
   jmp exit;
 right:
-  x: int = const 2;
+  x : int = const 2;
   jmp exit;
 exit:
   print x;
@@ -67,28 +68,37 @@ To convert these basic blocks to Bril code, we rename variables and insert a `ph
 
 ```
 start:
-  br cond left right;
+  br cond1 left right;
 left:
-  x1: int = const 1;
+  x1 : int = const 1;
   jmp exit;
 right:
-  x2: int = const 2;
+  x2 : int = const 2;
   jmp exit;
 exit:
-  x3: int = phi x1 x2;
+  x3 : int = phi x1 x2;
   print x3;
 ```
 
+We followed a standard algorithm to convert Bril programs to SSA form. 
 
+The first pass inserts `phi` nodes wherever control flow merges multiple variable definitions. 
+We determine this condition by computing the _dominance frontier_ (essentially, boundaries in the control flow graph where control flow can recombine) for every basic block. 
+For every block in the dominance frontier of every variable, we insert a `phi` node with as many arguments as there are predecessors to the block. 
+One bug we hit with this part of the implementation was realizing that we only should insert `phi` nodes at the dominance frontier for variables that we assigned to multiple times. 
+For convenience of later analysis, we also augmented the base algorithm to track which basic blocks (or source) each `phi` argument originated from (for the above example, our generated `phi` would be `x3 : int = phi x1 x2 left right;`)  
 
-Difficulties:
-- Dominator tree: we needed the direct children (immediate dominators), not the entire dominance relation.
-We ran the transitive reduction on the dominance relation.
-- We only add a phi node for a variable if that variable is defined more than once.
-- Whether to start with phi nodes with duplicated arguments or to add them as we processed the node.
-We keep track of where the phi argument sources are from.
-- Design decision: we also store source blocks for phi arguments.
-- Found in `test/gvn/constant-folding-tau-example.bril`: Our implementation requires us to declare variables at a higher scope.
+The second pass is a recursive renaming algorithm that uses a stack to determine the correct version of a variable name for every point in the program.
+The trickiest part of implementing this algorithm was traversing the basic blocks in the correct order.
+The high level algorithm specifies that you should recursively traverse the children of each block in the dominator tree. 
+However, we found that not only did we ned to traverse the children, but we needed to traverse them _in order_ relative to the control flow graph. 
+In particular, Bril’s ecosystem already had a utility for getting the dominators of every block. To get the dominance tree, we calculated the transitive reduction of this relation. 
+Our implementation additionally extending the dominance tree such that every list of children was ordered relative to a reverse post-order traversal of the control flow graph.
+
+In later testing using an example from TAU (TODO) `test/gvn/constant-folding-tau-example.bril`, we found one minor bug with our SSA implementation. 
+Bril programs do not have a type checker and thus are fairly aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other. 
+The base SSA algorithm does not account for this, thus we fail to properly rename in the second step of our algorithm. 
+For now, we work around this case by assigning a default value to to the variable before we branch. 
 
 ## Global value numbering
 
