@@ -30,7 +30,7 @@ You hear that rival company _Quant2Bet_ has developed a language _Quant2PL_  tha
 ## Background
 * The __Java Virtual Machine (JVM)__ is a virtual machine that allows computers to run programming languages that compile to Java bytecode.
 * An __Abstract Syntax Tree (AST)__ is a tree representation of source code.  Each node is a specialized construct of the programming language, with branches as inputs to the construct.
-* A __Just-In-Time (JIT) compiler__ compiles a program at run-time instead of before execution. JIT compilers rely on Ahead-Of-Time (AOT) compilation and interpretation.
+* A __Just-In-Time (JIT) compiler__ compiles a program at run time instead of before execution. JIT compilers rely on Ahead-Of-Time (AOT) compilation and interpretation.
 * __Dynamic Dispatch__ is the process of iterating through implementations of a polymorphic operation and selecting which one to call at run time.
 
 
