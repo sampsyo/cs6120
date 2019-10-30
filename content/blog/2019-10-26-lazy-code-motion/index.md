@@ -133,6 +133,17 @@ module AvailabilityIn =
     end)
 ```
 
+I implemented a CFG printer using the Ocamlgraph Graphviz backend so that
+I could debug the optimization's changes to CFGs directly, rather than staring
+at pretty printed output. Here's the result of running the optimization on
+`tests/lcm/simple`, a nested loop benchmark. There's a way to include the
+instructions from each block inside the nodes, but for this example that makes
+it hard to follow. There is a loop invariant computation in `inner_body` that
+lazy code motion hoists to `lcm_inserted_block0`.
+
+<img src="simple-before.png" />
+<img src="simple-after.png" />
+
 # Limitations
 I implemented the full lazy code motion optimization, but there were some
 issues. The optimization expects lexically equal expressions to always be stored
@@ -152,3 +163,40 @@ would reduce the number of jumps. Similarly the pretty-printer for CFGs
 does not omit jumps where fall-through would work--this seems like a minor
 detail but could have performance or code size implications.
 
+# Evaluation
+I instrumented the interpreter to count operations and computations.
+A computation is any instruction that computes the value of an expression. An
+operation is any instruction at all, including control flow and return
+instructions. Many of the programs in the `examples` and `test` directories are
+either a single basic block or include no computations, so I excluded them from
+this evaluation because the optimization doesn't do anything to them.
+
+```
++-----------------------------------------------------------------------------------------------------------------+
+|program                      |ops (before lcm)|computations (before lcm)|ops (after lcm)|computations (after lcm)|
++-----------------------------------------------------------------------------------------------------------------+
+|test/lcm/dont-hoist-thru-loop|               8|                        1|             11|                       1|
++-----------------------------------------------------------------------------------------------------------------+
+|test/lcm/two-blocks          |               5|                        1|              8|                       1|
++-----------------------------------------------------------------------------------------------------------------+
+|test/lcm/hoist-thru-loop     |             412|                      303|            617|                     203|
++-----------------------------------------------------------------------------------------------------------------+
+|test/lcm/simple              |            1217|                      906|           1925|                     605|
++-----------------------------------------------------------------------------------------------------------------+
+|examples/lvn_test/nonlocal   |               7|                        3|             12|                       3|
++-----------------------------------------------------------------------------------------------------------------+
+|examples/dom_test/loopcond   |             117|                       46|            165|                      46|
++-----------------------------------------------------------------------------------------------------------------+
+|examples/df_test/cond        |               9|                        1|             12|                       1|
++-----------------------------------------------------------------------------------------------------------------+
+|examples/df_test/fact        |              62|                       25|             89|                      25|
++-----------------------------------------------------------------------------------------------------------------+
+```
+
+Since lazy code motion is designed to avoid redundant computations of
+expressions, the number of computations never increases after optimization. It
+looks like the overhead of the conservative temporary allocation strategy and
+basic block insertion impacts the total number of computations negatively by
+adding moves and jumps respectively. Loopy benchmarks (simple, hoist-thru-loop)
+exhibit significant speedups due to computations being hoisted out of their
+loops.
