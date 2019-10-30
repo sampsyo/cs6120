@@ -100,14 +100,14 @@ data structures for representing control flow graphs. The open source
 this. It includes excellent generic graph data structures and a framework for
 implementing dataflow analyses over graphs.
 
-There were some mismatches between the dataflow analyses in [1] and the
-Ocamlgraph dataflow framework. The biggest issue was that the Ocamlgraph
-framework made it hard to refer to results of other dataflow passes in later
-ones. I worked around this by tagging every basic block in the CFG with a map of
-"attributes" and writing Ocaml functors like `MakeDataflow` that require their
-input module to include an `attr_name` field. When you run a dataflow analysis
-created with `MakeDataflow`, it saves the results of the analysis at each basic
-block into the attributes map under the `attr_name` key.
+There were some mismatches between the dataflow analyses presented by Drechsler
+et al. [1] and the Ocamlgraph dataflow framework. The biggest issue was that
+the Ocamlgraph framework made it hard to refer to results of other dataflow
+passes in later ones. I worked around this by tagging every basic block in the
+CFG with a map of "attributes" and writing Ocaml functors like `MakeDataflow`
+that require their input module to include an `attr_name` field. When you run
+a dataflow analysis created with `MakeDataflow`, it saves the results of the
+analysis at each basic block into the attributes map under the `attr_name` key.
 
 The analyses were easy to write down once there was structure in place for
 defining them. For example, here is the definition of an available expressions
@@ -200,3 +200,7 @@ basic block insertion impacts the total number of computations negatively by
 adding moves and jumps respectively. Loopy benchmarks (simple, hoist-thru-loop)
 exhibit significant speedups due to computations being hoisted out of their
 loops.
+
+# Bibliography
+1. Drechsler, K.-H., Stadel, M. P. A variation of Knoop, Rüthing, and Steffen's Lazy Code Motion. SIGPLAN Notices 28, 5, (1993), 29-38.
+2. Knoop, J., Rüthing, O., Steffen, B. Lazy code motion. SIGPLAN Notices 27, 7, (1992), 224-234.
