@@ -35,6 +35,52 @@ block:
 
 ## Static Single Assignment (SSA) Form
 
+The primary difference between how you go about actually implementing _local_ value numbering vs. _global_ value numbering is the form of the input source code.
+For local value numbering, the analysis can take in code in any standard imperative assignment format.
+Because local value numbering only considers one basic block at a time, the compiler can easily determine the relationship between assignments to the same variable (that is, if the source writes to a variable `x` twice, we can just process the code in the block in order to know which assignment is relevant). 
+This clean assumption breaks when considering multiple basic blocks.
+If `x` is assigned to in two different predecessors of the block we are currently processing, looking up the value number for any assignment involving `x` on the right hand side becomes impossible!
+
+Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to _static single assignment (SSA) form_. 
+In SSA, every variable name can only be assigned to once. 
+Reassignments to the same variable in the original code are translated to assignments to new variable names. 
+Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
+SSA form relies on a special additional instruction, canonically called `phi` nodes (evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
+
+
+For example, consider the following Bril code:
+
+```
+start:
+  br cond left right;
+left:
+  x: int = const 1;
+  jmp exit;
+right:
+  x: int = const 2;
+  jmp exit;
+exit:
+  print x;
+```
+
+To convert these basic blocks to Bril code, we rename variables and insert a `phi` instruction when the control flow merges again in the last block.
+
+```
+start:
+  br cond left right;
+left:
+  x1: int = const 1;
+  jmp exit;
+right:
+  x2: int = const 2;
+  jmp exit;
+exit:
+  x3: int = phi x1 x2;
+  print x3;
+```
+
+
+
 Difficulties:
 - Dominator tree: we needed the direct children (immediate dominators), not the entire dominance relation.
 We ran the transitive reduction on the dominance relation.
