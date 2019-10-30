@@ -33,12 +33,14 @@ block:
 }
 ```
 
-## SSA
+## Static Single Assignment (SSA) Form
 
 Difficulties:
-- Dominator tree: we needed the direct children (immediate dominators), not the entire dominance relation. We ran the transitive reduction on the dominance relation.
+- Dominator tree: we needed the direct children (immediate dominators), not the entire dominance relation.
+We ran the transitive reduction on the dominance relation.
 - We only add a phi node for a variable if that variable is defined more than once.
-- Whether to start with phi nodes with duplicated arguments or to add them as we processed the node. We keep track of where the phi argument sources are from.
+- Whether to start with phi nodes with duplicated arguments or to add them as we processed the node.
+We keep track of where the phi argument sources are from.
 - Design decision: we also store source blocks for phi arguments.
 - Found in `test/gvn/constant-folding-tau-example.bril`: Our implementation requires us to declare variables at a higher scope.
 
@@ -49,9 +51,11 @@ Difficulties:
 ### Constant folding
 
 Difficulties:
-- Recursively visiting blocks in the dominator tree in reverse post order is not enough to ensure that a phi node's arguments have been processed in the absence of backedges. We also had to sort the immedately dominated blocks by their order in the CFG.
+- Recursively visiting blocks in the dominator tree in reverse post order is not enough to ensure that a phi node's arguments have been processed in the absence of backedges. 
+We also had to sort the immedately dominated blocks by their order in the CFG.
 - Can't do constant propagation because Bril operations require registers as operands.
-- `examples/gvn/constant-folding-calpoly-example.bril`: There's a division by zero when running constant folding, but the compiler shouldn't crash! We filed an issue with Bril's local value numbering and fixed our implementation.
+- `examples/gvn/constant-folding-calpoly-example.bril`: There's a division by zero when running constant folding, but the compiler shouldn't crash!
+We filed an issue with Bril's local value numbering and fixed our implementation.
 
 
 ## Evaluation
@@ -91,7 +95,9 @@ B4:
 }
 ```
 
-Our implementation removes the redundant additions in blocks `B2` and `B3`. It also removes from block `B4`: 1) the meaningless phi node `u2 : int = phi u0 u1 B2 B3;`, which has arguments that are always equal, and 2) the redundant phi node `y2 : int = phi y0 y1 B2 B3;`, which is identical to the phi node that precedes it.  Here is the full output, which matches the correct output in the paper:
+Our implementation removes the redundant additions in blocks `B2` and `B3`.
+It also removes from block `B4`: 1) the meaningless phi node `u2 : int = phi u0 u1 B2 B3;`, which has arguments that are always equal, and 2) the redundant phi node `y2 : int = phi y0 y1 B2 B3;`, which is identical to the phi node that precedes it. 
+Here is the full output, which matches the correct output in the paper:
 
 ```
 void main(a0 : int, b0 : int, c0 : int, d0 : int, e0 : int, f0 : int) {
