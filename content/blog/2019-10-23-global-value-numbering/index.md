@@ -20,7 +20,45 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ### Overview
 
-Q. Why GVN?
+If you follow [PL Twitter™️][pltwitter], you may have seen this tweets go by from our very own [Adrian][]:
+
+<img src="twitter.jpg" width="300"/>
+
+What, you may ask, is value numbering, and how is it so mind-blowing? 
+
+The basic premise of value numbering is that we can make our code more efficient by removing duplicate computation during compilation.
+In particular, if we assign values to every “unique” piece of computation, we can save on work by only actually running that piece once.
+At every subsequent use, we can then refer to the already-computed value.
+
+For example, a value numbering pass (followed by dead code elimination) can change the follow:
+
+```
+sum1 : int = a + b;
+sum2 : int = b + a;
+mul : int = sum1 * sum2; 
+```
+
+To:
+```
+sum1 : int = a + b;
+mul : int = sum1 * sum1; 
+```
+
+A compiler is especially well-poised to do this type of optimization because it can come at the cost of readability.
+While a programmer may not want to explicitly memoize every intermediate value across their computations, implementing value numbering allows us to reduce redundancy without much overhead. 
+
+The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations. 
+For example, we extend our value numbering to do both [copy propagation][copy] and [constant folding][const].
+
+[pltwitter]: https://twitter.com/paul_pearce/status/1056684865846861824
+[Adrian]: https://www.cs.cornell.edu/~asampson/
+[copy]: https://en.wikipedia.org/wiki/Copy_propagation
+[const]: https://en.wikipedia.org/wiki/Constant_folding
+
+## Why _global_ value numbering?
+
+The most simple form of value numbering is _local_ value numbering, which works within each basic block.
+However, a local approach misses optimizing code like the following, where redundancy is found across basic block boundaries:
 
 ```
 void main(x : int, y : int) {
@@ -45,7 +83,7 @@ Global value numbering sidesteps this difficulty by requiring that the input sou
 In SSA, every variable name can only be assigned to once. 
 Reassignments to the same variable in the original code are translated to assignments to new variable names. 
 Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
-SSA form relies on a special additional instruction, canonically called `phi` nodes (evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
+SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
 
 For example, consider the following Bril code:
 
@@ -110,7 +148,7 @@ There are two main approaches to global value numbering, as described in [Value 
 Hash-based techniques, like those used in local value numbering, hash operations and find redundant values by comparing to previously hashed operations.
 Partitioning algorithms, on the other hand, divide all operations into equivalence classes.
 
-We chose to implement hash-based value numbering because it allows for copy propagation extensions and operates on the dominator tree computed during covnersion to SSA.
+We chose to implement hash-based value numbering because it allows for copy propagation extensions and operates on the dominator tree computed during conversion to SSA.
 While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately.
 A distinct SSA conversion allows more optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
 
@@ -151,7 +189,7 @@ DVNT_GVN(block b):
 
 Difficulties:
 - Recursively visiting blocks in the dominator tree in reverse post order is not enough to ensure that a phi node's arguments have been processed in the absence of backedges. 
-We also had to sort the immedately dominated blocks by their order in the CFG.
+We also had to sort the immediately dominated blocks by their order in the CFG.
 - Can't do constant propagation because Bril operations require registers as operands.
 - `examples/gvn/constant-folding-calpoly-example.bril`: There's a division by zero when running constant folding, but the compiler shouldn't crash!
 We filed an issue with Bril's local value numbering and fixed our implementation.
