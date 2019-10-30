@@ -256,9 +256,7 @@ We filed an issue with Bril's local value numbering and fixed our implementation
 ## Evaluation
 
 
-1. Correctness
-
-### Briggs, Cooper, and Simpson
+### Correctness
 
 The following example, from [Value Numbering][], by Briggs, Cooper, and Simpson, illustrates how GVN removes redundant instructions across basic blocks:
 
@@ -311,7 +309,7 @@ B4:
 }
 ```
 
-2. Trying to get fewer instructions.
+### Trying to get fewer instructions
 
 We treat the number of instructions as a proxy for code performance, where fewer lines of code is superior.
 For each of a number of Bril test programs, we report in the following graph:
@@ -320,7 +318,7 @@ For each of a number of Bril test programs, we report in the following graph:
 
 <img src="eval-correctness.png" width="500"/>
 
-3. Bigger benchmarks with TypeScript frontend and comparison with LVN
+### Bigger benchmarks with TypeScript frontend and comparison with LVN
 
 For a slightly more realistic analysis, we ran GVN on the more complex programs afforded by Bril's TypeScript frontend.
 In addition to the existing test programs from project 1, we also implemented a quadratic formula calculation (`test/gvn/quadratic.ts.bril`), [fizz buzz][] (`test/gvn/fizz-buzz.ts.bril`), and a naive [Sieve of Eratosthenes][] without arrays (`test/gvn/check-primes.ts.bril`).
@@ -335,11 +333,12 @@ In addition to the metrics in the preceding graph, we also report the number of 
 [fizz buzz]: https://en.wikipedia.org/wiki/Fizz_buzz
 [local value numbering]: https://github.com/sampsyo/bril/blob/master/examples/lvn.py
 
-<img src="eval-ts.png" width="500"/>
+<img src="eval-ts.png" width="800"/>
 
-4. LLVM GVN tests that use more features than Bril has.
-
+<!--
+### LLVM GVN tests that use more features than Bril has.
 Our implementation does not produce the same output as LLVM on all tests because 1) Bril operations require that all operands are registers and 2) LLVM GVN has more features.
+-->
 
 GVN provides the base for a number of additional optimizations, most of which we have not yet implemented.
 
