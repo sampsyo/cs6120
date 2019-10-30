@@ -22,11 +22,11 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 If you follow [PL Twitter™️][pltwitter], you may have seen this tweets go by from our very own [Adrian][]:
 
-<img src="twitter.jpg" width="300"/>
+<img src="twitter.jpg" width="500"/>
 
 What, you may ask, is value numbering, and how is it so mind-blowing? 
 
-The basic premise of value numbering is that we can make our code more efficient by removing duplicate computation during compilation.
+The basic premise of [value numbering][vn] is that we can make our code more efficient by removing duplicate computation during compilation.
 In particular, if we assign values to every “unique” piece of computation, we can save on work by only actually running that piece once.
 At every subsequent use, we can then refer to the already-computed value.
 
@@ -50,6 +50,7 @@ While a programmer may not want to explicitly memoize every intermediate value a
 The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations. 
 For example, we extend our value numbering to do both [copy propagation][copy] and [constant folding][const].
 
+[vn]: https://en.wikipedia.org/wiki/Value_numbering
 [pltwitter]: https://twitter.com/paul_pearce/status/1056684865846861824
 [Adrian]: https://www.cs.cornell.edu/~asampson/
 [copy]: https://en.wikipedia.org/wiki/Copy_propagation
@@ -185,15 +186,72 @@ DVNT_GVN(block b):
 
 ### Copy propagation
 
+[Copy propagation][copy] entails identifying chains of copies (in Bril, `id` instructions) that can be replaced by the original value. For example, the following code:
+
+```
+void main(a : int) {
+entry:
+  b : int = id a;
+  c : int = id b;
+  d : int = id c;
+  print d;
+}
+```
+
+Can be safely simplified to:
+```
+void main(a : int) {
+entry:
+  print a;
+}
+```
+
+We extend our global value numbering implementation to include copy propagation via special treatment of `id` instructions.
+In particular, for `id`'s we look up the value number for the argument value directly. 
+Because our programs are in SSA, finding this value number is as simple as grabbing the argument itself.
+
 ### Constant folding
 
-Difficulties:
+[Constant folding][const] entails performing simple arithmetic operations on known constants at compile time rather than runtime.
+For example, the following Bril:
+
+```
+void main() {
+entry:
+  a : int = const 1;
+  b : int = const 2;
+  c : int = add a b;
+  print c;
+}
+```
+
+Can be replaced with:
+```
+void main() {
+entry:
+  c : int = const 3;
+  print c;
+}
+```
+
+We extend our global value numbering to perform constant folding by keeping a mapping from variable names defined as constants to their integer or boolean literal values.
+When we encounter and arithmetic operation, we check whether all operands are constant, and fold (that is, perform the operation and drop in the result) if so.
+The argument constants can then often be removed entirely with a later dead code elimination pass.
+
+When implementing constant folding, we [found a bug][bug] in Bril's existing local value numbering implementation.
+When Bril programs have division by zero, the local constant folding failed with an exception.
+We made the design judgment that compiler passes should not fail on misbehaving code, but instead generate code with the same behavior (for example, the implementation's dynamic error could exist on a branch that never actually executes).
+We modifying this behavior in both the central Bril local value and our new global value numbering to instead bail out on constant folding when encountering a potential exception in the folding step.
+
+[bug]: https://github.com/sampsyo/bril/issues/40
+
+<!-- Difficulties:
 - Recursively visiting blocks in the dominator tree in reverse post order is not enough to ensure that a phi node's arguments have been processed in the absence of backedges. 
 We also had to sort the immediately dominated blocks by their order in the CFG.
 - Can't do constant propagation because Bril operations require registers as operands.
 - `examples/gvn/constant-folding-calpoly-example.bril`: There's a division by zero when running constant folding, but the compiler shouldn't crash!
 We filed an issue with Bril's local value numbering and fixed our implementation.
-
+ -->
 
 ## Evaluation
 
@@ -252,30 +310,6 @@ B4:
   x2: int = phi v0 w0 B2 B3;
   z0: int = add u0 x2;
   ret ;
-}
-```
-
-### Copy propagation
-
-```
-int main(a : int) {
-entry:
-  b : int = id a;
-  c : int = id b;
-  d : int = id c;
-  print d;
-}
-```
-
-### Constant folding
-
-```
-int main() {
-entry:
-  a : int = const 1;
-  b : int = const 2;
-  c : int = add a b;
-  print c;
 }
 ```
 
