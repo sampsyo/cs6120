@@ -30,7 +30,7 @@ The basic premise of [value numbering][vn] is that we can make our code more eff
 In particular, if we assign values to every “unique” piece of computation, we can save on work by only actually running that piece once.
 At every subsequent use, we can then refer to the already-computed value.
 
-For example, a value numbering pass (followed by dead code elimination) can change the follow:
+For example, a value numbering pass (followed by dead code elimination) can change the following:
 
 ```
 sum1 : int = a + b;
@@ -38,7 +38,7 @@ sum2 : int = b + a;
 mul : int = sum1 * sum2; 
 ```
 
-To:
+To the more efficient:
 ```
 sum1 : int = a + b;
 mul : int = sum1 * sum1; 
@@ -71,6 +71,9 @@ block:
   ret;
 }
 ```
+[Bril][bril]'s ecosystem already had a local value numbering implementation that was, as expected, unable to optimize the code above.
+
+[bril]:https://github.com/sampsyo/bril/blob/master/README.md
 
 ## Static Single Assignment (SSA) Form
 
@@ -84,7 +87,8 @@ Global value numbering sidesteps this difficulty by requiring that the input sou
 In SSA, every variable name can only be assigned to once. 
 Reassignments to the same variable in the original code are translated to assignments to new variable names. 
 Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
-SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
+SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable.
+`phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
 
 For example, consider the following Bril code:
 
@@ -150,11 +154,11 @@ Hash-based techniques, like those used in local value numbering, hash operations
 Partitioning algorithms, on the other hand, divide all operations into equivalence classes.
 
 We chose to implement hash-based value numbering because it allows for copy propagation extensions and operates on the dominator tree computed during conversion to SSA.
-While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately.
-A distinct SSA conversion allows more optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
+While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately for modularity.
+A distinct SSA conversion allows more downstream optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
 
 We implemented the following pseudocode, adapted from Figure 4 of the aforementioned paper, so called because it is a 'dominator-based value numbering technique'.
-A value's name is the SSA variable name, which is guaranteed to be unique by SSA, for which it was first computed.
+A value's name is the SSA variable name (which is guaranteed to be unique by SSA) for which it was first computed.
 The algorithm requires a program's dominator tree and traverses blocks in reverse postorder.
 
 ```
