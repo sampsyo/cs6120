@@ -20,7 +20,7 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ### Overview
 
-If you follow [PL Twitter™️][pltwitter], you may have seen this tweets go by from our very own [Adrian][]:
+If you follow [PL Twitter][pltwitter]™, you may have seen this tweets go by from our very own [Adrian][]:
 
 <img src="twitter.jpg" width="500"/>
 
