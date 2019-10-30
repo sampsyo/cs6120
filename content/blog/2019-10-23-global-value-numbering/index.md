@@ -41,13 +41,11 @@ Because local value numbering only considers one basic block at a time, the comp
 This clean assumption breaks when considering multiple basic blocks.
 If `x` is assigned to in two different predecessors of the block we are currently processing, looking up the value number for any assignment involving `x` on the right hand side becomes impossible!
 
-Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to _static single assignment (SSA)_ form. 
+Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to [_static single assignment (SSA)_][ssa] form. 
 In SSA, every variable name can only be assigned to once. 
 Reassignments to the same variable in the original code are translated to assignments to new variable names. 
 Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
 SSA form relies on a special additional instruction, canonically called `phi` nodes (evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
-
-We followed a standard algorithm
 
 For example, consider the following Bril code:
 
@@ -80,10 +78,10 @@ exit:
   print x3;
 ```
 
-We followed a standard algorithm to convert Bril programs to SSA form. 
+Having unique variable assignments is enormously helpful in implementing optimization---most industrial-strength compilers, including [LLVM][] and [GCC][], rely on it internally. We followed a standard algorithm to convert Bril programs to SSA form. 
 
 The first pass inserts `phi` nodes wherever control flow merges multiple variable definitions. 
-We determine this condition by computing the _dominance frontier_ (essentially, boundaries in the control flow graph where control flow can recombine) for every basic block. 
+We determine this condition by computing the [_dominance frontier_][domf] (essentially, boundaries in the control flow graph where control flow can recombine) for every basic block. 
 For every block in the dominance frontier of every variable, we insert a `phi` node with as many arguments as there are predecessors to the block. 
 One bug we hit with this part of the implementation was realizing that we only should insert `phi` nodes at the dominance frontier for variables that we assigned to multiple times. 
 For convenience of later analysis, we also augmented the base algorithm to track which basic blocks (or source) each `phi` argument originated from (for the above example, our generated `phi` would be `x3 : int = phi x1 x2 left right;`)  
@@ -95,10 +93,16 @@ However, we found that not only did we ned to traverse the children, but we need
 In particular, Bril’s ecosystem already had a utility for getting the dominators of every block. To get the dominance tree, we calculated the transitive reduction of this relation. 
 Our implementation additionally extending the dominance tree such that every list of children was ordered relative to a reverse post-order traversal of the control flow graph.
 
-In later testing using an example from TAU (TODO) `test/gvn/constant-folding-tau-example.bril`, we found one minor bug with our SSA implementation. 
+In later testing (using an example, `test/gvn/constant-folding-tau-example.bril`, ported from the [class notes of Prof. Mooly Sagiv of Tel Aviv University)][tau], we found one minor bug with our SSA implementation. 
 Bril programs do not have a type checker and thus are fairly aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other. 
 The base SSA algorithm does not account for this, thus we fail to properly rename in the second step of our algorithm. 
 For now, we work around this case by assigning a default value to to the variable before we branch. 
+
+[ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
+[llvm]: https://llvm.org/docs/tutorial/OCamlLangImpl7.html
+[gcc]: https://gcc.gnu.org/onlinedocs/gccint/SSA.html
+[domf]: https://en.wikipedia.org/wiki/Dominator_(graph_theory)
+[tau]: http://www.cs.tau.ac.il/~msagiv/courses/pa07/lecture2-notes-update.pdf
 
 ## Global value numbering
 
