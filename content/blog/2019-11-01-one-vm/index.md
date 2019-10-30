@@ -28,7 +28,7 @@ You hear that rival company _Quant2Bet_ has developed a language _Quant2PL_  tha
 ["One VM to Rule Them All"][paper] (2013) presents an architecture that allows implementing new programming languages within a common framework, allowing for language-agnostic optimizations.  Instead of designing the entire stack for a new programming language, you can just focus on creating a parser and AST interpreter.  Now, you can reuse functionality from existing virtual machines and your language is already fast and optimized.  In the following sections, we call the new language that we are trying to build the _guest language_ and the backend for this infrastructure that acts as an interpreter the _host language_.
 
 ## Background
-* __Java Virtual Machine (JVM)__ is a virtual machine that allows computers to run programming languages that compile to Java bytecode.
+* The __Java Virtual Machine (JVM)__ is a virtual machine that allows computers to run programming languages that compile to Java bytecode.
 * An __Abstract Syntax Tree (AST)__ is a tree representation of source code.  Each node is a specialized construct of the programming language, with branches as inputs to the construct.
 * A __Just-In-Time (JIT) compiler__ compiles a program at run-time instead of before execution. JIT compilers rely on Ahead-Of-Time (AOT) compilation and interpretation.
 * __Dynamic Dispatch__ is the process of iterating through implementations of a polymorphic operation and selecting which one to call at run time.
