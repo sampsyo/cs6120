@@ -198,7 +198,7 @@ details = "Thomas Ball and James R. Larus. MICRO 1996."
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "Rachit & Bhargava"
+leader = "Rachit"
 [[classes.readings]]
 name = "An efficient implementation of SELF, a dynamically-typed object-oriented language based on prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
@@ -225,7 +225,7 @@ details = "Thomas Würthinger, Christian Wimmer, Andreas Wöß, Lukas Stadler, G
 
 [[classes]]
 title = "Memory Allocation"
-leader = "Oliver & Daniel G."
+leader = "Oliver"
 [[classes.readings]]
 name = "Reconsidering custom memory allocation"
 link = "https://dl.acm.org/citation.cfm?id=582421"
@@ -284,7 +284,7 @@ details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant T
 
 [[classes]]
 title = "Dynamic Binary Translation"
-leader = "maybe Ryan"
+leader = "Ryan"
 [[classes.readings]]
 name = "The Transmeta Code Morphing™ Software: using speculation, recovery, and adaptive retranslation to address real-life challenges"
 link = "https://dl.acm.org/citation.cfm?id=776263"
