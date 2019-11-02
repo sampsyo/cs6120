@@ -49,7 +49,6 @@ Predication was added to Bril to target the aforementioned hardware building upo
 
 # merge lanes back together
   vc: vector = vphi p0 vc0 vc1;
-
 ```
 
 Each vector instruction supported by the interpreter is enumerated along with a description below.
@@ -81,7 +80,6 @@ Divergence analysis statically determines whether a vector instruction has redun
 
 # add vectors
   vec2: vector = vadd vec0 vec1;
-
 ```
 
 An instruction is assumed to be convergent (not divergent) by default. We traverse the dataflow graph forwards and mark an instruction as divergent if the following conditions are met. Our algorithm is based on the descriptions in [these](https://dl.acm.org/citation.cfm?id=3314902) [papers](https://ieeexplore.ieee.org/document/6113840).
@@ -107,7 +105,6 @@ Once we know which instructions are divergent and which are not, we can optimize
 
 # add vectors -> add scalars
   vec2_s: int = add vec0_s vec1_s;
-
 ```
 
 We implement a "swap table" that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of doing a swap. Our swap table is given below along with a description of each instruction reproduced from above.
@@ -153,7 +150,6 @@ Predicated vector instructions can also be simplified even in the case of a dive
   (p0) vec4: vector = vadd vec0 vec0;
   (!p0) vec5: vector = vadd vec1 vec1;
   vec6: vector = vphi p0 vec4 vec5;
-
 ```
 
 Thus, the code inside the predicate can be optimized, and the predicate can be removed because there are no longer lanes to mask out. The values still need to be merged afterwards according to the predicate to produce a result vector.
@@ -174,7 +170,6 @@ Thus, the code inside the predicate can be optimized, and the predicate can be r
   vec4_s_v: vector = s2vb vec4_s;
   vec5_s_v: vector = s2vb vec5_s;
   vec6: vector = vphi p0 vec4_s_v vec5_s_v;
-
 ```
 
 
