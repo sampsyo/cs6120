@@ -110,7 +110,7 @@ Once we know which instructions are divergent and which are not, we can optimize
 
 ```
 
-We implement a 'swap table' that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of doing a swap. Our swap table is given below along with a description of each instruction reproduced from above.
+We implement a "swap table" that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of doing a swap. Our swap table is given below along with a description of each instruction reproduced from above.
 
 |     Vector Instruction    | Description | Scalar Instruction |
 | ------------- | ------------- | ------------- |
