@@ -223,4 +223,4 @@ Our benchmark selection was weak for two reasons. First, as described above, we 
 
 ## Conclusion
 
-We implemented divergence analysis and optimizations based on that analysis. We focused on swapping expensive vector instructions for cheaper scalar instructions when the vector instruction did redundant work. We quantify our optimization by comparing the number of ALU Ops executed by the un-optimized baseline and optimized version. Our results show an overall reduction in ALU Ops.
+We implemented divergence analysis and optimizations based on that analysis. We focused on swapping expensive vector instructions for cheaper scalar instructions when the vector instruction did redundant work. We quantify our optimization by comparing the number of ALU ops executed by the un-optimized baseline and optimized version. Our results show an overall reduction in ALU ops.
