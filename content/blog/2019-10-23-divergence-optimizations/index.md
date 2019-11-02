@@ -209,7 +209,7 @@ We evaluate the effectiveness of the divergence optimizations on synthetic bench
 | FIR-pred | 2D FIR filter with single conditional | 87 | 81 | 7
 | Synthetic | Sum of (a[outer] * b[inner]) / c[inner] | 53 | 39 | 26
 
-The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks. It's hard to say exactly what a fair baseline would be because we don't know what a SPMD front-end would actually emit. For example, loads that aren't contiguous use `gather` in our baseline. In the case where each address is the same (i.e. indexed by the inner loop iterator), the `gather` can be turned into a `lw`. It's possible that this is obvious enough for a SPMD front-end to do automatically. We don't have a SPMD to Bril compiler, so we can't truly quantify a realistic improvement.
+The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks. It's hard to say exactly what a fair baseline would be because we don't know what a SPMD front-end would actually emit. For example, loads that aren't contiguous use `gather` in our baseline. In the case where each address is the same (i.e., indexed by the inner loop iterator), the `gather` can be turned into a `lw`. It's possible that this is obvious enough for a SPMD front-end to do automatically. We don't have a SPMD to Bril compiler, so we can't truly quantify a realistic improvement.
 
 
 ## Shortcomings
