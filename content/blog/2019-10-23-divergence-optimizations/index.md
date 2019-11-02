@@ -138,7 +138,7 @@ The benefits of replacing a vector with a scalar outweighs the additional `s2vb`
 
 ### Predication Removal
 
-Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the Bril example below. The predicate `p0` is divergent because it's input `vec2` and `vec3` are divergent. However, the predicated vector instructions `vec4` and `vec5` are convergent because their inputs are convergent.
+Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the Bril example below. The predicate `p0` is divergent because its inputs `vec2` and `vec3` are divergent. However, the predicated vector instructions `vec4` and `vec5` are convergent because their inputs are convergent.
 
 ```python
 # convergent vectors
