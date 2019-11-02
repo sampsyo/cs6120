@@ -18,7 +18,7 @@ In this blog, we describe our implementation and empirical evaluation of diverge
 
 ## The SPMD Programming Model
 
-SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). In SPMD, a programmer describes parallelization at a coarse-grain level (i.e. at the level of an entire program). This contrasts a standard C+SIMD programming model which requires a fine-grained specification of when parallelization is desired (i.e. at the single-instruction level). One can think of the SPMD model as a higher level of abstraction than the SIMD model: in certain processors, SPMD will be compiled down to the SIMD model. 
+SPMD is a highly productive parallel programming model with massive market share (ex. CUDA, OpenCL, OpenGL). In SPMD, a programmer describes parallelization at a coarse-grain level (i.e., at the level of an entire program). This contrasts a standard C+SIMD programming model which requires a fine-grained specification of when parallelization is desired (i.e., at the single-instruction level). One can think of the SPMD model as a higher level of abstraction than the SIMD model: in certain processors, SPMD will be compiled down to the SIMD model. 
 
 While the coarse-grain specification of parallelization provides productivity, it also aggressively generates vector instructions. An obvious SPMD compilation procedure would generate a vector instruction for every instruction in the SPMD program. However, not every instruction needs to be parallelized. There are often values unknown at compile time, but constant across each parallel work-item. For example, memory indices and loop indices might be constant across lanes. In these cases, scalar instructions are optimal. A scalar instruction performs one operation for a group of parallel lanes and can later broadcast the single value to future vector instructions.
 
@@ -26,7 +26,7 @@ While the coarse-grain specification of parallelization provides productivity, i
 
 ### Hardware
 
-We target a simplified version of the GPU architecture described in [IGC](https://dl.acm.org/citation.cfm?id=3314902). Each core contains a single ALU with a vector length of four as well as scalar, vector, and predicate register files. A SIMD instruction will use operands from the vector register and run on all lanes of the ALU. Predicate registers can be used to mask off certain lanes of the vector instructions when there is control flow. Scalar instructions will use a scalar register and only a single lane of the ALU. A scalar instruction and an equivalent vector instruction will complete in the same amount of time, but a scalar instruction will consume less energy than the vector instruction. Less dynamic energy is required: to (1) read a scalar register than a vector one and (2) use only a single lane of the ALU rather than every lane. We will save energy anytime we can replace a vector instruction with an equivalent scalar one.
+We target a simplified version of the GPU architecture described in [IGC](https://dl.acm.org/citation.cfm?id=3314902). Each core contains a single ALU with a vector length of four as well as scalar, vector, and predicate register files. A SIMD instruction will use operands from the vector register and run on all lanes of the ALU. Predicate registers can be used to mask off certain lanes of the vector instructions when there is control flow. Scalar instructions will use a scalar register and only a single lane of the ALU. A scalar instruction and an equivalent vector instruction will complete in the same amount of time, but a scalar instruction will consume less energy than the vector instruction. Less dynamic energy is required: to (1) read a scalar register than a vector one and (2) use only a single lane of the ALU rather than every lane. We will save energy any time we can replace a vector instruction with an equivalent scalar one.
 
 Although we target a specific architecture, every SIMD (Intel Integrated GPUs) and SIMT (nVidia and AMD Discrete GPUs) architecture can benefit from divergence optimizations.
 
@@ -110,7 +110,7 @@ Once we know which instructions are divergent and which are not, we can optimize
 
 ```
 
-We implement a 'swap table' that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of doing a swap. Our swap table is given below along with a description of each instruction reproduced from above.
+We implement a "swap table" that matches a vector instruction with a functionally equivalent scalar instruction. An alternate design would be to annotate each original scalar instruction with a vector length and just change the vector length instead of doing a swap. Our swap table is given below along with a description of each instruction reproduced from above.
 
 |     Vector Instruction    | Description | Scalar Instruction |
 | ------------- | ------------- | ------------- |
@@ -138,7 +138,7 @@ The benefits of replacing a vector with a scalar outweighs the additional `s2vb`
 
 ### Predication Removal
 
-Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the Bril example below. The predicate `p0` is divergent because it's input `vec2` and `vec3` are divergent. However, the predicated vector instructions `vec4` and `vec5` are convergent because their inputs are convergent.
+Predicated vector instructions can also be simplified even in the case of a divergent predicate value. Every lane that is active in the vector instruction may still perform redundant work. Consider the Bril example below. The predicate `p0` is divergent because its inputs `vec2` and `vec3` are divergent. However, the predicated vector instructions `vec4` and `vec5` are convergent because their inputs are convergent.
 
 ```python
 # convergent vectors
@@ -209,7 +209,7 @@ We evaluate the effectiveness of the divergence optimizations on synthetic bench
 | FIR-pred | 2D FIR filter with single conditional | 87 | 81 | 7
 | Synthetic | Sum of (a[outer] * b[inner]) / c[inner] | 53 | 39 | 26
 
-The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks. It's hard to say exactly what a fair baseline would be because we don't know what a SPMD front-end would actually emit. For example, loads that aren't contiguous use `gather` in our baseline. In the case where each address is the same (i.e. indexed by the inner loop iterator), the `gather` can be turned into a `lw`. It's possible that this is obvious enough for a SPMD front-end to do automatically. We don't have a SPMD to Bril compiler, so we can't truly quantify a realistic improvement.
+The optimization does lead to improvement in the number of ALU Ops for the listed benchmarks. It's hard to say exactly what a fair baseline would be because we don't know what a SPMD front-end would actually emit. For example, loads that aren't contiguous use `gather` in our baseline. In the case where each address is the same (i.e., indexed by the inner loop iterator), the `gather` can be turned into a `lw`. It's possible that this is obvious enough for a SPMD front-end to do automatically. We don't have a SPMD to Bril compiler, so we can't truly quantify a realistic improvement.
 
 
 ## Shortcomings
