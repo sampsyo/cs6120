@@ -14,7 +14,7 @@ link = "https://cs.cornell.edu/~oli"
 
 # Background on Custom Memory Allocation
 
-Memory is necessary, but creating and freeing it takes time, and the general purpose memory management offered by C++ may not be optimal for your purposes. You probably know much more about the memory patterns of your application than the designers of the default memory allocator, and might be able to exploit this to save lots of time, or space. This is why people write custom memory allocators. 
+Memory is necessary, but creating and freeing it takes time, and the general purpose memory management offered by C may not be optimal for your purposes. You probably know much more about the memory patterns of your application than the designers of the default memory allocator, and might be able to exploit this to save resources. This is why people write custom memory allocators. 
 <!--In C, this amounts to overloading the `new` and `delete` operators. -->
 
 
@@ -31,7 +31,7 @@ Allocating memory in this way would in fact be creating a _region_ allocator: yo
 
 #### Saving Space with Custom Allocation
 
-The example above actually uses more memory than a heap. That is more common, but they can also be used to reduce the memory footprint, primarily by preventing fragmentation. For instance, if memory fragmentation is a huge issue, but you know rougly what fraction of your memory is used by objects of different sizes, you can partition it into pieces, and deal with each size class separately, which offers much better guarantees about the worst and average case fragemtation. This is commonly done in practice; [Mesh][], for instance, requires that all pages in question are of the same size class. The paper refers to these as "per-class custom allocators".
+The example above actually uses more memory than a heap. That is more common, but they can also be used to reduce the memory footprint, primarily by preventing fragmentation. For instance, if memory fragmentation is a huge issue, but you know rougly what fraction of your memory is used by objects of different sizes, you can partition it into pieces, and deal with each size class separately, which offers much better guarantees about the worst and average case fragemtation. This is commonly done in practice; [Mesh][], for instance, requires that all pages in question are of the same size class. [The paper we will analyze][paper] refers to allocators liek these as "per-class custom allocators".
 
 For all of these reasons, in 2002, it was common practice and widely condisered a good idea to write a custom memory allocation for your program to improve performance. 
 
@@ -51,7 +51,6 @@ Of course, even without any experiments, it is easy to see how doing this could 
 
 The paper at hand, [Reconsidering Custom Memory Allocation][paper], is packaged and sold as the thesis that custom memory allocators in practice do not out perform general ones. 
 
-
 One of the key arguments of this paper is that standard baselines are not fair. Evidently the usual argument _in favor of_ cusom allocation in 2002 was a comparison against the win32 allocator, which is much slower than using a program's custom allocator. The first part of this paper is an evaluation against the Lea allocator (`dlmalloc`), which greatly  reduces the margin of victory for custom allocators not exploting regions. 
 
 
@@ -67,44 +66,38 @@ This paper uses the following taxonomy of custom memory allocators:
 	x3 = regionMalloc(r,16);
 	x4 = regionMalloc(r,8);
 	```
-
-
-
+	
 * **Custom patterns**. Anything else --- for example, those that exploit stack-like patterns in memory allocation (the relevant benchmark is `197.parser`). The authors describe these as fast, but brittle.
-
 
 
 ## The Empirical Results
 
-
-
 can be seen in this graph:
 
-![Runtme Benchmarks](runtime-benchmarks.png "Logo Title Text 1")
+![Runtme Benchmarks](runtime-benchmarks.png "")
 
 # Regions and Reaps
 Recall that a heap exposes `malloc` and `free`; a region gives you a `malloc` and `freeAll`. The authors introduce a hybrid data-structure, called a "reap", which is sold as a generalization of the two.
 
+
+
 # Another Look at the Evaluations
 
 
-# How Things have Changed between 2002 and 2019
+# From 2002 to 2019
 
 The Lea allocator (Doug Lea's malloc, now referred to as `dlmalloc`) is now the default implementation of linux. The standard general purpose allocator to beat in evaluations is now [jemalloc](http://jemalloc.net/), which seems to be considerably more efficient [^1]. The existence of even better general purpose allocators in some ways strengthens the point made by the paper: there's even less to be gained by writing your own allocator.
 
-On the other hand, custom memory allocation is far from dead. [Here](https://github.com/mtrebi/memory-allocators)'s a tutorial on how and why custom allocators are helpful, custom allocation still is a real threat
-Emry Berger's 
+On the other hand, custom memory allocation is far from dead. [Here](https://github.com/mtrebi/memory-allocators)'s a tutorial on how and why custom allocators are helpful, custom allocation still is seen as a potential reason to disregard projects such as [Mesh][], and the text on Emry Berger's [Heap Layers][heapl] project (that subsumes this paper) is still described as enablin custom memory allocation:
 
-> Heap Layers makes it easy to write high-quality custom and general-purpose memory allocators.
+> "Heap Layers makes it easy to write high-quality custom and general-purpose memory allocators."
+
+While the specifics about why people use custom allocators, and the benchmarks to support this, seem to have been wrong, it 
 
 Furthermore, the more substantive part of this paper---the introduction and analysis of reaps---does not seem to have caught on, and 
 
 
 
-[paper]: https://dl.acm.org/citation.cfm?id=582421[supermalloc]: http://supertech.csail.mit.edu/papers/Kuszmaul15.pdf
-[mesh]: https://arxiv.org/pdf/1902.04738.pdf
-
-[^1]: https://suniphrase.wordpress.com/2015/10/27/jemalloc-vs-tcmalloc-vs-dlmalloc/
 
 <!--- THOUGHTS.
 
@@ -127,3 +120,10 @@ One key thing to keep in mind is that this custom memory allocation is just anot
 
 
 --->
+
+[^1]: https://suniphrase.wordpress.com/2015/10/27/jemalloc-vs-tcmalloc-vs-dlmalloc/
+
+[paper]: https://dl.acm.org/citation.cfm?id=582421
+[supermalloc]: http://supertech.csail.mit.edu/papers/Kuszmaul15.pdf
+[Mesh]: https://arxiv.org/pdf/1902.04738.pdf
+[heapl]: https://plasma.cs.umass.edu/emery/heap-layers.html
