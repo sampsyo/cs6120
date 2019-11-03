@@ -63,6 +63,7 @@ mon = true
 
 [[days]]
 date = "October 9"
+notes = ["Design Review: [BrilDB](../blog/brildb/), by Mark"]
 
 [[days]]
 date = "October 11"
@@ -77,19 +78,24 @@ event = "Fall break"
 
 [[days]]
 date = "October 16"
+notes = ["Design Review: [Shrimp](../blog/a-verification-backend/), by Sam & Rachit"]
 
 [[days]]
 date = "October 18"
+notes = ["Design Review: [Memory](../blog/manually-managed-memory/), by Ryan & Drew"]
 
 [[days]]
 date = "October 21"
 mon = true
+notes = ["Design Review: [Functions & PBT](../blog/function-calls/), by Alexa & Greg"]
 
 [[days]]
 date = "October 23"
+notes = ["Design Review: [Autograd](../blog/autograd/), by Qian & Horace"]
 
 [[days]]
 date = "October 25"
+notes = ["Design Review: [Bril2C](../blog/bril-c-backend/), by Wen-Ding"]
 
 [[days]]
 date = "October 28"

@@ -241,3 +241,14 @@ img.rss {
   margin: 0 auto;
   text-align: center;
 }
+
+.footnote-definition {
+  color: $disabled-color;
+  .footnote-definition-label {
+    float: left;
+    padding-right: 1em;
+    font-size: 0.8em;
+    &:before { content: '['; }
+    &:after { content: ']'; }
+  }
+}
