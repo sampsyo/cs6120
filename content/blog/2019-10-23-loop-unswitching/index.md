@@ -244,8 +244,7 @@ Overall, this project was a success, and the natural extension is to extend this
 
 
 
-I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by [e-mail](mailto:sjl328@cornell.edu)
-.
+I would be very happy with suggestions for additional test cases or pull requests that test this optimization on more test cases.  Furthermore, for questions or comments on design, please reach out by [e-mail](mailto:sjl328@cornell.edu).
 
 [llvm]: https://llvm.org/doxygen/classllvm_1_1LoopBase.html
 [mlton]: https://www.cs.rit.edu/~mtf/student-resources/20155_surawski_mscourse.pdf
