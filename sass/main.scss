@@ -191,6 +191,16 @@ article {
       margin-right: 0.5rem;
     }
   }
+
+  code {
+      background-color: #EAEAEA;
+      padding: 2px 4px;
+      border-radius: 2px;
+  }
+
+  p > img {
+      width: 100%
+  }
 }
 
 pre {
