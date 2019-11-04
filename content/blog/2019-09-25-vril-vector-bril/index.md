@@ -89,7 +89,7 @@ We have not implemented any array type checking on arrays. While we expect the p
 We have extended Brili to interpret vector operations.
 It should be noted that this Vrili implementation is not simulating a vector processor, but allows us to evaluate functionality of Vril and extract performance information.
 Vrili executes for loops across the different elements of the array operands in order to produce the correct result. This functionally emulates what a vector microarchitecture would do concurrently with a single fetch-decode effort.
-However, Vrili still still assumes the same underlying machine Brili did. This is done by generating separate variables for each array element, i.e. an array `arr` of size 2 will generate variables `arr[0]` and `arr[1]`. Subsequent array element accesses are simply variable accesses. Similar to Brili, Vrili does not impose any access checking, therefore the programmer should take precautions only to access array elements defined by array initialization.
+However, Vrili still assumes the same underlying machine Brili did. This is done by generating separate variables for each array element, i.e. an array `arr` of size 2 will generate variables `arr[0]` and `arr[1]`. Subsequent array element accesses are simply variable accesses. Similar to Brili, Vrili does not impose any access checking, therefore the programmer should take precautions only to access array elements defined by array initialization.
 
 Evaluation
 ----------------------------
