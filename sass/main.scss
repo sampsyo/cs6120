@@ -154,19 +154,12 @@ img.logo {
 }
 
 article {
-  h1.title-h1 {
-      font-style: italic; 
-      font-weight: 300;
-      font-size: 2em; 
-  }
   h1 a {
     text-decoration: none;
     color: $main-color;
   }
   h1 {
     margin-bottom: 0;
-    font-size: 1.8em;// make h1 bigger than h2 again.
-    margin-top: 1.2em; // and also visually distinguished
   }
   footer {
     font-style: italic;
@@ -179,13 +172,6 @@ article {
     a {
       color: inherit;
       text-decoration: underline;
-    }
-  }
-  
-  h5, h6 {
-    font-style: italic; // otherwise this is just 
-    &:after {
-        content: ".";
     }
   }
 
@@ -205,22 +191,19 @@ article {
       margin-right: 0.5rem;
     }
   }
-  
+
   code {
       background-color: #EAEAEA;
-      padding:2pt;
+      padding: 2px 4px;
       border-radius: 2px;
   }
-  
+
   p > img {
-      width : 100%
+      width: 100%
   }
 }
 
 pre {
-    font-weight: 50;
-    margin-left : 2em;
-    font-size: 110%;
     line-height: 120%;
 }
 
