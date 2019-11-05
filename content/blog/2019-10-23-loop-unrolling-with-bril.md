@@ -148,7 +148,16 @@ The program is located [here](https://github.com/seanlatias/bril/blob/arrays/exa
 
 ``python dyn.py < input.json > output.json``
 
-The pass can run successfully in different test cases including consecutive loops and double loops. In this section we mainly focus on the performance perspective. We construct a vector add program with large tripcount (2000), which can benefit loop unrolling and out-of-order execution of modern processors. The original and unrolled program takes 9.111s and 8.341s (measured with linux time utility in usr time) for 10000 executions.
+The pass can run successfully in different test cases including consecutive loops and double loops. In this section we mainly focus on the performance perspective. We constructed several programs which may potentially benefit from loop unrolling and out-of-order execution of modern processors. We did comprehensive experiments on different benchmarks. To avoid the effects from other confounding variables (e.g. processor task scheduling and other background programs) on runtime, we sampled runtime for several times and chose the median value for fair comparison (for each runtime sampling, we run the compiled c program for 10000 times and record the measured usr time). Here is the experiment results:
+
+| Benchmark | Original (s) | Unrolled (s) |
+|:---------:|:------------:|:------------:|
+|Two consecutive loops|10.531|10.679|
+|Nested loop|10.611|10.687|
+|Vector sum|10.569|10.742|
+|Set vector value|10.678|10.773|
+
+The measured total runtime is slower than previous result (possibly due to server worklaod variance), but the runtime result (median value) is similar to what we got from static analysis approach, where the unrolled version is slightly slower with the original program. The reasoning behind that might be the unpredictable optimization invoked by `-o0` option, or instruction cache misses caused by increased program size, as mentioned in previous section.
 
 ### Other Features
 We also improve the constant propagation method provided. With this improvement, we can now perform arithmetic simplification. This pass can be applied after loop unrolling, which can potentially improve the performance by reducing the number of arithmetic operations.
