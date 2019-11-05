@@ -1,10 +1,10 @@
 +++
 title = "A Unified Theory of Garbage Collection"
-extra.author = "Mark Anastos"
+extra.author = "Mark Anastos and Qian Huang"
 extra.author_link = "https://github.com/anastos"
 extra.bio = """
   Mark Anastos is an undergraduate senior studying Computer Science and
-  Electrical & Computer Engineering.
+  Electrical & Computer Engineering. Qian Huang is an undergraduate junior studying Computer Science and Mathematics.
 """
 +++
 
@@ -34,7 +34,7 @@ Although tracing naturally solves the reachability problem accurately, it requir
 
 ## Tracing & Reference Counting are Duals
 
-On the high level, tracing is tracking "matter" -- all reachable objects, while reference counting is tracking "anti-matter" -- all unreachable objects. Their connection is further revealed when we align them by removing certain "optimizations". We can consider a version of tracing that computes the number of incoming edges from live objects instead of a single bit; and a version of reference counting that postpones the decrements to be processed on batches. If the graph contains no cycle, both methods would converge to tagging the same value for each object. Tracing achieves this by setting this value to zero and increases it recursively, while reference counting starts from an upper bound and decrements it recursively. 
+On the high level, tracing is tracking "matter" -- all reachable objects, while reference counting is tracking "anti-matter" -- all unreachable objects. Their connection is further revealed when we align them by removing certain "optimizations". We can consider a version of tracing that computes the number of incoming edges from roots or live objects instead of a single bit; and a version of reference counting that postpones the decrements to be processed on batches. If the graph contains no cycle, both methods would converge to tagging the same value for each object. Tracing achieves this by setting this value to zero and increases it recursively, while reference counting starts from an upper bound and decrements it recursively. 
 
 To formalize this connection, we define the value they converge to mathematically then align their algorithmic structures.
 
@@ -51,9 +51,19 @@ explain algorithms and how they are related/opposites
 
 ## Hybrids
 
-### Deferred Reference Counting & Partial Tracing
+The authors further show that all realistic garbage collectors are in fact hybrids of tracing and reference counting. In general we can categorize collectors to unified heap collectors, split heap collectors and multi-heap collectors. Then different garbage collectors can be seen as performing tracing or reference counting when tracking references within each region and cross regions.
 
-### Generational Collectors
+### Unified Heap collectors: Deferred Reference Counting & Partial Tracing
+
+<img src="deferred.png" alt="Snow" style="width:100%"> |  <img src="partial.png" alt="Snow" style="width:100%">
+:-------------------------:|:-------------------------:
+Deferred Reference Counting |  Partial Tracing
+
+Rather than doing reference counting completely, Deferred Reference Counting defers updating the reference count of objects pointed directly by roots until batch processing. This is based on the observation that pointers from roots are likely to change very often as they are directly used in the program. Notice that we can view this as tracing from roots to their targets and reference counting for the intra-heap pointers: All the assignments that lead to intra-heap pointers change would be tracked by reference counting as normal. When we suspend the program, we trace the roots for one level, which compensates the delay.
+
+Reversely, we could design Partial Tracing, which uses reference counting for edges from roots to heaps while tracing the intr-heap pointers. However, this combines the worse properties of both tracing and reference counting: it suffers from the high mutation cost from the fast changing of root pointers while still need to spend long time to trace the heap.  
+
+### Split Heap Collectors: Generational Collectors
 
 ### Multi-Heap Collectors?
 
