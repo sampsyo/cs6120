@@ -82,6 +82,10 @@ strategies for collecting cycles
 ### Alignments of Algorithmic Strctures
 explain algorithms and how they are related/opposites
 
+
+comment about using special properties?
+
+
 ## Hybrids
 
 The authors further show that all realistic garbage collectors are in fact hybrids of tracing and reference counting. In general we can categorize collectors to unified heap collectors, split heap collectors and multi-heap collectors. Then different garbage collectors can be seen as performing tracing or reference counting when tracking references within each region and cross regions.
@@ -94,9 +98,24 @@ Deferred Reference Counting |  Partial Tracing
 
 Rather than doing reference counting completely, Deferred Reference Counting defers updating the reference count of objects pointed directly by roots until batch processing. This is based on the observation that pointers from roots are likely to change very often as they are directly used in the program. Notice that we can view this as tracing from roots to their targets and reference counting for the intra-heap pointers: All the assignments that lead to intra-heap pointers change would be tracked by reference counting as normal. When we suspend the program, we trace the roots for one level, which compensates the delay.
 
-Reversely, we could design Partial Tracing, which uses reference counting for edges from roots to heaps while tracing the intr-heap pointers. However, this combines the worse properties of both tracing and reference counting: it suffers from the high mutation cost from the fast changing of root pointers while still need to spend long time to trace the heap.  
+Reversely, we could design Partial Tracing, which uses reference counting for edges from roots to heaps while tracing the intr-heap pointers. However, this combines the worse properties of both tracing and reference counting: it suffers from the high mutation cost from the fast changing of root pointers while still need to spend long time to trace the heap. This design failure demonstrates that although tracing and reference counting are duals, they are not equally easy to solve under different cases. 
 
 ### Split Heap Collectors: Generational Collectors
+
+Generational collectors are based on the following emperical observation that most objects are short lived, as shown in the left figure bellow. Here Y axis shows the number of bytes allocated and the X access shows the number of bytes allocated over time. (https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html)
+
+<img src="ObjectLifetime.gif" alt="" style="width:100%"> | <img src="gen.png" alt="" style="width:100%"> 
+:-------------------------:|:-------------------------:
+Most objects are short lived  |  Generational Collectors
+
+
+So Generational Collectors isolated out a nursery space from the remaining mature space. Most of the time it only collects garbage from this nursery space and moves the remaining alive objects to mature space (minor collections). Once in a while it performs a garbage collection cross the whole heap to clean the mature space (major collections). An example of Generational Collectors is available in https://blogs.msdn.microsoft.com/abhinaba/2009/03/02/back-to-basics-generational-garbage-collection/
+
+This process can also be seen as a combination of tracing and reference counting as shown by (a) in the right figure: Reference counting is performed to track edges from mature space to nursery space. Tracing is performed within nursery space during minor collections. And finally a full tracing is performed during major collections.
+
+We can then explore different combinations of tracing and reference counting within each space. However, notice that reference counting is always used for the edges from mature to nursery space in order to avoid tracing the whole mature space. In fact, the authors claim that any algorithm
+that collects some subset of objects independently is fundamentally
+making use of reference counting.
 
 ### Multi-Heap Collectors?
 
