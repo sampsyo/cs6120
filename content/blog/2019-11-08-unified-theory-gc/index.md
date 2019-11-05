@@ -9,9 +9,10 @@ extra.bio = """
 extra.latex = true
 +++
 
-## Introduction
+## Summary
 
-Tracing and reference counting are normally being viewed as completely different approaches to garbage collection. However, in A Unified Theory of Garbage Collection, David et al. show that they are in fact duals of each other through a particular formulation. Intuitively, tracing is tracking the live objects while reference counting is tracking dead objects. They further showed that all high-performance collectors are in fact hybrids of tracing and reference counting.
+Tracing and reference counting are normally viewed as two main different approaches to garbage collection. However, in A Unified Theory of Garbage Collection,  Bacon et al. showed tracing and reference counting to be duals of one another, and
+that all garbage collectors are various types of hybrids of tracing and reference counting. Intuitively, tracing is tracking the live objects while reference counting is tracking dead objects. 
 
 
 ## Background
@@ -113,9 +114,8 @@ So Generational Collectors isolated out a nursery space from the remaining matur
 
 This process can also be seen as a combination of tracing and reference counting as shown by (a) in the right figure: Reference counting is performed to track edges from mature space to nursery space. Tracing is performed within nursery space during minor collections. And finally a full tracing is performed during major collections.
 
-We can then explore different combinations of tracing and reference counting within each space. However, notice that reference counting is always used for the edges from mature to nursery space in order to avoid tracing the whole mature space. In fact, the authors claim that any algorithm
-that collects some subset of objects independently is fundamentally
-making use of reference counting.
+We can then explore different combinations of tracing and reference counting within each space. However, notice that reference counting is always used for the edges from mature to nursery space in order to avoid visiting all objects in the mature space. In fact, the authors claim that any algorithm
+that collects some subset of objects independently is fundamentally making use of reference counting. 
 
 ### Multi-Heap Collectors?
 
@@ -132,3 +132,6 @@ gc design strategies
     trade-offs
 
 Note that in this paper, the authors are mainly concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage, probably because rearranging heap can also be done with memory allocation.
+
+There are also other garbage collection e.g. escape analysis, abstract garbage collection (soundly over-approximates the behaviour of a concrete
+interpreter.http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf 2019)
