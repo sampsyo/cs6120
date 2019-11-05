@@ -20,7 +20,7 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ### Overview
 
-If you follow [PL Twitter™️][pltwitter], you may have seen this tweets go by from our very own [Adrian][]:
+If you follow [PL Twitter][pltwitter]™, you may have seen this tweet go by from our very own [Adrian][]:
 
 <img src="twitter.jpg" width="500"/>
 
@@ -30,7 +30,7 @@ The basic premise of [value numbering][vn] is that we can make our code more eff
 In particular, if we assign values to every “unique” piece of computation, we can save on work by only actually running that piece once.
 At every subsequent use, we can then refer to the already-computed value.
 
-For example, a value numbering pass (followed by dead code elimination) can change the follow:
+For example, a value numbering pass (followed by dead code elimination) can change the following:
 
 ```
 sum1 : int = a + b;
@@ -38,13 +38,13 @@ sum2 : int = b + a;
 mul : int = sum1 * sum2; 
 ```
 
-To:
+To the more efficient:
 ```
 sum1 : int = a + b;
 mul : int = sum1 * sum1; 
 ```
 
-A compiler is especially well-poised to do this type of optimization because it can come at the cost of readability.
+A compiler is especially well-poised to do this type of optimization because a programmer implementing it directly can come at the cost of readability.
 While a programmer may not want to explicitly memoize every intermediate value across their computations, implementing value numbering allows us to reduce redundancy without much overhead. 
 
 The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations. 
@@ -71,6 +71,9 @@ block:
   ret;
 }
 ```
+[Bril][bril]'s ecosystem already had a local value numbering implementation that was, as expected, unable to optimize the code above.
+
+[bril]:https://github.com/sampsyo/bril/blob/master/README.md
 
 ## Static Single Assignment (SSA) Form
 
@@ -84,7 +87,8 @@ Global value numbering sidesteps this difficulty by requiring that the input sou
 In SSA, every variable name can only be assigned to once. 
 Reassignments to the same variable in the original code are translated to assignments to new variable names. 
 Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
-SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable. `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
+SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable.
+`phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
 
 For example, consider the following Bril code:
 
@@ -150,11 +154,11 @@ Hash-based techniques, like those used in local value numbering, hash operations
 Partitioning algorithms, on the other hand, divide all operations into equivalence classes.
 
 We chose to implement hash-based value numbering because it allows for copy propagation extensions and operates on the dominator tree computed during conversion to SSA.
-While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately.
-A distinct SSA conversion allows more optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
+While converting to SSA and performing global value numbering can be performed together in one pass over the original code due to their similarity, we chose to implement them separately for modularity.
+A distinct SSA conversion allows more downstream optimizations to operate on the program's SSA form in addition to allowing testing of both passes independently.
 
 We implemented the following pseudocode, adapted from Figure 4 of the aforementioned paper, so called because it is a 'dominator-based value numbering technique'.
-A value's name is the SSA variable name, which is guaranteed to be unique by SSA, for which it was first computed.
+A value's name is the SSA variable name (which is guaranteed to be unique by SSA) for which it was first computed.
 The algorithm requires a program's dominator tree and traverses blocks in reverse postorder.
 
 ```
@@ -320,13 +324,13 @@ For each of a number of Bril test programs, we report in the following graph:
 
 ### Bigger benchmarks with TypeScript frontend and comparison with LVN
 
-For a slightly more realistic analysis, we ran GVN on the more complex programs afforded by Bril's TypeScript frontend.
+For a slightly more realistic analysis, we ran GVN on the more complex programs afforded by Bril's TypeScript frontend. In particular, none of these programs were written with intentional redundancy like some of our correctness test cases (thought the conversion from TypeScript to Bril does cause some), so they portray a more realistic evaluation of the benefits of value numbering.
 In addition to the existing test programs from project 1, we also implemented a quadratic formula calculation (`test/gvn/quadratic.ts.bril`), [fizz buzz][] (`test/gvn/fizz-buzz.ts.bril`), and a naive [Sieve of Eratosthenes][] without arrays (`test/gvn/check-primes.ts.bril`).
 All TypeScript programs were first processed by the `ts2bril` frontend.
 We encountered an implementation difficulty: the code generated by the TypeScript frontend sometimes inserts `jmp` instructions after returns in the same basic block.
 We had to manually remove these in order for SSA conversion and dominator tree creation to work.
 
-In addition to the metrics in the preceding graph, we also report the number of instructions after converting to SSA, running Bril's existing [local value numbering][], converting out of SSA, and running TDCE, shown in green
+In addition to the metrics in the preceding graph, we also report the number of instructions after converting to SSA, running Bril's existing [local value numbering][], converting out of SSA, and running TDCE, shown in green.
 
 [trivial dead code elimination]: https://github.com/sampsyo/bril/blob/master/examples/tdce.py
 [Sieve of Eratosthenes]: https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
@@ -335,12 +339,19 @@ In addition to the metrics in the preceding graph, we also report the number of 
 
 <img src="eval-ts.png" width="800"/>
 
+If you, like us, are stoked the power of value numbering, you can check out the impressive heavy lifting undertaken by [`NewGVN`][newgvn] in [LLVM][llvmnewgvn]. 
+
+[newgvn]: https://lists.llvm.org/pipermail/llvm-dev/2016-November/107110.html
+[llvmnewgvn]: http://llvm.org/doxygen/NewGVN_8cpp.html
+
 <!--
 ### LLVM GVN tests that use more features than Bril has.
 Our implementation does not produce the same output as LLVM on all tests because 1) Bril operations require that all operands are registers and 2) LLVM GVN has more features.
--->
 
 GVN provides the base for a number of additional optimizations, most of which we have not yet implemented.
+
+-->
+
 
 [value numbering]: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.36.8877&rep=rep1&type=pdf
 
