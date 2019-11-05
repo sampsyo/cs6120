@@ -133,5 +133,8 @@ gc design strategies
 
 Note that in this paper, the authors are mainly concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage, probably because rearranging heap can also be done with memory allocation.
 
+Note that reachable memory leaks are still possible. Although the memory manager can recover unreachable memory, it cannot free memory that is still reachable and therefore potentially still useful. Modern memory managers therefore provide techniques for programmers to semantically mark memory with varying levels of usefulness, which correspond to varying levels of reachability.
+
 There are also other garbage collection e.g. escape analysis, abstract garbage collection (soundly over-approximates the behaviour of a concrete
-interpreter.http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf 2019)
+interpreter.http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf 2019) Short-term memory for self-collecting mutators https://dl.acm.org/citation.cfm?id=1993493
+
