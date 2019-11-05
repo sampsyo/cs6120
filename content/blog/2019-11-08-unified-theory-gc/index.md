@@ -32,15 +32,11 @@ These two approaches have a lot differences:
 
 Although tracing naturally solves the reachability problem accurately, it requires to traverse over a static graph and therefore suspend the whole program. On the other hand, reference counting is done incrementally along with each pointer assignment and collect. However, it brings unnecessary overhead when the pointers are changed often and it does not collect cycles of garbages. Thus people proposed more complicated algorithms based on different hypotheses, such as deferred reference counting, generational garbage collection, etc. 
 
-## Intuition 
-
 ## Tracing & Reference Counting are Duals
 
 On the high level, tracing is tracking "matter" -- all reachable objects, while reference counting is tracking "anti-matter" -- all unreachable objects. Their connection is further revealed when we align them by removing certain "optimizations". We can consider a version of tracing that computes the number of incoming edges from live objects instead of a single bit; and a version of reference counting that postpones the decrements to be processed on batches. If the graph contains no cycle, both methods would converge to tagging the same value for each object. Tracing achieves this by setting this value to zero and increases it recursively, while reference counting starts from an upper bound and decrements it recursively. 
 
 To formalize this connection, we define the value they converge to mathematically then align their algorithmic structures.
-
-## Mathematical Model
 
 ### Mathematical Model
 
@@ -49,8 +45,6 @@ minimal vs maximal fixed point -- cycles
 strategies for collecting cycles
     backup tracing
     trial deletion
-
-## Tracing & Reference Counting are Duals
 
 ### Alignments of Algorithmic Strctures
 explain algorithms and how they are related/opposites
