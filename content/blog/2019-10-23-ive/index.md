@@ -118,20 +118,21 @@ Finding loops requires finding backedges, which it turns out
 requires calculating dominators. A backedge is defined as
 any edge in the control flow graph where the source vertex
 _is dominated by_ the sink. Therefore to even start thinking about
-optimizing we need to calculate the dominators and do a brief
+optimizing we need to calculate the dominators and do a basic
 reachability analysis. See the pictures below for an example CFG
 with backedge annoations.
 
 <img src="cfg.png" style="width:50%"/><img src="dom.png" style="width:50%"/>
 On the left hand side we have the control flow graph where its only backedge
 is represented as a dashed line. The right hand side picture shows all of the
-dominators; each red line can be read as "is dominated by". As you can see,
+dominators; each red line can be read as "is dominated by." As you can see,
 the only edge in the CFG which is the reverse of an edge in the dominator graph
 is the backedge from `body` to `loop`.
 
 There are some other subtleties here with nested loops or two loops which happen
-to have the same entry block. We elide these into single loops to avoid
-incorrectly re-writing induction variables while only looking at one loop at a time.
+to have the same entry block. In these cases, we combine these overlapping loops
+into a single loop. Otherwise we could incorrectly identify or re-write
+IVs by looking at incomplete information.
 This approximation of loop structure prevents our analysis from finding some
 optimization opportunities but preserves correctness.
 
@@ -187,7 +188,7 @@ x:int = add x four;  //four has been defined as const 4
 ```
 Our code doesn't consider `x` an induction variable because
 of our very approximate heuristic: "`x` is updated twice in the
-loop, so it may not be an IV".
+loop, so it may not be an IV."
 
 ### Induction Variable Representation
 
@@ -263,7 +264,7 @@ Step (3) from the above algorithm is simplified since we ensure that
 basic induction variables are updated only once in the loop. If we were to
 allow multiple updates to `i` we'd need to follow the correct update to `i`.
 
-### Basic induction variable elimination
+### Basic Induction Variable Elimination
 
 After running strength reduction, we attempted to eliminate all basic induction variables from the program.
 We chose to run this following strength reduction since that optimization often removes dependencies on basic IVs.
@@ -288,12 +289,12 @@ if (k < 3*n + 5) {
 }
 ```
 
-This transformation removes uses of `i` and can likely eliminate all uses _except_ for the use in the write to itself (`i = i + c`). If this is the case, and `i` is not a live-out of the loop we can remove this assignment (as mentioned before, global DCE won't normally remvoe this update). Our implementation does delete such dead code.
+This transformation removes uses of `i` and can likely eliminate all uses _except_ for the use in the write to itself (`i = i + c`). If this is the case, and `i` is not a live-out of the loop we can remove this assignment (as mentioned before, global DCE won't normally remove this update). Our implementation does delete such dead code.
 Note that, even if `i` is a live-out, it's sometimes possible to push this `i = i + c` update to the _end_ of the loop so that it is not part of the loop body; however, we didn't implement this due to its complexity and questionable utility.
 
 At this point we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to a constant, this can probably be eliminated with constant propagation and simple dead code elimination.
 
-# Evaluating our Optimizations
+# Evaluating Our Optimizations
 
 In order to evaluate our optimization, we modified the `brili` Bril interpreter to also optionally output the breakdown of dynamically executed instructions by opcode. This allowed us to quantify both the effect on total dynamic instruction count and validate the impact of strength reduction. Nevertheless, these results are not indicative of real world performance gains. In particular, while being interpreted, it is unlikely that strength reduction will yield a significant (if any) real time speedup. Furthermore, if the Bril that we generate was compiled using something like LLVM, different processors may have different costs for adds and multiplies, which may render strength reduction less useful. Nevertheless, these measurements are a good indication that our pass is doing what it is supposed to (reducing the number of typically expensive operations).
 
