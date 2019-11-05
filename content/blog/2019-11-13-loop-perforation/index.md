@@ -2,11 +2,12 @@
 title = "Loop Perforation"
 [extra]
 bio = """
+  [Oliver][] is a CS PhD student in theory at Cornell, who does decision theory and category theory.
+  
   [Alexa][] is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
 
   [Greg][] is a second-year student working on machine learning and digital humanities.
   
-  [Oliver][] is a CS PhD student in theory at Cornell, who does decision theory and category theory.
 """
 
 
