@@ -289,7 +289,7 @@ if (k < 3*n + 5) {
 ```
 
 This transformation removes uses of `i` and can likely eliminate all uses _except_ for the use in the write to itself (`i = i + c`). If this is the case, and `i` is not a live-out of the loop we can remove this assignment (as mentioned before, global DCE won't normally remvoe this update). Our implementation does delete such dead code.
-Note that, even if `i` is a live-out it's sometimes possible to push this `i = i + c` update to the _end_ of the loop so that it is not part of the loop body; however we didn't implement this due to its complexity and questionable utility.
+Note that, even if `i` is a live-out, it's sometimes possible to push this `i = i + c` update to the _end_ of the loop so that it is not part of the loop body; however, we didn't implement this due to its complexity and questionable utility.
 
 At this point we have successfully removed all traces of `i` from the loop. `i` might still be used to initialize some of the strength reduction variables in the beginning of the loop. However, if `i` is initialized to a constant, this can probably be eliminated with constant propagation and simple dead code elimination.
 
