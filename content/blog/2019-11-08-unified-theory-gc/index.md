@@ -141,11 +141,8 @@ opposites of each other in many ways:
 
 <img src="diff-v2.png" style="width:100%">
 
-TODO: 
-strategies for collecting cycles
-    backup tracing
-    trial deletion
-comment about using special properties?
+As discussed in mathematical model part, reference counting requires an extra pass to collect cycles. This is generally be done by two strategies: backup tracing, which traces (part of) the heap occasionally, and trial deletion, which attempts to decrease  $\rho(w)$ by trial-and-error guided by heuristics. However, notice that there is also counterpart for that in tracing: sweeping phhase. In addition, while tracing converges to the fixed point value stating from the lower bound 0, reference counting starts from the upperbound, which is all incomming pointers that existed historically. 
+
 
 ## Hybrids
 
