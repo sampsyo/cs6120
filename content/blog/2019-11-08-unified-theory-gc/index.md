@@ -60,8 +60,8 @@ Using these definitions, we can formulate the reference counts of objects
 $$ \rho(v) = \big|[v : v \in R]\big| +
              \big|[(w, v) : (w, v) \in E \land \rho(w) > 0]\big| $$
 
-Here we recursively define the reference count of an object $x$ to be the number
-of root pointers to $x$ plus the number of pointers to $x$ from objects which
+Here we recursively define the reference count of an object $v$ to be the number
+of root pointers to $v$ plus the number of pointers to $v$ from objects which
 themselves have non-zero reference counts. Any object whose reference count is
 zero according a fixed point of $\rho$ can be freed, as there is no way for the
 program to reference it in the future.
@@ -76,16 +76,69 @@ garbage as able to be freed. A tracing collector does this, whereas a reference
 counting collector does not detect any cyclic garbage, and thus finds the
 greatest fixed point.
 
+### Alignments of Algorithmic Structures
+
+As modeled in the paper, a tracing garbage collector fundamentally works by
+performing a traversal on the memory graph, starting from the root objects in
+$R$. Every time it reaches an object, it increments its reference count. And,
+when it reaches an object for the first time, it traverses the pointers from
+that object. In order to complete the traversal, the algorithm maintains a work
+list, $W$, of objects that it needs to visit. This traversal recomputes all
+reference counts completely each time it runs. When it terminates, every live
+object will have a positive reference count, and every dead object will have a
+reference count of zero.
+
+This formulation of the algorithm differs in a few ways from a standard tracing
+collector. For example, there is no need in a real tracing collector to keep
+track of the full reference count of each object; it is sufficient to keep just
+a single mark bit which determines whether the reference count is non-zero. A
+tracing collector might also employ other optimizations, such as pointer
+reversal, to improve its run time or memory usage. However, these optimizations
+do not significantly change the core ideas of the algorithm.
+
+Reference counting collection differs from tracing collection in that the
+reference counts persist over time and are computed iteratively. The paper
+models reference counting collectors to keep a work list as tracing collectors
+do. Every time a pointer stored somewhere, its reference count is immediately
+incremented. Every time a pointer is overwritten or erased, it is added to the
+work list. Then, when the collection algorithm runs, the work list is iterated
+through, decrementing the reference count of each object in the list, and, if
+this causes the reference count to become zero, adding any objects that are
+pointed to by that object to the work list. When this algorithm terminates,
+every live object will still have a positive reference count, and the reference
+counts of dead objects could be zero (depending on if they are part of a garbage
+cycle).
+
+Real implementations of reference counting collection will typically not have a
+work list. Instead, they will immediately decrement the reference count whenever
+a pointer is overwritten, and, if the reference count becomes zero, recursively
+decrement the reference count of anything that is pointed to by that object. The
+algorithm is presented in this work-list format in order to more clearly
+represent its relationship to tracing garbage collection. Formulated in this
+way, if we look at the code for the central work-list algorithms for each type
+of garbage collector, we can see striking similarities between them:
+
+<img src="tracing-wl.png" style="width:100%"> | <img src="rc-wl.png" style="width:100%"> 
+:-------------------------------------:|:--------------------------:
+ Graph traversal algorithm for tracing | Work-list algorithm for RC
+
+The only differences between the two are that tracing increments the reference
+counts of objects on the worklist whereas RC decrements them, and that tracing
+checks if $\rho(w) = 1$ for when to add the objects that $w$ points to whereas
+RC checks if $\rho(w) = 0$. The two garbage collection strategies also differ in
+how $W$ is initialized. For tracing, $W$ initially contains all of the roots of
+the graph, $R$. For reference counting, $W$ starts with all of the objects that
+have had a pointer to them erased since the last time the algorithm ran. By
+viewing the two strategies through this formulation, we can see that they are
+opposites of each other in many ways:
+
+<img src="diff-v2.png" style="width:100%">
+
+TODO: 
 strategies for collecting cycles
     backup tracing
     trial deletion
-
-### Alignments of Algorithmic Strctures
-explain algorithms and how they are related/opposites
-
-
 comment about using special properties?
-
 
 ## Hybrids
 
