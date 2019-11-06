@@ -120,14 +120,16 @@ date = "November 8"
 [[days]]
 date = "November 11"
 mon = true
+notes = ["Design Review: [Auto-Vectorization](../blog/AutoVectoring/), by Katy & Henry"]
 
 [[days]]
 date = "November 13"
+notes = ["Design Review: [Loop Invariant Code Motion](../blog/loop-invariant-code-motion/), by Rolph & G.C.C."]
 
 [[days]]
 date = "November 15"
 canceled = true
-event = "Adrian probably out of town"
+event = "Adrian out of town"
 
 [[days]]
 date = "November 18"
