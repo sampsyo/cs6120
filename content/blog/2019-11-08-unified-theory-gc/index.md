@@ -16,7 +16,7 @@ name = "Qian Huang"
 
 ## Summary
 
-Tracing and reference counting are normally viewed as two main different approaches to garbage collection. However, in A Unified Theory of Garbage Collection,  Bacon et al. showed tracing and reference counting to be duals of one another, and
+Tracing and reference counting are normally viewed as two main different approaches to garbage collection. However, in [A Unified Theory of Garbage Collection](https://dl.acm.org/citation.cfm?id=1028982),  Bacon et al. showed tracing and reference counting to be duals of one another, and
 that all garbage collectors are various types of hybrids of tracing and reference counting. Intuitively, tracing is tracking the live objects while reference counting is tracking dead objects. 
 
 
@@ -197,27 +197,37 @@ required.
 They define $\tau(X)$ to be the time overhead of a garbage collector. For each
 collector, they define $\tau$ in terms of a linear function of various
 properties of the program, omitting the constant factors that could vary between
-implementations. These equatioons for the time and space costs of various
-collectors in terms of parameters of the workload enable the comparison of
-different collectors to determine how well-suited they are for certain programs
-and constraints. While not giving the exact formulations for these properties,
-which would be difficult to do in general, the abstracted equations give an idea
-of how the space and time of a collector vary with their parameters, and thus
-what the important constraints of each are.
+implementations. In general, they define the overhead as $\tau(X) =
+\phi(X)\kappa(X) + \mu(X)$, where $\phi$ is the frequency at which collection
+occurs, $\kappa$ is the run time of a single garbage collection execution, and
+$\mu$ is the overhead for mutation in the program (e.g. incementing and
+decrementing reference counts). Each of these terms depends on the type of
+garbage collection, as well as the program that the collection is running on,
+and is defined more specifically in the paper for several collection strategies.
+
+These equations for the time and space costs of various collectors in terms of
+parameters of the workload enable the comparison of different collectors to
+determine how well-suited they are for certain programs and constraints. While
+not giving the exact formulations for these properties, which would be difficult
+to do in general, the abstracted equations give an idea of how the space and
+time of a collector vary with their parameters, and thus what the important
+constraints of each are.
 
 ## Conclusion
 
 By better understanding the shared structure and duality of tracing and
 reference counting collectors, we can consider the design of a high-performance
-garbage collector as a balance between the two base strategies. The paper
-suggests that the design of a garbage collector involves three major decisions:
-how to partition memory, how to traverse memory, and what space-time trade-offs
-should be used. The heap can be divided into multiple segments, as with
-generational and multi-heap collectors, or can be collected uniformly. Each
-component of the heap, as well as the roots of the graph, can then be traversed
-and collected through either tracing or reference counting. And within the
-implementation of the two strategies there are other space-time trade-offs to
-consider as well, such as whether to employ pointer reversal.
+garbage collector as a balance between the two base strategies. And, by modeling
+the time and space costs of different collectors, we can formally analyze the
+trade-offs between different collection strategies for a specific workload or in
+general. The paper suggests that the design of a garbage collector involves
+three major decisions: how to partition memory, how to traverse memory, and what
+space-time trade-offs should be used. The heap can be divided into multiple
+segments, as with generational and multi-heap collectors, or can be collected
+uniformly. Each component of the heap, as well as the roots of the graph, can
+then be traversed and collected through either tracing or reference counting.
+And within the implementation of the two strategies there are other space-time
+trade-offs to consider as well, such as whether to employ pointer reversal.
 
 In general, this paper provides a beautiful perspective that unifies garbage collectors to a spectrum between tracing and reference counting. It affects how garbage collectors are viewed afterward and the development of other unified theories in systems. 
 
