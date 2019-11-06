@@ -187,10 +187,15 @@ discussed in the paper, they give equations or approximations of $\sigma$. As an
 example, for a tracing collector, $\sigma(T) \simeq \frac{\mathcal{M}}{\omega} +
 \mathcal{D}$, where $\mathcal{M}$ is the capacity of memory in units of the
 object size, $\omega$ is the size of an object in bits, and $\mathcal{D}$ is the
-space cost of the traversal stack, proportional to the traversal depth.
+space cost of the traversal stack, proportional to the traversal depth. This
+model represents a version of tracing collection without pointer reversal, and
+hence includes the traversal stack. If pointer reversal were considered,
+$\mathcal{D}$ could be removed from the space equation, but this would also
+increase the time cost of the collector due to the additional graph traversal
+required.
 
-They also define $\tau(X)$ to be the time overhead of a garbage collector. For
-each collector, they define $\tau$ in terms of a linear function of various
+They define $\tau(X)$ to be the time overhead of a garbage collector. For each
+collector, they define $\tau$ in terms of a linear function of various
 properties of the program, omitting the constant factors that could vary between
 implementations. These equatioons for the time and space costs of various
 collectors in terms of parameters of the workload enable the comparison of
@@ -202,10 +207,17 @@ what the important constraints of each are.
 
 ## Conclusion
 
-gc design strategies
-    partitioning memory
-    traversal
-    trade-offs
+By better understanding the shared structure and duality of tracing and
+reference counting collectors, we can consider the design of a high-performance
+garbage collector as a balance between the two base strategies. The paper
+suggests that the design of a garbage collector involves three major decisions:
+how to partition memory, how to traverse memory, and what space-time trade-offs
+should be used. The heap can be divided into multiple segments, as with
+generational and multi-heap collectors, or can be collected uniformly. Each
+component of the heap, as well as the roots of the graph, can then be traversed
+and collected through either tracing or reference counting. And within the
+implementation of the two strategies there are other space-time trade-offs to
+consider as well, such as whether to employ pointer reversal.
 
 Note that in this paper, the authors are mainly concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage, probably because rearranging heap can also be done with memory allocation.
 
