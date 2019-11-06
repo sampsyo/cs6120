@@ -5,7 +5,7 @@ bio = """
   [Alexa VanHattum][] is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
 
   [Gregory Yauney][] is a second-year student working on machine learning and digital humanities.
-  
+
 [alexa vanhattum]: https://www.cs.cornell.edu/~avh
 [gregory yauney]: https://www.cs.cornell.edu/~gyauney
 [fish truck]: https://www.triphammermarketplace.com/events/
@@ -24,9 +24,10 @@ If you follow [PL Twitter][pltwitter]™, you may have seen this tweet go by fro
 
 <img src="twitter.jpg" width="500"/>
 
-What, you may ask, is value numbering, and how is it so mind-blowing? 
+What, you may ask, is value numbering, and how is it so mind-blowing?
 
-The basic premise of [value numbering][vn] is that we can make our code more efficient by removing duplicate computation during compilation.
+The basic premise of [value numbering][vn] is that we can make our code more efficient by making a distinction between _values_ (that is, computations) and the _variables_ the programmer happened to store each within.
+By focusing on the values themselves during compilation, we can keep the readability of the original code while unlocking convenient optimizations opportunities like removing duplicate computations.
 In particular, if we assign values to every “unique” piece of computation, we can save on work by only actually running that piece once.
 At every subsequent use, we can then refer to the already-computed value.
 
@@ -35,19 +36,19 @@ For example, a value numbering pass (followed by dead code elimination) can chan
 ```
 sum1 : int = a + b;
 sum2 : int = b + a;
-mul : int = sum1 * sum2; 
+mul : int = sum1 * sum2;
 ```
 
 To the more efficient:
 ```
 sum1 : int = a + b;
-mul : int = sum1 * sum1; 
+mul : int = sum1 * sum1;
 ```
 
 A compiler is especially well-poised to do this type of optimization because a programmer implementing it directly can come at the cost of readability.
-While a programmer may not want to explicitly memoize every intermediate value across their computations, implementing value numbering allows us to reduce redundancy without much overhead. 
+While a programmer may not want to explicitly memoize every intermediate value across their computations, implementing value numbering allows us to reduce redundancy without much overhead.
 
-The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations. 
+The mind-blowing aspect of value numbering is that while the basic idea seems straightforward, with some simple extensions it can accomplish a wide range of additional optimizations.
 For example, we extend our value numbering to do both [copy propagation][copy] and [constant folding][const].
 
 [vn]: https://en.wikipedia.org/wiki/Value_numbering
@@ -79,14 +80,14 @@ block:
 
 The primary difference between how you go about actually implementing _local_ value numbering vs. _global_ value numbering is the form of the input source code.
 For local value numbering, the analysis can take in code in any standard imperative assignment format.
-Because local value numbering only considers one basic block at a time, the compiler can easily determine the relationship between assignments to the same variable (that is, if the source writes to a variable `x` twice, we can just process the code in the block in order to know which assignment is relevant). 
+Because local value numbering only considers one basic block at a time, the compiler can easily determine the relationship between assignments to the same variable (that is, if the source writes to a variable `x` twice, we can just process the code in the block in order to know which assignment is relevant).
 This clean assumption breaks when considering multiple basic blocks.
 If `x` is assigned to in two different predecessors of the block we are currently processing, looking up the value number for any assignment involving `x` on the right hand side becomes impossible!
 
-Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to [_static single assignment (SSA)_][ssa] form. 
-In SSA, every variable name can only be assigned to once. 
-Reassignments to the same variable in the original code are translated to assignments to new variable names. 
-Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable. 
+Global value numbering sidesteps this difficulty by requiring that the input source code first be transformed to [_static single assignment (SSA)_][ssa] form.
+In SSA, every variable name can only be assigned to once.
+Reassignments to the same variable in the original code are translated to assignments to new variable names.
+Because reassignments often take place in different control flow branches (to actually have the branches be useful!), SSA form needs a way to recombine different names back into a final variable.
 SSA form relies on a special additional instruction, canonically called `phi` nodes (named to be evocative of `if`, backward) to combine variables from diverging control flow back into a single variable.
 `phi` instructions take as arguments a list of renamed variables, and assign one of the variables into a new assignment based on which control flow block was actually taken.
 
@@ -121,25 +122,26 @@ exit:
   print x3;
 ```
 
-Having unique variable assignments is enormously helpful in implementing optimization---most industrial-strength compilers, including [LLVM][] and [GCC][], rely on it internally. We followed a standard algorithm to convert Bril programs to SSA form. 
+Having unique variable assignments is enormously helpful in implementing optimization---most industrial-strength compilers, including [LLVM][] and [GCC][], rely on it internally. We followed a standard algorithm to convert Bril programs to SSA form.
 
-The first pass inserts `phi` nodes wherever control flow merges multiple variable definitions. 
-We determine this condition by computing the [_dominance frontier_][domf] (essentially, boundaries in the control flow graph where control flow can recombine) for every basic block. 
-For every block in the dominance frontier of every variable, we insert a `phi` node with as many arguments as there are predecessors to the block. 
-One bug we hit with this part of the implementation was realizing that we only should insert `phi` nodes at the dominance frontier for variables that we assigned to multiple times. 
-For convenience of later analysis, we also augmented the base algorithm to track which basic blocks (or source) each `phi` argument originated from (for the above example, our generated `phi` would be `x3 : int = phi x1 x2 left right;`)  
+The first pass inserts `phi` nodes wherever control flow merges multiple variable definitions.
+We determine this condition by computing the [_dominance frontier_][domf] (essentially, boundaries in the control flow graph where control flow can recombine) for every basic block.
+For every block in the dominance frontier of every variable, we insert a `phi` node with as many arguments as there are predecessors to the block.
+One bug we hit with this part of the implementation was realizing that we only should insert `phi` nodes at the dominance frontier for variables that we assigned to multiple times.
+For convenience of later analysis, we also augmented the base algorithm to track which basic blocks (or source) each `phi` argument originated from (for the above example, our generated `phi` would be `x3 : int = phi x1 x2 left right;`)
 
 The second pass is a recursive renaming algorithm that uses a stack to determine the correct version of a variable name for every point in the program.
 The trickiest part of implementing this algorithm was traversing the basic blocks in the correct order.
-The high level algorithm specifies that you should recursively traverse the children of each block in the dominator tree. 
-However, we found that not only did we ned to traverse the children, but we needed to traverse them _in order_ relative to the control flow graph. 
-In particular, Bril’s ecosystem already had a utility for getting the dominators of every block. To get the dominance tree, we calculated the transitive reduction of this relation. 
+
+The high level algorithm specifies that you should recursively traverse the children of each block in the dominator tree.
+However, we found that not only did we need to traverse the children, but we needed to traverse them _in order_ relative to the control flow graph.
+In particular, Bril’s ecosystem already had a utility for getting the dominators of every block. To get the dominance tree, we calculated the transitive reduction of this relation.
 Our implementation additionally extends the dominance tree such that every list of children was ordered relative to a reverse post-order traversal of the control flow graph.
 
-In later testing (using an example, `test/gvn/constant-folding-tau-example.bril`, ported from the [class notes of Prof. Mooly Sagiv of Tel Aviv University)][tau], we found one minor bug with our SSA implementation. 
-Bril programs do not have a type checker and are aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other. 
-The base SSA algorithm does not account for this, so we fail to properly rename in the second step of our algorithm. 
-For now, we work around this case by assigning a default value to to the variable before we branch. 
+In later testing (using an example, `test/gvn/constant-folding-tau-example.bril`, ported from the [class notes of Prof. Mooly Sagiv of Tel Aviv University)][tau], we found one minor bug with our SSA implementation.
+Bril programs do not have a type checker and are aggressively dynamic: it’s perfectly valid to assign to a variable in one branch of a conditional but not the other.
+The base SSA algorithm does not account for this, so we fail to properly rename in the second step of our algorithm.
+For now, we work around this case by assigning a default value to to the variable before we branch.
 
 [ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
 [llvm]: https://llvm.org/docs/tutorial/OCamlLangImpl7.html
@@ -149,7 +151,7 @@ For now, we work around this case by assigning a default value to to the variabl
 
 ## Global value numbering
 
-There are two main approaches to global value numbering, as described in [Value Numbering][], Briggs, Cooper, and Simpson, 1997, both of which ultimately require input code in SSA form.
+There are two main approaches to global value numbering, as described in ["Value Numbering"][], Briggs, Cooper, and Simpson, 1997, both of which ultimately require input code in SSA form.
 Hash-based techniques, like those used in local value numbering, hash operations and find redundant values by comparing to previously hashed operations.
 Partitioning algorithms, on the other hand, divide all operations into equivalence classes.
 
@@ -211,7 +213,7 @@ entry:
 ```
 
 We extend our global value numbering implementation to include copy propagation via special treatment of `id` instructions.
-In particular, for `id`'s we look up the value number for the argument value directly. 
+In particular, for `id`'s we look up the value number for the argument value directly.
 Because our programs are in SSA, finding this value number is as simple as grabbing the argument itself.
 
 ### Constant folding
@@ -245,17 +247,9 @@ The argument constants can then often be removed entirely with a later dead code
 When implementing constant folding, we [found a bug][bug] in Bril's existing local value numbering implementation.
 When Bril programs have division by zero, the local constant folding failed with an exception.
 We made the design judgment that compiler passes should not fail on misbehaving code, but instead generate code with the same behavior (for example, the implementation's dynamic error could exist on a branch that never actually executes).
-We modified this behavior in both the central Bril local value and our new global value numbering to instead bail out on constant folding when encountering a potential exception in the folding step.
+We modified this behavior in both the central Bril local value numbering and our new global value numbering to instead bail out on constant folding when encountering a potential exception in the folding step.
 
 [bug]: https://github.com/sampsyo/bril/issues/40
-
-<!-- Difficulties:
-- Recursively visiting blocks in the dominator tree in reverse post order is not enough to ensure that a phi node's arguments have been processed in the absence of backedges. 
-We also had to sort the immediately dominated blocks by their order in the CFG.
-- Can't do constant propagation because Bril operations require registers as operands.
-- `examples/gvn/constant-folding-calpoly-example.bril`: There's a division by zero when running constant folding, but the compiler shouldn't crash!
-We filed an issue with Bril's local value numbering and fixed our implementation.
- -->
 
 ## Evaluation
 
@@ -291,7 +285,7 @@ B4:
 ```
 
 Our implementation removes the redundant additions in blocks `B2` and `B3`.
-It also removes from block `B4`: 1) the meaningless phi node `u2 : int = phi u0 u1 B2 B3;`, which has arguments that are always equal, and 2) the redundant phi node `y2 : int = phi y0 y1 B2 B3;`, which is identical to the phi node that precedes it. 
+It also removes from block `B4`: 1) the meaningless phi node `u2 : int = phi u0 u1 B2 B3;`, which has arguments that are always equal, and 2) the redundant phi node `y2 : int = phi y0 y1 B2 B3;`, which is identical to the phi node that precedes it.
 Here is the full output, which matches the correct output in the paper:
 
 ```
@@ -339,19 +333,9 @@ In addition to the metrics in the preceding graph, we also report the number of 
 
 <img src="eval-ts.png" width="800"/>
 
-If you, like us, are stoked the power of value numbering, you can check out the impressive heavy lifting undertaken by [`NewGVN`][newgvn] in [LLVM][llvmnewgvn]. 
+If you, like us, are stoked the power of value numbering, you can check out the impressive heavy lifting undertaken by [`NewGVN`][newgvn] in [LLVM][llvmnewgvn].
 
 [newgvn]: https://lists.llvm.org/pipermail/llvm-dev/2016-November/107110.html
 [llvmnewgvn]: http://llvm.org/doxygen/NewGVN_8cpp.html
-
-<!--
-### LLVM GVN tests that use more features than Bril has.
-Our implementation does not produce the same output as LLVM on all tests because 1) Bril operations require that all operands are registers and 2) LLVM GVN has more features.
-
-GVN provides the base for a number of additional optimizations, most of which we have not yet implemented.
-
--->
-
-
 [value numbering]: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.36.8877&rep=rep1&type=pdf
 
