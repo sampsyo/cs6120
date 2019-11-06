@@ -160,14 +160,14 @@ Reversely, we could design Partial Tracing, which uses reference counting for ed
 
 ### Split Heap and multi-Heap Collectors
 
-The most common Split-heap collector architecture is Generational collectors. Generational collectors are based on the following empirical observation that most objects are short lived, as shown in the left figure bellow. Here Y axis shows the number of bytes allocated and the X access shows the number of bytes allocated over time. (https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html)
+The most common Split-heap collector architecture is Generational collectors. Generational collectors are based on the following empirical observation that most objects are short lived, as shown in the left figure bellow. Here Y axis shows the number of bytes allocated and the X access shows the number of bytes allocated over time. ()
 
 <img src="ObjectLifetime.gif" alt="" style="width:100%"> | <img src="gen.png" alt="" style="width:100%"> 
 :-------------------------:|:-------------------------:
-Most objects are short lived  |  Generational collectors
+[Most objects are short lived](https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html)  |  Generational collectors
 
 
-So Generational collectors isolated out a nursery space from the remaining mature space. Most of the time it only collects garbage from this nursery space and moves the remaining alive objects to mature space (minor collections). Once in a while it performs a garbage collection cross the whole heap to clean the mature space (major collections). An example of Generational Collectors is available in https://blogs.msdn.microsoft.com/abhinaba/2009/03/02/back-to-basics-generational-garbage-collection/
+So Generational collectors isolated out a nursery space from the remaining mature space. Most of the time it only collects garbage from this nursery space and moves the remaining alive objects to mature space (minor collections). Once in a while it performs a garbage collection cross the whole heap to clean the mature space (major collections). An example of Generational Collectors is available in [this blog](https://blogs.msdn.microsoft.com/abhinaba/2009/03/02/back-to-basics-generational-garbage-collection/).
 
 This process can also be seen as a combination of tracing and reference counting as shown by (a) in the right figure: Reference counting is performed to track edges from mature space to nursery space. Tracing is performed within nursery space during minor collections. And finally a full tracing is performed during major collections.
 
@@ -219,10 +219,17 @@ and collected through either tracing or reference counting. And within the
 implementation of the two strategies there are other space-time trade-offs to
 consider as well, such as whether to employ pointer reversal.
 
-Note that in this paper, the authors are mainly concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage, probably because rearranging heap can also be done with memory allocation.
+In general, this paper provides a beautiful perspective that unifies garbage collectors to a spectrum between tracing and reference counting. It affects how garbage collectors are viewed afterward and the development of other unified theories in systems. 
 
-Note that reachable memory leaks are still possible. Although the memory manager can recover unreachable memory, it cannot free memory that is still reachable and therefore potentially still useful. Modern memory managers therefore provide techniques for programmers to semantically mark memory with varying levels of usefulness, which correspond to varying levels of reachability.
+However, there are several aspects ignored in this paper too. Note that in this paper, the authors are only concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage. This assumes that malloc can always do a perfect job to avoid memory fragmentation. But some garbage collectors are also designed to compact objects, such as Copying garbage collector.
 
-There are also other garbage collection e.g. escape analysis, abstract garbage collection (soundly over-approximates the behaviour of a concrete
-interpreter.http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf 2019) Short-term memory for self-collecting mutators https://dl.acm.org/citation.cfm?id=1993493
+In addition, this formulation also ignores reachable memory leaks fundamentally. Although the memory manager can recover unreachable memory, it cannot free memory that is still reachable and therefore potentially still useful. Modern memory managers therefore provide techniques for programmers to semantically mark memory with varying levels of usefulness, which correspond to varying levels of reachability.
+
+Finally, there are also other methods that does automatic memory management partially in/before compile time: [abstract garbage collection](http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf), which soundly over-approximates the behaviour of a concrete
+interpreter) and [self-collecting mutators](https://dl.acm.org/citation.cfm?id=1993493) , which imposes extra invariants to help garbage collection.
+
+
+
+
+
 
