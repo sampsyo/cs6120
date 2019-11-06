@@ -1,12 +1,17 @@
 +++
 title = "A Unified Theory of Garbage Collection"
-extra.author = "Mark Anastos and Qian Huang"
-extra.author_link = "https://github.com/anastos"
-extra.bio = """
+[extra]
+bio = """
   Mark Anastos is an undergraduate senior studying Computer Science and
-  Electrical & Computer Engineering. Qian Huang is an undergraduate junior studying Computer Science and Mathematics.
+  Electrical & Computer Engineering. Qian Huang is an undergraduate junior
+  studying Computer Science and Mathematics.
 """
-extra.latex = true
+latex = true
+[[extra.authors]]
+name = "Mark Anastos"
+link = "https://github.com/anastos"
+[[extra.authors]]
+name = "Qian Huang"
 +++
 
 ## Summary
@@ -22,11 +27,13 @@ Broadly speaking, garbage collection (GC) is a form of automatic memory manageme
 The task garbage collection needs to solve is identifying the objects not accessible by the program in the reference graph. It then frees the unreachable objects and rearranges the memory sometimes to reduce heap fragmentation. 
 
 The most traditional approaches are tracing and reference counting:
-- Trancing
-  Recursively mark reachability by starting from a set of roots memory blocks that are in use (e.g. pointed by global variable or local variable currently in stack frames).
 
-- Reference Counting 
-  Count the number of pointers pointed to one particular object by bookkeeping it every time a pointer is created or modified. It frees the object when the counter decreases to zero.
+- Tracing: Recursively mark reachability by starting from a set of roots memory
+  blocks that are in use (e.g. pointed by global variable or local variable
+  currently in stack frames).
+- Reference Counting: Count the number of pointers pointed to one particular
+  object by bookkeeping it every time a pointer is created or modified. It frees
+  the object when the counter decreases to zero.
 
 These two approaches have a lot differences:
 
