@@ -213,9 +213,8 @@ However, there are several aspects ignored in this paper too. Note that in this 
 
 In addition, this formulation also ignores reachable memory leaks fundamentally. Although the memory manager can recover unreachable memory, it cannot free memory that is still reachable and therefore potentially still useful. Modern memory managers therefore provide techniques for programmers to semantically mark memory with varying levels of usefulness, which correspond to varying levels of reachability.
 
-Finally, there are also other methods that does automatic memory management partially in/before compile time: [abstract garbage collection](http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf 2019), which soundly over-approximates the behaviour of a concrete
-interpreter) and [self-collecting mutators]( https://dl.acm.org/citation.cfm?id=1993493
-) , which imposes extra invariants to help garbage collection.
+Finally, there are also other methods that does automatic memory management partially in/before compile time: [abstract garbage collection](http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf), which soundly over-approximates the behaviour of a concrete
+interpreter) and [self-collecting mutators](https://dl.acm.org/citation.cfm?id=1993493) , which imposes extra invariants to help garbage collection.
 
 
 
