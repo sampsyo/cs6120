@@ -49,7 +49,7 @@ To formalize this connection, we define the value they converge to mathematicall
 
 ### Mathematical Model
 
-In order to analyse and compare different garbage collection strategies, the
+In order to analyze and compare different garbage collection strategies, the
 paper presents a mathematical model of the memory management problem that
 garbage collection is trying to solve. Objects in memory and the pointers that
 they contain are modeled as the nodes and edges of a graph. The set of objects
@@ -181,8 +181,27 @@ This conclusion is further used for Multi-heap collectors, which split heaps int
 
 ## Cost Analysis
 
-define variables
-general time and space formulas
+The paper also presents an abstract mathematical representation for analyzing
+and comparing the space and time costs of different garbage collectors. In order
+to represent the memory that a garbage collector requires, they define
+$\sigma(X)$, for any garbage collector $X$, to be the space overhead of $X$ in
+units of the size of a single object. For several of the garbage collectors
+discussed in the paper, they give equations or approximations of $\sigma$. As an
+example, for a tracing collector, $\sigma(T) \simeq \frac{\mathcal{M}}{\omega} +
+\mathcal{D}$, where $\mathcal{M}$ is the capacity of memory in units of the
+object size, $\omega$ is the size of an object in bits, and $\mathcal{D}$ is the
+space cost of the traversal stack, proportional to the traversal depth.
+
+They also define $\tau(X)$ to be the time overhead of a garbage collector. For
+each collector, they define $\tau$ in terms of a linear function of various
+properties of the program, omitting the constant factors that could vary between
+implementations. These equatioons for the time and space costs of various
+collectors in terms of parameters of the workload enable the comparison of
+different collectors to determine how well-suited they are for certain programs
+and constraints. While not giving the exact formulations for these properties,
+which would be difficult to do in general, the abstracted equations give an idea
+of how the space and time of a collector vary with their parameters, and thus
+what the important constraints of each are.
 
 ## Conclusion
 
