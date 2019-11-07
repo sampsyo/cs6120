@@ -121,7 +121,7 @@ for edge in loops:#we use back edge as key to denote loop
 
 <img src="move_LI.png" alt="reaching definition lecture" style="zoom:60%;" />
 
-### Move Loop Invariant to Pre-Headers
+### Move Loop Invariant Code to Pre-Headers
 
 Not all pre-headers are allowed to be moved to the pre-headers. If the destination of an LI is `d`, it needs to satisfy the following condition:
 
