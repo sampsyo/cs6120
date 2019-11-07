@@ -154,7 +154,7 @@ for k in loops:
             exits[k].append(l)
 ```
 
-After that, we just need to find all exit blocks where `d` is live-out and check if `d`'s' block dominates all loop exits.
+After that, we just need to find all exit blocks where `d` is live-out and check if `d`'s block dominates all loop exits.
 
 ```python
 edest = [e for e in exits[back_edge] if instr['dest'] in live_var[1][e]]
