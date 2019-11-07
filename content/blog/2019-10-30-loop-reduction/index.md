@@ -91,7 +91,7 @@ out = {}
 
 The loop invariant is instruction that does not change execution result during the loop execution. We need to go to individual loops, individual blocks in the loop and finally individual instructions inside the loop to check if the instruction is loop invariant. A instruction is loop invariant when any of its argument is either constant or variable `var` satisfying:
 
-1. all reaching definitions of `var` are outside the loop.
+1. All reaching definitions of `var` are outside the loop.
 2. There is exactly one reaching definition of `var` and the definition is loop-invariant.
 
 These two condition is realized by the following code.
