@@ -129,7 +129,7 @@ Not all pre-headers are allowed to be moved to the pre-headers. If the destinati
 2. `d` dominates all its uses, or equivalently, `d` is not live-out of its pre-header.
 3. `d`'s block dominates all loop exits where $d$ is live-out
 
-To learn the first condition, we need to know all definitions inside the loop and check if  `d` is unique in the list `defs`
+To learn the first condition, we need to know all definitions inside the loop and check if  `d` is unique in the list `defs`.
 
 ```python
 defs = [ins.get('dest') for b in loops[back_edge] for ins in blocks[b] if ins.get('dest')]
