@@ -29,7 +29,7 @@ The task garbage collection needs to solve is identifying the objects not access
 The most traditional approaches are tracing and reference counting:
 
 - Tracing: Recursively mark reachability by starting from a set of roots memory
-  blocks that are in use (e.g. pointed by global variable or local variable
+  blocks that are in use (e.g., pointed to by global variables or local variables
   currently in stack frames).
 - Reference Counting: Count the number of pointers pointed to one particular
   object by bookkeeping it every time a pointer is created or modified. It frees
@@ -39,7 +39,7 @@ These two approaches have a lot differences:
 
 <img src="diff.png" style="width: 100%">
 
-Although tracing naturally solves the reachability problem accurately, it requires to traverse over a static graph and therefore suspend the whole program. On the other hand, reference counting is done incrementally along with each pointer assignment and collect. However, it brings unnecessary overhead when the pointers are changed often and it does not collect cycles of garbages. Thus people proposed more complicated algorithms based on different hypotheses, such as deferred reference counting, generational garbage collection, etc. 
+Although tracing naturally solves the reachability problem accurately, it requires to traverse over a static graph and therefore suspend the whole program. On the other hand, reference counting is done incrementally along with each pointer assignment and collect. However, it brings unnecessary overhead when the pointers are changed often and it does not collect cycles of garbage. Thus people proposed more complicated algorithms based on different hypotheses, such as deferred reference counting, generational garbage collection, etc. 
 
 ## Tracing & Reference Counting are Duals
 
@@ -141,7 +141,7 @@ opposites of each other in many ways:
 
 <img src="diff-v2.png" style="width:100%">
 
-As discussed in the mathematical model part, reference counting requires an extra pass to collect cycles. This is generally be done by two strategies: backup tracing, which traces (part of) the heap occasionally, and trial deletion, which attempts to decrease  $\rho(w)$ by trial-and-error guided by heuristics. However, notice that there is also counterpart for that in tracing: sweeping phase. In addition, while tracing converges to the fixed point value stating from the lower bound 0, reference counting starts from the upper bound, which is all incoming pointers that existed historically. 
+As discussed in the mathematical model part, reference counting requires an extra pass to collect cycles. This is generally be done by two strategies: backup tracing, which traces (part of) the heap occasionally, and trial deletion, which attempts to decrease  $\rho(w)$ by trial-and-error guided by heuristics. However, notice that there is also counterpart for that in tracing: the sweeping phase. In addition, while tracing converges to the fixed point value stating from the lower bound 0, reference counting starts from the upper bound, which is all incoming pointers that existed historically. 
 
 
 ## Hybrids
@@ -154,13 +154,13 @@ The authors further show that all realistic garbage collectors are in fact hybri
 :-------------------------:|:-------------------------:
 Deferred Reference Counting |  Partial Tracing
 
-Rather than doing reference counting completely, Deferred Reference Counting defers updating the reference count of objects pointed directly by roots until batch processing. This is based on the observation that pointers from roots are likely to change very often as they are directly used in the program. Notice that we can view this as tracing from roots to their targets and reference counting for the intra-heap pointers: All the assignments that lead to intra-heap pointers change would be tracked by reference counting as normal. When we suspend the program, we trace the roots for one level, which compensates for the delay.
+Rather than doing reference counting completely, Deferred Reference Counting defers updating the reference count of objects pointed directly by roots until batch processing. This is based on the observation that pointers from roots are likely to change very often as they are directly used in the program. Notice that we can view this as tracing from roots to their targets and reference counting for the intra-heap pointers: All the assignments that lead to intra-heap pointer changes would be tracked by reference counting as normal. When we suspend the program, we trace the roots for one level, which compensates for the delay.
 
-Reversely, we could design Partial Tracing, which uses reference counting for edges from roots to heaps while tracing the intr-heap pointers. However, this combines the worse properties of both tracing and reference counting: it suffers from the high mutation cost from the fast-changing of root pointers while still need to spend a long time to trace the heap. This design failure demonstrates that although tracing and reference counting are duals, they are not equally easy to solve under different cases. 
+Reversely, we could design Partial Tracing, which uses reference counting for edges from roots to heaps while tracing the intra-heap pointers. However, this combines the worst properties of both tracing and reference counting: it suffers from the high mutation cost from the fast-changing of root pointers while still need to spend a long time to trace the heap. This design failure demonstrates that although tracing and reference counting are duals, they are not equally easy to solve under different cases. 
 
 ### Split Heap and multi-Heap Collectors
 
-The most common Split-heap collector architecture is Generational collectors. Generational collectors are based on the following empirical observation that most objects are short lived, as shown in the left figure bellow. Here Y axis shows the number of bytes allocated and the X access shows the number of bytes allocated over time. ()
+The most common Split-heap collector architecture is Generational collectors. Generational collectors are based on the empirical observation that most objects are short lived, as shown in the left figure bellow. Here the Y axis shows the number of bytes allocated and the X access shows the number of bytes allocated over time. ()
 
 <img src="ObjectLifetime.gif" alt="" style="width:100%"> | <img src="gen.png" alt="" style="width:100%"> 
 :-------------------------:|:-------------------------:
@@ -174,7 +174,7 @@ This process can also be seen as a combination of tracing and reference counting
 We can then explore different combinations of tracing and reference counting within each space. However, notice that reference counting is always used for the edges from mature to nursery space in order to avoid visiting all objects in the mature space. In fact, the authors claim that any algorithm
 that collects some subset of objects independently is fundamentally making use of reference counting. 
 
-This conclusion is further used for Multi-heap collectors, which split heaps into multiple regions and collect each region individually. They can be treated asymmetrically (as in Generational collector) or symmetrically. One of the basic extension from Generational collector is the Train algorithm. The train algorithm extended the mature space to multiple regions of different "generations", where only one region is collected at a time. This is mainly for reducing the pause time for collecting the mature space. Specifically, it divides the Mature Object Space(MOS) to cars of fixed size, which are chained to form trains. Each time, the current youngest car will be collected, until the whole first train is collected. We assume that then this process moves on to the next train, but then it is unclear to us why we need several trains instead of one train with all cars?
+This conclusion is further used for Multi-heap collectors, which split heaps into multiple regions and collect each region individually. They can be treated asymmetrically (as in Generational collector) or symmetrically. One of the basic extension from Generational collector is the Train algorithm. The train algorithm extended the mature space to multiple regions of different "generations", where only one region is collected at a time. This is mainly for reducing the pause time for collecting the mature space. Specifically, it divides the Mature Object Space (MOS) to cars of fixed size, which are chained to form trains. Each time, the current youngest car will be collected, until the whole first train is collected. We assume that then this process moves on to the next train, but then it is unclear to us why we need several trains instead of one train with all cars?
 
 ## Cost Analysis
 
@@ -200,7 +200,7 @@ properties of the program, omitting the constant factors that could vary between
 implementations. In general, they define the overhead as $\tau(X) =
 \phi(X)\kappa(X) + \mu(X)$, where $\phi$ is the frequency at which collection
 occurs, $\kappa$ is the run time of a single garbage collection execution, and
-$\mu$ is the overhead for mutation in the program (e.g. incementing and
+$\mu$ is the overhead for mutation in the program (e.g., incrementing and
 decrementing reference counts). Each of these terms depends on the type of
 garbage collection, as well as the program that the collection is running on,
 and is defined more specifically in the paper for several collection strategies.
@@ -231,12 +231,12 @@ trade-offs to consider as well, such as whether to employ pointer reversal.
 
 In general, this paper provides a beautiful perspective that unifies garbage collectors to a spectrum between tracing and reference counting. It affects how garbage collectors are viewed afterward and the development of other unified theories in systems. 
 
-However, there are several aspects ignored in this paper too. Note that in this paper, the authors are only concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage. This assumes that malloc can always do a perfect job to avoid memory fragmentation. But some garbage collectors are also designed to compact objects, such as Copying garbage collector.
+However, there are several aspects ignored in this paper too. Note that in this paper, the authors are only concerned with identifying unreachable objects correctly with high performance in terms of speed and space usage. This assumes that malloc can always do a perfect job to avoid memory fragmentation. But some garbage collectors are also designed to compact objects, such as copying garbage collectors.
 
 In addition, this formulation also ignores reachable memory leaks fundamentally. Although the memory manager can recover unreachable memory, it cannot free memory that is still reachable and therefore potentially still useful. Modern memory managers therefore provide techniques for programmers to semantically mark memory with varying levels of usefulness, which correspond to varying levels of reachability.
 
 Finally, there are also other methods that does automatic memory management partially in/before compile time: [abstract garbage collection](http://drops.dagstuhl.de/opus/volltexte/2019/10802/pdf/LIPIcs-ECOOP-2019-10.pdf), which soundly over-approximates the behaviour of a concrete
-interpreter) and [self-collecting mutators](https://dl.acm.org/citation.cfm?id=1993493) , which imposes extra invariants to help garbage collection.
+interpreter and [self-collecting mutators](https://dl.acm.org/citation.cfm?id=1993493), which imposes extra invariants to help garbage collection.
 
 
 
