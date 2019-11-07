@@ -169,7 +169,7 @@ all([b_name in dom[e] for e in edest]) # if true, third check passed.
 
 Strength reduction is a compiler optimization where expensive operations are replaced with equivalent but less expensive operations. A typical example of it is to convert relatively more complex multiplications inside a loop `L` to easier additions. Here we are mostly interested in 
 
-1. loop invariants: values that do not change within the body of a loop (as we have already discussed previously)
+1. loop invariant code: values that do not change within the body of a loop (as we have already discussed previously)
 2. induction variables: values that are being iterated each time through the loop
 
 Here is the definition of induction variable:
