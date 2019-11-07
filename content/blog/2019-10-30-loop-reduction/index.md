@@ -185,7 +185,7 @@ The procedure of performing strength reduction is as follows:
 3. Track value of B: add after `B=B+x`: `A’=A’+x*c1`
 4. Replace assignment to A: replace lone `A=...` with `A=A’`
 
-Thus, the key idea here is to first find out each induction variable `A` and then replace definition of A when executed.
+Thus, the key idea here is to first find out each induction variable `A` and then replace definitions of A when executed.
 
 To find out each induction variable, we scan through the code to
 
