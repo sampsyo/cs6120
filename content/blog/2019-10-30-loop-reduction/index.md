@@ -207,7 +207,7 @@ After all induction variables are found, strength reduction is performed to add 
 
 1. There are more properties we need than we originally expected. At first, we only generated loops, reaching variables. Then we for loop invariants code motion, we needed exits to the loop, dominance relations, live variables. 
 2. The representation of different variables are randomly decided at first and need implementation after we finalized the representation. For example, the loop invariant code at first was stored as a list of instructions. Later, we found it necessary to change the storage form to a dictionary whose key is the block name. Otherwise, we would need to search and match the instruction to block, e.g, in the `move_LI` function.
-3. There are more similarity between basic induction variables and their families. It is sometimes tricky to differentiate them. Thus, the definition flow of each induction variable is maintained to tell them apart.
+3. There is more similarity between basic induction variables and their families. It is sometimes tricky to differentiate them. Thus, the definition flow of each induction variable is maintained to tell them apart.
 
 
 
