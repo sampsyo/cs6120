@@ -126,7 +126,7 @@ for edge in loops:#we use back edge as key to denote loop
 Not all pre-headers are allowed to be moved to the pre-headers. If the destination of an LI is `d`, it needs to satisfy the following condition:
 
 1. There is only one definition of  `d` in the loop
-2. `d`dominates all its uses, or equivalently, `d` is not live-out of it's pre-header.
+2. `d` dominates all its uses, or equivalently, `d` is not live-out of its pre-header.
 3. `d`s block dominates all loop exits where $d$ is live-out
 
 To learn the first condition, we need to know all definitions inside the loop and check if  `d` is unique in the list `defs`
