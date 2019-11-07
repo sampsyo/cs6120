@@ -16,6 +16,7 @@ The deadline for the post is *the class before the one where you present*,
 so you will need to open the pull request by the 9:05am for that one-prior class period.
 Here is what the post must contain:
 
+* Any background that you think the audience needs to understand the paper.
 * A detailed summary of the main contributions in the work.
 * Critical thinking about the merits and shortcomings of the work.
 * Discussion of the work's role in history and its connections to the current computing landscape.

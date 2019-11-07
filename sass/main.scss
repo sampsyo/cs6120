@@ -54,6 +54,9 @@ a {
 h1 {
   line-height: 110%;
   margin-top: 0;
+}
+
+h1, h2 {
   a {
     color: inherit;
     text-decoration: none;
@@ -171,6 +174,37 @@ article {
       text-decoration: underline;
     }
   }
+
+  &.small {
+    margin-bottom: 0.3rem;
+    h1 {
+      font-size: inherit;
+      &:hover {
+        text-decoration: underline;
+      }
+      display: inline;
+    }
+    time {
+      display: inline-block;
+      text-align: right;
+      width: 4rem;
+      margin-right: 0.5rem;
+    }
+  }
+
+  code {
+      background-color: #EAEAEA;
+      padding: 2px 4px;
+      border-radius: 2px;
+  }
+
+  p > img {
+      width: 100%
+  }
+}
+
+pre {
+    line-height: 120%;
 }
 
 .details {
@@ -189,4 +223,15 @@ img.rss {
   max-width: 15rem;
   margin: 0 auto;
   text-align: center;
+}
+
+.footnote-definition {
+  color: $disabled-color;
+  .footnote-definition-label {
+    float: left;
+    padding-right: 1em;
+    font-size: 0.8em;
+    &:before { content: '['; }
+    &:after { content: ']'; }
+  }
 }
