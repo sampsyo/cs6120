@@ -30,3 +30,14 @@ link = "https://www.cs.cornell.edu/~gyauney"
 ## Overview
 
 ## Evaluation
+
+### Feature Wish list:
+- criticality testing
+- rates for nested loops: possibly exponential rates moving inward
+- accelerated loop perforation
+- storing previous values instead of skipping
+- Outrageous baselines that work as well, e.g. skipping random instructions
+- the loss of accuracy may introduce bias in, e.g., ML
+- parsec
+- accuracy measure
+- should we bother with their greedy exploration?
