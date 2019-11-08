@@ -87,14 +87,14 @@ out = {}
     return out
 ```
 
-### Finding Loop Invariants
+### Finding Loop Invariants Code
 
-The loop invariant is instruction that does not change execution result during the loop execution. We need to go to individual loops, individual blocks in the loop and finally individual instructions inside the loop to check if the instruction is loop invariant. A instruction is loop invariant when any of its argument is either constant or variable `var` satisfying:
+The loop invariant instruction is the one that does not change execution result during the loop execution. We need to go to individual loops, individual blocks in the loop and finally individual instructions inside the loop to check if the instruction is loop invariant. A instruction is loop invariant when any of its argument is either constant or variable `var` satisfying:
 
 1. All reaching definitions of `var` are outside the loop.
 2. There is exactly one reaching definition of `var` and the definition is loop-invariant.
 
-These two condition is realized by the following code.
+These two conditions are realized by the following code.
 
 ```python
 rd = reach_def[block][var] #var is defined at rd block
@@ -106,9 +106,9 @@ c2 = len(rd)==1 and any([var == i['dest'] for i in li]) #one reaching definition
 
 ### Create Pre-Headers of Loop Headers
 
-Before we actually move code, we need to create pre-headers for loop headers. These pre-headers are empty blocks that should be placed before loop header blocks. Notice this assumes bril code should not have two edges that does not the loop pointing to the loop header. Using these empty blocks, we can easily move loop invariants out of the loop when the requirements are satisfied.
+Before we actually move code, we need to create pre-headers for loop headers. These pre-headers are empty blocks that should be placed before loop header blocks. Notice this assumes Bril code loops have only one entry. Using these empty blocks, we can easily move loop invariants out of the loop when the requirements are satisfied.
 
-In implementation, for each block, we first copy old block content and then check if the next block is a loop header. If so, we create an empty block. 
+In our implementation, for each block, we first copy old block content and then check if the next block is a loop header. If so, we create an empty block. 
 
 ```python
 for edge in loops:#we use back edge as key to denote loop
@@ -125,9 +125,9 @@ for edge in loops:#we use back edge as key to denote loop
 
 Not all pre-headers are allowed to be moved to the pre-headers. If the destination of an LI is `d`, it needs to satisfy the following condition:
 
-1. There is only one definition of  `d` in the loop
+1. There is only one definition of  `d` in the loop.
 2. `d` dominates all its uses, or equivalently, `d` is not live-out of its pre-header.
-3. `d`'s block dominates all loop exits where $d$ is live-out
+3. `d`'s block dominates all loop exits where $d$ is live-out.
 
 To learn the first condition, we need to know all definitions inside the loop and check if  `d` is unique in the list `defs`.
 
@@ -136,14 +136,14 @@ defs = [ins.get('dest') for b in loops[back_edge] for ins in blocks[b] if ins.ge
 defs.count(instr['dest']) ==  # if true, first check passed
 ```
 
-For the second condition, we can check the predecessor block of pre-header we just added, by simply read the index of pre-header and subtract 1. Then check if `d` is live-out of block.
+For the second condition, we can check the predecessor block of the pre-header we just added, by simply reading the index of pre-header and subtracting 1. Then check if `d` is live-out of block.
 
 ```python
 ind = b_names.index(pre_header[b_name]) - 1 #b_name is the name of block where d is LI.
 instr['dest'] not in live_var[1][b_names[ind]] #if true, second check passed
 ```
 
-For the third condition, we need information of exits of blocks. The exits are blocks that have successors not in the loop. 
+For the third condition, we need to know which blocks are exit blocks. The exits are blocks that have successors not in the loop. 
 
 ```python
 exits = {}
@@ -163,7 +163,18 @@ all([b_name in dom[e] for e in edest]) # if true, third check passed.
 
 ### Block to Dictionaries
 
-` json.load(sys.stdin)['functions']` gives us dictionaries and for each dictionary we obtain list of instructions when the key is `instrs`. Then we change this list of instructions into a directory of blocks. We would like to reverse this process to regenerate list of instructions with modified blocks. However, original block does not have so many labels introduced when generating block names and creating pre-headers. Luckily, the modified blocks are still ordered dictionary and we can omit blocks we introduced. Therefore in this step, we only create `label` instruction when the original labels in blocks. The rest is just copy every instruction other than labels to the new list of instructions.
+` json.load(sys.stdin)['functions']` gives us dictionaries and for each dictionary we obtain list of instructions when the key is `instrs`. Then we change this list of instructions into a dictionary of blocks. We would like to reverse this process to regenerate list of instructions with modified blocks. However, the original list of instructions does not have so many labels introduced when generating block names and creating pre-headers. For example, main function does not have a label, but to form a block, we generate a `b0` for its label. Similarly, when generating a pre-header, we might have inserted blocked labeled with `b1` .  Luckily, the modified blocks are still in an ordered dictionary. Blocks with no label at first is safe to be unlabled and for `pre-header` blocks, we assume they have only one in-edge and one out-edge.
+
+Therefore in this step, we only create a `label` instruction when the original label is in `blocks`. The rest is just copy every instruction other than labels to the new list of instructions.
+
+```python
+for block in blocks:
+    if block in label_name:
+        new_instrs.append({'label':block})
+    new_instrs = new_instrs+blocks[block]
+```
+
+
 
 ### Strength Reduction
 
@@ -205,7 +216,7 @@ After all induction variables are found, strength reduction is performed to add 
 
 # Challenges
 
-1. There are more properties we need than we originally expected. At first, we only generated loops, reaching variables. Then we for loop invariants code motion, we needed exits to the loop, dominance relations, live variables. 
+1. There are more properties we need than we originally expected. At first, we only generated loops and reaching variables. Then we for loop invariant code motion, we needed exits to the loop, dominance relations, and live variables. 
 2. The representation of different variables are randomly decided at first and need implementation after we finalized the representation. For example, the loop invariant code at first was stored as a list of instructions. Later, we found it necessary to change the storage form to a dictionary whose key is the block name. Otherwise, we would need to search and match the instruction to block, e.g, in the `move_LI` function.
 3. There is more similarity between basic induction variables and their families. It is sometimes tricky to differentiate them. Thus, the definition flow of each induction variable is maintained to tell them apart.
 
@@ -213,20 +224,20 @@ After all induction variables are found, strength reduction is performed to add 
 
 ## Evaluation
 
-1. We would like to evaluate our optimizer in two aspects: theoretical improvement and actual wall-clock speedup.
+We would like to evaluate our optimizer in two aspects: theoretical improvement and actual wall-clock speedup.
 
-   ### Benchmarks
+### Benchmarks
 
-   Because loop invariant code motion and strength reduction are specific optimization for loops, and studies are based on case by case, we can hardly generate automatic testing scripts while writing bril codes to generate `for` loop are actually painful. Instead we reply on Typescript for help. 
+Because loop invariant code motion and strength reduction are specific optimization for loops, and studies are based on case by case, we can hardly generate automatic testing scripts while writing Bril codes to generate `for` loop are actually painful. Instead we reply on Typescript for help. 
 
-   However, default Bril scripts generated by Typescript always introduces redundancy during translation, and code motion optimization by default will be performed. For example, `int v10 = const 5; int v11 = v11 + v10;` can be found in the body of a loop if there is a line `x = x + 5` in Typescript. Because we don't perform other optimizations, we wonder how much speedup is contributed by the redundancy. We therefore write test cases with no expected optimizations (but will have some when translated to Bril) as baseline to compare actual wall-clock speedup.
+However, default Bril scripts generated by Typescript always introduces redundancy during translation, and code motion optimization by default will be performed. For example, `int v10 = const 5; int v11 = v11 + v10;` can be found in the body of a loop if there is a line `x = x + 5` in Typescript. Because we don't perform other optimizations, we wonder how much speedup is contributed by the redundancy. We therefore write test cases with no expected optimizations (but will have some when translated to Bril) as baseline to compare actual wall-clock speedup.
 
-   | Filename                                | Description                                 |
-   | --------------------------------------- | ------------------------------------------- |
-   | `normal.ts`, `nested.ts`, `nestedif.ts` | No optimization expected.                   |
-   | `codemotion*.ts`                        | Expecting code motion.                      |
-   | `strengthreduction*.ts`                 | Expecting strength reduction optimizations. |
-   | `both*.ts`                              | Expecting both kinds of optimizations.      |
+| Filename                                | Description                                 |
+| --------------------------------------- | ------------------------------------------- |
+| `normal.ts`, `nested.ts`, `nestedif.ts` | No optimization expected.                   |
+| `codemotion*.ts`                        | Expecting code motion.                      |
+| `strengthreduction*.ts`                 | Expecting strength reduction optimizations. |
+| `both*.ts`                              | Expecting both kinds of optimizations.      |
 
 
 
@@ -236,11 +247,11 @@ After all induction variables are found, strength reduction is performed to add 
 
    We ran `normal.ts` , `nested.ts` and `nestedif.ts` to this end and got the following results:
 
-   | Filename      | Unoptimized runtime | Optimized runtime |
-   | ------------- | ------------------- | ----------------- |
-   | `normal.ts`   | 193.4 ms            | 193.3 ms          |
-   | `nested.ts`   | 327.7 ms            | 330 ms            |
-   | `nestedif.ts` | 280.4 ms            | 276.8 ms          |
+| Filename      | Unoptimized runtime | Optimized runtime |
+| ------------- | ------------------- | ----------------- |
+| `normal.ts`   | 193.4 ms            | 193.3 ms          |
+| `nested.ts`   | 327.7 ms            | 330 ms            |
+| `nestedif.ts` | 280.4 ms            | 276.8 ms          |
 
    We observe that these do not change by a large margins and can be ignored.
 
@@ -363,13 +374,13 @@ After all induction variables are found, strength reduction is performed to add 
 
    ### Final Results
 
-   | Filename                | Unoptimized runtime | Optimized runtime | Speedup |
-   | ----------------------- | ------------------- | ----------------- | ------- |
-   | `codemotion1.ts`        | 216.8 ms            | 163.8 ms          | 1.32x   |
-   | `codemotion2.ts`        | 908.6 ms            | 665.4 ms          | 1.36x   |
-   | `strengthreduction1.ts` | 192.1 ms            | 173.2 ms          | 1.11x   |
-   | `strengthreduction2.ts` | 61.1 ms             | 56.3 ms           | 1.09x   |
-   | `both1.ts`              | 655.0 ms            | 484.1 ms          | 1.35x   |
-   | `both2.ts`              | 66.2 ms             | 49.8 ms           | 1.33x   |
+| Filename                | Unoptimized runtime | Optimized runtime | Speedup |
+| ----------------------- | ------------------- | ----------------- | ------- |
+| `codemotion1.ts`        | 216.8 ms            | 163.8 ms          | 1.32x   |
+| `codemotion2.ts`        | 908.6 ms            | 665.4 ms          | 1.36x   |
+| `strengthreduction1.ts` | 192.1 ms            | 173.2 ms          | 1.11x   |
+| `strengthreduction2.ts` | 61.1 ms             | 56.3 ms           | 1.09x   |
+| `both1.ts`              | 655.0 ms            | 484.1 ms          | 1.35x   |
+| `both2.ts`              | 66.2 ms             | 49.8 ms           | 1.33x   |
 
    Based on the evaluation results, we find out that both loop optimization techniques can provide some speedup. Loop invariant code motion can provide up to 1.36x speedup, while strength reduction can only have about 10% performance improvement. That is due to the fact that multiplication/division does not take significantly more cycles than addition/substraction on modern machines and there are many redundant `id` operations when generating `bril` programs from `ts`. Thus, only limited performance improvement can be obtained We expect that more speedup can be obtained if exponential operation is optimized. Also, note that there are nested loops in `codemotion2.ts` and `both1.ts`, thus their runtime are much longer than the rest.
