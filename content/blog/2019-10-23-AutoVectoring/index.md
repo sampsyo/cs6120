@@ -82,7 +82,7 @@ These are the minimum requirements for creating a loop that iterates a set numbe
 
 From these, we can find more information such as the variable that specifies the bound, which can be deduced from the arguments for the condition variable as one argument must be the induction variable, leaving the other to be the bound. 
 
-We now want to verify properties to ensure that this loop is indeed vertorizable. For example, we need to know ensure that the bound variable is a constant and not something loaded from memory, or we won't be able to determine how many times the loop is executed. This requires us to know the latest definition of variables, which we get using a reaching definitions analysis. It is possible to find that statement walking backwards through the cfg, but we found using a dataflow analysis to be a much cleaner approach. Furthermore, we'd also like to know values of variables at different program points, such as the base pointers for array loads or stores, which we can get through a copy propagation analysis. 
+We now want to verify properties to ensure that this loop is indeed vertorizable. For example, we need to know ensure that the bound variable is a constant and not something loaded from memory, or we won't be able to determine how many times the loop is executed. This requires us to know the latest definition of variables, which we get using a reaching definitions analysis. It is possible to find that statement walking backwards through the CFG, but we found using a dataflow analysis to be a much cleaner approach. Furthermore, we'd also like to know values of variables at different program points, such as the base pointers for array loads or stores, which we can get through a copy propagation analysis. 
 
 For both of those analyses, we found it to be very helpful to have information at the statement level instead of the block level. For example, in the block with the condition variable, it is possible that the bound is defined in that block before the condition variable statement and then again after the statement, and so if we only had the copy propagation values at the in and out edges of that block, we would not get the correct value the condition statement sees. We wanted to avoid iterating through blocks to make sure variables are not redefined, so we made each statement a block by adding trivial jumps and labels between statements, thereby getting finer-grained analyses.
 
@@ -102,7 +102,7 @@ Now that we have reaching definitions and copy propagation per statement, we can
 
 The primary reason a loop is not vectorizable is due to *flow-dependencies*. A flow-dependency is when a variable uses information from the pervious iteration of a loop, such as when a value is loaded from an array position that was written to in the previous iteration of the loop. To detect this, we use the fact that indexing into an array is typically done by adding an offset to the base pointer of an array. We are able to find the variables representing array pointers by examing load and store instructions' arguments, and then we use information from our reaching definitions analysis to check whether those variables are computed each iteration as an addition of a constant and another variable. 
 
-Since our vector load/store instructions accesses four consecutive values, we also need to enforce that the non-constant variable is the induction variable, and also that the induction variable must increment or decrement by exactly 1 every iteration. This ensures that arrays are always accessed sequentially. 
+Since our vector load/store instructions access four consecutive values, we also need to enforce that the non-constant variable is the induction variable, and also that the induction variable must increment or decrement by exactly 1 every iteration. This ensures that arrays are always accessed sequentially. 
 
 The number of iterations can be computed from the bound variable, the condition variable, and the initial value of the induction variable, and this number allows us to find array lengths since arrays are sequentially accessed per iteration. With the base array pointers and array lengths, we can now check that arrays do not overlap, which then proves that they cannot have flow-dependencies as each array location can only be accessed once in the duration of the loop. 
 
@@ -113,7 +113,7 @@ After we are confident that the array operations in a loop are vectorizable, we 
 ### Strip Mining
 Since we are working with vector operations on four consecutive array elements, we "chunk" the sequence of loop iterations in blocks of four, which is known as *strip mining*. 
 
-Trivially, strip mining can be done by finding the statement that increments the induction variable and changing it from incrementing/decrementing 1 to incrementing/decrementing 4. All operation on array elements are changed to their vector counterparts, e.g., `add` would become `vadd`. This would work as long as the loop only included operations on arrays, but we found that to often not be the case. 
+Trivially, strip mining can be done by finding the statement that increments the induction variable and changing it from incrementing/decrementing 1 to incrementing/decrementing 4. All operations on array elements are changed to their vector counterparts, e.g., `add` would become `vadd`. This would work as long as the loop only included operations on arrays, but we found that to often not be the case. 
 
 For example, printing the *i* each iteration, where *i* is the induction variable, should still allow the loop to be vectorized as there are no flow-dependencies, but if we change the induction variable by four each iteration, that print statment will behave incorrectly as it would only print one out of four elements. To mitigate this, we do partial loop unrolling when strip mining.
 
@@ -148,7 +148,7 @@ loop:
 
 With this method, array operations are allowed to be vectorized while preserving serial instructions because serial instructions are unrolled into four copies, where each copy operates with a different induction variable value. This loop also increments the induction variable by four every iteration which preserves the performance increase from reduced branch overhead. 
 
-In terms of implentaion, we found it much easier to first coalesce the loop into one big block before running the strip mine algorithm because we could treat this sequence of instructions as one array instead of having to worry about jumps and label renaming from inserting new blocks. Aggregating all the blocks of this loop was possible because we previously enforced that there can be exactly one branch instruction located at the end of the loop.
+In terms of implementation, we found it much easier to first coalesce the loop into one big block before running the strip mine algorithm because we could treat this sequence of instructions as one array instead of having to worry about jumps and label renaming from inserting new blocks. Aggregating all the blocks of this loop was possible because we previously enforced that there can be exactly one branch instruction located at the end of the loop.
 
 Up to here, we have been operating on the assumption that array sizes are divisible by the vector size---four. To account for arrays not divisible by four, we append a copy of this loop (without any optimizations) to a block that follows the main optimized loop. This serially executes the remaining loop iteration which allows us to maintain correctness.
 
@@ -185,7 +185,7 @@ case "vadd": {
     return NEXT;
   }
 ```
-These external calls add potentially significant overhead to the execution. We quantify this overhead to more accurately evaluate execution time in the interpreter. We run a vvadd benchmark, documented below, varying array sizes of (128, 1024, 2048, 4196, 8192). We run 10 iterations of each configuration and average the execution time between them. We then compare execution time with and without calls to the Rust library. We find there is a 16% overhead for making Rust calls. While we predict this will be offset for especially large arrays, we decided to add rust calls for serialized instructions as well to isolate the vectorized instructions as a variable in our experiment from the Rust call overhead variable.
+These external calls add potentially significant overhead to the execution. We quantify this overhead to more accurately evaluate execution time in the interpreter. We run a vvadd benchmark, documented below, varying array sizes of (128, 1024, 2048, 4196, 8192). We run 10 iterations of each configuration and average the execution time between them. We then compare execution time with and without calls to the Rust library. We find there is a 16% overhead for making Rust calls. While we predict this will be offset for especially large arrays, we decided to add Rust calls for serialized instructions as well to isolate the vectorized instructions as a variable in our experiment from the Rust call overhead variable.
 
 In addition, note the loads and stores that accompany the vectorized add instruction. The ```vadd``` function implements ```c[i] = a[i] + b[i]```. However, this line translated to Bril IR would look like the code below. 
 ```
@@ -208,7 +208,7 @@ Determining how to measure the impact of this optimization was challenging as th
 
 One option is to implement 4 add operations in the interpreter's dispatch loop for vadd, 4 sub operations for vsub, etc. While this would not affect program correctness, it does not attempt to mimic SIMD registers that perform a SIMD operation in the processor. Therefore, it is likely to mispredict realistic speedup by naively ignoring external factors. In addition, the performance benefit seen under this approach would likely only reflect the decrease in number of instructions, rather the specifically the instrinsics of the SIMD instructions.
 
-A second option is to use SIMD instructions in x86 with SIMD intrinsics. This approach involves execution of SIMD instructions that ideally much more closely mirror behvaior of SIMD operations. We modeled these SIMD operations this way for this reason using the aforementioned Rust Dynamic Library.
+A second option is to use SIMD instructions in x86 with SIMD intrinsics. This approach involves execution of SIMD instructions that ideally much more closely mirror behvaior of SIMD operations. We modeled these SIMD operations this way for this reason using the aforementioned Rust dynamic library.
 
 To evaluate our implementation, we run vvadd benchmarks. We run each benchmark on arrays of varying sizes (16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8092). We initially ran 5 iterations per array size per benchmark, but noticed the execution times significantly decreased after each iteration. This is likely due to the CPU warming up, caching, and better branch prediction after each iteration. Therefore, we decided to increase this number to 25, after which the difference in execution times for sequential runs was less than 0.01 ms. 
 
@@ -226,7 +226,7 @@ In addition, the calls from TypeScript to the Rust FFI are opaque and it is uncl
 A next step to better isolate these vectorized instructions frmo the rust call overhead would be to write the entire interpreter in Rust, or some other language, and executing the SIMD instructions inline without function calls.
 
 #### Coupling of Loads and Stores
-As mentioned in the Rust FFI section above, the Rust functions that are invoked for a vector add are coupled with vload and vstore as TypeScript does not have a corresponding type for ```--m128i```. Therefore, it is possible that there are extra vloads and vstores performed for the vectorized programs. This would also dimish the potential performance impact. 
+As mentioned in the Rust FFI section above, the Rust functions that are invoked for a vector add are coupled with vload and vstore as TypeScript does not have a corresponding type for ```__m128i```. Therefore, it is possible that there are extra vloads and vstores performed for the vectorized programs. This would also diminish the potential performance impact. 
 
 To isolate each operation in Bril, we would need to write the interpreter in a language that had types compatible with a 128-bit packed inte
 
