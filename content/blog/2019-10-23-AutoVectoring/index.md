@@ -228,7 +228,7 @@ A next step to better isolate these vectorized instructions frmo the rust call o
 #### Coupling of Loads and Stores
 As mentioned in the Rust FFI section above, the Rust functions that are invoked for a vector add are coupled with vload and vstore as TypeScript does not have a corresponding type for ```__m128i```. Therefore, it is possible that there are extra vloads and vstores performed for the vectorized programs. This would also diminish the potential performance impact. 
 
-To isolate each operation in Bril, we would need to write the interpreter in a language that had types compatible with a 128-bit packed inte
+To isolate each operation in Bril, we would need to write the interpreter in a language that has types compatible with 128-bit packed integers. This would enable the program to return the value from a vector load in the Dynamic Library to the interpreter. Similarly, we could then pass these 128-bit packed integers back to the Dynamic Library for the vectorized arithmetic operations.
 
 
 ## Challenges
