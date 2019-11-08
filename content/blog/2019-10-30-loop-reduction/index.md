@@ -106,9 +106,11 @@ c2 = len(rd)==1 and any([var == i['dest'] for i in li]) #one reaching definition
 
 ### Create Pre-Headers of Loop Headers
 
-Before we actually move code, we need to create pre-headers for loop headers. These pre-headers are empty blocks that should be placed before loop header blocks. Notice this assumes Bril code loops have only one entry. Using these empty blocks, we can easily move loop invariants out of the loop when the requirements are satisfied.
+Before we actually move code, we need to create pre-headers for loop headers. These pre-headers are empty blocks that should be placed before loop header blocks. Notice this assumes Bril code loops have only one entry. Using these empty blocks, we can easily move loop invariants out of the loop when the requirements are satisfied. 
 
-In our implementation, for each block, we first copy old block content and then check if the next block is a loop header. If so, we create an empty block. 
+Also notice that usually pre-headers are created so that even in loop with multiple entries, loop header can have only a single predecessor, so compiler can put pre-loop code. In our implementation, pre-header is not necessary rather than a design choice.
+
+For each block, we first copy old block content and then check if the next block is a loop header. If so, we create an empty block. 
 
 ```python
 for edge in loops:#we use back edge as key to denote loop
