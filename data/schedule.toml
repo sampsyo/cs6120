@@ -140,6 +140,7 @@ date = "November 20"
 
 [[days]]
 date = "November 22"
+notes = ["Design Review: [Loop Unrolling](../blog/loop-unrolling-with-bril/), by Shaojie & Yi-Hsiang & Yuan"]
 
 [[days]]
 date = "November 25"
