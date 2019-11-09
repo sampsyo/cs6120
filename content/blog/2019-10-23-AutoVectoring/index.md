@@ -50,7 +50,7 @@ vvadd_loop:
   done: bool = ge i size;
   br done vvadd_done vvadd_loop;
 ```
-The second loop executes for a forth the number of iterations of the first loop while behaving identically by using `vload`, `vstore`, and `vadd` that operate on four array elements at a time. This allows for *i* to be incremented by four each iteration instead of by one. 
+The second loop executes for a fourth the number of iterations of the first loop while behaving identically by using `vload`, `vstore`, and `vadd` that operate on four array elements at a time. This allows for *i* to be incremented by four each iteration instead of by one. 
 
 For this project, we designed and implemented automatic loop vectorization by converting serial operations on array elements to their vector counterparts. We build on  Philip Bedoukian's work that brings [vector instruction support into the Bril interpreter](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/interpreter-vector-support/). We use his array implementation and the vector operations that he provides which operate on vectors of length four. We did not use his C++ dynamic library, and instead wrote a new dynamic library in Rust with a wider range of function calls as we were more familiar with the Rust specification. In addition, this choice proved to be a valuable learning opportunity. 
 
