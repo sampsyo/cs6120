@@ -134,6 +134,7 @@ event = "Adrian out of town"
 [[days]]
 date = "November 18"
 mon = true
+notes = ["Design Review: [Stochastic Superoptimization](../blog/stoke/), by Eashan"]
 
 [[days]]
 date = "November 20"
