@@ -138,6 +138,7 @@ notes = ["Design Review: [Stochastic Superoptimization](../blog/stoke/), by Eash
 
 [[days]]
 date = "November 20"
+notes = ["Design Review: [Code Layout](../blog/profile-guided-code-layout/), by Gautam"]
 
 [[days]]
 date = "November 22"
