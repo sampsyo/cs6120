@@ -150,7 +150,7 @@ With this method, array operations are allowed to be vectorized while preserving
 
 In terms of implementation, we found it much easier to first coalesce the loop into one big block before running the strip mine algorithm because we could treat this sequence of instructions as one array instead of having to worry about jumps and label renaming from inserting new blocks. Aggregating all the blocks of this loop was possible because we previously enforced that there can be exactly one branch instruction located at the end of the loop.
 
-Up to here, we have been operating on the assumption that array sizes are divisible by the vector size---four. To account for arrays not divisible by four, we append a copy of this loop (without any optimizations) to a block that follows the main optimized loop. This serially executes the remaining loop iteration which allows us to maintain correctness.
+Up to here, we have been operating on the assumption that array sizes are divisible by the vector size---four. To account for arrays not divisible by four, we append a copy of this loop (without any optimizations) to a block that follows the main optimized loop. This serially executes the remaining loop iteration which allows us to maintain correctness. This also means that we need to floor the loop bound of the vectorized loop to the nearest multiple of four but keep the original bound for the serial loop that follows.
 
 
 ### Rust Dynamic Library with Foreign Function Interface
