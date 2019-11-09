@@ -78,7 +78,7 @@ Now that we are able to find a loop, it must have the following elements to be v
 - An *induction variable* that increases or decreases each iteration
     - e.g., `i: int = add i one;`
 
-These are the minimum requirements for creating a loop that iterates a set number of times. To actually get these values, we need to enforce that there is only one branch statement in the loop. We do not handle loops with multiple branches in this project as it is much more complex to hadle vectorization for nested or loops where some statements run more iterations than other statements. We also restrict the induction variable, condition variable, and branch statement to be the last three instructions in the loop, which 
+These are the minimum requirements for creating a loop that iterates a set number of times. To actually get these values, we need to enforce that there is only one branch statement in the loop. We do not handle loops with multiple branches in this project as it is much more complex to hadle vectorization for nested or loops where some statements run more iterations than other statements. We also restrict the induction variable, condition variable, and branch statement to be the last three instructions in the loop to enforce the same number of total iterations for all statements, which would not be the case if statements were allowed after the branch since those would be executed one less time than statements before the branch.
 
 From these, we can find more information such as the variable that specifies the bound, which can be deduced from the arguments for the condition variable as one argument must be the induction variable, leaving the other to be the bound. 
 
