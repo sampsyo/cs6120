@@ -199,7 +199,15 @@ Ideally, these instructions would be in separate functions in our Rust library w
 
 ## Evaluation
 ### Correctness
-In order to verify correctness, we chose self-verifiying programs such that execution of the program can prove the program computed the same value, and thus is correct  in terms of inputs/outputs. These programs include vector-vector add, vector-vector multiply, and vector-vector subtract.
+In order to verify correctness, we chose self-verifying programs such that execution of the program proves the program computed the same value, and thus is correct  in terms of inputs/outputs. These programs include vector-vector add, vector-vector multiply, and vector-vector subtract.
+In addition, we tested programs with combinations of these operations, as well as programs with dependencies to ensure we only conservatively unroll. 
+Consider the following loop.
+```
+a[i] = mul sa[i] a[i]
+b[i] = mul sb[i] b[i]
+c[i] = add a[i] b[i]
+```
+In this case, while there are dependencies within the loop body, there are no dependencies between iterations of the loop. Therefore, we expect this operation will be vectorized.
 
 We also enforced many constraints for what kinds of loops can be optimized, but we believe that it does not significantly impact expressivity. The loop format we described is most similar to a do-while loop where the loop condition is checked at the very end, but it is simple to compile regular while loops, do-while loops, and for loops from a higher level language into this Bril IR loop format using slight modifications to the loop bounds and conditions. 
 
