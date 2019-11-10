@@ -19,7 +19,7 @@ this paper shows that immix can match the state of the art on three critical asp
 
 This paper focus on three important demands on garbage collectors:
 
-- *Space efficiency*: the less space overhead is, the better.
+- *Space efficiency*: the less space overhead, the better.
 - *Fast collection*: the faster the collector runs, the better.
 - *Mutator performance*: the faster the mutator runs, the better.
 
@@ -72,7 +72,7 @@ the differences are:
 (2) during reclamation,
 immix also identifies free lines in partially free blocks (formerly unavailable blocks); 
 (3) during allocation, 
-immix first tries to find contiguous free lines that are large enough for the allocates. 
+immix first tries to find contiguous free lines that are large enough for the allocations. 
 If it cannot find suitable lines, 
 then it allocates into free blocks.
 
@@ -133,7 +133,7 @@ The benchmarks contain SPECjvm98, the DaCapo suites, and pseudojbb2000 (a fixed 
 They use three different hardware platforms, 
 including one machine with a dual-core CPU:
 Intel Core 2 Duo.
-Most analyses focus on results from the Core 2 Duo use two processors.
+Most analyses focus on results from the Core 2 Duo using two processors.
 
 Immix is implemented in the memory management toolkit (MMTk) in Jikes RVM.
 And other algorithms evaluated in this paper are also implemented in MMTk.
@@ -153,7 +153,7 @@ Immix is 14% more space-efficient than mark-sweep on average and is close to mar
 ![004.png](./004.png)
 
 The second set of evaluations examine the performance of immix in a composite generational collector. 
-(G|A-B) represents a generational collector who performs A in nursery space and B in mature space.
+(G|A-B) represents a generational collector that performs A in nursery space and B in mature space.
 
 ![005.png](./005.png)
 
@@ -190,7 +190,7 @@ It combines them in immix and shows that it matches or beats existing canonical 
 I wanted to find out any existing industrial instance of this algorithm, 
 so I did a little survey on several popular languages' compilers to get a sense of the state of modern garbage collection.
 
-- *Python* (CPython) and [*PHP*](https://www.php.net/manual/en/features.gc.php). They are using reference counting plus some cycle detection mechanism
+- *Python* (CPython) and [*PHP*](https://www.php.net/manual/en/features.gc.php). They are using reference counting plus some cycle detection mechanism.
 - [*Swift*](https://docs.swift.org/swift-book/LanguageGuide/AutomaticReferenceCounting.html). It also uses reference counting, but no cycle detection. Programmers are supposed to leverage weak references correctly to get rid of cycles by themselves. Wow.
 - [*C#*](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals?redirectedfrom=MSDN). Concurrent generational mark-compact.
 - *JavaScript* ([V8](https://v8.dev/blog/trash-talk)). Parallel concurrent incremental generational semi-space+mark-compact, with idle time GC. [Webkit's GC](https://webkit.org/blog/7122/introducing-riptide-webkits-retreating-wavefront-concurrent-garbage-collector/) seems not related to regions, either.
