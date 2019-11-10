@@ -72,7 +72,7 @@ the differences are:
 (2) during reclamation,
 immix also identifies free lines in partially free blocks (formerly unavailable blocks); 
 (3) during allocation, 
-immix first tries to find contiguous free lines that are large enough for the allocates. 
+immix first tries to find contiguous free lines that are large enough for the allocations. 
 If it cannot find suitable lines, 
 then it allocates into free blocks.
 
