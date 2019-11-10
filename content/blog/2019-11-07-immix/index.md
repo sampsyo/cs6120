@@ -134,7 +134,7 @@ The benchmarks contain SPECjvm98, DaCapo suites, and pseudojbb2000.
 They use three different hardware platforms, 
 including one machine with a dual-core CPU:
 Intel Core 2 Duo.
-Most analyses focus on results from the Core 2 Duo use two processors.
+Most analyses focus on results from the Core 2 Duo using two processors.
 
 Immix is implemented in the memory management toolkit (MMTk) in Jikes RVM, 
 other algorithms evaluated in this paper are also implemented in MMTk
