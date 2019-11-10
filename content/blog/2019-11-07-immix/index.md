@@ -12,7 +12,7 @@ latex = true
 which combines two techniques: 
 *mark-region* and *opportunistic* defragmentation. 
 And by full-scale evaluations, 
-this paper shows that immix can match state-of-the-art on three critical aspects: 
+this paper shows that immix can match the state of the art on three critical aspects: 
 *space efficiency*, *fast collection*, and *mutator performance*.
 
 # The Imperfection of Existing Tracing Collectors
