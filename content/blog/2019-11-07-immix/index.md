@@ -154,7 +154,7 @@ Immix is 14% more space-efficient than mark-sweep on average and is close to mar
 ![004.png](./004.png)
 
 The second set of evaluations examine the performance of immix in a composite generational collector. 
-(G|A-B) represents a generational collector who performs A in nursery space and B in mature space.
+(G|A-B) represents a generational collector that performs A in nursery space and B in mature space.
 
 ![005.png](./005.png)
 
