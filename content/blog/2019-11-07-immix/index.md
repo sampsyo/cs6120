@@ -19,7 +19,7 @@ this paper shows that immix can match the state of the art on three critical asp
 
 This paper focus on three important demands on garbage collectors:
 
-- *Space efficiency*: the less space overhead is, the better.
+- *Space efficiency*: the less space overhead, the better.
 - *Fast collection*: the faster the collector runs, the better.
 - *Mutator performance*: the faster the mutator runs, the better.
 
