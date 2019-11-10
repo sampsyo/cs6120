@@ -85,7 +85,7 @@ and a thread-local allocator that maintains free lines.
 ![002.png](./002.png)
 
 The figure above illustrates the basic immix heap organization during steady state allocation. 
-The allocator maintains two pointers (Bump Pointer Cursor and Bump Pointer Limit) that indicate the left and right bound of the current hole (contiguous free lines),
+The allocator maintains two pointers (Bump Pointer Cursor and Bump Pointer Limit) that indicate the left and right bound of the current hole (contiguous free lines);
 the right bound is either right before next living line or the end of this block, since an object cannot span blocks. 
 
 #### Implementation Details
