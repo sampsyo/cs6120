@@ -121,7 +121,7 @@ it replaces them with the new location.
 #### Implementation Details
 
 1. **Defragmentation Trigger.** If there are one or more recyclable (free or partially free) that the allocator "did not use" or the previous collection didn't free enough space, immix triggers defragmentation at the beginning of the current collection.
-2. **Candidate Selection**. Immix selects candidate blocks with more holes, as many as possible. It maintains an array called *available histogram* AH, where AH[i] reflects space occupied in all blocks with i holes. During selection, immix starts from biggest i, select all blocks with i holes as candidates if available space is not exhausted, and decrease i, repeat this process until available space is exhausted or i becomes 0.
+2. **Candidate Selection**. Immix selects candidate blocks with more holes, as many as possible. It maintains an array called *available histogram* AH, where AH[i] reflects space occupied in all blocks with i holes. During selection, immix starts from biggest i, selects all blocks with i holes as candidates if available space is not exhausted, and decrease i, repeating this process until available space is exhausted or i becomes 0.
 3. **Headroom**. Headroom is a small number of free blocks that immix never returns to the global allocator and *only* uses for evacuating.
 4. **Pinning.** In some situations, an application may request that an object not be moved. Immix supports this pinning feature. If the application pins an object, defragmentation never moves this object.
 5. <!--**Mixing Marking and Evacuation.** ??? I don't understand this part in the paper-->
