@@ -191,7 +191,7 @@ It combines them in immix and shows that it matches or beats existing canonical 
 I wanted to find out any existing industrial instance of this algorithm, 
 so I did a little survey on several popular languages' compilers to get a sense of the state of modern garbage collection.
 
-- *Python* (CPython) and [*PHP*](https://www.php.net/manual/en/features.gc.php). They are using reference counting plus some cycle detection mechanism
+- *Python* (CPython) and [*PHP*](https://www.php.net/manual/en/features.gc.php). They are using reference counting plus some cycle detection mechanism.
 - [*Swift*](https://docs.swift.org/swift-book/LanguageGuide/AutomaticReferenceCounting.html). It also uses reference counting, but no cycle detection. Programmers are supposed to leverage weak references correctly to get rid of cycles by themselves. Wow.
 - [*C#*](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals?redirectedfrom=MSDN). Concurrent generational mark-compact.
 - *Javascript* ([V8](https://v8.dev/blog/trash-talk)). Parallel concurrent incremental generational semi-space+mark-compact, with idle time GC.
