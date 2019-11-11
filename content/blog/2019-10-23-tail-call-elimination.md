@@ -14,7 +14,7 @@ call is a call to a function whose value is immediately returned. For example,
 we do not need to create a new stack frame for it. We can simply "overwrite"
 the current stack frame since won't need any of the values in the frame anymore.
 This is crucial for programming languages that use *tail recursion* as a
-programming idiom (e.g. OCaml, Haskell, etc.). Consider the following (somewhat
+programming idiom (e.g., OCaml, Haskell, etc.). Consider the following (somewhat
 contrived) TypeScript program:
 ```
 function loop(n: number) {
