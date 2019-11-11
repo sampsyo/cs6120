@@ -234,10 +234,10 @@ The cost of the Rust calls likely dimishes the visible improvement. While we tri
 
 In addition, the calls from TypeScript to the Rust FFI are opaque and it is unclear how exactly they are made. It is also unclear how the arguments are passed in to the function, and what the associated costs are. Therefore, it is possible that some of the variance in the results can be attributed to the variance of these calls.
 
-A next step to better isolate these vectorized instructions frmo the rust call overhead would be to write the entire interpreter in Rust, or some other language, and executing the SIMD instructions inline without function calls.
+A next step to better isolate these vectorized instructions from the rust call overhead would be to write the entire interpreter in Rust, or some other language, and execute the SIMD instructions inline without function calls.
 
 #### Coupling of Loads and Stores
-As mentioned in the Rust FFI section above, the Rust functions that are invoked for a vector add are coupled with vload and vstore as TypeScript does not have a corresponding type for ```__m128i```. Therefore, it is possible that there are extra vloads and vstores performed for the vectorized programs. This would also diminish the potential performance impact. 
+As mentioned in the Rust FFI section above, the Rust functions that are invoked for a vector-add are coupled with vload and vstore as TypeScript does not have a corresponding type for ```__m128i```. Therefore, it is possible that there are extra vloads and vstores performed for the vectorized programs. This would also diminish the potential performance impact. 
 
 To isolate each operation in Bril, we would need to write the interpreter in a language that has types compatible with 128-bit packed integers. This would enable the program to return the value from a vector load in the Dynamic Library to the interpreter. Similarly, we could then pass these 128-bit packed integers back to the Dynamic Library for the vectorized arithmetic operations.
 
