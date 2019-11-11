@@ -120,7 +120,6 @@ date = "November 8"
 [[days]]
 date = "November 11"
 mon = true
-notes = ["Design Review: [Auto-Vectorization](../blog/AutoVectoring/), by Katy & Henry"]
 
 [[days]]
 date = "November 13"
@@ -147,6 +146,7 @@ notes = ["Design Review: [Loop Unrolling](../blog/loop-unrolling-with-bril/), by
 [[days]]
 date = "November 25"
 mon = true
+notes = ["Design Review: [Auto-Vectorization](../blog/AutoVectoring/), by Katy & Henry"]
 
 [[days]]
 date = "November 27"
