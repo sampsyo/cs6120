@@ -169,11 +169,14 @@ pub fn vadd(data_a: *const i32, data_b: *const i32, data_c: *mut i32) {
         let a = _mm_load_si128(mem_a);
         let b = _mm_load_si128(mem_b);
         let c = _mm_add_epi32(a, b);
-        _mm_store_si128(mem_c, c);
-        std::mem::forget(mem_c)
+        _mm_store_si128(mem_c, c)
     }
 }
 ```
+The Rust crate for SIMD is currently required to be wrapped in an unsafe block. This is because it is the programmer's responsibility to ensure that the CPU the program is running on supports the function being called. For example, it is unsafe to call an AVX2 function on a CPU that does not actually support AVX2. (AVX2 is an extension to the x86 ISA that supports SIMD operations).
+
+In order to justify these unsafe blocks, we used the ```#cfg``` attribute when compiling. This allows you to dynamically detect this CPU feature, and provide a fallback implementation in the case the CPU does not support SIMD operations. The processor we used for evaluation supported AVX2, so we did not need a fallback implementation for evaluation.
+
 Consider the corresponding invocation of this Rust function in the interpreter for vector add.
 ```gherkin=
 case "vadd": {
