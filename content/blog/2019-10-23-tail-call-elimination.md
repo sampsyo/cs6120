@@ -83,7 +83,7 @@ Here, if `foo` returned 0, then `r` would have the value 0.
 
 ### Extending the Interpreter
 The interpreter needed to be extended to implement the above semantics. To model
-a stack frame, I explicitly keep track of the program counter (i.e. which
+a stack frame, I explicitly keep track of the program counter (i.e., which
 instruction is being interpreted), the name of the current function, and an
 environment. I made this explicit because it made jumping to other functions
 easier to implement. The interpreter simply tries to evaluate the frame at the
