@@ -40,8 +40,8 @@ Additionally, the return value of the function is obtained using a special
 keyword that is akin to getting the return value from `rax` according to the
 [System V Calling Conventions](https://en.wikipedia.org/wiki/X86_calling_conventions#x86-64_calling_conventions).
 
-Importantly, we need the capability to jump to program locations other than the
-labels in the program. This way, if we have a tail call, then we can jump to
+Importantly, we need the capability to jump to other functions, rather than just
+labels in the current function. This way, if we have a tail call, then we can jump to
 the beginning of the callee instead of creating a new stack frame. This is [how
 tail call elimination is implemented](https://www.cs.cornell.edu/courses/cs4120/2019sp/lectures/34functional/lec34-sp19.pdf?1556325712)
 in x86 assembly.
@@ -103,7 +103,7 @@ There were some differences however because I have separate instructions for
 passing arguments to a function. So, whenever a function call was found in the
 AST, the arguments needed to be converted to Bril instructions first, then those
 would be used in a `push`. Additionally, a `retval` would need to be created
-afterwards if in the AST, the function call was assigned to a variable.
+afterwards if the result of the function call would be used.
 
 ### Identifying and Eliminating Tail Calls
 The simple definition of a *tail call* would be an immediate return of a call
@@ -122,8 +122,8 @@ Thus we just need to look for `call`s that are immediately and optionally
 followed by `retval`, and immediately followed by a `ret`.
 
 This doesn't take into account more complex cases where there isn't an explicit
-return of a function call, but the value returned only comes from the same
-created. For example:
+return of a function call, but the value returned comes from a call to the
+same function from different branches. For example:
 ```
 function foo(n: number): number {
   ...
