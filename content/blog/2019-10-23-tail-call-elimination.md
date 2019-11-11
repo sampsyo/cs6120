@@ -174,7 +174,7 @@ endif.6:
 ```
 
 Then we can analyze the CFG backwards to see that indeed we can replace
-the calls to a `jmp`.
+the calls with `jmp` instructions.
 ```
 then.6:
   ...
