@@ -40,7 +40,7 @@ Additionally, the return value of the function is obtained using a special
 keyword that is akin to getting the return value from `rax` according to the
 [System V Calling Conventions](https://en.wikipedia.org/wiki/X86_calling_conventions#x86-64_calling_conventions).
 
-Importantly, we need the capability to jump program locations other than the
+Importantly, we need the capability to jump to program locations other than the
 labels in the program. This way, if we have a tail call, then we can jump to
 the beginning of the callee instead of creating a new stack frame. This is [how
 tail call elimination is implemented](https://www.cs.cornell.edu/courses/cs4120/2019sp/lectures/34functional/lec34-sp19.pdf?1556325712)
