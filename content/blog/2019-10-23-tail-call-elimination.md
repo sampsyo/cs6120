@@ -119,7 +119,7 @@ v: int = retval;
 ret v
 ```
 Thus we just need to look for `call`s that are immediately and optionally
-followed by `reval`, and immediately followed by a `ret`.
+followed by `retval`, and immediately followed by a `ret`.
 
 This doesn't take into account more complex cases where there isn't an explicit
 return of a function call, but the value returned only comes from the same
