@@ -221,7 +221,7 @@ One option is to implement 4 add operations in the interpreter's dispatch loop f
 
 A second option is to use SIMD instructions in x86 with SIMD intrinsics. This approach involves execution of SIMD instructions that ideally much more closely mirror behvaior of SIMD operations. We modeled these SIMD operations this way for this reason using the aforementioned Rust dynamic library.
 
-To evaluate our implementation, we run vvadd benchmarks. We run each benchmark on arrays of varying sizes (16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8092). We initially ran 5 iterations per array size per benchmark, but noticed the execution times significantly decreased after each iteration. This is likely due to the CPU warming up, caching, and better branch prediction after each iteration. Therefore, we decided to increase this number to 25, after which the difference in execution times for sequential runs was less than 0.01 ms. 
+To evaluate our implementation, we run vvadd benchmarks. We run each benchmark on arrays of varying sizes (16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192). We initially ran 5 iterations per array size per benchmark, but noticed the execution times significantly decreased after each iteration. This is likely due to the CPU warming up, caching, and better branch prediction after each iteration. Therefore, we decided to increase this number to 25, after which the difference in execution times for sequential runs was less than 0.01 ms. 
 
 <img src="graph.png" style="max-width: 100%" >
 
