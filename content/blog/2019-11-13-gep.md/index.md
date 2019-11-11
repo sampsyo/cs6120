@@ -99,7 +99,7 @@ The return statement roughly translates to:
 
 ```C
 %addr = getelementptr [10 x i32], [10 x i32]* %tmp, i64 0, i64 %x;
-%val = load i32, i32* %addr     ;
+%val = load i32, i32* %addr;
 ret %addr;
 ```
 
@@ -118,22 +118,22 @@ The second question is a much more difficult problem,
 whose subtleties we'll address in the next section.
 For the most part though, this will be addressed by LLVM's type
 information. Based on its type annotation, we know
- that `%tmp` points to an array with 10 32-bit integers.
+ that `%tmp` points to an array with 10 32-bit integers (notated as `[10 x i32]`).
 Therefore, we can conclude that the only valid values for `%x` are
 between 0 (inclusive) and 10 (exclusive).
 
-In general our algorithm is this:
+In general our algorithm for modifying LLVM code is this:
 
 ```
 1) Initialize the current type to be the type of the first operand.
 2) Initialize current operand to the first index operand.
-3) If possible, insert instructions to check if current operand is in bounds based on current type
-4) Set current type to the target type (e.g. if current type is `int [][]` set it to `int []`).
+3) If possible, insert instructions to check if current operand is in bounds based on current type.
+4) Set current type to the next element type (e.g. if current type is *int[] the next type is int[]).
 5) If there are no more index operands, exit.
    Else, set the current operand to the next in the operand list and goto (3).
 ```
 
-### Pointer Sizes
+### Pointer Sizes and Tracking Allocations
 
 In the above examples, we could always tell how big our memory allocations
 were since they were allocated with static sizes. `int tmp[10]` comprises of
@@ -169,7 +169,26 @@ where the types are unsized. Unfortunately, this is rather imprecise since
 it tracks *exact* value dependencies and doesn't keep track of other ways
 a pointer may be passed to a GEP. For instance, spilling a value to memory
 and then re-loading it will cause our analysis to lose track of the original
-allocation.
+allocation. 
+
+Additionally, we run our transformation as a function pass so
+it doesn't track interprocedural allocations. The main
+reason for this limitation is that, even if we knew
+the original allocation size for all callers, we would
+have to modify the function signature to communicate
+legal index values from the caller.
+This seemed both out of scope for our current project
+and a potentially questionable design decision; should
+a compiler pass be modifying the signatures of
+potentially every function?
+
+Consequently, our pass is unable to improve the
+memory safety of this function:
+```C
+int foo(int* x, int y) {
+    return x[y];
+}
+```
 
 We had hoped to use LLVM's alias analysis or copy propagation tools
 to increase the precision of allocation tracking. However, we couldn't get
@@ -187,13 +206,76 @@ be interpreted differently.
 
 In the above code, a GEP that uses `%1` can safely index into elements 0 to 9.
 However, a GEP that uses `%2` as the base can safely index into elements 0 to 31.
-Since 4 `i8` values fit into one `i32` the allocation of `%2` represents a totally
+Since 4 `i8` values fit into one `i32`, the allocation of `%2` represents a totally
 different number of elements than `%1` even though they represent the result of the
-same allocaiton operation. To avoid reasoning about the sizes of various types,
+same allocation operation. To avoid reasoning about the sizes of various types,
 we did not implement this logic at another cost to precision. Any GEP instruction
-using `%2` will not be instrumented by our code.
+using `%2` will not be fully instrumented by our code.
+
+
+### Soundness and Completeness
+
+Often, when trying to prove or ensure a safety
+property you'd like to show that your results are either *sound* or *complete*.
+In our case, soundness would imply that any LLVM program which uses no
+"type unsafe" features and is compiled with our pass 
+executes *no GEP instructions which would generate out-of-bounds pointers*.
+Completeness, on the other hand, would imply that we can compile
+all programs and allow them to execute.
+
+Typically, you cannot achieve both soundness and completeness simultaneously;
+although, the use of code transformation to insert runtime checks does make
+this tractable for some problems. Our solution achieves only completeness and
+not soundness; we allow all programs to execute by skipping checks where we
+cannot determine the legal index bounds. A simple *sound alternative* would be to
+simply reject any programs that fit the above criteria; by placing an unconditional
+exit in front of any such GEP instruction we could ensure safety but would prevent
+some safe programs from executing.
+
+#### A Note on Soundness
+
+Soundness for our problem isn't really achievable without some
+assumptions about the behavior of LLVM programs oustide of the GEP instructions
+(*or without a much more complex interprocedural analysis*).
+
+To highlight one of the reasons for this, consider the following LLVM program:
+
+```C
+%1 = alloca [10 x i32]
+%2 = bitcast [10 x i32]* %1 to [11 x i32]*
+%3 = getelementptr [11 x i32], [11 x i32]* %2, i64 0, i64 %x
+```
+
+The above LLVM code is totally legal and will compile using standard
+LLVM tools. However, this example invalidates the assumption that our
+pass uses to ensure GEP safety.
+
+To be clear `%1` is a pointer to an array of 10 32-bit integers, 
+but the next instruction copies that same pointer value into `%2`
+while treating is as a pointer to *11* 32-bit integers.
+
+When our pass analyses `%3` it will insert the following bounds
+check for `%x`:
+
+```C
+0 <= %x < 11
+```
+Executions where `%x == 10` will cause memory safety violations.
+We consider such behaviors outside the scope of this project
+and assume that the LLVM types for the arguments to the GEP
+instruction reflect accurate allocations of memory. This assumption
+is what we mean by not using "type unsafe" features.
 
 ### Evaluation: Precision And Overhead
+
+To evaluate the utility of our pass,
+we took a selection of [PARSEC](https://parsec.cs.princeton.edu/)
+benchmarks and considered both: 1) How often we failed to determine the
+legal bounds for a pointer; and 2) How much runtime overhead we inccured
+with our dynamic checks. Furthermore, we ran a number of microbenchmarks
+to ensure that our pass was properly instrumenting code in the absence
+of the soundness problems that we mentioned above.
+
 
 
 -----------
