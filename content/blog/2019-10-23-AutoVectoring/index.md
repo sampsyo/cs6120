@@ -154,7 +154,7 @@ Up to here, we have been operating on the assumption that array sizes are divisi
 
 
 ### Rust Dynamic Library with Foreign Function Interface
-In order to utilize SIMD intrinsics, we use the Rust crate for SIMD that targets the x86 platform. We design a dynamic library with functions for each of the SIMD operations we support, namely vector-add, vector-multiply, and vector-subtract. These functions are called in the dispatch loop of the interpreter for the corresponding vectorized instructions.
+In order to more accurately measure the performance impact of automatic vectorization, we design a dynamically linked library in Rust with a foreign function interface. We use the Rust crate for SIMD that targets the x86 platform to utilize SIMD intrinsics to support vector-add, vector-multiply, and vector-subtract. These functions are called in the dispatch loop of the interpreter for the corresponding vectorized instructions.
 
 Consider the Rust function for vectorized addition.
 ```gherkin=
