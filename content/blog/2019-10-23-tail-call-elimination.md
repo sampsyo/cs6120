@@ -70,7 +70,7 @@ typed arguments.
 Here are the new effect operations and their semantics:
 - `push arg1 ... argn`: push arguments to the stack, which can be used by the
 first function to be `call`'d after this instruction.
-- `call foo`: starts executing instructions defined by the function `foo`
+- `call foo`: starts executing instructions defined by the function `foo`.
 
 Here are the new value operations and their semantics:
 - `retval`: Retrieve the return value of the previous function call, e.g.
