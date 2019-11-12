@@ -12,7 +12,7 @@ The goal of this project was to implement the path profiling algorithm from the 
 
 ## Implementation
 
-The paper already gave good explanations and some pseudocode for how to implement the path profiling algorithm. I will now briefly describe what this algorithm is doing. The algorithm presented in the paper assigns a number to each path through a CFG from a designated entry node to a designated exit node. When executing the entry block of the CFG, some instrumentation is inserted to set a path register `r = 0`. Then, the algorithm figures out which edges to add instrumentation to in order to have `r` equal the path number that was taken once execution reaches the exit block of the CFG. Then, some code is added to the exit block of the CFG to increment a value in a path table like so: `path_table[r]++`. While the program is running the instrumentation will accumulate a path profile of the execution of the program through the CFG. Then, when the program exits this information can be saved somewhere and analyzed.
+The paper already gave good explanations and some pseudocode for how to implement the path profiling instrumentation algorithm. I will now briefly describe what the algorithm is actually doing. The algorithm presented in the paper assigns a number to each path through a CFG from a designated entry node to a designated exit node. When executing the entry block of the CFG, some instrumentation is inserted to set a path register `r = 0`. Then, the algorithm figures out which edges to add instrumentation to in order to have `r` equal the path number that was taken once execution reaches the exit block of the CFG. Then, some code is added to the exit block of the CFG to increment a value in a path table like so: `path_table[r]++`. While the program is running the instrumentation will accumulate a path profile of the execution of the program through the CFG. Then, when the program exits this information can be saved somewhere and analyzed.
 
 There are a few more details when the algorithm deals with loops. Whenever a back edge is taken the algorithm considers it a termination of the current execution through the CFG and then begins profiling a new execution of the CFG starting from the loop header. For example, consider the following CFG:
 
@@ -122,10 +122,82 @@ I believe this is the correct instrumentation based on the examples and reasons 
 
 ## Evaluation
 
-My evaluation consisted of 2 parts. In the first part I developed some programs that were edge cases for the algorithm and verified that the algorithm behaved as expected. The second part was TODO
+My evaluation consisted of 2 parts. In the first part I developed some programs that were edge cases for the algorithm and verified that the algorithm behaved as expected. The second part of the evaluation involved gathering some benchmark test cases and evaluating the profiling overhead for each of the benchmarks. For this project, I chose a few single file benchmark test cases from the [LLVM test suite](https://github.com/llvm/llvm-test-suite). The primary reason for picking only single file benchmark test cases was that they were easy to put through my LLVM pass.
 
 ### Correctness Tests
 
+Most of the correctness tests were either simple sanity checks or specifically crafted CFGs to test the edge cases discusses above. For example, one sanity check was to create the CFG that was initially discussed in the paper and see if the algorithm did the correct thing:
 
+<img src="diamond.png" style="width: 30%">
+
+For this graph, my algorithm generated the following incs:
+| Edge | Inc |
+|:-:|:-:|
+| D -> F | 1 |
+| C -> D | 4 |
+| B -> C | -2 |
+This gives the following path numberings:
+| Path | value |
+|:-:|:-:|
+|A,B,D,E,F | 0|
+|A,B,D,F | 1|
+|A,B,C,D,E,F | 2|
+|A,B,C,D,F | 3|
+|A,C,D,E,F | 4|
+| A,C,D,F | 5 |
+
+Which is similar to what the paper generates.
+
+A more interesting edge case is one where there are 2 loops with the same loop head. This required manually writing some LLVM code since I was not sure how to generate such a cfg using only C:
+
+<img src="samehead.png" style="width: 30%">
+
+The algorithm identifies 9 distinct paths through the graph and assigns the following inc values:
+
+| Edge | Inc |
+|:-:|:-:|
+|bb -> bb8 | 6|
+|bb4 -> bb28 | 1|
+|bb18 -> bb4 | 1|
+|bb -> bb8 | 3|
+
+One interesting about this is that the edge bb -> bb8 is assigned 2 inc values. This is because one of them corresponds to restarting the loop by taking edge bb12 -> bb8 and the other corresponds to restarting the loop by taking the edge from bb4 -> bb8. To better illustrate this, these are the values assigned to each of the paths:
+
+| Path | value |
+|:-:|:-:|
+|bb,bb8,bb12  | 0|
+|bb,bb8,bb18,bb4  | 1|
+|bb,bb8,bb18,bb4,bb28 | 2 |
+| (from bb4) bb8,bb12 | 3|
+| (from bb4) bb8,bb18,bb4 | 4|
+| (from bb4) bb8,bb18,bb4,bb28 | 5|
+| (from bb12) bb8,bb12 | 6|
+| (from bb12) bb8,bb18,bb4 | 7|
+| (from bb12) bb8,bb18,bb4,bb28 | 8 |
+
+Even though path bb8,bb12 appears twice in this table with different values, the algorithm is inserting instrumentation to differentiate the 2 ways that the path was started. If we take the back edge bb4 -> bb8, then we start with the path register equal to 3. If we take the bake edge bb12 -> bb8, then we start with the path register equal to 6. These were the 2 inc values computed for path bb -> bb8 in the table above. This kind of example was not explicitly mentioned in the paper but I think this is the correct thing to do.
 
 ### Performance Tests
+
+For the performance tests, I collected 11 programs from the SingleSource directory of the LLVM test suite. Each of these programs was compiled to LLVM, then sent through my profiling instrumentation pass, and then compiled to an executable. Additionally, a version of the executable was generated from the original LLVM (with no instrumentation). No optimizations were enabled for any of the compilation steps. Then, both of these programs were run and their run times were compared with time. The table below describes the results :
+
+| Program name | Normal execution time (secs) | Instrumented execution time (secs) | Instrumented / Normal |
+|:-:|:-:|:-:|:-:|
+| [almabench](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/CoyoteBench/almabench.c) | 8.50 | 10.04 | 1.18 |
+| [chomp](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/McGill/chomp.c) | 2.37 | 5.18 | 2.19 |
+| [FloatMM](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/Stanford/FloatMM.c) | 1.48 | 3.61 | 2.44 |
+| [huffbench](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/CoyoteBench/huffbench.c) | 55.67 | 102.73 | 1.84|
+| [linpack-pc](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/Linpack/linpack-pc.c) | 15.80 | 37.49 | 2.37 |
+| [lpbench](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/CoyoteBench/lpbench.c)  | 10.94 | 26.75 | 2.45 |
+| [misr](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/McGill/misr.c) | 0.32 | 0.41 | 1.28|
+| [oourafft](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/Misc/oourafft.c) | 13.45 | 18.24 | 1.36 |
+| [queens](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/McGill/queens.c) | 3.53 | 6.69 | 1.90 |
+| [ReedSolomon](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/Misc/ReedSolomon.c) | 11.28 | 19.35 | 1.72 |
+| [Treesort](https://github.com/llvm/llvm-test-suite/blob/master/SingleSource/Benchmarks/Stanford/Treesort.c) | 0.18 | 0.32 |1.78 |
+
+
+These results were acquired in one run of each program. There was no effort made to isolate the running process from other process on the system (a standard laptop) or efforts to minimize the effects of memory alignment. This was because the performance differences were large enough that doing any of the above would have likely been overkill to get meaningful results.
+
+The results show worse overhead than the paper showed, but this may be the result of multiple factors. The first is that the algorithm that I implemented did not include any of the instrumentation placement optimizations that the paper described. In my implementation, the path register is actually stack allocated so every edge instrumentation needs to perform and memory read and write. Instead, the path register can actually be pinned to a register throughout a function. This would cause one less register to be available for register allocation so it would be interesting to see what the tradeoffs would be. Next, the operation to increment the path counter table is actually a function call. This is because I thought I would add locking to support multithreaded programs. However, none of the benchmarks are multithreaded, so this function call is unecessary and the increment could be inlined. Finally, there is no strength reduction to store the address of path counter in the path register instead of the index. The paper mentions this as a potential optimization, however no optimzation passes were run on the programs after instrumentation.
+
+In summary, the instrumentation generally causes about a 2x increase in program execution time, which is not that great. It would be interesting to see what performance improvments any or all of the above optimizations could achieve.
