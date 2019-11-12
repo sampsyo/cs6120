@@ -33,14 +33,27 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ### Feature Wish list:
 - criticality testing
-- rates for nested loops: possibly exponential rates moving inward
 - accelerated loop perforation
 - storing previous values instead of skipping
 - Outrageous baselines that work as well, e.g. skipping random instructions
 - the loss of accuracy may introduce bias in, e.g., ML
+- call adrian's pass to compare
+- rates for nested loops: possibly exponential rates moving inward
+- fit to one input, test on others.
+
+#### todo
+- run on all represenatitve inputs
+- plot speedups
+- fix matrix errors (same size)
+- with some fixed error, graph: perforated vs standard 
+
+#### finished
+- do search and return the best
+- take out condition we can't perforate main
+- get benchmarks working
 - parsec
-- accuracy measure
 - should we bother with their greedy exploration?
+- accuracy measure
 
 
 ## Implementation
