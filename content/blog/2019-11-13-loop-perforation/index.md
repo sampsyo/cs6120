@@ -55,6 +55,56 @@ Both work in conjunction with
 
 ### Tests
 
+To understand the interplay between our LLVM pass and the python driver, let's consider a toy example.
+Say we want to write a silly function that sums the integers from 0 to some number `n`:
+
+```
+int sum_to_n(int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+       sum += i;
+    }
+    return sum;
+}
+
+int main(int argc, char const *argv[]) {
+    printf("%d\n", sum_to_n(5));
+}
+```
+
+You can imagine that perforating the loop here is a _pretty_ bad idea: this implementation doesn't have a ton of wiggle room in getting a totally correct result.
+However, if we suspend disbelief for a moment and imagine that some poor soul only cares about the _order of magnitude_ of the resulting sum, then perforating this loop becomes an interesting task.
+
+Conceptually, the driver just needs to take in the `sum_to_n` implementation and some oracle that can answer the question: "is this perforated implementation _good enough_?"
+(For more complicated applications, the driver also needs a representative input, but for this example the executable takes no arguments.)
+So, let's also tell the driver how wrong the ultimate answer can be.
+
+To do this, we require a python implementation of an `errors` module.
+At a high level, `errors` should tell the driver 1) what error metrics we care about for this application, and 2) a float value between 0 and 1 for each metric (0 is perfect, 1 is unacceptable.)
+For `sum-to-n1`, let's define a single error metric that's the ratio between our new sum answer and the correct answer:
+
+```
+# Provide the name of each metric we care about
+error_names = ["error_ratio"]
+
+# The arguments `standard_fn` and `perforated_fn` are filenames of output files
+def error(standard_fn, perforated_fn):
+    standard = int(get_contents(standard_fn))
+    perforated = int(get_contents(perforated_fn))
+
+    delta = abs(standard - perforated)
+    ratio = delta / standard
+
+    return {"error_ratio" : ratio}
+```
+
+Now, we can hand off this little application to the driver, to determine which loops it can successfully perforate:
+
+```
+$ python3 driver.py tests/sum-to-n
+```
+
+Let's walk through what happens now.
 ### Benchmarks from PARSEC
 
 
@@ -74,7 +124,7 @@ Both work in conjunction with
 - run on all represenatitve inputs
 - plot speedups
 - fix matrix errors (same size)
-- with some fixed error, graph: perforated vs standard 
+- with some fixed error, graph: perforated vs standard
 
 #### finished
 - do search and return the best
@@ -94,6 +144,6 @@ Both work in conjunction with
 
 ## Difficulties
 
- 
+
 
  -
