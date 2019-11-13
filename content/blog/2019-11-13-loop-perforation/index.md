@@ -9,6 +9,7 @@ bio = """
   [Greg][] is a second-year student working on machine learning and digital humanities.
 
 """
+latex = true
 
 
 [alexa]: https://www.cs.cornell.edu/~avh
@@ -52,6 +53,21 @@ Both work in conjunction with
     - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
 
 ## Evaluation
+
+### Error Metrics
+
+The [original loop perforation paper][paper] uses the following accuracy metric:
+
+\[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
+
+That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$. Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+
+This means that, of the common accuracy metrics used for images, matrices, etc., only the $l_1$ loss can be encoded
+
+Other metrics
+
+ -**L2 Loss**
+ -
 
 ### Tests
 
@@ -277,4 +293,4 @@ However, we can see that the error ratio does drastically change as we increase 
 
 
 
- -
+[paper]: https://dl.acm.org/citation.cfm?id=2025133
