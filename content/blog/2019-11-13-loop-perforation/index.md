@@ -27,9 +27,38 @@ name = "Gregory Yauney"
 link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
-## Overview
+## Introduction
+
+### Here's the code!
+
+### Scope
+
+## Implementation
+
+We implemented two LLVM passes:
+
+1. a function pass to gather information about all loops in a program
+
+2. Perforate all loops with given rates
+
+Both work in conjunction with
+
+3. Python `driver.py`
+
+### Design Decisions
+
+- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
+- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
+    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
 
 ## Evaluation
+
+### Tests
+
+### Benchmarks from PARSEC
+
+
+
 
 ### Feature Wish list:
 - criticality testing
@@ -65,7 +94,6 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ## Difficulties
 
- - To collect loop information: decided to do a function pass instead of a loop pass or module pass:
-    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+ 
 
  -
