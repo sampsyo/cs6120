@@ -59,7 +59,7 @@ struct EX {
   int *c;
 }
 
-struct *X;
+struct X;
 ...
 return X->b[2];
 ```
@@ -80,10 +80,11 @@ acquire an out-of-bounds pointer. Usually, this means it
 executes a GEP whose result will then later be the argument of a
 load or store operation.
 
-Our approach in this implementation is to prevent any
-runtime GEP instructions from executing which might lead to
-illegal memory accesses. If a program can never acquire
-an out-of-bounds pointer, it can't violate memory safety.
+Our approach in this implementation is to prevent the execution of
+any runtime GEP instructions that might lead to
+illegal memory accesses.
+*If a program can never acquire an out-of-bounds pointer,
+it can't violate memory safety.*
 
 ### Making GEP Safe(r)
 
@@ -106,8 +107,8 @@ ret %addr;
 In order to insert a dynamic check for memory safety, there
 are two things we need to know:
 
- - What is actual access index value?
- - What are legal access index values?
+ - What is the *actual* access index value?
+ - What are **legal** access index values?
 
 Happily, when considering GEP instructions, the first question is easy
 to answer; each operand represents an access index
@@ -116,11 +117,16 @@ those operands to other values.
 
 The second question is a much more difficult problem,
 whose subtleties we'll address in the next section.
-For the most part though, this will be addressed by LLVM's type
+For the most part though, we leverage LLVM's type
 information. Based on its type annotation, we know
  that `%tmp` points to an array with 10 32-bit integers (notated as `[10 x i32]`).
 Therefore, we can conclude that the only valid values for `%x` are
 between 0 (inclusive) and 10 (exclusive).
+
+To execute this check completely, we need to check that *all* index operands
+are legal. You may have noticed that our prior example actually has **two**
+index operands; we have to check both that `tmp` points to at least one
+integer array of size 10, *and* that `x` is a valid index for such an array.
 
 In general our algorithm for modifying LLVM code is this:
 
@@ -133,7 +139,52 @@ In general our algorithm for modifying LLVM code is this:
    Else, set the current operand to the next in the operand list and goto (3).
 ```
 
-### Pointer Sizes and Tracking Allocations
+### GEP Checking: A Walkthrough
+
+In this section we'll walkthrough the above example in excruciating detail.
+Feel free to skip ahead to [the next section](#pointer-sizes-and-tracking-allocations)
+if you're an expert in how `getelementptr` works and/or the above algorithm makes intuitive sense.
+
+The main complicating part of the above algorithm is how to compute the next element type.
+Based on the possible types that GEP expects there are only a few cases to handle.
+Intuitively, each type represents a container in some way and "indexing" into it
+should get us the type contained by the outer one.
+
+| Type | Next Element Type | Notes |
+|------|-------------------|----------|
+| t*   | t                 | For pointers, the next type is the type being pointed to |
+| [ size x t ] | t          | For arrays, the next type is the array element type |
+| < size x t > | t | Vectors, like arrays, have an element type |
+| struct { f1, f2,...,fn } | fi | i is the index value, LLVM requires this is a compile time constant |
+
+
+Checking the instruction: 
+`%addr = getelementptr [10 x i32], [10 x i32]* %tmp, i64 0, i64 %x;`
+
+```C
+PointerSource = %tmp;
+CurrentType = [10 x i32]*;
+CurrentOp = i64 0;
+
+//Get the max offset for accessing %tmp. Since %tmp was generated with
+// %tmp = alloca [10 x i32]
+//We know that %tmp points to only 1 integer array
+NumElements = 1;
+InsertCheck(CurrentOp >= 0 && CurrentOp < NumElements); // (0 >= 0 && 0 < 1)
+//Our implementation will actually automatically omit this
+//check since it can be easily statically determined to be `true`
+
+CurrentType = NextElementType(CurrentType); //[10 x i32]
+CurrentOp = i32 %x;
+
+NumElements = 10 // retrieved from the type [10 x i32]
+InsertCheck(CurrentOp >= 0 && CurrentOp < NumElements); // (x >= 0 && x < 10)
+
+CurrentOp = <none>;
+//Done!
+```
+
+## Pointer Sizes and Tracking Allocations
 
 In the above examples, we could always tell how big our memory allocations
 were since they were allocated with static sizes. `int tmp[10]` comprises of
@@ -178,7 +229,7 @@ the original allocation size for all callers, we would
 have to modify the function signature to communicate
 legal index values from the caller.
 This seemed both out of scope for our current project
-and a potentially questionable design decision; should
+and a potentially questionable design decision. Should
 a compiler pass be modifying the signatures of
 potentially every function?
 
@@ -193,29 +244,40 @@ int foo(int* x, int y) {
 We had hoped to use LLVM's alias analysis or copy propagation tools
 to increase the precision of allocation tracking. However, we couldn't get
 these to work; they were difficult to integrate and didn't seem to track
-pointer value propagation as we expected them to.
+pointer value propagation as we expected them to. LLVM's relatively new
+[MemorySSA](https://llvm.org/docs/MemorySSA.html) analysis seemed very
+promising, since their example code finds domination relationships between
+memory uses and definitions. This would allow us to, at least for some cases,
+track allocation size information transitively through pointer reads and writes.
+However, the implementation is less precise than the documentation lets on
+and does not find accurate enough relationships to identify the root allocation
+for any pointers in practice.
 
-Furthermore, `bitcasting` operations complicate this process
+### Bitcasting
+Additionally, `bitcast` instructions complicate this process
 even more, since they cause the "sizes" of memory allocations to
 be interpreted differently.
 
 ```C
-%1 = alloca i32, 10
+%1 = alloca i32, i64 10
 %2 = bitcast i32* %1 to i8*
 ```
 
-In the above code, a GEP that uses `%1` can safely index into elements 0 to 9.
-However, a GEP that uses `%2` as the base can safely index into elements 0 to 31.
 Since 4 `i8` values fit into one `i32`, the allocation of `%2` represents a totally
 different number of elements than `%1` even though they represent the result of the
-same allocation operation. To avoid reasoning about the sizes of various types,
-we did not implement this logic at another cost to precision. Any GEP instruction
-using `%2` will not be fully instrumented by our code.
+same allocation operation.
+In the above code, a GEP that uses `%1` can safely index into elements 0 to 9.
+However, a GEP that uses `%2` as the base can safely index into elements 0 to 31.
+For any bitcast instruction that casts an allocation of known size, we convert
+and track the size of the new value, using integer multiplication and division
+to soundly approximate the maximum safe index. For typical bitcasts (e.g. `char` to `int`)
+this will not lose precision; however LLVM does have arbitrary precision integers,
+which could cause this estimate of allocation size to be an underestimate.
 
 
-### Soundness and Completeness
+## Soundness and Completeness
 
-Often, when trying to prove or ensure a safety
+Often, when trying to ensure a safety
 property you'd like to show that your results are either *sound* or *complete*.
 In our case, soundness would imply that any LLVM program which uses no
 "type unsafe" features and is compiled with our pass 
@@ -232,7 +294,7 @@ simply reject any programs that fit the above criteria; by placing an unconditio
 exit in front of any such GEP instruction we could ensure safety but would prevent
 some safe programs from executing.
 
-#### A Note on Soundness
+### A Note on Soundness
 
 Soundness for our problem isn't really achievable without some
 assumptions about the behavior of LLVM programs oustide of the GEP instructions
@@ -250,9 +312,9 @@ The above LLVM code is totally legal and will compile using standard
 LLVM tools. However, this example invalidates the assumption that our
 pass uses to ensure GEP safety.
 
-To be clear `%1` is a pointer to an array of 10 32-bit integers, 
+To be clear, `%1` is a pointer to an array of 10 32-bit integers, 
 but the next instruction copies that same pointer value into `%2`
-while treating is as a pointer to *11* 32-bit integers.
+while treating it as a pointer to *11* 32-bit integers.
 
 When our pass analyses `%3` it will insert the following bounds
 check for `%x`:
@@ -266,7 +328,7 @@ and assume that the LLVM types for the arguments to the GEP
 instruction reflect accurate allocations of memory. This assumption
 is what we mean by not using "type unsafe" features.
 
-### Evaluation
+## Evaluation
 
 To evaluate the utility of our pass,
 we took a selection of [PARSEC](https://parsec.cs.princeton.edu/)
@@ -281,40 +343,116 @@ to compile most easily, so they may not be reflective of as
 wide a range of behaviors as possible. We maintained the
 same compiler flags used in the original suite, specifically
 using the `-O3` optimization flag. For an apples to apples comparison
-the "Baseline" uses the LLVM compiler but does not run our transformation
+the "Baseline" uses Clang to compile but does not run our transformation
 pass. The "Instrumented" code is generated by running our pass after `-O3` optimization but
 does not run any further optimizations. Therefore, any overheads we find
 should be considered upper bounds as optimization may remove some of
 them or improve how they are calculated.
 
 We ran the benchmarks a total of 10 times each and
-report both the average and standard deviation of execution time.
-These were executed on a <insert computer info here>, with
-only one thread allocated per execution.
+calculate both the average and standard deviation of execution time.
+These were executed on a Intel(R) Core(TM) i7-7700 CPU @ 3.60GHz,
+with 32GB of RAM and only one thread allocated per execution.
 The reported execution times are based off of the built-in PARSEC
 *region of interest* measures which only report execution of the
 hot loop and omit initialization and clean up times.
 
+### Evaluation: Precision
+
+In all of the PARSEC programs we benchmarked, we failed to
+instrument *most* of the unsafe memory acceses. As you can see by
+the graph below, in the best case (Fluidanimate) we managed to instrument 30%
+of GEP instructions, while in the worst we added *no runtime checks* (Blackscholes).
+
+<img src="precision.png"/>
+
+Based on our manual observation of the compiled code and testing
+our instrumentation with microbenchmarks, we believe this lack of
+precision stems from two main sources:
+ - Pointers allocated outside function scope (arguments and global variables)
+ - Allocation information loss due to operations on pointer variables
+
+As mentioned previously, the former is difficult to deal with
+as an IR compiler pass since a general solution would require
+modifying function signatures to pass allocation size information.
+
+The latter problem stems primarily from three operations: `load`, `store` and `getelementptr`.
+While complications arising from GEPs are straightforward to solve (since that's already an instruction
+we're instrumenting already), without precise memory dependency and alias analyses,
+we cannot track allocation sizes of pointers derived from other pointers.
+The most common case we noticed, anecdotally,
+were global pointers to data that were "malloced" at the beginning of the `main` function,
+but accessed throughout the program.
+
+For instance, take the **Blackscholes** benchmark, for which we instrumented *no* GEP instructions.
+It has a global pointer to an array of `floats` called `prices`, whose size is determined during
+the beginning of execution:
+
+```C
+fptype *prices;
+...
+main() {
+   ...
+   prices = (fptype*)malloc(numOptions*sizeof(fptype));
+   ...
+}
+```
+
+The above allocation translates to the following LLVM IR:
+```C
+%46 = tail call noalias i8* @malloc(i64 %45) #9
+store i8* %46, i8** bitcast (float** @prices to i8**), align 8
+```
+
+Our analysis determined that the runtime size of the memory pointed to
+by `%46` was given by the value `%45`.
+However, `%46` is not used as the argument to any GEP instruction, instead
+later operations use a `load` to retrieve the array pointer from `prices`.
+
+```C
+%179 = load float*, float** @prices, align 8
+%180 = getelementptr inbounds float, float* %179, i64 %159
+```
+
+Since we are not running a memory dependency analysis we could
+not determine that the size of the allocation pointed to by `%179` was `%45`.
+
+Often, these two problems combined, since `prices` may be accessed
+outside the scope at which `%45` is available and we therefore would need
+to modify the program to communicate this allocation information (potentially
+via an extra global variable).
+
 
 ### Evaluation: Overhead
 
-### Evaluation: Precision
+We measured runtime overhead in terms of wall clock time purely because it
+was the simplest thing to instrument. In the following graph we report the
+average slowdown caused by our instrumentation (lower is better). At the end
+of this section is a graph reporting our base results (rather than the ratio)
+which reports the mean runtime for both configurations. Error bars on that
+graph represent one standard deviation.
 
------------
+<img src="overhead.png"/>
 
-`%X` is our pointer argument, i.e. the base for our address calcuation.
-Every following integral argument is an index into the prior datastructure.
-The `i64 0` says that we want the *first* `struct EX` pointed to by `%X`.
-If `%X` represented an array of structs, then this argument would tell us
-which element of that array to access.
+In the case of the Ferret benchmark, our instrumentation caused the implementation
+to exit prematurely. Since the benchmark is quite large we did not have time to investigate
+why this was; it is possible that Ferret intentionally executes "unsafe" GEP instructions.
+Since our instrumentation did not cause bugs in any of the other implementations we find
+this to be a likely cause, but it does warrant further examination.
 
-`i32 1` says "get the second element from struct EX," which is the `b` field.
-Lastly, since `b` is an array of three elements, `i64 2` indicates
-that the calculated address should point to the last element in that array.
 
-The backend implementations of GEP will have to generate a sequence of actual
-arithmetic operations based on the backend's representations of LLVM datatypes
-to compile this instruction to real ISAs. However, most of the LLVM infrastructure
-can still reason about pointer arithmetic without knowing these concrete representations
-via these GEP semantics.
+Interestingly, the instrumented Canneal and Streamcluster benchmarks run ever so slightly
+faster, however this result is within the standard deviation and could
+also be influenced by effects covered in the [first blog for this course](../measurement).
+Without running any real statistics, it seems like the instrumentation only had a meaningful
+impact on the Fluidanimate benchmark. Somewhat unsurprisingly, this is also the benchmark
+for which we managed to instrument the most GEP instructions.
 
+Intuitively, our instrumentation *should* add runtime overhead which scales with
+the number of GEPs and the number of times each of those GEPs are executed. It would
+have been interesting to determine how "hot" each GEP instruction was and drill
+down into where the overhead was coming from. That would have involved much
+more invasive profiling which we did not implement.
+
+
+<img src="runtime.png"/>
