@@ -98,13 +98,98 @@ def error(standard_fn, perforated_fn):
     return {"error_ratio" : ratio}
 ```
 
-Now, we can hand off this little application to the driver, to determine which loops it can successfully perforate:
+Now, we can hand off this little application to the driver, to determine which loops it can successfully perforate. The driver takes an argument for what level of error is acceptable; we said we cared about the order of magnitude, so let's say the error can be 50% and we'd still be happy:
 
 ```
-$ python3 driver.py tests/sum-to-n
+$ python3 driver.py tests/sum-to-n -e 0.5
 ```
 
-Let's walk through what happens now.
+Let's walk through what happens now. First, the driver needs a basic sense of what the correct behavior for this application should be, so it builds and executes the application (on the representative input, if provided.)
+For `sum_to_n`, our basic understanding of arithmetic holds up, and we get that the sum of the numbers from 0 to 4 is indeed:
+
+```
+10
+```
+
+This output is saved to disk for later comparisons.
+
+Executing the application a single time assumes that the application's output is deterministic, which is obviously a huge potential blindspot in loop perforation.
+In particular, our implementation does nothing to detect non-determinism, which seems consistent with the prior published work on this topic.
+
+After the driver executes the standard variant of the application, it needs to determine what loop structures the program has to exploit.
+To accomplish this, the driver runs a function pass, `LoopCountPass`.
+Because we are in LLVM-land, this pass gets to rely on existing LLVM infrastructure for most of the heavy lifting.
+The pass invokes two dependent passes, `llvm::LoopInfo` and `llvm::LoopSimplify`, which return statistics and simplify loops to a canonical form where possible, respectively.
+Our pass then examines which of these loops have both been successfully been converted to a simple form and have a canonical induction variable.
+We write these loops, which we consider to be perforation candidates, out to disk as a JSON file.
+For `sum-to-n`, the implementation has example one loop in a simple form, so the resulting JSON looks something like this:
+
+```
+{
+    "tests/sum-to-n/sum-to-n-phis.ll": {
+        "sum_to_n": [
+            "%2<header><exiting>,%4,%6<latch>"
+        ]
+    }
+}
+```
+
+We use functionality from `llvm::Loop::Print()` to get the name of each loop, which includes which basic blocks are included in the loop (here, `%2`, `%4`, and `%6`) as well as their role within the loop.
+
+Next, the driver needs to explore how far it can mangle each loop before the results become unacceptable (remember, here that means with error under 50%).
+The driver iteratively perforates each candidate loop with a set of possible perforation rates---2, 3, 5, or 8.
+More concretely, the driver invokes a second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
+For our toy example, conceptually this means changing the loop increment expression from:
+
+```
+for (int i = 0; i < n; i++) {
+    ...
+}
+```
+
+To:
+```
+for (int i = 0; i < n; /* Perforated rate here -> */ i += 2 ) {
+    ...
+}
+```
+
+At the LLVM intermediate representation level, this changes this blocks' implementation from:
+
+```
+; <label>:2:
+  %.01 = phi i32 [ 0, %1 ], [ %5, %6 ]
+  %.0 = phi i32 [ 0, %1 ], [ %7, %6 ]
+  %3 = icmp slt i32 %.0, %0
+  br i1 %3, label %4, label %8
+
+; <label>:4:
+  %5 = add nsw i32 %.01, %.0
+  br label %6
+
+; <label>:6:
+  %7 = add nsw i32 %.0, 1
+  br label %2
+```
+
+To:
+
+```
+; <label>:2:
+  %.01 = phi i32 [ 0, %1 ], [ %5, %6 ]
+  %.0 = phi i32 [ 0, %1 ], [ %7, %6 ]
+  %3 = icmp slt i32 %.0, %0
+  br i1 %3, label %4, label %8
+
+; <label>:4:
+  %5 = add nsw i32 %.01, %.0
+  br label %6
+
+; <label>:6:
+  %7 = add nsw i32 %.0, 2    ;; <- Perforated rate here
+  br label %2
+```
+
 ### Benchmarks from PARSEC
 
 
