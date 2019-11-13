@@ -1,6 +1,7 @@
 +++
 title = "Type Inference for Bril"
-extra.bio = """
+[extra]
+bio = """
   Christopher Roman is a second semester MEng student in computer science. He is interested in compilers and distributed systems. He is also the best [Melee](https://en.wikipedia.org/wiki/Super_Smash_Bros._Melee) player at Cornell. :)
 """
 [[extra.authors]]
