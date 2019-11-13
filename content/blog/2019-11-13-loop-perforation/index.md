@@ -232,7 +232,9 @@ For `sum-to-n`, this looks like the following:
 }
 ```
 
-Here, our execut
+Here, our wall-clock execution time is essentially a wash, because the loop is so small (the difference between 5 and 3 additions on a modern machine is negligible).
+However, we can see that the error ratio does drastically change as we increase the perforation rate, from perfect for the standard run to completely unacceptable at a perforation rate of 5, we we might expect (skipping 4 in every 5 iterations is skipping every integer except 0!)
+
 
 ### Benchmarks from PARSEC
 
