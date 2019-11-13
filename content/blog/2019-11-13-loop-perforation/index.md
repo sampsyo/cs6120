@@ -126,18 +126,19 @@ For `sum-to-n`, the implementation has example one loop in a simple form, so the
 
 ```
 {
-    "tests/sum-to-n/sum-to-n-phis.ll": {
+    "sum-to-n-phis.ll": {
         "sum_to_n": [
-            "%2<header><exiting>,%4,%6<latch>"
+            "%2,%4,%6"
         ]
     }
 }
 ```
 
 We use functionality from `llvm::Loop::Print()` to get the name of each loop, which includes which basic blocks are included in the loop (here, `%2`, `%4`, and `%6`) as well as their role within the loop.
+Here, we enter the loop at block `%2`, then either exit the block or branch to blocks `%4`, `%6`, and back to `%2`.
 
 Next, the driver needs to explore how far it can mangle each loop before the results become unacceptable (remember, here that means with error under 50%).
-The driver iteratively perforates each candidate loop with a set of possible perforation rates---2, 3, 5, or 8.
+The driver iteratively perforates each candidate loop with a set of possible perforation rates---for this example, 2, 3, 5.
 More concretely, the driver invokes a second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
 For our toy example, conceptually this means changing the loop increment expression from:
 
@@ -178,17 +179,60 @@ To:
 ; <label>:2:
   %.01 = phi i32 [ 0, %1 ], [ %5, %6 ]
   %.0 = phi i32 [ 0, %1 ], [ %7, %6 ]
-  %3 = icmp slt i32 %.0, %0
-  br i1 %3, label %4, label %8
+  %3 = icmp slt i32 %.0, %0.
+  br i1 %3, label %4, label %8         ;; <- Branching condition doesn't change
 
 ; <label>:4:
   %5 = add nsw i32 %.01, %.0
   br label %6
 
 ; <label>:6:
-  %7 = add nsw i32 %.0, 2    ;; <- Perforated rate here
+  %7 = add nsw i32 %.0, 2              ;; <- Perforated rate here
   br label %2
 ```
+After the driver perforates the desired loop, it executes that modified executable on the representative input.
+The driver checks the return code of the execution and treats crashing programs as unacceptable.
+It also measures the execution of each program in wall-clock time.
+The output is saved to disk then compared with the standard, non-perforated output.
+The comparison uses the application-specific `errors` module, calculating the error between the perforated and expected result for a number of user-defined metrics.
+This driver repeats this for every potential perforation rate, and then write the results out as another JSON file.
+
+For `sum-to-n`, this looks like the following:
+
+```
+{
+    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 1}}}": {
+        "return_code": 0,
+        "time": 0.0195,
+        "errors": {
+            "error_ratio": 0.0
+        }
+    },
+    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 2}}}": {
+        "return_code": 0,
+        "time": 0.0194,
+        "errors": {
+            "error_ratio": 0.4
+        }
+    },
+    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 3}}}": {
+        "return_code": 0,
+        "time": 0.0197,
+        "errors": {
+            "error_ratio": 0.7
+        }
+    },
+    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 5}}}": {
+        "return_code": 0,
+        "time": 0.0196,
+        "errors": {
+            "error_ratio": 1.0
+        }
+    }
+}
+```
+
+Here, our execut
 
 ### Benchmarks from PARSEC
 
