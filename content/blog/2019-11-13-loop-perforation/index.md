@@ -30,10 +30,6 @@ link = "https://www.cs.cornell.edu/~gyauney"
 
 ## Introduction
 
-### Here's the code!
-
-### Scope
-
 ## Implementation
 
 We implemented two LLVM passes:
@@ -46,32 +42,10 @@ Both work in conjunction with
 
 3. Python `driver.py`
 
-### Design Decisions
+## A Meandering Tour of Loop Perforation
 
-- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
-- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
-    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+To understand the interplay between our LLVM pass, the user-defined error metrics, and the python driver, let's consider a toy example.
 
-## Evaluation
-
-### Error Metrics
-
-The [original loop perforation paper][paper] uses the following accuracy metric:
-
-\[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
-
-That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$. Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
-
-This means that, of the common accuracy metrics used for images, matrices, etc., only the $l_1$ loss can be encoded
-
-Other metrics
-
- -**L2 Loss**
- -
-
-### Tests
-
-To understand the interplay between our LLVM pass and the python driver, let's consider a toy example.
 Say we want to write a silly function that sums the integers from 0 to some number `n`:
 
 ```
@@ -97,7 +71,7 @@ So, let's also tell the driver how wrong the ultimate answer can be.
 
 To do this, we require a python implementation of an `errors` module.
 At a high level, `errors` should tell the driver 1) what error metrics we care about for this application, and 2) a float value between 0 and 1 for each metric (0 is perfect, 1 is unacceptable.)
-For `sum-to-n1`, let's define a single error metric that's the ratio between our new sum answer and the correct answer:
+For `sum_to_n1`, let's define a single error metric that's the ratio between our new sum answer and the correct answer:
 
 ```
 # Provide the name of each metric we care about
@@ -117,7 +91,7 @@ def error(standard_fn, perforated_fn):
 Now, we can hand off this little application to the driver, to determine which loops it can successfully perforate. The driver takes an argument for what level of error is acceptable; we said we cared about the order of magnitude, so let's say the error can be 50% and we'd still be happy:
 
 ```
-$ python3 driver.py tests/sum-to-n -e 0.5
+$ python3 driver.py tests/sum_to_n -e 0.5
 ```
 
 Let's walk through what happens now. First, the driver needs a basic sense of what the correct behavior for this application should be, so it builds and executes the application (on the representative input, if provided.)
@@ -138,11 +112,11 @@ Because we are in LLVM-land, this pass gets to rely on existing LLVM infrastruct
 The pass invokes two dependent passes, `llvm::LoopInfo` and `llvm::LoopSimplify`, which return statistics and simplify loops to a canonical form where possible, respectively.
 Our pass then examines which of these loops have both been successfully been converted to a simple form and have a canonical induction variable.
 We write these loops, which we consider to be perforation candidates, out to disk as a JSON file.
-For `sum-to-n`, the implementation has example one loop in a simple form, so the resulting JSON looks something like this:
+For `sum_to_n`, the implementation has example one loop in a simple form, so the resulting JSON looks something like this:
 
 ```
 {
-    "sum-to-n-phis.ll": {
+    "sum_to_n-phis.ll": {
         "sum_to_n": [
             "%2,%4,%6"
         ]
@@ -213,44 +187,102 @@ The output is saved to disk then compared with the standard, non-perforated outp
 The comparison uses the application-specific `errors` module, calculating the error between the perforated and expected result for a number of user-defined metrics.
 This driver repeats this for every potential perforation rate, and then write the results out as another JSON file.
 
-For `sum-to-n`, this looks like the following:
+For `sum_to_n`, this looks like the following (with some light post-processing for brevity):
 
 ```
 {
-    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 1}}}": {
+    "{\{\"sum_to_n\": {\"%2,%4,%6\": 1}}}": {
         "return_code": 0,
         "time": 0.0195,
         "errors": {
             "error_ratio": 0.0
         }
     },
-    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 2}}}": {
+    "{\{\"sum_to_n\": {\"%2,%4,%6\": 2}}}": {
         "return_code": 0,
         "time": 0.0194,
         "errors": {
             "error_ratio": 0.4
         }
     },
-    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 3}}}": {
+    "{\{\"sum_to_n\": {\"%2,%4,%6\": 3}}}": {
         "return_code": 0,
         "time": 0.0197,
         "errors": {
             "error_ratio": 0.7
         }
     },
-    "{\"sum-to-n-phis.ll\": {\"sum_to_n\": {\"%2,%4,%6\": 5}}}": {
+    "{\{\"sum_to_n\": {\"%2,%4,%6\": 5}}}": {
         "return_code": 0,
         "time": 0.0196,
         "errors": {
             "error_ratio": 1.0
         }
     }
+    // ...
 }
 ```
 
-Here, our wall-clock execution time is essentially a wash, because the loop is so small (the difference between 5 and 3 additions on a modern machine is negligible).
-However, we can see that the error ratio does drastically change as we increase the perforation rate, from perfect for the standard run to completely unacceptable at a perforation rate of 5, we we might expect (skipping 4 in every 5 iterations is skipping every integer except 0!)
+Here, our wall-clock execution time is essentially a wash, because the loop is so small that the difference is negligible relative to noise.
+However, we can see that the error ratio does drastically change as we increase the perforation rate, from perfect for the standard run to completely unacceptable at a perforation rate of 5, as we might expect (skipping 4 in every 5 iterations is skipping every integer except 0!) Note that if our application had multiple loops, we would see a results equal to the number of loops times the number of perforation rates (one run for each.)
 
+The final task of the driver is to combine what it learned about how much it can mangle each loop into one final answer.
+That is, where we were previously perforating each loop in turn, we now want to perforate some subset of the loops that we determined don't hurt the accuracy too much.
+Here, we follow the lead of the original loop perforated paper in making a greedy assumption---that we can choose an final loop perforation strategy based on joining the maximum perforation rate for each loop that that was below the error tolerance.
+This strategy makes the very optimistic assumption that errors are not additive; in the published paper their system backtracks in the case that the combined executable is unacceptable.
+For the purpose of this project, we simply ungracefully fail in that case.
+
+In our `sum_to_n` toy example, this joined result sees that only a loop perforation rate of 2 produces an executable that is below our error threshold of 50%. We thus see the following final joined summary in the results:
+
+```
+    "joined_{\{\"sum_to_n\": {\"%2,%4,%6\": 2}}}": {
+        "return_code": 0,
+        "time": 0.020437002182006836,
+        "errors": {
+            "error_ratio": 0.4
+        }
+    }
+```
+
+To summarize, our pass took our little toy example of summing the integers up to `n` and made it much, much stupider.
+We defined a simple error metric that the resulting sum must be within 50% of the real sum, which led the driver to choose a loop perforation rate of two.
+The ultimate joined peroration pass thus changed the loop increment from `+= 1` to `+=2`.
+This means the sum skips the loop iterations for `i = 1` and `i = 3`, resulting in a total sum `0 + 2 + 4 = 6`, which is 40% off from the correct answer of 10.
+Close enough!!!!!!1! ¯\\_(ツ)_/¯
+
+Now, an enterprising reader might have picked up on the fact that while we claim that loop perforation will make your code run _faster_, we actually executed your entire executable _way more times_ in order to find perforation rates that won't crash or completely destroy your output accuracy.
+That reader would be right!
+However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
+For this silly toy, imagine we wanted to sum a list of millions of numbers---we would not need to rerun analysis, but could simply use the same executable.
+
+### Here's the code!
+
+### Scope
+
+### Design Decisions
+
+- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
+- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
+    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+
+## Evaluation
+
+### Error Metrics
+
+The [original loop perforation paper][paper] uses the following accuracy metric:
+
+\[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
+
+That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$. Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+
+This means that, of the common accuracy metrics used for images, matrices, etc., only the $l_1$ loss can be encoded
+
+Other metrics
+
+ -**L2 Loss**
+ -
+
+### Tests
 
 ### Benchmarks from PARSEC
 
