@@ -324,7 +324,7 @@ Rather than using the absolute scale of the correct answer as our measuring stic
 \[ \text{erf}(x) := \frac{1}{\sqrt{\pi}} \int_{-x}^x e^{-t^2} \mathrm{d}t \]
 
 
-This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$. Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics. For these reasons, we enter a total accuracy score for each error metric that we collect, and each of many variances, which change metrics. We then use all of them to compute the frontier. 
+This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$. Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics. For these reasons, we enter a total accuracy score for each error metric that we collect, and each of many variances, which change metrics. We then use all of them to compute the frontier.
 
 These error metrics are more finicky than they might appear for real programs.
 Consider a Sobel image filter for edge detection.
@@ -357,7 +357,7 @@ However the resulting image looks...very bad.
 With a little design space exploration, we can try and find other metrics that produce less psychedelic results.
 The following result only considers the `l1_10000` metric and allows an error of 0.6.
 
-<img src="sobel-perforated-l10000-0.6.png" width=500/>
+<img src="sobel-perforated-l1-10000-0.6.png" width=500/>
 
 Via a casual design space exploration, this was the closest to correct we could find.
 But, this is clearly **not** an acceptable result for edge detection!
