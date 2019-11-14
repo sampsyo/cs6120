@@ -49,7 +49,71 @@ Starting from the top of the entry block, we traverse the instructions in progra
 
 Block merging transfer the instructions from a block into the entry block and removes the branch linking the blocks. Function inlining uses the built-in LLVM inline tool. This algorithm is effectively recursive so control can be traced through branches nested in branches, functions in functions, branches in functions, etc..
 
-TODO some simple examples
+Consider a simple test program involving a function call a the function below.
+
+```C
+int example(int a, int b) {
+  if (a > 3) {
+    return a + b;
+  }
+  else {
+    return a - b;
+  } 
+}
+```
+
+The following multi-block LLVM IR is created at `-O0`.
+
+```
+define dso_local i32 @example(i32, i32) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  store i32 %0, i32* %4, align 4
+  store i32 %1, i32* %5, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = icmp sgt i32 %6, 3
+  br i1 %7, label %8, label %12
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = load i32, i32* %5, align 4
+  %11 = add nsw i32 %9, %10
+  store i32 %11, i32* %3, align 4
+  br label %16
+
+12:                                               ; preds = %2
+  %13 = load i32, i32* %4, align 4
+  %14 = load i32, i32* %5, align 4
+  %15 = sub nsw i32 %13, %14
+  store i32 %15, i32* %3, align 4
+  br label %16
+
+16:                                               ; preds = %12, %8
+  %17 = load i32, i32* %3, align 4
+  ret i32 %17
+}
+```
+
+After applying the trace generation pass (speculating block 8 is taken), we produce the following LLVM IR.
+
+```
+define dso_local i32 @example(i32, i32) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  store i32 %0, i32* %4, align 4
+  store i32 %1, i32* %5, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = icmp sgt i32 %6, 3
+  %8 = load i32, i32* %4, align 4
+  %9 = load i32, i32* %5, align 4
+  %10 = add nsw i32 %8, %9
+  store i32 %10, i32* %3, align 4
+  %11 = load i32, i32* %3, align 4
+  ret i32 %11
+}
+```
 
 Phi Nodes should also be removed because there is not control flow to merge in the trace after block merging has occurred. When a Phi Node, the single operand that exists should be forwarded to the uses of that Phi Node.
 
