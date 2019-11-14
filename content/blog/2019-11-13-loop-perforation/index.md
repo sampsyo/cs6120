@@ -282,11 +282,26 @@ Other metrics
  -**L2 Loss**
  -
 
-### Tests
+[paper]: https://dl.acm.org/citation.cfm?id=2025133
 
-### Benchmarks from PARSEC
+### Tests and benchmarks
 
+We implemented three small test programs:
+1. `sum-to-n`: Sums all numbers between 1 and n.
+2. `alloc-loop`: A program that performs arithmetic on an array of integer pointers.
+3. `matrix_multiplication`: Matrix multiplication of two random 100-by-100 matrices.
 
+We additionally ran loop perforation on three benchmark programs:
+1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][].
+2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`.
+3. `blackscholes`: From the [PARSEC][] benchmark suite.
+
+[ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
+[Parsec]: https://parsec.cs.princeton.edu
+
+The following plot shows runtimes for original programs and the joined perforated programs. Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals. The perforated version of `matrix_multiply` (the slowest test) is noticeably faster than its corresponding original.
+
+<img src="all-runtimes.png" width="50%"/>
 
 
 ### Feature Wish list:
@@ -325,4 +340,3 @@ Other metrics
 
 
 
-[paper]: https://dl.acm.org/citation.cfm?id=2025133
