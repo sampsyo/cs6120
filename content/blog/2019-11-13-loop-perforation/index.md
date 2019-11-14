@@ -9,6 +9,7 @@ bio = """
   [Greg][] is a second-year student working on machine learning and digital humanities.
 
 """
+latex = true
 
 
 [alexa]: https://www.cs.cornell.edu/~avh
@@ -44,6 +45,7 @@ Both work in conjunction with
 ## A Meandering Tour of Loop Perforation
 
 To understand the interplay between our LLVM pass, the user-defined error metrics, and the python driver, let's consider a toy example.
+
 Say we want to write a silly function that sums the integers from 0 to some number `n`:
 
 ```
@@ -265,6 +267,21 @@ For this silly toy, imagine we wanted to sum a list of millions of numbers---we 
 
 ## Evaluation
 
+### Error Metrics
+
+The [original loop perforation paper][paper] uses the following accuracy metric:
+
+\[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
+
+That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$. Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+
+This means that, of the common accuracy metrics used for images, matrices, etc., only the $l_1$ loss can be encoded
+
+Other metrics
+
+ -**L2 Loss**
+ -
+
 ### Tests
 
 ### Benchmarks from PARSEC
@@ -308,4 +325,4 @@ For this silly toy, imagine we wanted to sum a list of millions of numbers---we 
 
 
 
- -
+[paper]: https://dl.acm.org/citation.cfm?id=2025133
