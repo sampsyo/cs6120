@@ -323,6 +323,44 @@ Rather than using the absolute scale of the correct answer as our measuring stic
 
 This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$. Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics. For these reasons, we enter a total accuracy score for each error metric that we collect, and each of many variances, which change metrics. We then use all of them to compute the frontier. 
 
+These error metrics are more finicky than they might appear for real programs.
+Consider a Sobel image filter for edge detection.
+We use an implementation of this filter from the [ACCEPT benchmarks][] for approximate computing.
+
+Running the standard implementation on this image of cute buffalo:
+
+<img src="sobel-input.png" width=500/>
+
+Gives the following correct output:
+
+<img src="sobel-output.png" width=500/>
+
+Running our driver with a default configuration perforates the loops in this application at the following rates:
+
+```
+{
+    \"load_image_data\": {\"%81,%84,%85,%97,%98,%88,%95\": 5, \"%85,%88,%95\": 5},
+    \"save_image_data\": {\"%11,%14,%15,%28,%29,%18,%26\": 1, \"%15,%18,%26\": 1},
+    \"sobel_filtering\": {\"%74,%77,%78,%88,%89,%81,%86\": 5, \"%78,%81,%86\": 5}
+}
+```
+
+The driver chooses this configuration because one of the error metrics, `"l2_100000"`, only has an error of 0.185.
+However the resulting image looks...very bad.
+
+
+<img src="sobel-perforated-default.png" width=500/>
+
+With a little design space exploration, we can try and find other metrics that produce less psychedelic results.
+The following result only considers the `l1_10000` metric and allows an error of 0.6.
+
+<img src="sobel-perforated-l10000-0.6.png" width=500/>
+
+Via a casual design space exploration, this was the closest to correct we could find.
+But, this is clearly **not** an acceptable result for edge detection!
+Ultimately, this example illustrates that finding the right error metric might be both difficult and counterintuitive—to get a better image that gained any speedup, we had to select a higher error rate, just for a different metric.
+
+
 [paper]: https://dl.acm.org/citation.cfm?id=2025133
 
 ### Tests and benchmarks
