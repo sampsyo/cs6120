@@ -61,6 +61,10 @@ Both passes work in conjunction with additional infrastructure:
 2. User-provided representative inputs.
 3. User-defined accuracy/error metrics.
 
+You can find our implementation [here][repo].
+
+[repo]: https://github.com/avanhatt/llvm-loop-perforation
+
 ## A Meandering Tour of Loop Perforation
 
 To understand the interplay between our LLVM pass, the user-defined error metrics, and the python driver, let's consider a toy example.
@@ -301,7 +305,7 @@ The [original loop perforation paper][paper] uses the following accuracy metric:
 
 \[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
 
-That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$. Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
 
 This means that, of the common accuracy metrics used for images, matrices, etc., only the $l_1$ loss can be encoded
 
@@ -320,9 +324,11 @@ We implemented three small test programs:
 3. `matrix_multiplication`: Matrix multiplication of two random 100-by-100 matrices.
 
 We additionally ran loop perforation on three larger benchmark programs:
-1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][].
-2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`.
-3. `blackscholes`: From the [PARSEC][] benchmark suite.
+1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][] for approximate computing.
+2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`; we implemented this ourselves using Sobel as a model. They share PGM processing code.
+3. `blackscholes`: From the [PARSEC][] benchmark suite. We chose this benchmark for ease and simplicity of compilation, as well as having a straightforward potential for error metrics for the output data.
+
+We had hoped to run our pass on additional PARSEC benchmarks, but had trouble either 1) compiling them with LLVM on our machines, or 2) determining reasonable error metrics.
 
 [ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
 [Parsec]: https://parsec.cs.princeton.edu
@@ -334,40 +340,3 @@ The following plot shows runtimes for original programs and the joined perforate
 For every test and benchmark, we plotted the error and runtime of every perforated and non- version. Each resulting graph shows a Pareto-optimal frontier trading off error and runtime. Runtimes were calculated as above. The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
 
 <img src="matrix_multiply-frontier.png" width="60%"/>
-
-### Feature Wish list:
-- criticality testing
-- accelerated loop perforation
-- storing previous values instead of skipping
-- Outrageous baselines that work as well, e.g. skipping random instructions
-- the loss of accuracy may introduce bias in, e.g., ML
-- call adrian's pass to compare
-- rates for nested loops: possibly exponential rates moving inward
-- fit to one input, test on others.
-
-#### todo
-- run on all representative inputs
-- plot speedups
-- fix matrix errors (same size)
-- with some fixed error, graph: perforated vs standard
-
-#### finished
-- do search and return the best
-- take out condition we can't perforate main
-- get benchmarks working
-- parsec
-- should we bother with their greedy exploration?
-- accuracy measure
-
-
-<!-- ## Implementation
-
- - There is a function pass that gets information about the loops out to python. This is run by calling `opt` with the flag `-loop-count`.
-    - We collect json information about all loops (including the funciton, module, whether or not there's an induction variable...)
-    - in the destructor, we save the information that ended up in each module to a json file of the same name.
-## Difficulties
- -->
-
-
-
-
