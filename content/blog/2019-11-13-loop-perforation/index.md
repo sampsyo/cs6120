@@ -128,7 +128,7 @@ We use functionality from `llvm::Loop::Print()` to get the name of each loop, wh
 Here, we enter the loop at block `%2`, then either exit the block or branch to blocks `%4`, `%6`, and back to `%2`.
 
 Next, the driver needs to explore how far it can mangle each loop before the results become unacceptable (remember, here that means with error under 50%).
-The driver iteratively perforates each candidate loop with a set of possible perforation rates---for this example, 2, 3, 5.
+The driver iteratively perforates each candidate loop with a set of possible perforation rates—for this example, 2, 3, 5.
 More concretely, the driver invokes a second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
 For our toy example, conceptually this means changing the loop increment expression from:
 
@@ -151,15 +151,15 @@ At the LLVM intermediate representation level, this changes this blocks' impleme
 ; <label>:2:
   %.01 = phi i32 [ 0, %1 ], [ %5, %6 ]
   %.0 = phi i32 [ 0, %1 ], [ %7, %6 ]
-  %3 = icmp slt i32 %.0, %0
-  br i1 %3, label %4, label %8
+  %3 = icmp slt i32 %.0, %0            ;; Check if i < n
+  br i1 %3, label %4, label %8         ;; Exit or loop again
 
 ; <label>:4:
-  %5 = add nsw i32 %.01, %.0
+  %5 = add nsw i32 %.01, %.0           ;; sum += i
   br label %6
 
 ; <label>:6:
-  %7 = add nsw i32 %.0, 1
+  %7 = add nsw i32 %.0, 1              ;; i += 1
   br label %2
 ```
 
@@ -228,7 +228,7 @@ However, we can see that the error ratio does drastically change as we increase 
 
 The final task of the driver is to combine what it learned about how much it can mangle each loop into one final answer.
 That is, where we were previously perforating each loop in turn, we now want to perforate some subset of the loops that we determined don't hurt the accuracy too much.
-Here, we follow the lead of the original loop perforated paper in making a greedy assumption---that we can choose an final loop perforation strategy based on joining the maximum perforation rate for each loop that that was below the error tolerance.
+Here, we follow the lead of the original loop perforated paper in making a greedy assumption—that we can choose an final loop perforation strategy based on joining the maximum perforation rate for each loop that that was below the error tolerance.
 This strategy makes the very optimistic assumption that errors are not additive; in the published paper their system backtracks in the case that the combined executable is unacceptable.
 For the purpose of this project, we simply ungracefully fail in that case.
 
@@ -253,7 +253,7 @@ Close enough!!!!!!1! ¯\\_(ツ)_/¯
 Now, an enterprising reader might have picked up on the fact that while we claim that loop perforation will make your code run _faster_, we actually executed your entire executable _way more times_ in order to find perforation rates that won't crash or completely destroy your output accuracy.
 That reader would be right!
 However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
-For this silly toy, imagine we wanted to sum a list of millions of numbers---we would not need to rerun analysis, but could simply use the same executable.
+For this silly toy, imagine we wanted to sum a list of millions of numbers—we would not need to rerun analysis, but could simply use the same executable.
 
 ### Here's the code!
 
