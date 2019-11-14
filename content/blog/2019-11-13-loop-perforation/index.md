@@ -151,15 +151,15 @@ At the LLVM intermediate representation level, this changes this blocks' impleme
 ; <label>:2:
   %.01 = phi i32 [ 0, %1 ], [ %5, %6 ]
   %.0 = phi i32 [ 0, %1 ], [ %7, %6 ]
-  %3 = icmp slt i32 %.0, %0
-  br i1 %3, label %4, label %8
+  %3 = icmp slt i32 %.0, %0            ;; Check if i < n
+  br i1 %3, label %4, label %8         ;; Exit or loop again
 
 ; <label>:4:
-  %5 = add nsw i32 %.01, %.0
+  %5 = add nsw i32 %.01, %.0           ;; sum += i
   br label %6
 
 ; <label>:6:
-  %7 = add nsw i32 %.0, 1
+  %7 = add nsw i32 %.0, 1              ;; i += 1
   br label %2
 ```
 
