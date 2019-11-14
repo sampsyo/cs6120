@@ -46,7 +46,7 @@ For this project, we set out to implement simple loop perforation as a [LLVM][] 
 [approx]:https://en.wikipedia.org/wiki/Approximate_computing
 [llvm]: https://llvm.org
 
-## What we did
+## What We Did
 
 LLVM is an industrial-strength compiler that structures analysis and optimizations are a series of passes that both act on and produce a human-readable intermediate representation.
 
@@ -332,7 +332,7 @@ Assuming that the final distance measure is normally distributed (which is more 
 This can be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$.
 Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics.
 For these reasons, we enter a total accuracy score for each error metric that we collect, as well as for each of many variances.
-We then use all of these metrics to compute the Pareto frontier.
+We then use all of these metricscass to compute the Pareto frontier.
 
 These error metrics are more finicky than they might appear for real programs.
 Consider a Sobel image filter for edge detection.
@@ -367,14 +367,16 @@ The following result only considers the `l1_10000` metric and allows an error of
 
 <img src="sobel-perforated-l1-10000-0.6.png" width=500/>
 
-Via a casual design space exploration, this was the closest to correct we could find with any loop perforation at all.
-But, this is clearly **not** an acceptable result for edge detection!
+This image is _kind of_ on the right track, in that we can clearly see some of the edges in the original image (just shifted and stretched to be almost useless).
+Remarkably, the above image was the closest to correct we could find with any loop perforation at all via a casual design space exploration.
+However, this is clearly **not** an acceptable result for edge detection!
+
 Ultimately, this example illustrates that finding the right error metric might be both difficult and counterintuitive—to get a better image that gained any speedup, we had to select a higher error rate, just for a different metric.
 
 
 [paper]: https://dl.acm.org/citation.cfm?id=2025133
 
-### Tests and benchmarks
+### Tests and Benchmarks
 
 We implemented three small test programs:
 1. `sum-to-n`: Sums all numbers between 1 and n.
@@ -391,15 +393,15 @@ We had hoped to run our pass on additional PARSEC benchmarks, but had trouble ei
 [ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
 [Parsec]: https://parsec.cs.princeton.edu
 
-The following plot shows runtimes for original programs and the joined perforated programs.
+The following plot shows run times for original programs and the joined perforated programs.
 Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
 The perforated version of `matrix_multiply` (the slowest test) is faster than its corresponding original.
 
 <img src="all-runtimes.png" width="80%"/>
 
-For every test and benchmark, we plotted the error and runtime of every perforated and non- version.
-Each resulting graph shows a Pareto-optimal frontier trading off error and runtime.
-Runtimes were calculated as above.
+For every test and benchmark, we plotted the error and run time of every perforated and non- version.
+Each resulting graph shows a Pareto-optimal frontier trading off error and run time.
+Run times were calculated as above.
 The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
 
 <img src="matrix_multiply-frontier.png" width="60%"/>
