@@ -61,6 +61,10 @@ Both passes work in conjunction with additional infrastructure:
 2. User-provided representative inputs.
 3. User-defined accuracy/error metrics.
 
+You can find our implementation [here][repo].
+
+[repo]: https://github.com/avanhatt/llvm-loop-perforation
+
 ## A Meandering Tour of Loop Perforation
 
 To understand the interplay between our LLVM pass, the user-defined error metrics, and the python driver, let's consider a toy example.
@@ -274,15 +278,24 @@ That reader would be right!
 However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
 For this silly toy, imagine we wanted to sum a list of millions of numbers—we would not need to rerun analysis, but could simply use the same executable.
 
-### Here's the code!
-
-### Scope
-
 ### Design Decisions
 
-- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
-- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
-    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+We made the following design decisions:
+
+- Our driver is less clever about "critically testing" (that is, determining which loops are safe to perforate) than the original paper.
+In particular, in addition to not implementing backtracking when combining loop perforation rates, we do not use Valgrind or anything similar to detect memory errors in perforated runs, and instead rely only on process return code and the user-defined accuracy metrics.
+- In some implementations of loop perforation, rather than modifying the induction variable directly the pass instruments an additional counter to each loop.
+For example, this is the approach taken in [ACCEPT's loop perforation pass][].
+This allows the compiler to do more clever variants of loop perforation, such as copying the value from a previous iteration instead of skipping an iteration altogether.
+We decided to modify the induction variable directly to be able to spend more effort on the driver and evaluation.
+- Unlike the original paper, we allow users to define any number of error metrics instead of just one.
+This allows users to conduct a richer exploration of the [Pareto frontier][frontier] for their given application.
+We discuss this further in the Error Metrics section.
+- Our passes write and read JSON files rather than keeping all data in memory.
+We made this decision to make it easier to assess progress and debug as we used the driver and passes.
+
+[accept]: https://github.com/uwsampa/accept/blob/master/pass/loopperf.cpp
+[frontier]: https://en.wikipedia.org/wiki/Pareto_efficiency#Pareto_frontier
 
 ## Evaluation
 
@@ -292,9 +305,13 @@ The [original loop perforation paper][paper] uses the following accuracy metric:
 
 \[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
 
+<<<<<<< HEAD
 That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.
 Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations _must be_ weighted sums of their dimensions.
 Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted. More generally, accuracies that require a set of components to all be operating well (arguably very important for measuring functionality) cannot be encoded.
+=======
+That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+>>>>>>> df6d35d056de9bf40bd01fd4dc79da9b6b56426f
 
 This means that, of the common distance metrics used for matrices, images, etc., only a "normalized" $\ell_1$ distance can be encoded. It also assumes that zero is important in some way: relative error is given as distance away from zero. Relative error approaches infinity, independent of the tolerance of the system to errors, as the standard error $o$ goes to zero.
 
@@ -309,13 +326,30 @@ Rather than using the absolute scale of the correct answer as our measuring stic
 
 This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$. Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics. For these reasons, we enter a total accuracy score for each error metric that we collect, and each of many variances, which change metrics. We then use all of them to compute the frontier. 
 
-### Tests
+[paper]: https://dl.acm.org/citation.cfm?id=2025133
 
-### Benchmarks from PARSEC
+### Tests and benchmarks
 
+We implemented three small test programs:
+1. `sum-to-n`: Sums all numbers between 1 and n.
+2. `alloc-loop`: A program that performs arithmetic on an array of integer pointers.
+3. `matrix_multiplication`: Matrix multiplication of two random 100-by-100 matrices.
 
+We additionally ran loop perforation on three larger benchmark programs:
+1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][] for approximate computing.
+2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`; we implemented this ourselves using Sobel as a model. They share PGM processing code.
+3. `blackscholes`: From the [PARSEC][] benchmark suite. We chose this benchmark for ease and simplicity of compilation, as well as having a straightforward potential for error metrics for the output data.
 
+We had hoped to run our pass on additional PARSEC benchmarks, but had trouble either 1) compiling them with LLVM on our machines, or 2) determining reasonable error metrics.
 
+[ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
+[Parsec]: https://parsec.cs.princeton.edu
+
+The following plot shows runtimes for original programs and the joined perforated programs. Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals. The perforated version of `matrix_multiply` (the slowest test) is noticeably faster than its corresponding original.
+
+<img src="all-runtimes.png" width="50%"/>
+
+<!--
 ### Feature Wish list:
 - criticality testing
 - accelerated loop perforation
@@ -327,7 +361,7 @@ This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sig
 - fit to one input, test on others.
 
 #### todo
-- run on all represenatitve inputs
+- run on all representative inputs
 - plot speedups
 - fix matrix errors (same size)
 - with some fixed error, graph: perforated vs standard
@@ -342,14 +376,8 @@ This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sig
 
 
 ## Implementation
-
  - There is a function pass that gets information about the loops out to python. This is run by calling `opt` with the flag `-loop-count`.
     - We collect json information about all loops (including the funciton, module, whether or not there's an induction variable...)
     - in the destructor, we save the information that ended up in each module to a json file of the same name.
-
-
 ## Difficulties
-
-
-
-[paper]: https://dl.acm.org/citation.cfm?id=2025133
+ -->
