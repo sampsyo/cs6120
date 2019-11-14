@@ -34,9 +34,9 @@ Have you ever considered just _running fewer loops_ by having your compiler mang
 
 Welcome to [loop perforation][loopperf], an idea that sounds so ludicrous that we can barely believe it actually works at all!
 
-The basic premise is one common with many research ideas in the field of [approximate computing][approx]: many applications running on modern machines spend a lot of time and energy getting results that are _exactly_ right, when they could happily get away with results that are _mostly_ right.
-If the programmer is able to define what exactly "mostly right" for their particular application, then approximate computing techniques allow them to explore trading off speed and correctness.
-The original [loop perforation paper][paper], "Managing Performance vs. Accuracy Trade-offs with Loop Perforation", from ESEC/FSE’11, takes this idea to a beautifully flippant extreme: look at some loops, and change the iteration interval from something like `i++` to `i += 2`.
+The basic premise is common across the field of [approximate computing][approx]: many applications spend a lot of time and energy getting results that are _exactly_ right, when they could happily get away with results that are _mostly_ right.
+If a programmer is able to define what exactly "mostly right" means for their particular application, then approximate computing techniques allow them to explore trading off cost and correctness.
+The original [loop perforation paper][paper], "Managing Performance vs. Accuracy Trade-offs with Loop Perforation", from ESEC/FSE’11, takes this idea to a beautifully flippant extreme: look at some loops, and replace something like `i++` with `i += 2` or even `i += 21`.
 Skipping loops like this almost definitely makes your code both faster and more energy efficient (assuming it still runs!)
 
 For this project, we set out to implement simple loop perforation as a [LLVM][] pass, with the goal of a richer exploration into what it means to actually accept worse accuracy from our programs in this domain.
