@@ -28,19 +28,38 @@ name = "Gregory Yauney"
 link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
-## Introduction
+Have you ever been frustrated that your code takes too long to run?
+Do you have a sneaking suspicion that most of the time is spent in loops?
+Have you ever considered just _running fewer loops_ by having your compiler mangle your code to skip arbitrary loop iterations?
 
-## Implementation
+Welcome to [loop perforation][loopperf], an idea that sounds so ludicrous that we can barely believe it actually works at all!
 
-We implemented two LLVM passes:
+The basic premise is common across the field of [approximate computing][approx]: many applications spend a lot of time and energy getting results that are _exactly_ right, when they could happily get away with results that are _mostly_ right.
+If a programmer is able to define what exactly "mostly right" means for their particular application, then approximate computing techniques allow them to explore trading off cost and correctness.
+The original [loop perforation paper][paper], "Managing Performance vs. Accuracy Trade-offs with Loop Perforation", from ESEC/FSE’11, takes this idea to a beautifully flippant extreme: look at some loops, and replace something like `i++` with `i += 2` or even `i += 21`.
+Skipping loops like this almost definitely makes your code both faster and more energy efficient (assuming it still runs!)
 
-1. a function pass to gather information about all loops in a program
+For this project, we set out to implement simple loop perforation as a [LLVM][] pass, with the goal of a richer exploration into what it means to actually accept worse accuracy from our programs in this domain.
 
-2. Perforate all loops with given rates
 
-Both work in conjunction with
+[loopperf]: https://en.wikipedia.org/wiki/Loop_perforation
+[approx]:https://en.wikipedia.org/wiki/Approximate_computing
+[llvm]: https://llvm.org
 
-3. Python `driver.py`
+## What we did
+
+LLVM is an industrial-strength compiler that structures analysis and optimizations are a series of passes that both act on and produce a human-readable intermediate representation.
+
+We implemented two new LLVM passes:
+
+1. `LoopCountPass`, a function pass that identifies and saves which program loops are candidates for perforation.
+2. `LoopPerforationPass`, a loop pass that perforates loops at a specified rate.
+
+Both passes work in conjunction with additional infrastructure:
+
+1. An external driver program, written in python.
+2. User-provided representative inputs.
+3. User-defined accuracy/error metrics.
 
 ## A Meandering Tour of Loop Perforation
 
@@ -107,7 +126,7 @@ Executing the application a single time assumes that the application's output is
 In particular, our implementation does nothing to detect non-determinism, which seems consistent with the prior published work on this topic.
 
 After the driver executes the standard variant of the application, it needs to determine what loop structures the program has to exploit.
-To accomplish this, the driver runs a function pass, `LoopCountPass`.
+To accomplish this, the driver runs our first pass, `LoopCountPass`.
 Because we are in LLVM-land, this pass gets to rely on existing LLVM infrastructure for most of the heavy lifting.
 The pass invokes two dependent passes, `llvm::LoopInfo` and `llvm::LoopSimplify`, which return statistics and simplify loops to a canonical form where possible, respectively.
 Our pass then examines which of these loops have both been successfully been converted to a simple form and have a canonical induction variable.
@@ -129,7 +148,7 @@ Here, we enter the loop at block `%2`, then either exit the block or branch to b
 
 Next, the driver needs to explore how far it can mangle each loop before the results become unacceptable (remember, here that means with error under 50%).
 The driver iteratively perforates each candidate loop with a set of possible perforation rates—for this example, 2, 3, 5.
-More concretely, the driver invokes a second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
+More concretely, the driver invokes the second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
 For our toy example, conceptually this means changing the loop increment expression from:
 
 ```
@@ -246,7 +265,7 @@ In our `sum_to_n` toy example, this joined result sees that only a loop perforat
 
 To summarize, our pass took our little toy example of summing the integers up to `n` and made it much, much stupider.
 We defined a simple error metric that the resulting sum must be within 50% of the real sum, which led the driver to choose a loop perforation rate of two.
-The ultimate joined peroration pass thus changed the loop increment from `+= 1` to `+=2`.
+The ultimate joined perforation pass thus changed the loop increment from `+= 1` to `+= 2`.
 This means the sum skips the loop iterations for `i = 1` and `i = 3`, resulting in a total sum `0 + 2 + 4 = 6`, which is 40% off from the correct answer of 10.
 Close enough!!!!!!1! ¯\\_(ツ)_/¯
 
@@ -255,15 +274,24 @@ That reader would be right!
 However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
 For this silly toy, imagine we wanted to sum a list of millions of numbers—we would not need to rerun analysis, but could simply use the same executable.
 
-### Here's the code!
-
-### Scope
-
 ### Design Decisions
 
-- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
-- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
-    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+We made the following design decisions:
+
+- Our driver is less clever about "critically testing" (that is, determining which loops are safe to perforate) than the original paper.
+In particular, in addition to not implementing backtracking when combining loop perforation rates, we do not use Valgrind or anything similar to detect memory errors in perforated runs, and instead rely only on process return code and the user-defined accuracy metrics.
+- In some implementations of loop perforation, rather than modifying the induction variable directly the pass instruments an additional counter to each loop.
+For example, this is the approach taken in [ACCEPT's loop perforation pass][].
+This allows the compiler to do more clever variants of loop perforation, such as copying the value from a previous iteration instead of skipping an iteration altogether.
+We decided to modify the induction variable directly to be able to spend more effort on the driver and evaluation.
+- Unlike the original paper, we allow users to define any number of error metrics instead of just one.
+This allows users to conduct a richer exploration of the [Pareto frontier][frontier] for their given application.
+We discuss this further in the Error Metrics section.
+- Our passes write and read JSON files rather than keeping all data in memory.
+We made this decision to make it easier to assess progress and debug as we used the driver and passes.
+
+[accept]: https://github.com/uwsampa/accept/blob/master/pass/loopperf.cpp
+[frontier]: https://en.wikipedia.org/wiki/Pareto_efficiency#Pareto_frontier
 
 ## Evaluation
 
@@ -315,7 +343,7 @@ The following plot shows runtimes for original programs and the joined perforate
 - fit to one input, test on others.
 
 #### todo
-- run on all represenatitve inputs
+- run on all representative inputs
 - plot speedups
 - fix matrix errors (same size)
 - with some fixed error, graph: perforated vs standard
@@ -329,14 +357,14 @@ The following plot shows runtimes for original programs and the joined perforate
 - accuracy measure
 
 
-## Implementation
+<!-- ## Implementation
 
  - There is a function pass that gets information about the loops out to python. This is run by calling `opt` with the flag `-loop-count`.
     - We collect json information about all loops (including the funciton, module, whether or not there's an induction variable...)
     - in the destructor, we save the information that ended up in each module to a json file of the same name.
-
-
 ## Difficulties
+ -->
+
 
 
 
