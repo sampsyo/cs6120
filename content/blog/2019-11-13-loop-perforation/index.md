@@ -306,22 +306,33 @@ The [original loop perforation paper][paper] uses the following accuracy metric:
 \[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
 
 That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.
-Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations _must be_ weighted sums of their dimensions.
-Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted. More generally, accuracies that require a set of components to all be operating well (arguably very important for measuring functionality) cannot be encoded.
+Though these components are sold as a modular feature of the approach, this exact equation is extremely restrictive.
+For instance, this means that matrix and vector accuracy calculations _must be_ weighted sums of their dimensions.
+Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
+More generally, if a programmer has an error metric in mind that require a set of components to all be operating well (arguably very important for measuring functionality), they cannot easily encode this in this methodology.
 
+One consequence of this restriction is that for the common distance metrics used for matrices, images, etc., only a "normalized" $\ell_1$ distance can be encoded.
+It also assumes that zero is a privileged value for all computation metrics: relative error is given as distance away from zero.
+Relative error approaches infinity, independent of the tolerance of the system to errors, as the standard error $o$ goes to zero.
+For many applications, this might be far off from what an actual end-programmer would specify as their intended acceptable error.
 
-This means that, of the common distance metrics used for matrices, images, etc., only a "normalized" $\ell_1$ distance can be encoded. It also assumes that zero is important in some way: relative error is given as distance away from zero. Relative error approaches infinity, independent of the tolerance of the system to errors, as the standard error $o$ goes to zero.
+In an attempt to mitigate these problems, and investigate the dependence on the particular choice of error metric, we take a very different approach: we collect statistics, and compute _many_ different error metrics.
+For instance, we implement other common metrics for matrix errors that include: distance based on $\ell_2$, $\ell_1$, or Frobenius operator norms.
 
-In an attempt to mitigate these problems, and investigate the dependence on the particular choice of error metric, we take a very different approach: we just collect statistics, and compute many different error metrics.
-For instance, other common metrics for matrix errors include: distance based on $\ell_2$, $\ell_1$, or Frobenius operator norms. These give us distances, but what distances are good? This depends on the variance of the data.
+Each of these conceptually give us distances between matrices, but what distances are good?
+The answer depends largely on the variance of the data.
 
 We still want a "normalized error" in order to run the loop-perforation algorithm, as we need to set some threshold for what it means to be "good enough" to survive the culling pass.
-Rather than using the absolute scale of the correct answer as our measuring stick, we effectively provide the variance as an input. Assuming that the final distance measure is normally distributed (which is more and more appropriate the more sums and multiplications of random variables are involved) with variance $\sigma^2/2$, then the probability that the observed variable lies within a distance $d$ of the correct one is exactly the [_error function_](https://en.wikipedia.org/wiki/Error_function):
+Rather than using the absolute scale of the correct answer as our measuring stick, we effectively provide the variance as an input.
+Assuming that the final distance measure is normally distributed (which is more and more appropriate the more sums and multiplications of random variables are involved) with variance $\sigma^2/2$, then the probability that the observed variable lies within a distance $d$ of the correct one is exactly the [_error function_](https://en.wikipedia.org/wiki/Error_function):
 
 \[ \text{erf}(x) := \frac{1}{\sqrt{\pi}} \int_{-x}^x e^{-t^2} \mathrm{d}t \]
 
 
-This can, be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$. Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics. For these reasons, we enter a total accuracy score for each error metric that we collect, and each of many variances, which change metrics. We then use all of them to compute the frontier.
+This can be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$.
+Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics.
+For these reasons, we enter a total accuracy score for each error metric that we collect, as well as for each of many variances.
+We then use all of these metrics to compute the Pareto frontier.
 
 These error metrics are more finicky than they might appear for real programs.
 Consider a Sobel image filter for edge detection.
