@@ -274,15 +274,24 @@ That reader would be right!
 However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
 For this silly toy, imagine we wanted to sum a list of millions of numbers—we would not need to rerun analysis, but could simply use the same executable.
 
-### Here's the code!
-
-### Scope
-
 ### Design Decisions
 
-- We directly modify the instruction that increments a loop's induction variable; Adrian implemented loop perforation differently.
-- To collect loop information: decided to do a function pass instead of a loop pass or module pass:
-    - the module pass is the "right way to do it" but the LoopInfo is not finished by the time this pass is run;
+We made the following design decisions:
+
+- Our driver is less clever about "critically testing" (that is, determining which loops are safe to perforate) than the original paper.
+In particular, in addition to not implementing backtracking when combining loop perforation rates, we do not use Valgrind or anything similar to detect memory errors in perforated runs, and instead rely only on process return code and the user-defined accuracy metrics.
+- In some implementations of loop perforation, rather than modifying the induction variable directly the pass instruments an additional counter to each loop.
+For example, this is the approach taken in [ACCEPT's loop perforation pass][].
+This allows the compiler to do more clever variants of loop perforation, such as copying the value from a previous iteration instead of skipping an iteration altogether.
+We decided to modify the induction variable directly to be able to spend more effort on the driver and evaluation.
+- Unlike the original paper, we allow users to define any number of error metrics instead of just one.
+This allows users to conduct a richer exploration of the [Pareto frontier][frontier] for their given application.
+We discuss this further in the Error Metrics section.
+- Our passes write and read JSON files rather than keeping all data in memory.
+We made this decision to make it easier to assess progress and debug as we used the driver and passes.
+
+[accept]: https://github.com/uwsampa/accept/blob/master/pass/loopperf.cpp
+[frontier]: https://en.wikipedia.org/wiki/Pareto_efficiency#Pareto_frontier
 
 ## Evaluation
 
@@ -319,7 +328,7 @@ Other metrics
 - fit to one input, test on others.
 
 #### todo
-- run on all represenatitve inputs
+- run on all representative inputs
 - plot speedups
 - fix matrix errors (same size)
 - with some fixed error, graph: perforated vs standard
@@ -333,14 +342,14 @@ Other metrics
 - accuracy measure
 
 
-## Implementation
+<!-- ## Implementation
 
  - There is a function pass that gets information about the loops out to python. This is run by calling `opt` with the flag `-loop-count`.
     - We collect json information about all loops (including the funciton, module, whether or not there's an induction variable...)
     - in the destructor, we save the information that ended up in each module to a json file of the same name.
-
-
 ## Difficulties
+ -->
+
 
 
 
