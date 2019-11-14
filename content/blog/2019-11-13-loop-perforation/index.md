@@ -28,19 +28,38 @@ name = "Gregory Yauney"
 link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
-## Introduction
+Have you ever been frustrated that your code takes too long to run?
+Do you have a sneaking suspicion that most of the time is spent in loops?
+Have you ever considered just _running fewer loops_ by having your compiler mangle your code to skip arbitrary loop iterations?
 
-## Implementation
+Welcome to [loop perforation][loopperf], an idea that sounds so ludicrous that we can barely believe it actually works at all!
 
-We implemented two LLVM passes:
+The basic premise is one common with many research ideas in the field of [approximate computing][approx]: many applications running on modern machines spend a lot of time and energy getting results that are _exactly_ right, when they could happily get away with results that are _mostly_ right.
+If the programmer is able to define what exactly "mostly right" for their particular application, then approximate computing techniques allow them to explore trading off speed and correctness.
+The original [loop perforation paper][paper], "Managing Performance vs. Accuracy Trade-offs with Loop Perforation", from ESEC/FSE’11, takes this idea to a beautifully flippant extreme: look at some loops, and change the iteration interval from something like `i++` to `i += 2`.
+Skipping loops like this almost definitely makes your code both faster and more energy efficient (assuming it still runs!)
 
-1. a function pass to gather information about all loops in a program
+For this project, we set out to implement simple loop perforation as a [LLVM][] pass, with the goal of a richer exploration into what it means to actually accept worse accuracy from our programs in this domain.
 
-2. Perforate all loops with given rates
 
-Both work in conjunction with
+[loopperf]: https://en.wikipedia.org/wiki/Loop_perforation
+[approx]:https://en.wikipedia.org/wiki/Approximate_computing
+[llvm]: https://llvm.org
 
-3. Python `driver.py`
+## What we did
+
+LLVM is an industrial-strength compiler that structures analysis and optimizations are a series of passes that both act on and produce a human-readable intermediate representation.
+
+We implemented two new LLVM passes:
+
+1. `LoopCountPass`, a function pass that identifies and saves which program loops are candidates for perforation.
+2. `LoopPerforationPass`, a loop pass that perforates loops at a specified rate.
+
+Both passes work in conjunction with additional infrastructure:
+
+1. An external driver program, written in python.
+2. User-provided representative inputs.
+3. User-defined accuracy/error metrics.
 
 ## A Meandering Tour of Loop Perforation
 
@@ -107,7 +126,7 @@ Executing the application a single time assumes that the application's output is
 In particular, our implementation does nothing to detect non-determinism, which seems consistent with the prior published work on this topic.
 
 After the driver executes the standard variant of the application, it needs to determine what loop structures the program has to exploit.
-To accomplish this, the driver runs a function pass, `LoopCountPass`.
+To accomplish this, the driver runs our first pass, `LoopCountPass`.
 Because we are in LLVM-land, this pass gets to rely on existing LLVM infrastructure for most of the heavy lifting.
 The pass invokes two dependent passes, `llvm::LoopInfo` and `llvm::LoopSimplify`, which return statistics and simplify loops to a canonical form where possible, respectively.
 Our pass then examines which of these loops have both been successfully been converted to a simple form and have a canonical induction variable.
@@ -129,7 +148,7 @@ Here, we enter the loop at block `%2`, then either exit the block or branch to b
 
 Next, the driver needs to explore how far it can mangle each loop before the results become unacceptable (remember, here that means with error under 50%).
 The driver iteratively perforates each candidate loop with a set of possible perforation rates—for this example, 2, 3, 5.
-More concretely, the driver invokes a second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
+More concretely, the driver invokes the second LLVM pass, `LoopPerforationPass`, that finds canonical induction variables and replaces them with constants multiplied by the desired rate.
 For our toy example, conceptually this means changing the loop increment expression from:
 
 ```
@@ -246,7 +265,7 @@ In our `sum_to_n` toy example, this joined result sees that only a loop perforat
 
 To summarize, our pass took our little toy example of summing the integers up to `n` and made it much, much stupider.
 We defined a simple error metric that the resulting sum must be within 50% of the real sum, which led the driver to choose a loop perforation rate of two.
-The ultimate joined peroration pass thus changed the loop increment from `+= 1` to `+=2`.
+The ultimate joined perforation pass thus changed the loop increment from `+= 1` to `+= 2`.
 This means the sum skips the loop iterations for `i = 1` and `i = 3`, resulting in a total sum `0 + 2 + 4 = 6`, which is 40% off from the correct answer of 10.
 Close enough!!!!!!1! ¯\\_(ツ)_/¯
 
