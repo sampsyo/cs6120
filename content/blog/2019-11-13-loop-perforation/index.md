@@ -48,7 +48,7 @@ For this project, we set out to implement simple loop perforation as a [LLVM][] 
 
 ## What We Did
 
-LLVM is an industrial-strength compiler that structures analysis and optimizations are a series of passes that both act on and produce a human-readable intermediate representation.
+LLVM is an industrial-strength compiler that structures optimizations as a series of passes that both act on and produce a human-readable intermediate representation.
 
 We implemented two new LLVM passes:
 
@@ -141,7 +141,7 @@ For `sum_to_n`, the implementation has example one loop in a simple form, so the
 {
     "sum_to_n-phis.ll": {
         "sum_to_n": [
-            "%2,%4,%6"
+            "%2<header><exiting>,%4,%6<latch>"
         ]
     }
 }
@@ -280,7 +280,7 @@ For this silly toy, imagine we wanted to sum a list of millions of numbers—we 
 
 ### Design Decisions
 
-We made the following design decisions:
+We made the following design decisions in our implementation:
 
 - Our driver is less clever about "critically testing" (that is, determining which loops are safe to perforate) than the original paper.
 In particular, in addition to not implementing backtracking when combining loop perforation rates, we do not use Valgrind or anything similar to detect memory errors in perforated runs, and instead rely only on process return code and the user-defined accuracy metrics.
@@ -393,8 +393,9 @@ We had hoped to run our pass on additional PARSEC benchmarks, but had trouble ei
 [ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
 [Parsec]: https://parsec.cs.princeton.edu
 
-The following plot shows run times for original programs and the joined perforated programs.
-Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
+The following plot shows run times for original programs and the final joined perforated programs.
+Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21.
+Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
 The perforated versions of `img-blur`, `sobel`, and `matrix_multiply` are faster than their corresponding originals because they have so many fewer instructions.
 The other three programs are so small their runtimes are likely dominated by overhead.
 
@@ -415,5 +416,5 @@ The ten runs of the original program (in magenta) are on the bottom with zero er
 The black points at the top are from runs that did not complete successfully and were assigned the maximum possible error.
 In this case, perforating some loops reduced the size of matrices, making them incomparable to the correct program output.
 The frontier shows that perforated programs gain some speed by rapidly incurring error.
-The joined perforations aren't on the frontier—even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
+The joined perforations aren't always on the frontier—even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
 
