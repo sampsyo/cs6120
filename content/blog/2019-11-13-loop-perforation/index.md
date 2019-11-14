@@ -415,5 +415,5 @@ The ten runs of the original program (in magenta) are on the bottom with zero er
 The black points at the top are from runs that did not complete successfully and were assigned the maximum possible error.
 In this case, perforating some loops reduced the size of matrices, making them incomparable to the correct program output.
 The frontier shows that perforated programs gain some speed by rapidly incurring error.
-The joined perforations aren't on the frontier---even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
+The joined perforations aren't on the frontier—even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
 
