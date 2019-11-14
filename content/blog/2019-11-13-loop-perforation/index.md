@@ -356,7 +356,7 @@ The following result only considers the `l1_10000` metric and allows an error of
 
 <img src="sobel-perforated-l1-10000-0.6.png" width=500/>
 
-Via a casual design space exploration, this was the closest to correct we could find.
+Via a casual design space exploration, this was the closest to correct we could find with any loop perforation at all.
 But, this is clearly **not** an acceptable result for edge detection!
 Ultimately, this example illustrates that finding the right error metric might be both difficult and counterintuitive—to get a better image that gained any speedup, we had to select a higher error rate, just for a different metric.
 
