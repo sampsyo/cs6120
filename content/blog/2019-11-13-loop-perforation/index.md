@@ -319,7 +319,7 @@ We implemented three small test programs:
 2. `alloc-loop`: A program that performs arithmetic on an array of integer pointers.
 3. `matrix_multiplication`: Matrix multiplication of two random 100-by-100 matrices.
 
-We additionally ran loop perforation on three benchmark programs:
+We additionally ran loop perforation on three larger benchmark programs:
 1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][].
 2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`.
 3. `blackscholes`: From the [PARSEC][] benchmark suite.
@@ -327,10 +327,13 @@ We additionally ran loop perforation on three benchmark programs:
 [ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
 [Parsec]: https://parsec.cs.princeton.edu
 
-The following plot shows runtimes for original programs and the joined perforated programs. Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals. The perforated version of `matrix_multiply` (the slowest test) is noticeably faster than its corresponding original.
+The following plot shows runtimes for original programs and the joined perforated programs. Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals. The perforated version of `matrix_multiply` (the slowest test) is faster than its corresponding original.
 
-<img src="all-runtimes.png" width="50%"/>
+<img src="all-runtimes.png" width="80%"/>
 
+For every test and benchmark, we plotted the error and runtime of every perforated and non- version. Each resulting graph shows a Pareto-optimal frontier trading off error and runtime. Runtimes were calculated as above. The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
+
+<img src="matrix_multiply-frontier.png" width="60%"/>
 
 ### Feature Wish list:
 - criticality testing
