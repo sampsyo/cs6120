@@ -305,13 +305,10 @@ The [original loop perforation paper][paper] uses the following accuracy metric:
 
 \[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
 
-<<<<<<< HEAD
 That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.
 Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations _must be_ weighted sums of their dimensions.
 Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted. More generally, accuracies that require a set of components to all be operating well (arguably very important for measuring functionality) cannot be encoded.
-=======
-That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.Though these components are sold as a modular feature of the approach, the equation above makes it abundantly clear that each $o_i$ must be $\mathbb R$-valued, which makes the choice rather restrictive. For instance, this means that matrix and vector accuracy calculations **must be** weighted sums of their dimensions. Moreover, overwhelmingly there is no good choice for one component to be weighted over another: the representation is forced by the restriction to real valued outputs of programs, and so anything encoded across multiple components cannot be re-weighted.
->>>>>>> df6d35d056de9bf40bd01fd4dc79da9b6b56426f
+
 
 This means that, of the common distance metrics used for matrices, images, etc., only a "normalized" $\ell_1$ distance can be encoded. It also assumes that zero is important in some way: relative error is given as distance away from zero. Relative error approaches infinity, independent of the tolerance of the system to errors, as the standard error $o$ goes to zero.
 
@@ -383,10 +380,15 @@ We had hoped to run our pass on additional PARSEC benchmarks, but had trouble ei
 [ACCEPT benchmarks]: https://github.com/uwsampa/accept-apps/blob/master/sobel/sobel.c
 [Parsec]: https://parsec.cs.princeton.edu
 
-The following plot shows runtimes for original programs and the joined perforated programs. Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals. The perforated version of `matrix_multiply` (the slowest test) is faster than its corresponding original.
+The following plot shows runtimes for original programs and the joined perforated programs.
+Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
+The perforated version of `matrix_multiply` (the slowest test) is faster than its corresponding original.
 
 <img src="all-runtimes.png" width="80%"/>
 
-For every test and benchmark, we plotted the error and runtime of every perforated and non- version. Each resulting graph shows a Pareto-optimal frontier trading off error and runtime. Runtimes were calculated as above. The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
+For every test and benchmark, we plotted the error and runtime of every perforated and non- version.
+Each resulting graph shows a Pareto-optimal frontier trading off error and runtime.
+Runtimes were calculated as above.
+The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
 
 <img src="matrix_multiply-frontier.png" width="60%"/>
