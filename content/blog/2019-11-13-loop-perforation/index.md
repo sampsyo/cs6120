@@ -382,13 +382,25 @@ We had hoped to run our pass on additional PARSEC benchmarks, but had trouble ei
 
 The following plot shows runtimes for original programs and the joined perforated programs.
 Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21. Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
-The perforated version of `matrix_multiply` (the slowest test) is faster than its corresponding original.
+The perforated versions of `img-blur`, `sobel`, and `matrix_multiply` are faster than their corresponding originals because they have so many fewer instructions.
+The other three programs are so small their runtimes are likely dominated by overhead.
 
 <img src="all-runtimes.png" width="80%"/>
 
 For every test and benchmark, we plotted the error and runtime of every perforated and non- version.
-Each resulting graph shows a Pareto-optimal frontier trading off error and runtime.
-Runtimes were calculated as above.
+Each resulting graph shows a [Pareto-optimal] frontier trading off error and runtime, as in the [original paper][paper].
+A point is not on the frontier if it is eclipsed by another point that has both lower error by every metric and lower runtime.
+The frontier can be thought of as the projection of the convex hull of all runs with all error metrics onto the particular space chosen for visualization.
+Each program was run ten times, and all runs are included in the graphs. Runtimes were calculated as above.
 The following graph is for `matrix_multiply` with an $\ell_2$-error and an error function variance of 10,000:
 
-<img src="matrix_multiply-frontier.png" width="60%"/>
+[Pareto-optimal]: https://en.wikipedia.org/wiki/Pareto_efficiency#Pareto_frontier
+
+<img src="matrix_multiply-frontier.png" width="80%"/>
+
+The ten runs of the original program (in magenta) are on the bottom with zero error.
+The black points at the top are from runs that did not complete successfully and were assigned the maximum possible error.
+In this case, perforating some loops reduced the size of matrices, making them incomparable to the correct program output.
+The frontier shows that perforated programs gain some speed by rapidly incurring error.
+The joined perforations aren't on the frontier---even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
+
