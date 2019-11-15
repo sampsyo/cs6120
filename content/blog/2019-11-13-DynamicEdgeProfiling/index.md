@@ -1,3 +1,14 @@
++++
+title = "Dynamic Edge Profiling with Optimal Counter Placement"
+[extra]
+bio = """
+  [Katy](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
+
+  [Henry](https://www.linkedin.com/in/liuhenry4428)
+"""
++++
+
+
 ## Introduction
 
 For this project, we wanted to implement an LLVM pass that dynamically profiled basic block edges. The naïve implementation would be to add a profiling mechanism to every edge in the program, but that comes with a significant amount of overhead. To minimize overhead, we strived to add profiling to the minimum number of edges necessary to obtain the same amount of profiling information. The key insight is that we can determine if an edge is traversed using profiling information from preceding and succeeding edges if the CFG structure ensures the program can only run through a simple path between those profiled edges.
