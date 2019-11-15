@@ -118,3 +118,5 @@ A next step to further improve performance would be to place counters on edges t
 One of the primary challenges of this project was correctly installing LLVM on each of our machines with the correct version and ```/include/``` directories. When planning our design, we utilized several online resources that varied quite a bit in terms of targeted LLVM version. Available source files change quite a bit, and therefore we realized we needed to be more aware of the version of LLVM these resources were using when reading them. 
 
 The other main challenge was figuring out how to work with LLVM. Part of this work encompassed determining the tools and information we had access to and what information we needed to collect manually. We found the most effective way to learn how to work with LLVM was from experimenting with examples. In particular, when implementing dynamic edge profiling, we found passes that implement other dynamic passes like dynamic instruction count to be especially helpful.
+
+The source code for the LLVM pass detailed above can be found on [GitHub](https://github.com/kavoor/llvm-pass-skeleton).
