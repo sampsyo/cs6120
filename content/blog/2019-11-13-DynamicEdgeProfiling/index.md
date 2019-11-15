@@ -57,7 +57,7 @@ These edges were `[0->2]`, `[6->4]`, and `[9->10]`.
 To verify these results, we consider our program. 
 ```
 void testFunc(int n){
-    if(n%2==1) printf("The number is odd");
+    if(n%2==1) printf("The number is odd\n");
 }
 
 int main(int num) {
