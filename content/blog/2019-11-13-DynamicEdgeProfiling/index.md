@@ -104,7 +104,8 @@ On average, we found that adding profiling takes 5x longer than the unprofiled c
 
 Below are our performance results. The data has been normalized to the average runtime for each program's original code after LLVM `-O3`. This means that if a bar's height is 2, that stage's average runtime took 2x longer than the optimized but unprofiled code. 
 
-![](https://i.imgur.com/uICyHTe.png)
+<!-- ![](https://i.imgur.com/uICyHTe.png) -->
+<img src="results.png" style="max-width: 100%" >
 
 A next step to further improve performance would be to place counters on edges that are less likely to be executed, decreasing the number of dynamic instructions. This can be done by additional profiling and then creating a maximum spanning tree using the estimated edge weights instead of an arbitrary spanning tree.
 
