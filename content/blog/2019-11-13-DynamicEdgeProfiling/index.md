@@ -50,6 +50,7 @@ We run our instrumented program with input argument `5` and procure the table be
 |----------|-------|
 | [6->4]   | 5     |
 | [9->10]  | 1     |
+
 When we ran our pass, we also output the edges that were instrumented.
 These edges were `[0->2]`, `[6->4]`, and `[9->10]`.
 
