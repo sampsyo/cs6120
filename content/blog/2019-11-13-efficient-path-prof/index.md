@@ -8,7 +8,7 @@ extra.bio = """
 
 ## The Goal
 
-The goal of this project was to implement the path profiling algorithm from the [Efficient Path Profiling](https://dl.acm.org/citation.cfm?id=243857) paper by Thomas Ball and James R. Larus as an LLVM pass. The LLVM pass should generate profiling instrumentation for each function in the source code and then generate a profiling report after the code is finished running.
+The goal of this project was to implement the path profiling algorithm from the "[Efficient Path Profiling](https://dl.acm.org/citation.cfm?id=243857)" paper by Thomas Ball and James R. Larus as an LLVM pass. The LLVM pass should generate profiling instrumentation for each function in the source code and then generate a profiling report after the code is finished running.
 
 ## Implementation
 
@@ -49,15 +49,15 @@ If we consider one of the edges from A to B to represent the loop back edge, the
 
 The edge with `Val = 2` from A to B represents reinitializing the path number register `r` to 2 when we take the back edge in the loop.
 
-Fourth, the algorithm generates a maximum spanning tree of the graph gotten by taking the DAG and adding an edge from the exit to entry block (and also removing the directionality of the edges). This does create a cycle in the graph so it is no longer a DAG but the next step requires the graph to have this edge to work correctly. The maximum spanning tree of the graph is calculated by starting with an empty set of edges and iteratively adding edges as long as no cycle is created. For the small sample graph we have been using, this would be an example of a maximum spanning tree (the bolded edges are the edges in the tree):
+Fourth, the algorithm generates a maximum spanning tree of the graph gotten by taking the DAG and adding an edge from the exit to the entry block (and also removing the directionality of the edges). This does create a cycle in the graph so it is no longer a DAG but the next step requires the graph to have this edge to work correctly. The maximum spanning tree of the graph is calculated by starting with an empty set of edges and iteratively adding edges as long as no cycle is created. For the small sample graph we have been using, this would be an example of a maximum spanning tree (the bolded edges are the edges in the tree):
 
 <img src="simple_mst.png" style="width: 30%">
 
-Fifth, for every chord of the spanning tree (edge not in the maximum spanning tree) the algorithm computes a mapping `Inc` from edges to increment values. The algorithm to do this was specified in another paper referenced by the Efficient Path Profiling paper but is actually quite simple. For every edge `e` not in the maximum spanning tree, there must exist a path through the spanning tree between the two endpoints. We reinterpret edge `e` as a directed edge from some block `u` to some block `v` in the CFG and find the path through the spanning tree from `u` to `v`. We then take the directed sum of all `Val(e')` where `e'` is an edge on the path through the spanning tree. By directed sum, I mean that if in the path we go along edge `e'` in the same direction that `e'` is in in the CFG then we all `Val(e')` to `Inc(e)`. If we go across the edge backwards, we subtract `Val(e')` from `Inc(e)`. Finally, we add `Val((u,v))` to `Inc(e)` to finish the computation of `Inc(e)`. For the sample graph and the maximum spanning tree computed above, this is the `Inc` mapping:
+Fifth, for every chord of the spanning tree (edge not in the maximum spanning tree) the algorithm computes a mapping `Inc` from edges to increment values. The algorithm to do this was specified in another paper referenced by the "Efficient Path Profiling" paper but is actually quite simple. For every edge `e` not in the maximum spanning tree, there must exist a path through the spanning tree between the two endpoints. We reinterpret edge `e` as a directed edge from some block `u` to some block `v` in the CFG and find the path through the spanning tree from `u` to `v`. We then take the directed sum of all `Val(e')` where `e'` is an edge on the path through the spanning tree. By directed sum, I mean that if in the path we go along edge `e'` in the same direction that `e'` is in in the CFG then we all `Val(e')` to `Inc(e)`. If we go across the edge backwards, we subtract `Val(e')` from `Inc(e)`. Finally, we add `Val((u,v))` to `Inc(e)` to finish the computation of `Inc(e)`. For the sample graph and the maximum spanning tree computed above, this is the `Inc` mapping:
 
 <img src="simple_inc.png" style="width: 30%">
 
-All `Inc` mappings are required to have the same sum on a path `P` through the CFG as the sum of the `Val` mappings for path `P`. The edge with `Inc(e) = -2)` for the edge from A to B was computed by taking the path from B to A in the spanning tree. `Val((A,B))` was 2 but because we traversed the edge backwards, we subtracted 2 from `Inc` of the other edge.
+All `Inc` mappings are required to have the same sum on a path `P` through the CFG as the sum of the `Val` mappings for path `P`. The edge with `Inc(e) = -2` for the edge from A to B was computed by taking the path from B to A in the spanning tree. `Val((A,B))` was 2 but because we traversed the edge backwards, we subtracted 2 from `Inc` of the other edge.
 
 Finally, the algorithm inserts instrumentation according to the `Inc` mapping. For every edge in the original CFG with a non-zero `Inc` value, the instruction `r += Inc(e)` is inserted by creating a new basic block between the source and destination of the edge with that instruction. The block is then inserted into the CFG by rerouting the source's successor to the new block and adding a jump at the end of the new block to the destination block. The entry block adds an instruction to initialize `r=0` and the exit block adds an instruction `path_table[r++]`. Back edges are bit more interesting. For back edges we insert the instruction sequence:
 
@@ -82,7 +82,7 @@ We can verify that our path mappings are preserved by figuring out the value of 
 
 Also, note that this matches the `Val` sum for each path computed above.
 
-### Differences between the paper
+### Differences between the paper and this implementation
 
 First, the paper seems to be a bit misleading when it comes to instrumenting back edges. It seems to imply that whenever you have a back edge that you should always insert the instructions `path_table[r]++; r = 0`. However, as the above simple example showed and the edge cases below will show, it actually needs to be a bit more complex than just increment and reset `r` to 0. The edge cases analyzed below will hopefully show that the following code snippet is actually what back edges should be instrumented with:
 
@@ -148,7 +148,7 @@ This gives the following path numberings:
 
 Which is similar to what the paper generates.
 
-A more interesting edge case is one where there are 2 loops with the same loop head. This required manually writing some LLVM code since I was not sure how to generate such a cfg using only C:
+A more interesting edge case is one where there are 2 loops with the same loop head. This required manually writing some LLVM code since I was not sure how to generate such a CFG using only C:
 
 <img src="samehead.png" style="width: 30%">
 
@@ -161,7 +161,7 @@ The algorithm identifies 9 distinct paths through the graph and assigns the foll
 |bb18 -> bb4 | 1|
 |bb -> bb8 | 3|
 
-One interesting about this is that the edge bb -> bb8 is assigned 2 inc values. This is because one of them corresponds to restarting the loop by taking edge bb12 -> bb8 and the other corresponds to restarting the loop by taking the edge from bb4 -> bb8. To better illustrate this, these are the values assigned to each of the paths:
+One interesting this about this table is that the edge bb -> bb8 is assigned 2 inc values. This is because one of them corresponds to restarting the loop by taking edge bb12 -> bb8 and the other corresponds to restarting the loop by taking the edge from bb4 -> bb8. To better illustrate this, these are the values assigned to each of the paths:
 
 | Path | value |
 |:-:|:-:|
@@ -175,11 +175,11 @@ One interesting about this is that the edge bb -> bb8 is assigned 2 inc values. 
 | (from bb12) bb8,bb18,bb4 | 7|
 | (from bb12) bb8,bb18,bb4,bb28 | 8 |
 
-Even though path bb8,bb12 appears twice in this table with different values, the algorithm is inserting instrumentation to differentiate the 2 ways that the path was started. If we take the back edge bb4 -> bb8, then we start with the path register equal to 3. If we take the bake edge bb12 -> bb8, then we start with the path register equal to 6. These were the 2 inc values computed for path bb -> bb8 in the table above. This kind of example was not explicitly mentioned in the paper but I think this is the correct thing to do.
+Even though path bb8,bb12 appears twice in this table with different values, the algorithm is inserting instrumentation to differentiate the 2 ways that the path was started. If we take the back edge bb4 -> bb8, then we start with the path register equal to 3. If we take the back edge bb12 -> bb8, then we start with the path register equal to 6. These were the 2 inc values computed for path bb -> bb8 in the table above. This kind of example was not explicitly mentioned in the paper but I think this is the correct thing to do.
 
 ### Performance Tests
 
-For the performance tests, I collected 11 programs from the SingleSource directory of the LLVM test suite. Each of these programs was compiled to LLVM, then sent through my profiling instrumentation pass, and then compiled to an executable. Additionally, a version of the executable was generated from the original LLVM (with no instrumentation). No optimizations were enabled for any of the compilation steps. Then, both of these programs were run and their run times were compared with time. The table below describes the results :
+For the performance tests, I collected 11 programs from the SingleSource directory of the LLVM test suite. Each of these programs was compiled to LLVM, then sent through my profiling instrumentation pass, and then compiled to an executable. Additionally, a version of the executable was generated from the original LLVM (with no instrumentation). No optimizations were enabled for any of the compilation steps. Then, both of these programs were run and their run times were compared with time. The table below describes the results:
 
 | Program name | Normal execution time (secs) | Instrumented execution time (secs) | Instrumented / Normal |
 |:-:|:-:|:-:|:-:|
@@ -198,8 +198,8 @@ For the performance tests, I collected 11 programs from the SingleSource directo
 
 These results were acquired in one run of each program. There was no effort made to isolate the running process from other process on the system (a standard laptop) or efforts to minimize the effects of memory alignment. This was because the performance differences were large enough that doing any of the above would have likely been overkill to get meaningful results.
 
-The results show worse overhead than the paper showed, but this may be the result of multiple factors. The first is that the algorithm that I implemented did not include any of the instrumentation placement optimizations that the paper described. In my implementation, the path register is actually stack allocated so every edge instrumentation needs to perform and memory read and write. Instead, the path register can actually be pinned to a register throughout a function. This would cause one less register to be available for register allocation so it would be interesting to see what the tradeoffs would be. Next, the operation to increment the path counter table is actually a function call. This is because I thought I would add locking to support multithreaded programs. However, none of the benchmarks are multithreaded, so this function call is unecessary and the increment could be inlined. Finally, there is no strength reduction to store the address of path counter in the path register instead of the index. The paper mentions this as a potential optimization, however no optimzation passes were run on the programs after instrumentation.
+The results show worse overhead than the paper reported, but this may be the result of multiple factors. The first is that the algorithm that I implemented did not include any of the instrumentation placement optimizations that the paper described. In my implementation, the path register is actually stack allocated so every instrumented edge needs to perform at least a memory read and write. Instead, the path register can actually be pinned to a register throughout a function. However, this would cause one less register to be available for register allocation so it would be interesting to see what the tradeoffs would be. Next, the operation to increment the path counter table is actually a function call. This is because I thought I would add locking to support multithreaded programs. However, none of the benchmarks are multithreaded, so this function call is unecessary and the increment could be inlined. Finally, there is no strength reduction to store the address of path counter in the path register instead of the index. The paper mentions this as a potential optimization, however no optimzation passes were run on the programs after instrumentation.
 
 In summary, the instrumentation generally causes about a 2x increase in program execution time, which is not that great. It would be interesting to see what performance improvments any or all of the above optimizations could achieve.
 
-All code for this project can be found [here](https://github.com/Dan12/llvm-pass-skeleton/tree/mutate)
+All code for this project can be found [here](https://github.com/Dan12/llvm-pass-skeleton/tree/mutate).
