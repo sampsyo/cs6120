@@ -15,8 +15,8 @@ For this project, we wanted to implement an LLVM pass that dynamically profiled 
 To select the edges to profile, we used Knuth's algorithm:
 
 ---
-![](https://i.imgur.com/NbavLnq.png)
-
+<!-- ![](https://i.imgur.com/NbavLnq.png) -->
+<img src="array.png" style="max-width: 100%" >
 ---
 Essentially, this algorithm first finds the (acyclic) minimum spanning tree of the edges in a function and then adds profiling instrumentation---code that logs profiling information---to all edges not in the spanning tree. Note that this algorithm uses the first block in a function as the root of the spanning tree, and that edges are treated as bidirectional when checking for cycles.
 
