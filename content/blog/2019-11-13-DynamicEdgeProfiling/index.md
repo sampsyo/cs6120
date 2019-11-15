@@ -45,6 +45,7 @@ Consider the following CFGS for a program with two functions, main and testFunc.
 <img src="main.png"/>
 <img src="testfunc.png"/>
 We run our instrumented program with input argument `5` and procure the table below.
+
 | Edge     | Count |
 |----------|-------|
 | [6->4]   | 5     |
