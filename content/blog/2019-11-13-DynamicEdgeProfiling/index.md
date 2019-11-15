@@ -3,11 +3,9 @@ title = "Dynamic Edge Profiling with Optimal Counter Placement"
 [extra]
 bio = """
   [Katy](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
-
   [Henry](https://www.linkedin.com/in/liuhenry4428)
 """
 +++
-
 
 ## Introduction
 
@@ -18,7 +16,6 @@ To select the edges to profile, we used Knuth's algorithm:
 
 ---
 ![](https://i.imgur.com/NbavLnq.png)
-
 
 ---
 Essentially, this algorithm first finds the (acyclic) minimum spanning tree of the edges in a function and then adds profiling instrumentation---code that logs profiling information---to all edges not in the spanning tree. Note that this algorithm uses the first block in a function as the root of the spanning tree, and that edges are treated as bidirectional when checking for cycles.
@@ -44,7 +41,9 @@ As the profiling logic and data are written in a runtime library disjoint from t
 ### Correctness
 To measure performance, we ran a subset of C benchmarks from the [LLVM test suite](https://llvm.org/docs/TestSuiteGuide.html). We collected the tabulated results and CFGs to verify our instrumentation was on an optimal number of edges. We then ran the algorithm described above to extrapolate the uninstrumented edges. We include one test here for visibility.
 Consider the following CFGS for a program with two functions, main and testFunc.
- ![](https://i.imgur.com/h9Stzm2.png =300x) ![](https://i.imgur.com/ls7PM8e.png =300x) 
+ <!-- ![](https://i.imgur.com/h9Stzm2.png =300x) ![](https://i.imgur.com/ls7PM8e.png =300x)  -->
+<img src="main.png"/>
+<img src="testfunc.png"/>
 We run our instrumented program with input argument `5` and procure the table below.
 | Edge     | Count |
 |----------|-------|
