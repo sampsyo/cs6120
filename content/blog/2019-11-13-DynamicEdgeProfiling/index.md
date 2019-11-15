@@ -77,6 +77,7 @@ int main(int num) {
 In order to automatically verify these results, we implement a naive LLVM pass for edge profiling that instruments every edge. We then compare the results collected and extrapolated from optimal edge profiling with the results from running the naive implementation.
 
 Consider the results from running the naive implementation.
+
 | Edge     | Count |
 |----------|-------|
 | [1->2]   | 1     |
@@ -86,6 +87,7 @@ Consider the results from running the naive implementation.
 | [6->4]   | 5     |
 | [7->9]   | 1     |
 | [9->10]  | 1     |
+
 
 We confirm that our results for optimal placement match the results from naive placement. In order to verify the remaining edges, we run the extrapolation algorithm discussed above by hand. The next step is to implement the extrapolation and automatically verify that the optimal placement pass produces the same results as the naive pass for all edges.
 
