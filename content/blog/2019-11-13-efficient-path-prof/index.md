@@ -130,7 +130,7 @@ Most of the correctness tests were either simple sanity checks or specifically c
 
 <img src="diamond.png" style="width: 30%">
 
-For this graph, my algorithm generated the following incs:
+For this graph, my algorithm generated the following inc values:
 | Edge | Inc |
 |:-:|:-:|
 | D -> F | 1 |
@@ -198,8 +198,8 @@ For the performance tests, I collected 11 programs from the SingleSource directo
 
 These results were acquired in one run of each program. There was no effort made to isolate the running process from other process on the system (a standard laptop) or efforts to minimize the effects of memory alignment. This was because the performance differences were large enough that doing any of the above would have likely been overkill to get meaningful results.
 
-The results show worse overhead than the paper reported, but this may be the result of multiple factors. The first is that the algorithm that I implemented did not include any of the instrumentation placement optimizations that the paper described. In my implementation, the path register is actually stack allocated so every instrumented edge needs to perform at least a memory read and write. Instead, the path register can actually be pinned to a register throughout a function. However, this would cause one less register to be available for register allocation so it would be interesting to see what the tradeoffs would be. Next, the operation to increment the path counter table is actually a function call. This is because I thought I would add locking to support multithreaded programs. However, none of the benchmarks are multithreaded, so this function call is unecessary and the increment could be inlined. Finally, there is no strength reduction to store the address of path counter in the path register instead of the index. The paper mentions this as a potential optimization, however no optimzation passes were run on the programs after instrumentation.
+The results show worse overhead than the paper reported, but this may be the result of multiple factors. The first is that the algorithm that I implemented did not include any of the instrumentation placement optimizations that the paper described. In my implementation, the path register is actually stack allocated so every instrumented edge needs to perform at least a memory read and write. Instead, the path register can actually be pinned to a register throughout a function. However, this would cause one less register to be available for register allocation so it would be interesting to see what the tradeoffs would be. Next, the operation to increment the path counter table is actually a function call. This is because I thought I would add locking to support multithreaded programs. However, none of the benchmarks are multithreaded, so this function call is unnecessary and the increment could be inlined. Finally, there is no strength reduction to store the address of path counter in the path register instead of the index. The paper mentions this as a potential optimization, however no optimization passes were run on the programs after instrumentation.
 
-In summary, the instrumentation generally causes about a 2x increase in program execution time, which is not that great. It would be interesting to see what performance improvments any or all of the above optimizations could achieve.
+In summary, the instrumentation generally causes about a 2x increase in program execution time, which is not that great. It would be interesting to see what performance improvements any or all of the above optimizations could achieve.
 
 All code for this project can be found [here](https://github.com/Dan12/llvm-pass-skeleton/tree/mutate).
