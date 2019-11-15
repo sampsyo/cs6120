@@ -81,6 +81,7 @@ Initially we tested our pass on simple programs with only one conditional branch
 
 We also evaluated the pass on [PARSEC](https://parsec.cs.princeton.edu/). Due to machine and time constraints, we only managed to run streamcluster programs with profiles provided by running the simulated inputs. We compared clang with only our optimization pass against clang with no optimization. Unfortunately, the running time and branch missing rates are not significantly improved:
 
+(will add result soon)
 
 We think this is because the profiling information we collected is not enough to reflect the actual workload, since we are only using small simulated input for profiling. Clang profiling also does not provide unconditional branch frequency. Also the branch missing rate is already pretty low even without any optimization. 
 
