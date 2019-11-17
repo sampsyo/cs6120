@@ -123,25 +123,30 @@ mon = true
 
 [[days]]
 date = "November 13"
+notes = ["Design Review: [Loop Invariant Code Motion](../blog/loop-invariant-code-motion/), by Rolph & G.C.C."]
 
 [[days]]
 date = "November 15"
 canceled = true
-event = "Adrian probably out of town"
+event = "Adrian out of town"
 
 [[days]]
 date = "November 18"
 mon = true
+notes = ["Design Review: [Stochastic Superoptimization](../blog/stoke/), by Eashan"]
 
 [[days]]
 date = "November 20"
+notes = ["Design Review: [Code Layout](../blog/profile-guided-code-layout/), by Gautam"]
 
 [[days]]
 date = "November 22"
+notes = ["Design Review: [Loop Unrolling](../blog/loop-unrolling-with-bril/), by Shaojie & Yi-Hsiang & Yuan"]
 
 [[days]]
 date = "November 25"
 mon = true
+notes = ["Design Review: [Auto-Vectorization](../blog/AutoVectoring/), by Katy & Henry"]
 
 [[days]]
 date = "November 27"

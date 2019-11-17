@@ -191,6 +191,16 @@ article {
       margin-right: 0.5rem;
     }
   }
+
+  code {
+      background-color: #EAEAEA;
+      padding: 2px 4px;
+      border-radius: 2px;
+  }
+
+  p > img {
+      width: 100%
+  }
 }
 
 pre {
@@ -213,4 +223,15 @@ img.rss {
   max-width: 15rem;
   margin: 0 auto;
   text-align: center;
+}
+
+.footnote-definition {
+  color: $disabled-color;
+  .footnote-definition-label {
+    float: left;
+    padding-right: 1em;
+    font-size: 0.8em;
+    &:before { content: '['; }
+    &:after { content: ']'; }
+  }
 }
