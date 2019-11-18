@@ -3,9 +3,10 @@ title = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectur
 extra.author = "Shaojie Xiang and Katy Voor"
 extra.bio = """
   [Shaojie Xiang](https://github.com/Hecmay) is a 2nd year ECE PhD student researching on programming language and distributed system. 
-  [Katy Voor](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
+  [Katy Voor](https://github.com/kavoor) is a senior interested in compilers and computer architecture.
 """
 +++
+
 ===
 ## Introduction 
 
@@ -22,7 +23,8 @@ To tackle the programmability issue, one possible solution is domain specific la
 
 Chlorophyll decomposes the problem of compiling high level programs into spatial machine code into four sub-problems:
 
-<img src="flow.png" style="max-width: 100%" >
+
+<img src="flow.png" width="700" >
 
 * **Partitioning**: search the partitioning scheme that minimizes the communication between different logical cores
 * **Layout**: assign the partitioned program segments to physical cores such that the actual communication cost is minimized 
@@ -108,7 +110,7 @@ partition 3: int x = read(W) * read(W);
 ```
 These partitions are mapped to cores (0,1), (0,2), and (0,3), arranged west to east.
 
-<img src="com.png" style="max-width: 100%" >
+<img src="com.png" width="200">
 
 In the program the operation `(3+4)` occurs at partition 1 and is written to partition 3. However, since these partitions are not on adjacent cores, the separator inserts a `write EAST` of this result at partition 1 to partition 2.
 Next, at partition 2, the operation `(1+2)` occurs, and is written to partition 3. The separater inserts a `write EAST` of this result. In addition, the separater inserts a `write EAST` for the result of partition 1 on partition 2, that was written to its data stack previously. Note that the arithmetic operations on partition 1 and partition 2 happen in parallel.
@@ -119,7 +121,7 @@ This process is much more challenging with control flow and functions. When cons
 <!-- TODO maybe talk about arrays -->
 
 ### Code Generation
-<img src="overview.png" style="max-width: 100%" >
+<img src="overview.png" width="600" >
 Typically, code generation is performed using a dynamic programming algorithm that utilizes local optimization to optimize larger and larger code fragments. Think of tiling an abstract assembly tree and building up larger and larger optimized tiles from smaller ones. This approach is not as effective for code generation for nontraditional architectures with nonlocal optimizations, such as optimizations for circular stacks. 
 
 Instead of writing new transformation rules, the authors search for an optimized program in the space of candidate programs. One way to do this is through superoptimization.
@@ -140,7 +142,9 @@ Since we do not support recursion, it is possible to statically determine the de
 #### Modular Superoptimization
 A behavior of a program is specified by its sequence of instructions *P*, and its live region *L*. 
 Consider the resulting data stacks from executing *P*.
-<img src="stack_spec.png" style="max-width: 100%" >
+
+<img src="stack_spec.png" width="500" >
+
 *P* changes the data stack from $\alpha$|$\beta$ to $\alpha$|$\gamma$. Assume $\alpha$|$\gamma$ is in the live region. We say *P'* is equivalent to *P* if *P'* produces $\alpha$|$\gamma$, and the stack pointers after executing *P* and *P'* point to the same location.
 
 Consider figure (b) above. Let *P'* be the sequence of instructions resulting in (b). Note that under this definition of equivalence, the resulting stacks in (a) and (b) are different. This is because the stack pointer is pointing to different places on each stack.
@@ -150,7 +154,9 @@ In order to decrease the number of false negatives, the authors loosen the speci
 This is valid because the stacks are circular, and therefore leaving garbage at the bottom of the stack will simply be overwritten as the stack pointer is incremented accordingly.
 
 This engenders additional optimization as well. Consider the corresponding stacks for a subtract operation.
-<img src="subexample.png" style="max-width: 100%" >
+
+<img src="subexample.png" width="400" >
+
 Here, b and a are popped from the stack, subtracted, and the result is pushed back onto the stack. The *P* that results in only `b-a` left on the stack is 8 instructions long, with 3 instructions to remove the remaining garbage value `a` from the stack. However, as noted before, it is in fact legal to leave `a` at the bottom of the stack, thus saving 3 instructions. 
 
 #### Sliding Windows
@@ -179,7 +185,8 @@ After a valid output program is found, the address space is then decompressed an
 To assess the performance of the partitioning synthesizer, the authors implement a heuristic partitioner that greedily merges small unknown partitions when there is communication between the two.
 To assess performance of the layout synthesizer, the authors compare the default layout synthesizer that considers approximate communication costs with a modified version  that assumes communication costs between every pair is 1. To assess performance, the authors compare generated programs with and without superoptimization. Finally, the authors compare sliding windows against fixed windows. 
 
-<img src="expert.png" style="max-width: 100%" >
+<img src="expert.png" width="600" >
+
 For each benchmark, 5 different versions of the program are generated. We include a key here to interpret the figure above:
  - **(sliding | fixed | ns)** = (sliding-window | fixed-window | no) superoptimization
  - **(p | hp)** = partitioning synthesizer | heuristic partitioner
@@ -189,9 +196,10 @@ On average, when comparing (ns+p+l) with (ns+hp+l), the authors find a 5% speedu
 When looking at superoptimization, the authors find an average 30% speedup on programs that use superoptimization. Furthermore, the programs that use sliding-window superoptimization are on average 4% faster than programs that use fixed-window superoptimization.
 
 The authors further claim that programs generated with synthesis are comparable to *highly-optimized* *expert-written* programs. 
-<img src="exec_time.png" style="max-width: 100%" >
-<img src="space.png" style="max-width: 100%" >
-<img src="energy.png" style="max-width: 100%" >
+
+<img src="exec_time.png" width="490" >
+<img src="space.png" width="500" >
+<img src="energy.png" width="500" >
 
 On these single-core programs, the authors found the generated programs to be on average 46% slower, 44% less energy efficient, and 47% longer than the expert written programs.
 It is important to note that the programs that were tested are single-core. When running the single multicore program the authors have access to through the partitioning synthesizer, the synthesizer times out and the heuristic partitioner fails to produce a program that fits in memory. The authors partition this program by manually finding partition annotations, examining the machine code, and iterating. They compare two programs partitioned this way such that one is initially bigger than memory before it is superoptimized, and one that fits on the cores without superoptimization.
@@ -205,8 +213,9 @@ The authors go on to claim their supertoptimizer can discover optimizations that
 
 ### Opportunity for Improvement with Human Insight
 One last item to note is the time it takes for the superoptimizer to converge on a valid optimized program is significant. Below we see the results for single-core and multicore benchmarks with their corresponding convergence times.
-<img src="singlecore.png" style="max-width: 100%" >
-<img src="multicore.png" style="max-width: 100%" >
+<img src="singlecore.png" width="500" >
+<img src="multicore.png" width="500">
+
 The authors' claim that injecting human insight into the superoptimizer in the form of templates or pinning code to cores can help mitigate these times. They provide minimal examples and evidence of the potential impact of this human insight. We note the tradeoff between convergence times and programmability, one of their primary motivations for Chlorophyll as a higher-level abstraction over arrayForth.
 
 
