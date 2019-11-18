@@ -34,8 +34,8 @@ To accomplish this, we will create a new compiler pass using LLVM.
 TODO: For the null pointer checks, 
 
 For the null pointer analysis (NPA henceforth), we aim for soundness rather than
-completeness. That is, we only mark a pointer as *DefinitelyNull* only if we are
-guaranteed that the pointer is null. This way, we are guaranteed that a null
+completeness. That is, we only mark a pointer as *DefinitelyNonNull* only if we are
+guaranteed that the pointer is not null. This way, we are guaranteed that a null
 check is removed only if it is really safe to do so.
 
 ## Implementation
@@ -126,28 +126,58 @@ Given `store i32* null, i32** %p, align 8`, we need to make sure that subsequent
 loads from `%p` are `PossiblyNull`. So, we keep a map `deref_map` from pointers like `%p` to
 an arbitrary new pointer. Therefore, when we see `%val = load i32*, i32** %p, align 8`,
 we set `lattice[val] = lattice[deref_map[p]]`, where `lattice[x]` tells us if
-`x` is `PossiblyNull` or `DefinitelyNull`.
+`x` is `PossiblyNull` or `DefinitelyNonNull`.
 
 ## Evaluation
 TODO: Do we make a distinction between correctness and performance evaluation?
 Depends on what we talk about previously
 
-**Percentage Change in Memory Usage Using TCE**
+For correctness,
 
-|            |   n = 1  |  n = 100 | n = 10000 | n = 100000 |
-|:----------:|:--------:|:--------:|:---------:|:----------:|
-|    loop    |   +0.1%  |   -2.7%  |   -31.1%  |   -79.5%   |
-|  factorial |   +0.2%  |   -2.5%  |   -79.1%  |     X      |
-| mutual_rec |   +0.2%  |   +13.8% |   -31.2%  |   -78.4%   |
+We also want to see how much of an impact these null checks have on the performance
+of programs. Unfortunately I wasn't able to get the PARSEC benchmark tests running.
+Instead, I found benchmarks from https://benchmarksgame-team.pages.debian.net/benchmarksgame/
+which has various benchmarks for different languages. I chose a small portion of
+these tests to run with and without my compiler passes.
 
-**Percentage Change in Execution Time Using TCE**
+I chose to run:
+- [binary-trees](https://benchmarksgame-team.pages.debian.net/benchmarksgame/program/binarytrees-gpp-2.html)
+  - Ran with: `./binary-trees 13`
+- [fannkuch-redux](https://benchmarksgame-team.pages.debian.net/benchmarksgame/program/fannkuchredux-gpp-5.html)
+  - Ran with: `./fannkucuh-redux 10`
+- [fasta](https://benchmarksgame-team.pages.debian.net/benchmarksgame/program/fasta-gpp-1.html)
+  - Ran with: `./fasta 250000`
+- [mandelbrot](https://benchmarksgame-team.pages.debian.net/benchmarksgame/program/mandelbrot-gpp-5.html)
+  - Ran with: `./mandelbrot 2000`
+- [n-body](https://benchmarksgame-team.pages.debian.net/benchmarksgame/program/nbody-gpp-1.html)
+  - Ran with: `./nbody 5000000`
 
-|            |   n = 1  |  n = 100 | n = 10000 | n = 100000 |
-|:----------:|:--------:|:--------:|:---------:|:----------:|
-|    loop    |  +2.1%   |   +2.2%  |   -10%    |   -29.8%   |
-|  factorial |  +1.1%   |   +5.5%  |   -1.6%   |      X     |
-| mutual_rec |  +1.1%   |   -1%    |   +5.7%   |   +5.07%   |
+Here we simply show the mean time taken to run these programs and the standard
+deviation. There are three columns, representing the three different ways we
+compiled the program.
+- *Baseline* is just compiling using Clang without our null check passes.
+Compiled with `/usr/local/opt/llvm/bin/clang++ -O2 <benchmark>.cpp -o <benchmark>`, e.g.,
+`/usr/local/opt/llvm/bin/clang++ -O2 binary-trees.cpp -o binary-trees`
+- *No NPA* is compiling using the null check passes, but without taking into
+consideration which pointers are `PossiblyNull` or `DefinitelyNonNull`. That is,
+we do a null check on every pointer dereference.
+NOTE: Had to go into source code and remove the check for if pointers are `PossiblyNull`
+Compiled with `../tests/compile-with-opt.sh nbody.cpp -O2`
+- *With NPA* is compiling using the null check passes *and* eliding null checks
+if the pointer is `DefinitelyNonNull`.
+Compiled with same instruction as above.
 
+**Runtime Means and Standard Deviations**
+
+|                 |      Baseline      |      No NPA      |     With NPA     |
+|:---------------:|:------------------:|:----------------:|:----------------:|
+|  binary-trees   |  208 ms ± 4.78 ms  | 217 ms ± 12.8 ms | 213 ms ± 6.78 ms |
+|  fannkuch-redux |  222 ms ± 5.02 ms  | 536 ms ± 6.34 ms | 563 ms ± 54.9 ms |
+|  fasta          |  200 ms ± 6.01 ms  | 365 ms ± 7.77 ms | 375 ms ± 28.8 ms |
+|  mandelbrot     |  319 ms ± 5.79 ms  | 294 ms ± 2.52 ms | 298 ms ± 9.76 ms |
+|  n-body         |  327 ms ± 16.7 ms  | 733 ms ± 12.4 ms | 734 ms ± 17.8 ms |
+
+TODO: Discuss the evaluation results a little.
 
 ## Hardest Parts to Get Right
 1. Talk about the learning curve to LLVM. The documentation is fairly good, but
