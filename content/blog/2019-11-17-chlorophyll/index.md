@@ -2,7 +2,7 @@
 title = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
 extra.author = "Shaojie Xiang and Katy Voor"
 extra.bio = """
-  [Shaojie Xiang](https://github.com/Hecmay) is a 2nd year ECE PhD student researching on programming language and distributed system. 
+  [Shaojie Xiang](https://github.com/Hecmay) is a 2nd year ECE PhD student researching on programming languages and distributed systems. 
   [Katy Voor](https://github.com/kavoor) is a senior interested in compilers and computer architecture.
 """
 +++
@@ -12,11 +12,13 @@ extra.bio = """
 
 Energy efficiency has been increasingly important for embedded processors and internet of things (IoT) systems. Many spatial hardware architectures have been proposed to address the power consumption problem without compromising the performance. GreenArrays 144 (GA144) is one example of the low power spatial processor. GA144 is a stack-based 18-bit processor without shared memory and fixed clock. To program GA144, users have to write an assembly-like low level programming language [[1]](#1) to define the data storage, data movement and communication logic to make use of the spatial architecture. This paper proposes a programming model and synthesis-aided compiler to compile high level C-like programs into binary executables on GA144. The compiler-optimized program can achieve comparable results with an expert written low level program.
 
+An additional motivation for investigating Chlorophyll is the need for a higher-level abstraction over arrayForth, the language used on GreenArray chips. ArrayForth requires the programmer to partition data structures and code as well as to insert the requisite communication code. Chlorophyll aims to abstract away communication code as well as some partitioning logic that can be inferred by the synthesizer and separator. 
+
 ### Background 
 
 Spatial hardware is an architecture where the users are required to assign data, computations and communications explicitly to use its computing resources, storage and interconnect network. Spatial architecture is widely used in domains like High Performance Computing and image processing for its high performance and low power consumption. However, it is especially hard to program and debug due to low programmability and slow compile time. 
 
-To tackle the programmability issue, one possible solution is domain specific language (DSL) like Spatial[[2]](#2) and T2S[[3]](#3). DSL provides specialized APIs to help users realize different optimization on target hardware with much less effort. Also people use hardware templates to solve the problem. DNN/FPGA Co-Design[[4]](#4) developed a complication flow from ML workload to spatial accelerators like FPGA and CGRA by searching through template IP pools with certain constraints. Such approaches improve the programmability without sacrificing much flexibility, but still require users to have expertise for the target hardware.
+To mitigate programmability concerns, one possible solution is a domain specific language (DSL) like Spatial[[2]](#2) and T2S[[3]](#3). DSLs provide specialized APIs to help users realize different optimization on target hardware with much less effort. People can also use hardware templates to solve the problem. DNN/FPGA Co-Design [[4]](#4) developed a complication flow from an ML workload to spatial accelerators like FPGAs and CGRAs by searching through template IP pools with certain constraints. Such approaches improve the programmability without sacrificing much flexibility, but still require users to have expertise for the target hardware.
 
 
 ### Chlorophyll Overview
@@ -26,12 +28,12 @@ Chlorophyll decomposes the problem of compiling high level programs into spatial
 
 <img src="flow.png" width="700" >
 
-* **Partitioning**: search the partitioning scheme that minimizes the communication between different logical cores
-* **Layout**: assign the partitioned program segments to physical cores such that the actual communication cost is minimized 
-* **Code Separation**: generate communication code for data movements between physical cores
-* **Code Generation**: Search and generate high performance binary code taking advantage of hardware features of target machine
+* **Partitioning**: Search the partitioning scheme that minimizes the communication between different logical cores
+* **Layout**: Assign the partitioned program segments to physical cores such that the actual communication cost is minimized 
+* **Code Separation**: Generate communication code for data movements between physical cores
+* **Code Generation**: Search and generate high performance binary code taking advantage of hardware features of the target machine
  
-The users can develop their programs in C and compile to GrennArray 144 without worrying about the communication and data movement. The compiler partitions the code, explores the design space, and automatically optimizes the program to improve the performance.
+The users can develop their programs in C and compile to GA144 without worrying about the communication and data movement. The compiler partitions the code, explores the design space, and automatically optimizes the program to improve the performance.
 
 
 ### Partitioning Synthesizer
@@ -53,7 +55,7 @@ for (i from 0 to 64) {
 
 `@` in the program is an indicator of the partition index, and `@place` will return the partition type the argument. `!` is an operation of sending data from one partition to another. In the example above, array x, y and z are partitioned into two logical cores (first half and second half stored in separate cores). The computation of `leftrotate` function may happen in the same or a different logical core depending on the result of type inference. 
 
-For loops in Chlorophyll programs, the synthesizer conducts loop splitting to make variables in each splitted loop have the same partition ID. The loop in the example above will be decomposed into multiple non-overlapping sub-loops.
+For loops in Chlorophyll programs, the synthesizer conducts loop splitting to make variables in each split loop have the same partition ID. The loop in the example above will be decomposed into multiple non-overlapping sub-loops.
 ```cpp
 for (i from 0 to 32) {
   z[i] = leftrotate(x[i]!8,y[i]!8,r!9)!4 -@4 1;
@@ -72,7 +74,7 @@ In the partitioning stage, Chlorophyll compiler performs type checking and type 
 * **Communication Interpreter**: The interpreter calculates the communication count of given program `P` with every valid input `x` under a complete partition type annotation $\sigma$. The maximum communication count is defined as
 $$
 MaxComm(P, \sigma) = max_{x}Comm(P, \sigma, x)
-$$ If the input program is partially annotated, the interpreter returns a formula in terms of symbolic variables for partition types. The returned value is used as an input to a constraint-based solver to search for an optimal partitioning scheme for the given program (i.e. better type inference on the un-annotated variables). 
+$$ If the input program is partially annotated, the interpreter returns a formula in terms of symbolic variables for partition types. The returned value is used as an input to a constraint-based solver to search for an optimal partitioning scheme for the given program (i.e., better type inference on the un-annotated variables). 
 
 * **Partition Space Checker**: Given a complete partition scheme for each variable, array and other constructs in the program, the space checker checks the space usage of in each partition, to make sure that the memory usage is no larger than the storage capacity on the core.
 
@@ -82,9 +84,9 @@ The partitioning synthesizer utilizes these two functions as constraints to a ba
 
 The layout problem is formalized as a quadratic assignment problem (QAP), where we search for the assignment function to minimize the total communication cost:
 * facilities set $P$ (a set of partition types we derived from partitioning synthesizer)
-* the weight distance $W(a,b)$ returning the weight factor between two facilities $a$ and $b$. 
+* the weight distance $W(a,b)$ returning the weight factor between two facilities $a$ and $b$
 * function $D(a, b)$ returning the distance between two given locations
-* Assignment function mapping different facility (in our case function) into a specific location (i.e. logical core on GA144). 
+* Assignment function mapping different facility (in our case function) into a specific location (i.e., logical core on GA144)
 $$
 f = argmin_{f}\sum_{a, b\in P}W(a, b)D(f(a), f(b))
 $$
@@ -126,7 +128,7 @@ Typically, code generation is performed using a dynamic programming algorithm th
 
 Instead of writing new transformation rules, the authors search for an optimized program in the space of candidate programs. One way to do this is through superoptimization.
 
-*Superoptimization* is the process of searching the space of all instruction sequences and verifying the candidate programs against a reference implementation with naively-generated code. Unfortunately, according to this paper, superoptimization only scales to roughly 25 instructions. However, there has been more recent work to mitigate this with increased contextual information and early pruning of invalid candidate programs.[[4]](#4)
+*Superoptimization* is the process of searching the space of all instruction sequences and verifying the candidate programs against a reference implementation with naively-generated code. Unfortunately, according to this paper, superoptimization only scales to roughly 25 instructions. However, there has been more recent work to mitigate this with increased contextual information and early pruning of invalid candidate programs [[4]](#4).
 
 #### Naive Code Generation
 In order to create this reference implementation, each per-core program is translated to machine code. Each operation in the high-level program is stored in a *superoptimizable unit*.
@@ -165,9 +167,9 @@ This algorithm merges superoptimizable units into a superoptimizable segment. It
 In the case where no valid segment is found from the superoptimizer, it appends the the first unit from the segment to the output, and attempts to build another sequence to superoptimize. 
 Then, it iterates until the instruction sequence is empty.
 
-The superoptimizer executes a binary search over programs given a cost model. It uses counterexample-guided inductive synthesis (CEGIS) to synthesize a program of cost k, and if one exists, to synthesize a program of cost k/2, and so on.
+The superoptimizer executes a binary search over programs given a cost model. It uses counterexample-guided inductive synthesis (CEGIS) to synthesize a program of cost $k$, and if one exists, to synthesize a program of cost $k/2$, and so on.
 
-When perusing papers that cite this one, we found the primary critique of the *sliding windows technique* to be the focus on local optimization and inability to make whole-program optimality guarantees. Other synthesis approaches such as Metasketches, claim to provide these guarantees.[[6]](#6)
+When perusing papers that cite this one, we found the primary critique of the *sliding windows technique* to be the focus on local optimization and inability to make whole-program optimality guarantees. Other synthesis approaches such as metasketches, claim to provide these guarantees [[6]](#6).
 
 
 <!-- #### SMT Formulas
@@ -221,7 +223,7 @@ The authors' claim that injecting human insight into the superoptimizer in the f
 
 
 ### Optimization Opportunity Loss
-The separation of partitioning and superoptimization engenders a few places for improvement. Chlorophyll uses a schedule-oblivious routing strategy. Therefore, if core A can communicate with core B with core X or core Y, it will choose the route arbitrarily. If core X is busy during this time, the optimal route would be through core B, instead of waiting on X to finish its work. When determining the importance of this scheduling issue, we wanted to know what proportion of execution time is dedicated to communication cost, including time spent waiting. Given the strict space constraints, it is unclear whether inserting instructions to conditionally use different communication instructions saves enough execution time to be worth the space. Further benchmarks would be required to determine if it is worth it, and if so, in which cases. 
+The separation of partitioning and superoptimization engenders a few places for improvement. Chlorophyll uses a schedule-oblivious routing strategy. Therefore, if core A can communicate with core B via core X or core Y, it will choose the route arbitrarily. If core X is busy during this time, the optimal route would be through core B, instead of waiting on X to finish its work. When determining the importance of this scheduling issue, we wanted to know what proportion of execution time is dedicated to communication cost, including time spent waiting. Given the strict space constraints, it is unclear whether inserting instructions to conditionally use different communication instructions saves enough execution time to be worth the space. Further benchmarks would be required to determine if it is worth it, and if so, in which cases. 
 <!-- If this time spent is significant, it may be worth it to perform a static analysis before code separation in order to better predict which cores will be busy to more optimally route data. -->
 
 ## GA144 Powered Lemonade-Bleach Battery Demo
