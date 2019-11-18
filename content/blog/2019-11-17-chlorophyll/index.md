@@ -213,6 +213,7 @@ The authors go on to claim their supertoptimizer can discover optimizations that
 
 ### Opportunity for Improvement with Human Insight
 One last item to note is the time it takes for the superoptimizer to converge on a valid optimized program is significant. Below we see the results for single-core and multicore benchmarks with their corresponding convergence times.
+
 <img src="singlecore.png" width="500" >
 <img src="multicore.png" width="500">
 
