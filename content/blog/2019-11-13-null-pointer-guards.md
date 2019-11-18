@@ -75,7 +75,23 @@ that was created in the previous `AddNullCheckFuncPass`.
 
 ### Implementing the Null Pointer Analysis
 Now, we want to elide null checks provided we can determine that the pointer
-is non-null at the time of dereferencing. To do so, we do a dataflow analysis
+is non-null at the time of dereferencing. Initially, I figured we could use
+the existing alias analyses and check if the pointers alias `nullptr`. However,
+when I tried this, it would always show as being `NoAlias`. There is the
+`AAResults::pointsToConstantMemory` function, but according to the
+[documentation](https://llvm.org/docs/AliasAnalysis.html#the-pointstoconstantmemory-method),
+> The pointsToConstantMemory method returns true if and only if the analysis can prove that
+> the pointer only points to unchanging memory locations (functions, constant global
+> variables, and the null pointer).
+This is an issue for two reasons. First, we can't differentiate between pointing
+to functions, global variables, or the null pointer. Secondly, this only returns
+true when the pointer *only* points to one of these constant locations. This means
+that if a pointer may or may not point to the null pointer, the function would
+return false. This would be too restrictive for our use case, as we are really
+looking for pointers that are *definitely not null* rather than those that are
+*definitely null*.
+
+Therfore, to perform this null pointer analysis, we do a dataflow analysis
 that is similar to CCP (Conditional Constant Propagation). Our lattice elements
 will be a mapping from pointers in the program to `PossiblyNull` or `DefinitelyNonNull`.
 (We assume `PossiblyNull` and `DefiniteNonNull` also form a lattice with the former as *Top*
@@ -86,7 +102,31 @@ analysis. The *Meet* operator is simply an elementwise *meet* on elements in the
 For example, if we have the two lattice elements `X = {p: DefinitelyNonNull, q: PossiblyNull}`
 and `Y = {p: DefinitelyNonNull, q: DefinitelyNonNull}`, then `meet(X, Y) = {p: DefinitelyNonNull, q: PossiblyNull}`.
 
-Our transfer function is tricky to get right.
+Our transfer function is tricky to get right. Consider
+```
+store i32* %p, i32** %q, align 8
+```
+Let's call the the memory that `%q` points to `%deref_q`. Naively, we would just
+say that if `%p` was `PossiblyNull`, then `%deref_q` would also be `PossiblyNull`.
+While this is necessary, it is not sufficient. Consider the following program:
+```C
+int *a = new int(6120);
+int **p = &a;
+*p = nullptr;
+*a = 100;
+```
+Observe that the line `*a = 100` is a null pointer dereference, because
+`p` aliases `&a`. That is, the memory location that `p` point to and `&a`
+point to are the same. Thus, when we do `*p = nullptr`, we are also setting
+`a` to `nullptr`. This means that whenever we a store a value `%p` to `%deref_q`
+(the location pointed to by `%q`), we must change everything that aliases `%deref_q`.
+
+One strange thing about this implementation is how to represent `%deref_p`.
+Given `store i32* null, i32** %p, align 8`, we need to make sure that subsequent
+loads from `%p` are `PossiblyNull`. So, we keep a map `deref_map` from pointers like `%p` to
+an arbitrary new pointer. Therefore, when we see `%val = load i32*, i32** %p, align 8`,
+we set `lattice[val] = lattice[deref_map[p]]`, where `lattice[x]` tells us if
+`x` is `PossiblyNull` or `DefinitelyNull`.
 
 ## Evaluation
 TODO: Do we make a distinction between correctness and performance evaluation?
