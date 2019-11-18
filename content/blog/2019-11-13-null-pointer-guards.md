@@ -31,7 +31,11 @@ checks.
 To accomplish this, we will create a new compiler pass using LLVM.
 
 ## Design
-TODO: For the null pointer checks, 
+Adding the null pointer checks themselves were pretty straightforward. To keep
+things simple, I decided to just print to tell the user that there was an attempt
+to dereference a null pointer and then `exit(1)`. Fancier implementations may be
+able to print useful information so the user doesn't have to `gdb` everything to
+see what went wrong.
 
 For the null pointer analysis (NPA henceforth), we aim for soundness rather than
 completeness. That is, we only mark a pointer as *DefinitelyNonNull* only if we are
@@ -129,10 +133,10 @@ we set `lattice[val] = lattice[deref_map[p]]`, where `lattice[x]` tells us if
 `x` is `PossiblyNull` or `DefinitelyNonNull`.
 
 ## Evaluation
-TODO: Do we make a distinction between correctness and performance evaluation?
-Depends on what we talk about previously
-
-For correctness,
+For correctness, I wrote some tests by hand to account for some of the
+programs shown above. For the most part, the correctness of adding the nullchecks
+was easy to check. However, the correctness of the NPA was trickier to determine,
+as shown by the programs that require an alias analysis.
 
 We also want to see how much of an impact these null checks have on the performance
 of programs. Unfortunately I wasn't able to get the PARSEC benchmark tests running.
