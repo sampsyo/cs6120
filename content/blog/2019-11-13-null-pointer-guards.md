@@ -177,17 +177,40 @@ Compiled with same instruction as above.
 |  mandelbrot     |  319 ms ± 5.79 ms  | 294 ms ± 2.52 ms | 298 ms ± 9.76 ms |
 |  n-body         |  327 ms ± 16.7 ms  | 733 ms ± 12.4 ms | 734 ms ± 17.8 ms |
 
-TODO: Discuss the evaluation results a little.
+Here we can see that in majority of cases, the baseline performs significantly
+better than the programs with null checks. To me this is a little surprising
+because I figured the branch predictor would always know that the null checks
+don't do anything except return from the null checking function.
+
+It is also interesting to note that the NPA didn't cause any improvement! This
+may be because not that many null pointer checks were removed, perhaps because
+the analysis is too conservative; this would require further investigation.
+This is a little disappointing because I spent a lot of time implementing the
+NPA to reduce the overhead of null checks.
 
 ## Hardest Parts to Get Right
-1. Talk about the learning curve to LLVM. The documentation is fairly good, but
-there's not much information overall on how to do specific things. So a lot of
-time was spent just learning how to insert certain nodes into the IR like
-function calls.
-2. The actual null pointer analysis proved to be more difficult than I thought.
-- Can talk about interesting idea where we could have all pointers point to a special
+One of the hardest things of this project was the learning curve of LLVM. The
+documentation is fairly good, but there's just not much information overall on
+how to do specific things. For example, I spent a lot of time just figuring out
+how to make a call to `printf` in the IR. For some reason, it wouldn't work
+if `printf` wasn't already used in the file being compiled.
+
+The other hardest thing was doing the null pointer analysis. It was frustrating
+to know that I couldn't check if a pointer aliased nullptr. I wasted a lot of time
+on an incorrect solution that looks as follows:
+> Create a global pointer that is
+> always `nullptr`, and replace all instances of `nullptr` with this global pointer.
+> Then we can use the alias analysis to check what aliases this pointer to see what
+> is potentially null at an instruction. However, by doing this, now all writes to
+> any pointer ends up writing to the location pointed to by the global variable,
+> which is incorrect.
+
+This project gives me a newfound appreciation for compilers writers.
 
 ## Extras
-- Link to Chandler's talk about optimizations. Talk a little bit about the escape function
-that forces variables to be kept around, and how that proved to be useful when debugging
-certain functions. 
+When trying to debug certain programs, I found that certain variable were being
+optimized away, which was quite annoying. In searching for a way to prevent this,
+I found [this great talk](https://www.youtube.com/watch?v=nXaxk27zwlk) by Chandler Carruth
+who discusses microbenchmarking of C++ code. He showed two special functions that
+can force side effects on variables without actually emitting assembly. See
+[this](https://youtu.be/nXaxk27zwlk?t=2438) part of the talk to learn more about it.
