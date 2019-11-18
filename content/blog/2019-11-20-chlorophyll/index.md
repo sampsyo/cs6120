@@ -7,7 +7,6 @@ extra.bio = """
 """
 +++
 
-===
 ## Introduction 
 
 Energy efficiency has been increasingly important for embedded processors and internet of things (IoT) systems. Many spatial hardware architectures have been proposed to address the power consumption problem without compromising the performance. GreenArrays 144 (GA144) is one example of the low power spatial processor. GA144 is a stack-based 18-bit processor without shared memory and fixed clock. To program GA144, users have to write an assembly-like low level programming language [[1]](#1) to define the data storage, data movement and communication logic to make use of the spatial architecture. This paper proposes a programming model and synthesis-aided compiler to compile high level C-like programs into binary executables on GA144. The compiler-optimized program can achieve comparable results with an expert written low level program.
