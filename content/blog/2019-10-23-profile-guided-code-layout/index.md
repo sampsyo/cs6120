@@ -39,22 +39,25 @@ jumps, since frequently executed code lives close together. To introduce the
 notion of an instruction pointer to the interpreter, I use the index of the
 currently executing instruction. Every time an instruction is executed, we can
 compare the current instruction pointer location to the previous location to
-determine the number of instruction pointer jumps.
+determine the number of instruction pointer jumps. In other words, we are
+measuring the distance between the current instruction and the previously
+executed instruction.
 
 
 ### Design
 
 The designs of these optimizations are closely related to the optimizations
-discussed in [Profile guided code
-positioning](https://doi.org/10.1145/93542.93550) and [Optimizing function
-placement for large-scale data-center
-applications](https://research.fb.com/publications/optimizing-function-placement-for-large-scale-data-center-applications-2/).
-Specifically, the basic block reordering optimization follows the approach laid
-out the first paper, and the function reordering optimization follows the
-approach in the second paper. Both optimizations are profile-guided, meaning
-they use sample inputs to make optimization decisions. Assuming that real-world
-workloads mirror the sample inputs, we can optimize the code layout for the
-sample inputs, and this should lead to improved performance on real workloads.
+discussed in ["Profile guided code
+positioning"](https://doi.org/10.1145/93542.93550) (1990) by Pettis and Hansen
+and ["Optimizing function placement for large-scale data-center
+applications"](https://research.fb.com/publications/optimizing-function-placement-for-large-scale-data-center-applications-2/)
+(2017) by Ottoni and Maher. Specifically, the basic block reordering
+optimization follows the approach laid out the first paper, and the function
+reordering optimization follows the approach in the second paper. Both
+optimizations are profile-guided, meaning they use sample inputs to make
+optimization decisions. Assuming that real-world workloads mirror the sample
+inputs, we can optimize the code layout for the sample inputs, and this should
+lead to improved performance on real workloads.
 
 ### Profiling
 
@@ -73,12 +76,15 @@ jumps.
 To build a Bril profiler, I first extended the parser to create an annotated
 JSON representation of the program. I introduced a new `"block"` key for every
 instruction, denoting which basic block each instruction belongs to, and a
-`"line"` key, denoting the line number of the instruction (ignoring whitespace).
-I then extended the interpreter to accept profiling data in the form of a
-line-separated list of command-line arguments. It then runs on each input,
-tracking function calls and basic block changes. The profiler returns a JSON
-representation of the weighted call and control flow graphs. The format of the
-profiling output is shown below.
+`"line"` key, denoting the line number of the instruction (ignoring whitespace)
+in Bril's JSON representation. In other words, "line" points to the index of the
+instruction in the program. The first instruction in the first function is `1`,
+the second is `2`, and so on. I then extended the interpreter to accept
+profiling data in the form of a line-separated list of command-line arguments.
+It then passes each line of the profiling data to the program, tracking function
+calls and basic block changes. The profiler returns a JSON representation of the
+weighted call and control flow graphs. The format of the profiling output is
+shown below.
 
 ```
 {
@@ -110,7 +116,9 @@ suppose we have a program called `fibonacci.bril` that takes an integer as a
 command-line argument. If we have a workload `fibonacci.in` that contains
 line-separated integers, we could profile the program by running:
 
-```bril2json < fibonacci.bril | brilprofile fibonacci.in```
+```
+bril2json < fibonacci.bril | brilprofile fibonacci.in
+```
 
 Let's first take a look at how basic block reordering and function reordering
 are done, and then we'll run through an example from start to end.
@@ -288,16 +296,18 @@ explore the evaluation of these optimizations.
 
 ### Evaluation
 I evaluated these optimizations by comparing the total number of instruction
-pointer jumps for the unoptimized and optimized programs on a given workload. On
-average, function reordering decreased the total number of instruction pointer
-jumps by 7.7% with a standard deviation of 36%. Basic block reordering decreased
-the number of instruction pointer jumps by approximately 19%, with a standard
-deviation of 12%. Since the two optimizations do not interfere with each other,
-I also evaluated the combination of function reordering and basic block
-reordering, and found an average instruction pointer jump decrease of 12%, with
-a standard deviation of 35%. The high standard deviation of function reordering
-indicates that its performance is quite inconsistent and that the reordering
-algorithm has some serious flaws. I discuss this near the end of this section.
+pointer jumps for the unoptimized and optimized programs on a given workload. I
+wrote six Bril programs and ran each with three workloads. On average, across
+all programs and workloads, function reordering decreased the total number of
+instruction pointer jumps by 7.7% with a standard deviation of 36%. Basic block
+reordering decreased the number of instruction pointer jumps by approximately
+19%, with a standard deviation of 12%. Since the two optimizations do not
+interfere with each other, I also evaluated the combination of function
+reordering and basic block reordering, and found an average instruction pointer
+jump decrease of 12%, with a standard deviation of 35%. The high standard
+deviation of function reordering indicates that its performance is quite
+inconsistent and that the reordering algorithm has some serious flaws. I discuss
+this near the end of this section.
 
 To conduct a thorough and rigorous evaluation of these optimizations, I ran them
 on numerous benchmark programs with various workloads. My evaluation strategy
@@ -316,14 +326,15 @@ the assumption that sample workloads are representative of real-world workloads,
 we should stick to that assumption.
 
 Below is a graph showing the results of function and block reordering for 6
-representative programs on three different workloads. Each bar represents the
-corresponding program's average *normalized* number of instruction pointer jumps
-for the workloads, and the error bars represent the standard error. To normalize
-the instruction pointer jumps, I divided by the unoptimized program's number of
-instruction pointer jumps. This makes it easier to compare results for different
-workloads, as larger workloads will naturally have more total instruction
-pointer jumps. The last two programs do not contain any functions. Programs and
-workloads can be found
+representative programs on three different workloads. Due to the lack of
+existing Bril programs to benchmark, I wrote the programs and their workloads.
+Each bar represents the corresponding program's average *normalized* number of
+instruction pointer jumps for the workloads, and the error bars represent the
+standard error. To normalize the instruction pointer jumps, I divided by the
+unoptimized program's number of instruction pointer jumps. This makes it easier
+to compare results for different workloads, as larger workloads will naturally
+have more total instruction pointer jumps. The last two programs do not contain
+any functions. Programs and workloads can be found
 [here](https://github.com/Blue9/bril/tree/project-2/workload).
 
 <p align="center">
