@@ -69,7 +69,7 @@ The first kind of pointer safety problem is null pointer dereference.
 ```c++
 int a = 10;
 void nullDereference(int *p){
-    *pi = a; // cause execption if p is NULL
+    *p = a; // cause execption if p is NULL
 }
 ```
 
@@ -90,7 +90,7 @@ However, there is no reliable method to identify an invalid pointer that points 
 void invalidDereference(int *p){
     int a = 10;
     if( p != NULL){
-    	*pi = a; 
+    	*p = a; 
     }
 }
 // outside this function, we cannot dereference or compare p with other pointer 
