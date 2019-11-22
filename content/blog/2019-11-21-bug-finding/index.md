@@ -8,11 +8,63 @@ extra.latex = true
 
 +++
 
+## Overview
+Csmith is a tool that helps uncover bugs in compilers through random testing, also known as *fuzzing*. Given multiple C compilers that implement the C standard, we can run programs through all the compilers and compare their output.
+
+<img src="random-testing.jpg" style="width: 60%">
+
+We can determine which compilers have a "bug" by doing a majority vote on the output. Even though this has the potential to misattribute bugs to the wrong compiler, the fact that different compilers would produce different output would be alarming. This kind of testing allows a relatively quick search of the program space to determine programs that are very likely to be buggy.
+
+*Discussion Question: Is this kind of random testing still useful in the face of formally verified compilers, e.g., CompCert?*
+
+## Examples of Wrong Code
+To give a more concrete idea of what kinds of programs we can expected to find bugs in, the authors provide some actual bugs that were found. Generally, these bugs occur when the compiler performs optimizations on programs.
+
+*Wrong Safety Check:*
+```
+(x == c1) || (x < c2)
+```
+is equivalent to
+```
+x < c2
+```
+when `c1` and `c2` are constants and `c1 < c2`. However, Csmith found an example in LLVM where `(x == 0) || (x < -3)` was transformed to `(x < -3)`, even though it's not the case that `0 < -3**. The issue was that LLVM did an unsigned comparison, so the transformation was seemingly safe.
 
 
+*Wrong Analysis:*
+```c++
+1:  static int g[1];
+2:  static int *p = &g[0];
+3:  static int *q = &g[0];
+4:
+5:  int foo (void) {
+6:      g[0] = 1;
+7:      *p = 0;
+8:      *p = *q;
+9:      return g[0];
+10: }
+```
+Here, GCC evaluated this program to 1 instead of 0. The reason is because `q` was accidentally marked as read only, meaning `p` and `q` can't alias (even though they really do). Thus, line 7 was removed by dead store elimination.
 
+## Design Goals
+The authors provide two design goals for Csmith:
+1. Every randomly generated program must be well formed and have a single interpretation based on the C standard.
+2. Maximize "expressiveness". Expressiveness is the idea that the generated programs should use a wide variety and combinations of language features
+   - For example, Csmith allows for programs with function definitions, global definitions, most C expressions and statements, control flow, arrays, pointers, and more. Some language features that are disallowed include dynamic memory allocation, recursion, and function pointers.
 
+Interestingly, design goal #2 is in direct opposition to design goal #1. The more features we allow to be tested (like arrays and pointers), the easier it is to cause undefined behavior. First, we will discuss at a high level how programs are randomly generated. Then, we will explore how Csmith ensures the generated code doesn't exhibit undefined behavior.
 
+## Randomly Generating Programs
+To generate programs, first Csmith generates types that can be used later during program generation. Then starting from `main`, the authors break down how the program gets filled in.
+1. Csmith selects a random production from the grammar, based on the current context, with potentially non-uniform probability. For example, when inside a function body, Csmith can choose things like `if` and `for` statements, but not a `continue` if the code is not in a loop.
+    - Csmith operates on a subset of C. Interestingly, it doesn't seem like the authors have a grammar explicitly written down for this subset.
+    - For productions that require a *target* (e.g. a variable), Csmith can randomly decide to generate a new target or use an existing one.
+    - Similarly goes for productions requiring a type.
+2. When choosing a nonterminal production, Csmith will recursively choose productions given the appropriate context. For example, if a function call production is chosen, then expressions for the parameters must be generated.
+3. Csmith implements an interprocedural pointer analysis, but needs to keep track of "points-to facts" about the program. As the program is being generated, the set of facts are being updated.
+4. Csmith uses a set of *saftey checks* to make sure the newly generated bit of code is well formed, following design goal #1. If a safety check fails, the changes are undone and we try again.
+
+TODO: Provide an example.
 
 ## Safety Mechanisms
 
