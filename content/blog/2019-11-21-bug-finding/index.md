@@ -16,17 +16,17 @@ extra.latex = true
 
 ## Safety Mechanisms
 
-A program can crash for various reason. It might because of compiler failure, but more often, due to unsafe program. Csmith wants to avoid these pitfalls with proper safety mechanisms.
+A program can crash for various reasons. It might be because of compiler failures, but more often, due to unsafe programs. Csmith wants to avoid these pitfalls with proper safety mechanisms.
 
 **Discussion:** Think about what safety issues can be caused by the randomly generated programs.
 
-A summary of all mechanisms shown below. We will provide detail explanation for it.
+A summary of all mechanisms shown below. We will provide detailed explanations for it.
 
 <img src="safety_mechanism.jpg" style="width: 70%">
 
 ### Integer Safety
 
-The safety problem of integer comes from undefined behaviors (UB) such as signed overflow:
+The safety problem of integers comes from undefined behaviors (UB) such as signed overflow:
 
 ```c++
 int signedOverflow(int x) {
@@ -42,11 +42,11 @@ int shiftPastBitwidth() {
 }
 ```
 
-Csmith generates wrapper functions for arithmetic operators whose operands might overflow according to the compiler standard, though there are tricky UBs not defined and the authos have to figure out themselves.
+Csmith generates wrapper functions for arithmetic operators whose operands might overflow according to the compiler standard, though there are tricky UBs not defined and the authors have to figure out themselves (such as `INT_MIN % -1`).
 
 ### Type Safety
 
-The trick aspect of C's type safety is qualifier safety. Modifying constant-qualified or volatile-qualified objects through nonconstant references is [undefined behavior](<https://wiki.sei.cmu.edu/confluence/display/c/EXP40-C.+Do+not+modify+constant+objects>).
+The tricky aspect of C's type safety is qualifier safety. Modifying constant-qualified or volatile-qualified objects through nonconstant references is [undefined behavior](<https://wiki.sei.cmu.edu/confluence/display/c/EXP40-C.+Do+not+modify+constant+objects>).
 
 ```c++
 const int **ipp; // the value pointer to shall not be modified
@@ -60,11 +60,11 @@ void constViolation(void) {
 }
 ```
 
-Csmith ensures type safety with type check.
+Csmith ensures type safety with type checks.
 
 ### Pointer safety
 
-The first kind of safety problem of pointer is null pointer dereference.
+The first kind of pointer safety problem is null pointer dereference.
 
 ```c++
 int a = 10;
@@ -84,11 +84,11 @@ void safeDereference(int *p){
 }
 ```
 
-However, there is no reliable method to tell an invalid pointer that pointing to a function-scoped variable.
+However, there is no reliable method to identify an invalid pointer that points to a function-scoped variable.
 
 ```c++
 void invalidDereference(int *p){
-	int a = 10;
+    int a = 10;
     if( p != NULL){
     	*pi = a; 
     }
@@ -99,11 +99,11 @@ void invalidDereference(int *p){
 
 **Question:** What could be the solution here? 
 
-One way is to force pointer pointing to function-scoped never outlives the function, which is too restrictive. Csmith instead, chooses to do pointer analysis that is flow sensitive, field sensitive, context sensitive, path insensitive, and array-element insensitive. 
+One way is to force a pointer, which points to a function-scoped variable, to never outlive the function; however, this is too restrictive. Csmith instead chooses to do pointer analysis that is flow sensitive, field sensitive, context sensitive, path insensitive, and array-element insensitive. 
 
 ### Effect Safety
 
-In C99 standard, undefined behavior can be cause by “the order of evaluation of the function designator, the actual arguments, and subexpressions within the actual arguments is unspecified", and "between two sequence points, an object is modified more than once, or is modified and the prior value is read other than to determine the value to be stored."
+In the C99 standard, undefined behavior can be caused by “the order of evaluation of the function designator, the actual arguments, and subexpressions within the actual arguments", and if "between two sequence points, an object is modified more than once, or is modified and the prior value is read other than to determine the value to be stored."
 
 ```c++
 void undefinedExcutionSequence(){
@@ -112,11 +112,11 @@ void undefinedExcutionSequence(){
 }
 ```
 
-Csmith conservatively analyzes the *effect* of every expression. An effect contains *may-read* and *may-write* locations of the expression. Same location cannot be both read and write or written twice except for assignment. This is done incrementally. For newly generated code, a check is performed to decide abandon or keep the code. For example, when generating  `p + funcMayModifyP()`, Csmith will abandon `funcMayModifyP()` .
+Csmith conservatively analyzes the *effect* of every expression. An effect contains *may-read* and *may-write* locations of the expression. The same location cannot be both read and write or written twice except for assignment. This is done incrementally. For newly generated code, a check is performed to decide abandon or keep the code. For example, when generating  `p + funcMayModifyP()`, Csmith will abandon `funcMayModifyP()` .
 
 ### Array Safety
 
-Out of boundary safety issue is always there for array.
+Out of boundary safety issues are always there for arrays.
 
 ```c++
 void outOfBound(){
@@ -125,13 +125,13 @@ void outOfBound(){
 }
 ```
 
-The example I give is simple to avoid, but when the index of `a` is a variable, it is hard to tell whether it is in bound or not. Csmith only generates index variables of `for` loops counter and ensures the `for` loop never exceeds the boundary. For arbitrary index variables, Csmith applies the modulo operator. If both technique does not work, for example, when array length increases, Csmith emits explicit checks against array lengths.
+The example I give is simple to avoid, but when the index of `a` is a variable, it is hard to tell whether it is in-bounds or not. Csmith only generates index variables of `for` loops counter and ensures the `for` loop never exceeds the boundary. For arbitrary index variables, Csmith applies the modulo operator. If both techniques do not work—for example, when array length increases—Csmith emits explicit checks against array lengths.
 
 ### Initializer Safety
 
 Csmith initializes variables right after declaration and bans `goto` statement to ensure the execution is in order.
 
-**Question:** What kind of cases that can be omitted due to the current design of program generation and safety constraints? 
+**Question:** What kind of cases can be omitted due to the current design of program generation and safety constraints? 
 
 ### Global Safety
 
@@ -147,13 +147,13 @@ incrementallyGeneratedUnsafeProgram(){}
 }
 ```
 
-Csmith performs checking at each newly generated line except for loops. Loops are checked at the end when back-edge is logically created. If unsafe lines appear, Csmith delete line by line till safety requirements are satisfied.
+Csmith performs checking at each newly generated line except for loops. Loops are checked at the end when the back-edge is logically created. If unsafe lines appear, Csmith deletes line by line until the safety requirements are satisfied.
 
 ## Design Tradeoff
 
 ### Allow Implementation-defined Behavior
 
-Implementation behavior is equivalent to [unspecified behavior](<https://en.wikipedia.org/wiki/Unspecified_behavior>), which may vary on different implementations of a programming language. Csmith designers believe it is unrealistic to "retain a single interpretation across all possible choices of implementation-defined behaviors". They allow Csmith to give different outputs when compilers has implementation-defined behavior at 
+Implementation-defined behavior is equivalent to [unspecified behavior](<https://en.wikipedia.org/wiki/Unspecified_behavior>), which may vary on different implementations of a programming language. Csmith designers believe it is unrealistic to "retain a single interpretation across all possible choices of implementation-defined behaviors". They allow Csmith to give different outputs when compilers has implementation-defined behavior at 
 
 1. the widths and representations of integers
 2. behavior when casting to a signed integer type when the value cannot be represented in an object of the target type
@@ -171,19 +171,19 @@ Csmith performs testing within but not cross the equivalent classes.
 
 ### No Ground Truth
 
-Csmith does not have round truth since it is unrealistic to have human check each program, but takes the majority vote. In practice, two uncorrelated compilers have not output the same incorrect output, according to the authors. The explanation to this is the substantial diversity among intermediate languages (IRs).
+Csmith does not have a ground truth since it is unrealistic to have a human check each program. Instead, it takes the majority vote. In practice, two uncorrelated compilers have not output the same incorrect output, according to the authors. The explanation to this is the substantial diversity among intermediate languages (IRs).
 
 ### No Guarantee of Termination
 
-A Csmith-generated program can be of any length. In practice, a time-out function is called to terminate program that is too long to finish.
+A Csmith-generated program can be of any length. In practice, a time-out function is called to terminate program that takes too long to finish.
 
 ### Target Middle-End bugs
 
-Csmith targets checking how compilers perform transformations on IRs rather than standard conformance as commercial test suites. For instance, Csmith does not spent efforts to test how compiler handle long identifier names.
+Csmith targets checking how compilers perform transformations on IRs rather than standard conformance as commercial test suites. For instance, Csmith does not spend efforts to test how compilers handle long identifier names.
 
 There are several choices made because of the target:
 
-1. The Csmith designers manual tunes of the 80 probability variables to generate program with a balanced mix of arithmetic and bitwise operations, of loops and straight-line code, and of single-level and multi-level indirections, *etc*.
+1. The Csmith designers manually tune the 80 probability variables to generate programs with a balanced mix of arithmetic and bitwise operations, of loops and straight-line code, and of single-level and multi-level indirections, *etc*.
 2. Encouraging Csmith to generate idiomatic code, e.g. loops that access all elements of an array.
 3. Discouraging Csmith from generating source-level diversity that is unlikely to improve the “coverage” of a compiler’s IR, e.g. additional levels of parentheses around expressions.
 4. Designing Csmith efficiently generates runnable programs of a few tens of thousands of lines long in a few seconds.
@@ -198,21 +198,21 @@ The Csmith designers tested 11 compilers and reports the errors to the developer
 
 Before we move on, I would like to introduce bug types for understanding the experiment results:
 
-1. A *crash error* is the one that crashes compiler during compilation.
-2. A *wrong error* is the one that crashes the run-time program.
-3. A *slient wrong error* is a wrong error that does not get compiler warning during compilation.
+1. A *crash error* is one that crashes the compiler during compilation.
+2. A *wrong error* is one that crashes the program during run-time.
+3. A *slient wrong error* is a wrong error that does not produce a compiler warning during compilation.
 4. An *assertion failure* is an LLVM internal consistency check failure.
 5. An *internal compiler failure* is a GCC internal consistency check failure.
 
 ### Quantitative Comparison of GCC and LLVM Versions
 
-The following figure shows the compilation and execution results of LLVM 1.9–2.8, GCC 3.[0–4].0, and GCC 4.[0–5].0 given the input of 1,000,000 Csmith randomly generated programs. Every program was compiled at –O0, –O1, –O2, –Os, and –O3. A test case is valid if every compiler terminated within five minutes and if every compiled random program terminated within 5 seconds. The top and bottom row are the error rate of different compiler versions. The authors also find the source of the compilation error and plot in the middle row.
+The following figure shows the compilation and execution results of LLVM 1.9–2.8, GCC 3.[0–4].0, and GCC 4.[0–5].0 given the input of 1,000,000 Csmith randomly generated programs. Every program was compiled at –O0, –O1, –O2, –Os, and –O3. A test case is valid if every compiler terminated within five minutes and if every compiled random program terminated within 5 seconds. The top and bottom row are the error rates of different compiler versions. The authors also find the source of the compilation error and plot it in the middle row.
 
 <img src="llvm_gcc.png" style="width: 100%">
 
 ### Bug-Finding Performance as a Function of Test-Case Size
 
-The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate so achieve that goal becomes a question. When reporting the error, we preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and runtime tradeoff given the same run-time. 
+The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate to achieve that goal becomes a question. When reporting the error, we preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and runtime tradeoff given the same run-time. 
 
 <img src="size_error.jpg" style="width: 60%">
 
@@ -224,7 +224,7 @@ Finally, there is also a performance test of Csmith against other bug finding to
 
 ### Code Coverage
 
-Finally, there is also a code coverage test on Csmith generated program as shown in the following table. 
+Finally, there is also a code coverage test on Csmith generated programs as shown in the following table. 
 
 <img src="coverage.jpg" style="width: 70%">
 
@@ -234,18 +234,3 @@ Adding 10,000 Csmith generated program to the existing test suite of LLVM and GC
 
 1. The authors do not come up with a good explanation to the code coverage issue. What might be the reason? 
 2. Tests that are randomly generated will never be like tests that are created by humans. For example, the factorial function will almost never be randomly generated. Does this mean that this kind of testing is still useful? Why and how?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
