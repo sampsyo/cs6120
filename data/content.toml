@@ -311,7 +311,7 @@ details = "Vu Le, Mehrdad Afshari, and Zhendong Su. PLDI 2014."
 
 [[classes]]
 title = "Automatic Verification"
-leader = "Alexa & maybe Ryan"
+leader = "Alexa"
 [[classes.readings]]
 name = "Provably correct peephole optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
