@@ -12,11 +12,11 @@ extra.bio = """
 +++
 
 Today we are reading the 2003 paper on Transmeta CMS (Code Morphing
-Software). The CMS layer ran x86 programs on the Transmeta Corporation's Crusoe
-microprocessor, which had an internal architecture that was much simpler than an
-x86. While much of the terminology in the paper is non-standard, I hope it was
-clear that CMS is a just-in-time (JIT) compiler for x86 targeting Crusoe's
-internal instruction set architecture (ISA).
+Software<sup>TM</sup>). The CMS layer ran x86 programs on the Transmeta
+Corporation's Crusoe microprocessor, which had an internal architecture that was
+much simpler than an x86. While much of the terminology in the paper is
+non-standard, I hope it was clear that CMS is a just-in-time (JIT) compiler for
+x86 targeting Crusoe's internal instruction set architecture (ISA).
 
 ## Why a JIT?
 How and when the computer industry settled on (for?) the x86 instruction set
@@ -47,7 +47,7 @@ general-purpose registers and 32 floating-point registers, which is more than
 the x86. In a VLIW instruction set like Crusoe's, each instruction is really
 several smaller instructions which are issued in parallel. In the terminology of
 the paper the large instructions are "molecules" composed of 2 or 4 "atoms".
-The internal ISA avoids handling pipeline stalls--instead it expects the CMS
+The internal ISA avoids handling pipeline stalls---instead it expects the CMS
 compiler to generate safe code by separating conflicting operations.
 
 The hardware supports deoptimization by shadowing state and exposing `commit`
@@ -78,7 +78,7 @@ division by zero).
 When Tcached code hits an exception, the CMS issues a rollback instruction to
 restore architectural state to a previous checkpoint and tries interpreting the
 region instead. If the exception goes away, CMS assumes it was due to
-reordering. Otherwise it is a genuine x86 instruction and gets propogated up to
+reordering. Otherwise it is a genuine x86 exception and gets propogated up to
 the program.
 
 Interrupts work similarly to exceptions, but CMS does not try retranslating the
@@ -86,15 +86,16 @@ region in which the interrupt occurs.
 
 ### Reordering constraints
 Consider a program that writes a 1 to address `x` and then reads from address
-`y`. If these instructions are reordered and `x = y`, then the resulting
-compiled program will not be correct. Similarly, if `x` and `y` are backed by
-a memory-mapped I/O device, the compiled program would have different I/O
-behavior than the original program.
+`y`. If these two pointers alias, it is unsafe to reorder the read to run before
+the write. Similarly, if `x` and `y` are backed by a memory-mapped I/O device,
+reordering the operations would be unsafe because it would cause the program's
+I/O behavior to change.
 
-The CMS turns these potential issues into faults and handles them like
-exceptions. Reorderd instructions are tagged to let the processor know they were
-reordered. Special "alias hardware" does lightweight alias tracking at run time
-and faults if there may be aliasing between two reordered operations.
+The CMS speculatively optimizes with reordering and handles these potential
+issues by turning them into faults, which trigger deoptimization before anything
+bad can happen. Reorderd instructions are tagged to let the processor know they
+were reordered. Special "alias hardware" does lightweight alias tracking at run
+time and faults if there may be aliasing between two reordered operations.
 Reordered operations that access IO address space also fault. The offending code
 region is then recompiled without the reorderings.
 
