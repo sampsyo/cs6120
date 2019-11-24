@@ -98,7 +98,7 @@ To generate programs, first Csmith generates types that can be used later during
     - For productions that require a *target* (e.g., a variable), Csmith can randomly decide to generate a new target or use an existing one.
     - The same goes for productions requiring a type.
 2. When choosing a nonterminal production, Csmith will recursively choose productions given the appropriate context. For example, if a function call production is chosen, then expressions for the parameters must be generated.
-3. Csmith implements an interprocedural pointer analysis, which needs to keep track of "points-to facts" about the program. Csmith keeps the set of points-to facts up do date while it generates programs. TODO: Add a little bit of detail. A more detailed explanation can be found on [github](https://github.com/csmith-project/csmith/blob/master/doc/pa.txt).
+3. Csmith implements an interprocedural pointer analysis, which needs to keep track of "points-to facts" about the program. Csmith keeps the set of points-to facts up do date while it generates programs. A more detailed explanation can be found on [github](https://github.com/csmith-project/csmith/blob/master/doc/pa.txt).
 4. Csmith uses a set of *saftey checks* to make sure the newly generated bit of code is well formed, following design goal #1. If a safety check fails, the changes are undone and we try again.
 
 <img src="program-generation.png" style="width: 70%">
