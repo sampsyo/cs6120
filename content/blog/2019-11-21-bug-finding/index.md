@@ -187,7 +187,7 @@ void invalidDereference(int *p) {
 
 *Discussion Question:* What could be the solution here?*
 
-One way is to force a pointer, which points to a function-scoped variable, to never outlive the function; however, this is too restrictive. Csmith instead chooses to do pointer analysis that is flow sensitive, field sensitive, context sensitive, path insensitive, and array-element insensitive. 
+One way is to force a pointer, which points to a function-scoped variable, to never outlive the function; however, this is too restrictive. Csmith instead chooses to do pointer analysis that is flow sensitive, field sensitive, context sensitive, path insensitive, and array-element insensitive. It maintains points-to sets that contain explicit locations (including null and out of scope element) that may be referenced and checks before each deference.
 
 ### Effect Safety
 
@@ -251,7 +251,7 @@ There are roughly three kinds of compiler targets:
 
 | Targets               | `int` bit length | `long` bit length |
 | --------------------- | ---------------- | ----------------- |
-| x86-64                | 32               | 64                |
+| x86-64 (ARMv8)        | 32               | 64                |
 | x86, ARM, and PowerPC | 32               | 32                |
 | MSP430 and AVR        | 16               | 16                |
 
@@ -280,15 +280,15 @@ There are several choices made because of the target:
 
 ### Opportunistic Bug Finding
 
-The Csmith designers tested 11 compilers and reports the errors to the developers. The commercial compiler developers did not care, while the GCC and LLVM teams responded quickly. By the time the paper is finalized, 79 GCC bugs and 202 LLVM bugs (2% of all LLVM bug reports) are reported and most of them are fixed. CompCert is such a good compiler that the under-development version of CompCert is the only compiler Csmith cannot find wrong-code errors after 6 CPU-years of testing.
+The Csmith designers tested 11 compilers and reports the errors to the developers. The commercial compiler developers did not care, while the GCC and LLVM teams responded quickly. By the time the paper is finalized, 79 GCC bugs and 202 LLVM bugs (2% of all LLVM bug reports) are reported and most of them are fixed. CompCert is such a good compiler that the under-development version of CompCert is the only compiler Csmith finds only 2 wrong-code errors after 6 CPU-years of testing.
 
 ### Bug Types
 
 Before we move on, I would like to introduce bug types for understanding the experiment results:
 
-1. A *crash error* is one that crashes the compiler during compilation.
-2. A *wrong error* is one that crashes the program during run-time.
-3. A *slient wrong error* is a wrong error that does not produce a compiler warning during compilation.
+1. A *crash error* is one that crashes the compiler during compilation or exits with non-zero termination code.
+2. A *wrong-code error* is one that during run-time, a program produces the wrong results, crashes or abnormal termination code, or never terminates.
+3. A *silent wrong-code error* is a wrong error that does not produce a compiler warning during compilation.
 4. An *assertion failure* is an LLVM internal consistency check failure.
 5. An *internal compiler failure* is a GCC internal consistency check failure.
 
@@ -303,6 +303,7 @@ The following figure shows the compilation and execution results of LLVM 1.9–2
 The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate to achieve that goal becomes a question. When reporting the error, the authors preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and runtime trade-off given the same runtime. 
 
 *Discussion Questions:*
+
 1. Is there a big benefit in using small vs. large programs as tests?
 2. Most tests we write are relatively small; are there bugs that can only be caught with really large programs?
 3. How small would our program space need to be in order to "exhaustively" search for bugs?
@@ -311,7 +312,15 @@ The goal of designing Csmith is to find many defects quickly, and to what size t
 
 ### Bug-Finding Performance Compared to Other Tools
 
-Finally, there is also a performance test of Csmith against other bug finding tools. Given the same time of bug finding, Csmith is much more efficient than existing testing tools.
+Finally, there is also a performance test of Csmith against other bug finding tools, listed in the following table. 
+
+| Tools                             | Description                                                  |
+| --------------------------------- | ------------------------------------------------------------ |
+| Randprog (Turner 2005, Eide 2008) | Csmith forked from it. </br> No complex control flow and data structures such as pointers, arrays, and structs. |
+| DDT (McKeeman 1998)               | The first to propose differential checking and undefined behavior (but only a small set). </br> More expressive (can generate more legal program). |
+| Quest (Lindig 2007)               | Self-checking, not differential checking. </br> Less expressive. |
+
+Given the same time of bug finding, Csmith is much more efficient than existing testing tools.
 
 <img src="other-tool.jpg" style="width: 60%">
 
