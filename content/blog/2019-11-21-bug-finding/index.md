@@ -241,7 +241,7 @@ Csmith performs checking at each newly generated line except for loops. Loops ar
 
 ### Allow Implementation-defined Behavior
 
-Implementation-defined behavior is equivalent to [unspecified behavior](https://en.wikipedia.org/wiki/Unspecified_behavior), which may vary on different implementations of a programming language. Csmith designers believe it is unrealistic to "retain a single interpretation across all possible choices of implementation-defined behaviors". They allow Csmith to give different outputs when compilers have implementation-defined behavior of
+Implementation-defined behavior is equivalent to [unspecified behavior](https://en.wikipedia.org/wiki/Unspecified_behavior), which may vary on different implementations of a programming language. Csmith designers believe it is unrealistic to "retain a single interpretation across all possible choices of implementation-defined behaviors". They allow Csmith to give different outputs when compilers have implementation-defined behavior of:
 
 1. the widths and representations of integers.
 2. behavior when casting to a signed integer type when the value cannot be represented in an object of the target type.
@@ -300,7 +300,7 @@ The following figure shows the compilation and execution results of LLVM 1.9–2
 
 ### Bug-Finding Performance as a Function of Test-Case Size
 
-The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate to achieve that goal becomes a question. When reporting the error, the authors preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and run-time trade-off given the same run time. 
+The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate to achieve that goal becomes a question. When reporting the error, the authors preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and runtime trade-off given the same runtime. 
 
 *Discussion Questions:*
 1. Is there a big benefit in using small vs. large programs as tests?
