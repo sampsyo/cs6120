@@ -28,7 +28,7 @@ is equivalent to
 ```
 x < c2
 ```
-when `c1` and `c2` are constants and `c1 < c2`. However, Csmith found an example in LLVM where `(x == 0) || (x < -3)` was transformed to `(x < -3)`, even though it's not the case that `0 < -3**. The issue was that LLVM did an unsigned comparison, so the transformation was seemingly safe.
+when `c1` and `c2` are constants and `c1 < c2`. However, Csmith found an example in LLVM where `(x == 0) || (x < -3)` was transformed to `(x < -3)`, even though it's not the case that `0 < -3`. The issue was that LLVM did an unsigned comparison, so the transformation was seemingly safe.
 
 
 *Wrong Analysis:*
@@ -44,7 +44,22 @@ when `c1` and `c2` are constants and `c1 < c2`. However, Csmith found an example
 9:      return g[0];
 10: }
 ```
-Here, GCC evaluated this program to 1 instead of 0. The reason is because `q` was accidentally marked as read only, meaning `p` and `q` can't alias (even though they really do). Thus, line 7 was removed by dead store elimination.
+Here, GCC evaluated this program to 1 instead of 0. The reason is because `q` was accidentally marked as read only, meaning `p` and `q` can't alias (even though they really do). Thus, line 7 looks like dead code because line 8 simply overwrites `*p*`; this is only safe when `p` and `q` don't alias. So line 7 was removed by dead store elimination.
+
+*Wrong Analysis:*
+```c++
+1: void foo(void) {
+2:   int x;
+3:   for (x = 0; x < 5; x++) {
+4:     if (x) continue;
+5:     if (x) break;
+6:   }
+7:   printf("%d", x);
+8: }
+```
+Compiling with LLVM caused this program to print `1` instead of `5`. A loop optimization called "scalar evolution analysis" evaluates loop properties like induction variables and maximum number of iterations. The optimization saw line 5 and incorrectly determined that the loop runs once, meaning `x` must evaluate to `1`.
+
+I find this kind of program interesting because very few programmers in practice would end up writing a function that uses a continue and a break guarded by the same condition. However, when testing optimizations that computes properties of programs, it seems reasonable to test code that never actually runs.
 
 ## Design Goals
 The authors provide two design goals for Csmith:
@@ -265,6 +280,11 @@ The following figure shows the compilation and execution results of LLVM 1.9–2
 ### Bug-Finding Performance as a Function of Test-Case Size
 
 The goal of designing Csmith is to find many defects quickly, and to what size the program should Csmith generate to achieve that goal becomes a question. When reporting the error, we preferred smaller programs over larger one because they are easier to debug and report. The figure below shows the experiment performed to learn the error number and runtime tradeoff given the same run-time. 
+
+*Discussion Questions:*
+1. Is there a big benefit in using small vs. large programs as tests?
+2. Most tests we write are relatively small; are there bugs that can only be caught with really large programs?
+3. How small would our program space need to be in order to "exhaustively" search for bugs?
 
 <img src="size_error.jpg" style="width: 60%">
 
