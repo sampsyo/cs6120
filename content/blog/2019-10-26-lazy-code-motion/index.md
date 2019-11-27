@@ -175,9 +175,8 @@ instructions. Many of the programs in the `examples` and `test` directories are
 either a single basic block or include no computations, so I excluded them from
 this evaluation because the optimization doesn't do anything to them.
 
-|-----------------------------|----------------|-------------------------|---------------|------------------------|
 |program                      |ops (before lcm)|computations (before lcm)|ops (after lcm)|computations (after lcm)|
-|-----------------------------|----------------|-------------------------|---------------|------------------------|
+|:----------------------------|---------------:|------------------------:|--------------:|-----------------------:|
 |test/lcm/dont-hoist-thru-loop|               8|                        1|             11|                       1|
 |test/lcm/two-blocks          |               5|                        1|              8|                       1|
 |test/lcm/hoist-thru-loop     |             412|                      303|            617|                     203|
