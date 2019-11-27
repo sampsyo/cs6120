@@ -87,24 +87,27 @@ Eager code motion moves variable definitions (computations) further away from
 their uses, which lengthens their live ranges. The resulting register pressure
 can easily claw back any performance gains due to code motion. Rather than put
 computations as early as possible, lazy code motion moves them down to the
-a later program point that still avoids redundant computation. In fact lazy code
-motion provably places computations as late as possible ([1], Theorem 3). The
-wording of this theorem is misleading--the proof grounds out in approximate
-static analysis results.
+a later program point that still avoids redundant computation. In fact, one
+paper proves that lazy code motion places computations "as late as possible"
+([1], Theorem 3), but this wording is misleading outside its original context.
+The algorithm actually uses a static analysis to identify possible safe moves
+and then selects the latest options. This is not always "as late as possible"
+because in general the static analysis will underapproximate the set of possible
+safe moves.
 
 # Implementation
-I implemented lazy code motion in Ocaml. Since the existing Bril infrastructure
-is written in Python, this meant I had to implement Bril JSON parsing and design
-data structures for representing control flow graphs. The open source
-[Ocamlgraph](http://ocamlgraph.lri.fr/index.en.html) library helped with
-this. It includes excellent generic graph data structures and a framework for
+I implemented lazy code motion in OCaml. Since the existing Bril infrastructure
+is written in Python and TypeScript, I had to implement Bril JSON parsing and
+design data structures for representing control flow graphs. The open source
+[OCamlgraph](http://ocamlgraph.lri.fr/index.en.html) library helped with this.
+It includes excellent generic graph data structures and a framework for
 implementing dataflow analyses over graphs.
 
 There were some mismatches between the dataflow analyses presented by Drechsler
-et al. [1] and the Ocamlgraph dataflow framework. The biggest issue was that
-the Ocamlgraph framework made it hard to refer to results of other dataflow
+et al. [1] and the OCamlgraph dataflow framework. The biggest issue was that
+the OCamlgraph framework made it hard to refer to results of other dataflow
 passes in later ones. I worked around this by tagging every basic block in the
-CFG with a map of "attributes" and writing Ocaml functors like `MakeDataflow`
+CFG with a map of "attributes" and writing OCaml functors like `MakeDataflow`
 that require their input module to include an `attr_name` field. When you run
 a dataflow analysis created with `MakeDataflow`, it saves the results of the
 analysis at each basic block into the attributes map under the `attr_name` key.
@@ -133,7 +136,7 @@ module AvailabilityIn =
     end)
 ```
 
-I implemented a CFG printer using the Ocamlgraph Graphviz backend so that
+I implemented a CFG printer using the OCamlgraph Graphviz backend so that
 I could debug the optimization's changes to CFGs directly, rather than staring
 at pretty printed output. Here's the result of running the optimization on
 `tests/lcm/simple`, a nested loop benchmark. There's a way to include the
@@ -159,9 +162,10 @@ inefficient. Lazy code motion places computations on edges of the CFG, which
 means stitching new basic blocks into edges. While they are neccessary in
 general, on many edges an inserted basic block could be safely merged with its
 predecessor or successor block. This could have performance benefits because it
-would reduce the number of jumps. Similarly the pretty-printer for CFGs
-does not omit jumps where fall-through would work--this seems like a minor
-detail but could have performance or code size implications.
+would reduce the number of jumps. Similarly the pretty-printer for CFGs does not
+omit jumps where fall-through would work--this seems like a minor detail but
+could have performance or code size implications. Both of these issues could be
+addressed with a simplification pass to be run after lazy code motion.
 
 # Evaluation
 I instrumented the interpreter to count operations and computations.
@@ -171,27 +175,17 @@ instructions. Many of the programs in the `examples` and `test` directories are
 either a single basic block or include no computations, so I excluded them from
 this evaluation because the optimization doesn't do anything to them.
 
-```
-+-----------------------------------------------------------------------------------------------------------------+
+|-----------------------------|----------------|-------------------------|---------------|------------------------|
 |program                      |ops (before lcm)|computations (before lcm)|ops (after lcm)|computations (after lcm)|
-+-----------------------------------------------------------------------------------------------------------------+
+|-----------------------------|----------------|-------------------------|---------------|------------------------|
 |test/lcm/dont-hoist-thru-loop|               8|                        1|             11|                       1|
-+-----------------------------------------------------------------------------------------------------------------+
 |test/lcm/two-blocks          |               5|                        1|              8|                       1|
-+-----------------------------------------------------------------------------------------------------------------+
 |test/lcm/hoist-thru-loop     |             412|                      303|            617|                     203|
-+-----------------------------------------------------------------------------------------------------------------+
 |test/lcm/simple              |            1217|                      906|           1925|                     605|
-+-----------------------------------------------------------------------------------------------------------------+
 |examples/lvn_test/nonlocal   |               7|                        3|             12|                       3|
-+-----------------------------------------------------------------------------------------------------------------+
 |examples/dom_test/loopcond   |             117|                       46|            165|                      46|
-+-----------------------------------------------------------------------------------------------------------------+
 |examples/df_test/cond        |               9|                        1|             12|                       1|
-+-----------------------------------------------------------------------------------------------------------------+
 |examples/df_test/fact        |              62|                       25|             89|                      25|
-+-----------------------------------------------------------------------------------------------------------------+
-```
 
 Since lazy code motion is designed to avoid redundant computations of
 expressions, the number of computations never increases after optimization. It
