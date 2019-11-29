@@ -64,3 +64,87 @@ How do we
 
 
 ## Evaluation
+
+In order to evaluate EMI&mdash;even in its concrete implementation
+Orion&mdash;several questions must be answered:
+
+1. _What compilers (and compiler configurations) will be tested?_\
+\
+The authors test GCC and LLVM, popular open-source compilers with transparent
+bug tracking. The latest development builds of the compilers were tested on an
+x86_64 machine, targeting both 32- and 64-bit machines. Because the goal is to
+find miscompilations arising from optimizations, the common optimization
+configurations were all tested: `-O0`, `-O1`, `-Os`, `-O2`, `-O3`.
+
+2. _What seed programs will be profiled and pruned?_\
+\
+Some seed programs were taken from the GCC, LLVM, and KCC regression test
+suites. The authors report attempting to use tests from open-source projects,
+but were unable to reduce and interpret the resulting bugs.\
+\
+The bulk of the bugs were found by starting from randomly generated Csmith
+programs, likely because each consisted of, on average, thousands of lines of
+code with a high proportion of unexecuted lines.\
+\
+Though the compiler test programs were verified to be correct by experts,
+there was no one verifying that the random Csmith programs produced correct
+output. Only equivalence (preserved by the pruning process) is necessary to
+ensure EMI variants are able to detect bugs, greatly increasing the pool of seed
+programs.
+
+3. _What parameters will guide the pruning process?_\
+\
+Each seed program had a random number of variants generated, with an expectation
+of eight variants. The two random parameters that control the likelihood of a
+given statement getting pruned were independently reset to a uniform new value
+between 0 and 1 after each pruning.
+
+4. _What will be done with bugs once any have been found?_\
+\
+The authors used a combination of C-reduce and Berkeley Delta to shrink the size
+of EMI programs that generated different outputs. They attempted to reject
+programs that triggered undefined behavior by using compiler warnings, static
+analysis, and CompCert. The final step was reporting the bugs using the
+compilers' transparent bug-tracking tools.
+
+With this context, on to the headline result:
+
+**Orion found 147 confirmed, unique bugs in GCC and LLVM over the course of
+eleven months in 2013.**
+
+Le & al. evaluate their bugs in a twofold way: 1) quantitative description of
+components affected by bugs, and 2) qualitative evaluation of about ten
+generated programs.
+
+#### Quantitative description
+
+A major strength of the evaluation is its integration with the bug reporting
+workflows for GCC and LLVM. While the authors go perhaps too far in asserting,
+"First, most of our reported bugs have been confirmed and fixed by developers,
+illustrating their relevance and importance (as it often takes substantial
+effort to fix a miscompilation)," the fact that 182 of the 195 total reported
+bugs (with 35 of these getting marked duplicate) were confirmed by outside
+experts to really exist is evidence that EMI is a viable bug-finding strategy.
+
+95 of the confirmed bugs were miscompilations, lending credence to the authors'
+initial claim that Orion is able to target miscompilations more easily than
+Csmith alone can. The most bugs were found in the trunks of both GCC and LLVM.
+More bugs were also found in increasing levels of optimization, with the most
+under `-O3`.
+
+It's important to note that these were only the bugs that were found by Orion.
+Because Orion specifically targeted optimization phases, it is understandable
+that GCC Tree Optimization and RTL optimization were the components with the
+most discovered bugs (LLVM developers did not classify the reported bugs). These
+components did not necessarily have more bugs than others, nor were these the
+only possible bugs.
+
+The authors do not make an attempt to evaluate the search space that Orion
+explored in producing these reported bugs. Nor do they explicitly determine the
+proportion of the generated variants that led to identified bugs. They only
+report that they didn't record how many seed programs they started with or how
+many variants they generated ("only millions to tens of millions"). They also do
+not report (and likely did not record) the Csmith configurations or Orion's
+dynamic pruning parameters.
+
+#### Qualitative examples
