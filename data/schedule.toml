@@ -164,6 +164,7 @@ mon = true
 
 [[days]]
 date = "December 4"
+notes = ["Design Review: [MemPass](../blog/mempass/), by Eashan & Sameer"]
 
 [[days]]
 date = "December 6"

@@ -264,7 +264,7 @@ link = "https://dl.acm.org/citation.cfm?id=155109"
 
 [[classes]]
 title = "Spatial Architectures"
-leader = "Sachille & Sean"
+leader = "Sean"
 [[classes.readings]]
 name = "Scaling to the End of Silicon with EDGE Architectures"
 link = "https://ieeexplore.ieee.org/document/1310240"
@@ -311,7 +311,7 @@ details = "Vu Le, Mehrdad Afshari, and Zhendong Su. PLDI 2014."
 
 [[classes]]
 title = "Automatic Verification"
-leader = "Alexa & maybe Ryan"
+leader = "Alexa"
 [[classes.readings]]
 name = "Provably correct peephole optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
@@ -330,7 +330,7 @@ details = "Xavier Leroy. CACM in 2009."
 
 [[classes]]
 title = "WebAssembly"
-leader = "Matthew"
+leader = "TBD"
 [[classes.readings]]
 name = "Bringing the web up to speed with WebAssembly"
 link = "https://dl.acm.org/citation.cfm?id=3062363"
