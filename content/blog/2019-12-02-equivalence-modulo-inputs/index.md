@@ -132,6 +132,10 @@ Csmith alone can. The most bugs were found in the trunks of both GCC and LLVM.
 More bugs were also found in increasing levels of optimization, with the most
 under `-O3`.
 
+The authors also found performance bugs through comparing compilers to each
+other, in a differential testing scenario similar to that used by Csmith. 19 of
+the 147 confirmed bugs were performance issues.
+
 It's important to note that these were only the bugs that were found by Orion.
 Because Orion specifically targeted optimization phases, it is understandable
 that GCC Tree Optimization and RTL optimization were the components with the
@@ -143,8 +147,58 @@ The authors do not make an attempt to evaluate the search space that Orion
 explored in producing these reported bugs. Nor do they explicitly determine the
 proportion of the generated variants that led to identified bugs. They only
 report that they didn't record how many seed programs they started with or how
-many variants they generated ("only millions to tens of millions"). They also do
-not report (and likely did not record) the Csmith configurations or Orion's
-dynamic pruning parameters.
+many variants they generated (merely estimating "millions to tens of millions").
+They also do not report (and likely did not record) the Csmith configurations or
+Orion's dynamic pruning parameters.
 
 #### Qualitative examples
+
+The confirmed bugs are said to span compiler segfaults, internal compiler
+errors, performance problems, and wrong code generation. The authors present and
+interpret a handful of the bugs that were confirmed and fixed by compiler
+developers. We highlight just two of those for a flavor of the diversity. Note
+that the authors only show the reduced code they reported to compiler
+developers; they show neither the non-reduced versions nor the EMI variants.
+
+The following example led to a segfault when compiled with GCC due to a wrong
+offset computation in an optimization pass called "predictive commoning," a form
+of common subexpression elimination:
+
+```c
+int b, f, d[5][2];
+unsigned int c;
+int main() {
+  for (c = 0; c < 2; c++)
+    if (d[b + 3][c] & d[b + 4][c])
+      if (f)
+        break;
+  return 0;
+}
+```
+
+Clang incorrectly vectorized the following code:
+
+```c
+int main() {
+  int a = 1;
+  char b = 0;
+  lbl:
+    a &= 4;
+    b--;
+    if (b) goto lbl;
+  return a;
+}
+```
+
+The remaining examples in the paper cover problems with jump-threading logic,
+global value numbering, inlining, vectorization, and performance. Because the
+authors analyze only a few cherry-picked examples, a question remains: Are these
+eight examples representative of all of the other bugs?
+
+Additionally, the authors claim: "EMI variants generated from existing code, say
+via Orion, are likely programs that people actually write."
+Is this true, especially when random programs are used as seeds?
+Is this even true of the two examples discussed above?
+
+
+
