@@ -161,6 +161,7 @@ event = "Thanksgiving break"
 [[days]]
 date = "December 2"
 mon = true
+notes = ["Design Review: [Path Profiling](../blog/efficient-path-prof/), by Daniel"]
 
 [[days]]
 date = "December 4"
