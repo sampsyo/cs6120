@@ -133,6 +133,99 @@ inputs, gives an efficient procedure for (2).
 
 Le et al realize the promise of Equivalence Modulo Inputs by implementing Orion,
 a bug-finding tool for C compilers.
+Given a seed program and an input set, it generates EMI-variants of the seed
+program and then checks if a compiler configuration is EMI-valid with respect
+to these.
+
+To generate EMI-variants, Orion uses code coverage information provided
+by tools such as `gcov` to modify unexecuted parts of the seed program.
+Intuitively, this procedure generates EMI-variants of the seed program
+since unexecuted statements should not affect the output of the compiled program.
+
+Specifically, Orion probabilistically deletes unexecuted statements of
+seed programs to generate EMI-variants.
+The authors consider other mutation strategies as part of future work,
+but as we'll see in the evaluation section below, the simple strategy of
+deleting statements works well in practice.
+
+Orion's EMI-variant generation algorithm is sketched below in `gen_variant`.
+
+```Python
+def prune_visit(prog, statement, coverage_set):
+  # probabilistically delete unexecuted statement
+  if statement not in coverage_set and flip_coin(statement):
+    prog.delete(statement)
+
+  # otherwise, traverse its children
+  else:
+    for child in statement.children:
+      prune_visit(prog, child, coverage_set)
+
+def gen_variant(prog, coverage_set):
+  emi_variant = clone(prog)
+  for statement in emi_variant:
+    prune_visit(emi_variant, statement, coverage_set)
+
+  return emi_variant
+```
+
+`gen_variant` takes as input a seed program and the coverage set --- the
+set of all statements executed for some input in the input set.
+It clones the program into `emi_variant` and then uses `prune_visit` to
+probabilistically delete unexecuted statements.
+
+With its EMI-variant generation algorithm outlined, we can now sketch
+the algorithm by which Orion validates C compilers.
+
+```Python
+def validate(compiler, prog, input_set):
+  # compile with no optimizations
+  out_prog = compiler.compile(prog, NO_OPTIMIZATION)
+
+  # generate reference output
+  in_out_set = [(i, out_prog.execute(i)) for i in input_set]
+
+  # get coverage info
+  # a statement is considered covered if it was executed
+  # by the program on any input
+  coverage_set = set()
+  for i in input_set:
+    coverage_set = union(coverage_set, coverage(prog, i))
+
+  for i in range(MAX_ITER):
+    emi_variant = gen_variant(prog, coverage_set)
+
+    for config in compiler.configurations:
+      out_emi_variant = compiler.compile(emi_variant, config)
+
+      # check if compiled EMI variant is equivalent over all inputs
+      for i, o in in_out_set:
+        # compiler is not EMI-valid!
+        if out_emi_variant.execute(i) != o:
+          report_bug(compiler, config, prog, emi_variant)
+```
+
+`validate` takes as input a compiler (`compiler`), a seed program (`prog`),
+and an input set (`input_set`).
+First, `validate` compiles `prog` with `compiler` using no optimizations,
+the output of which (`out_prog`) is then used to generate a reference set
+of outputs for `input_set`.
+Next, it uses a code coverage tool (`coverage`) to determine the set of
+executed statements over all inputs in `input_set`.
+In its "main loop," `validate` generates an EMI-variant of `prog` using
+the computed coverage information by calling `gen_variant`.
+For every relevant compiler configuration, it then compiles the EMI-variant
+and runs the output program over all inputs in `input_set` to check that it
+returns the same output as recorded in the reference set.
+If not, we flag the current compiler configuration as having a bug
+(`report_bug`).
+`validate` repeats this main loop for some number of iterations (`MAX_ITER`)
+to find more bugs using different EMI-variants.
+
+The authors note that the implementation effort for Orion is much less
+burdensome than other bug-finding tools such as Csmith:
+whereas Csmith is about 30K-40K lines of C++, Orion is only about 500 lines
+of shell scripts and 1K lines of C++.
 
 
 ## Evaluation
@@ -263,6 +356,28 @@ int main() {
 }
 ```
 
+#### Current statistics
+
+The website for the [EMI project][emi] shows the number of bugs found and fixed
+by tools using the EMI methodology.
+It shows an astronomical number of bugs found in GCC and LLVM,
+and the usefulness of the technique for compilers for other languages
+like Scala.
+
+Compiler    | Bugs reported | Bugs fixed
+------------|---------------|-----------
+GCC/LLVM    | 1,602         | 1,007
+ICC         | 35            | ?
+CompCert    | 31            | 27
+scala/dotty | 42            | 17
+
+
+[emi]: https://web.cs.ucdavis.edu/~su/emi-project/
+
+
+
+## Discussion
+
 The remaining examples in the paper cover problems with jump-threading logic,
 global value numbering, inlining, vectorization, and performance. Because the
 authors analyze only a few cherry-picked examples, a question remains: Are these
@@ -273,5 +388,9 @@ via Orion, are likely programs that people actually write."
 Is this true, especially when random programs are used as seeds?
 Is this even true of the two examples discussed above?
 
+Finally, the authors tout EMI as a general validation technique that can be
+use to differentially test applications such as compilers for other languages.
+Do you think this methodology will be as useful for other applications as it
+is for testing C compilers?
 
 
