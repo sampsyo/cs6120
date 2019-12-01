@@ -96,7 +96,7 @@ Now that we have a formal definition of EMI, how can we use it as a condition
 to check whether a compiler is buggy or not?
 
 > **EMI-validity**. Given an input set $I$, a compiler $C$ is *EMI-valid*
-  relative to $I$ if for any program $P$ and EMI(I)-variant $Q$,
+  relative to $I$ if for any program $P$ and EMI-variant $Q$,
   it is the case that $C(P)(i) = C(Q)(i)$ for all $i$ in input set $I$. 
 
 **If a compiler is not EMI-valid, then we consider it buggy.** 
