@@ -18,7 +18,7 @@ link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
 
-Imagine you, being a clever person who wants her C programs to run faster,
+Imagine you, a clever person who wants her C programs to run faster,
 sat down, thought very hard, and developed a new compiler optimization.
 Say you implement it as a transformation pass in LLVM so that other people
 can take advantage of your cleverness to make their programs run faster as well.
@@ -29,7 +29,7 @@ That is, how do you know that your optimization doesn't change the semantics
 of the input program?
 
 *Equivalence Modulo Inputs* (henceforth EMI), a testing technique introduced
-by Le et al in a [PLDI 2014 paper][paper], allows our compiler hacker
+by Le & al. in a [PLDI 2014 paper][paper], allows our compiler hacker
 above to test her optimization rigorously without much effort.
 EMI is especially effective at finding *miscompilation* bugs,
 wherein compilers produce wrong code, which is much more pernicious than
@@ -49,10 +49,10 @@ multiple systems presumed to be equivalent produce different outputs on the same
 input, then there is a bug in at least one of the systems.
 
 Csmith also differentially tests compilers by generating random test cases,
-and it led to 281 bug reports for GCC and LLVM by the time it was published.
-Whereas EMI compares output from different programs compiled by the same
-compiler, Csmith compares output from multiple compilers on the same input
-program.
+leading to 281 bug reports for GCC and LLVM by the time it was published.
+Whereas Csmith compares output from multiple compilers on the same input
+program, EMI compares output from different programs compiled by the same
+compiler.
 
 Explicitly wanting to avoid Csmith's painstaking approach to restricting random
 program generation with aggressive safety analysis, Le & al. design their
@@ -116,7 +116,7 @@ EMI solves two hard practical problems in differential testing of compilers:
 2. How do we check that the compiler's output programs are "equivalent"?
 
 Using the more stringent condition of semantic equivalence makes solving
-these practical problems hard --- indeed, in the general case (2) is undecidable
+these practical problems hard&mdash;indeed, in the general case (2) is undecidable
 by a [famous result in computability theory][rice].
 But the more relaxed condition of EMI makes these tractable.
 As we'll seen with the implementation of Orion below, using EMI allows us
@@ -131,7 +131,7 @@ inputs, gives an efficient procedure for (2).
 
 ## EMI in Practice: Orion
 
-Le et al realize the promise of Equivalence Modulo Inputs by implementing Orion,
+Le & al. realize the promise of Equivalence Modulo Inputs by implementing Orion,
 a bug-finding tool for C compilers.
 Given a seed program and an input set, it generates EMI-variants of the seed
 program and then checks if a compiler configuration is EMI-valid with respect
@@ -169,7 +169,7 @@ def gen_variant(prog, coverage_set):
   return emi_variant
 ```
 
-`gen_variant` takes as input a seed program and the coverage set --- the
+`gen_variant` takes as input a seed program and the coverage set&mdash;the
 set of all statements executed for some input in the input set.
 It clones the program into `emi_variant` and then uses `prune_visit` to
 probabilistically delete unexecuted statements.
@@ -266,10 +266,10 @@ between 0 and 1 after each pruning.
 
 4. _What will be done with bugs once any have been found?_\
 \
-The authors used a combination of C-reduce and Berkeley Delta to shrink the size
+The authors used a combination of [C-reduce][] and [Berkeley Delta][] to shrink the size
 of EMI programs that generated different outputs. They attempted to reject
 programs that triggered undefined behavior by using compiler warnings, static
-analysis, and CompCert. The final step was reporting the bugs using the
+analysis, and [CompCert][]. The final step was reporting the bugs using the
 compilers' transparent bug-tracking tools.
 
 With this context, on to the headline result:
@@ -277,9 +277,13 @@ With this context, on to the headline result:
 **Orion found 147 confirmed, unique bugs in GCC and LLVM over the course of
 eleven months in 2013.**
 
-Le & al. evaluate their bugs in a twofold way: 1) quantitative description of
+Le & al. evaluate these bugs in a twofold way: 1) quantitative description of
 components affected by bugs, and 2) qualitative evaluation of about ten
 generated programs.
+
+[C-reduce]: https://dl.acm.org/citation.cfm?id=2254104
+[Berkeley Delta]: http://delta.tigris.org/
+[CompCert]: http://compcert.inria.fr
 
 #### Quantitative description
 
@@ -293,9 +297,9 @@ experts to really exist is evidence that EMI is a viable bug-finding strategy.
 
 95 of the confirmed bugs were miscompilations, lending credence to the authors'
 initial claim that Orion is able to target miscompilations more easily than
-Csmith alone can. The most bugs were found in the trunks of both GCC and LLVM.
-More bugs were also found in increasing levels of optimization, with the most
-under `-O3`.
+Csmith alone can. The most bugs were found in the development trunks of both GCC
+and LLVM. More bugs were also found in increasing levels of optimization, with
+the most under `-O3`.
 
 The authors also found performance bugs through comparing compilers to each
 other, in a differential testing scenario similar to that used by Csmith. 19 of
