@@ -174,4 +174,5 @@ notes = ["Design Review: [Path Profiling](../blog/efficient-path-prof/), by Dani
 
 [[days]]
 date = "December 9"
+notes = ["Design Review: Partial Redundancy Elimination, by Siqiu"]
 mon = true
