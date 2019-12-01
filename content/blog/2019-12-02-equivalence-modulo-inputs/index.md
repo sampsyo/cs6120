@@ -95,7 +95,7 @@ to check whether a compiler is buggy or not?
 
 > **EMI-validity**. Given an input set *I*, a compiler *C* is *EMI-valid*
   relative to *I* if for any program *P* and EMI(I)-variant *Q*,
-  it is the case that `C(P)(i) = C(Q)(i)` for all *i* in input set I. 
+  it is the case that `C(P)(i) = C(Q)(i)` for all *i* in input set *I*. 
 
 **If a compiler is not EMI-valid, then we consider it buggy.** 
 But the inverse is not true: if a compiler *is* EMI-valid, it can
@@ -396,5 +396,4 @@ Finally, the authors tout EMI as a general validation technique that can be
 use to differentially test applications such as compilers for other languages.
 Do you think this methodology will be as useful for other applications as it
 is for testing C compilers?
-
 
