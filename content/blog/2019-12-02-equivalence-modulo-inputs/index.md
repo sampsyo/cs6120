@@ -2,8 +2,9 @@
 title = "Compiler Validation via Equivalence Modulo Inputs"
 [extra]
 bio = """
-  [Rolph Recto](rolph-recto.github.io) is a third-year graduate student studying
-  the intersection of programming languages, security, and distributed systems.
+  [Rolph Recto](https://rolph-recto.github.io) is a third-year graduate student
+  studying the intersection of programming languages, security, and distributed
+  systems.
   [Gregory Yauney](https://www.cs.cornell.edu/~gyauney)
   is a second-year student working on machine learning and
   digital humanities.
@@ -11,7 +12,7 @@ bio = """
 latex = true
 [[extra.authors]]
 name = "Rolph Recto"
-link = "rolph-recto.github.io"
+link = "https://rolph-recto.github.io"
 [[extra.authors]]
 name = "Gregory Yauney"
 link = "https://www.cs.cornell.edu/~gyauney"
@@ -35,8 +36,8 @@ EMI is especially effective at finding *miscompilation* bugs,
 wherein compilers produce wrong code, which is much more pernicious than
 *compiler crashes*, bugs where the compiler terminates abnormally.
 This allows EMI to test the optimization phase of compilers much more rigorously
-than prior work such as [Csmith][], which mostly finds compiler crashes and not
-miscompilations.
+than prior work such as [Csmith][], which finds fewer miscompilations than
+compiler crashes.
 
 [paper]: https://dl.acm.org/citation.cfm?id=2594334
 [Csmith]: https://dl.acm.org/citation.cfm?id=1993532
@@ -243,7 +244,7 @@ configurations were all tested: `-O0`, `-O1`, `-Os`, `-O2`, `-O3`.
 
 2. _What seed programs will be profiled and pruned?_\
 \
-Some seed programs were taken from the GCC, LLVM, and KCC regression test
+Some seed programs were taken from the GCC, LLVM, and [KCC][] regression test
 suites. The authors report attempting to use tests from open-source projects,
 but were unable to reduce and interpret the resulting bugs.\
 \
@@ -281,6 +282,7 @@ Le & al. evaluate these bugs in a twofold way: 1) quantitative description of
 components affected by bugs, and 2) qualitative evaluation of about ten
 generated programs.
 
+[KCC]: https://github.com/kframework/c-semantics
 [C-reduce]: https://dl.acm.org/citation.cfm?id=2254104
 [Berkeley Delta]: http://delta.tigris.org/
 [CompCert]: http://compcert.inria.fr
@@ -391,6 +393,12 @@ Additionally, the authors claim: "EMI variants generated from existing code, say
 via Orion, are likely programs that people actually write."
 Is this true, especially when random programs are used as seeds?
 Is this even true of the two examples discussed above?
+
+The results indicate that the kind of seed programs heavily influence the number
+of bugs that are discovered. Randomly-generated Csmith seed programs revealed
+far more bugs than those taken from compiler test suites and open-source project
+tests. This suggests that EMI should be used in conjunction with an existing
+fuzzer. Do other fuzzers provide amenable seed programs?
 
 Finally, the authors tout EMI as a general validation technique that can be
 use to differentially test applications such as compilers for other languages.
