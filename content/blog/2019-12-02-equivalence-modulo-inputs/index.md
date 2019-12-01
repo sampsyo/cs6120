@@ -72,38 +72,39 @@ Let us now formally define EMI and show how we can use it as a condition
 to determine whether a compiler is buggy.
 
 > **Equivalence modulo inputs (EMI)**.
-  Given an input set *I* and a program *P*, a program *Q* is an EMI-variant of
-  *P* (read: *P* and *Q* are EMI) relative to *I* if *P* and *Q* have
-  the same denotations ("mean the same thing") over all inputs in *I*.
-  Formally, for all *i* in *I*, `⟦P⟧(i) = ⟦Q⟧(i)`.
+  Given an input set $I$ and a program $P$, a program $Q$ is an EMI-variant of
+  $P$ (read: $P$ and $Q$ are EMI) relative to $I$ if $P$ and $Q$ have
+  the same denotations ("mean the same thing") over all inputs in $I$.
+  Formally, for all $i$ in $I$,
+  $\llbracket P \rrbracket(i) = \llbracket Q \rrbracket (i)$.
 
 
 It is immediately clear that EMI is a relaxation of semantic equivalence,
-wherein *P* and *Q* have the same denotations for all possible inputs.
+wherein $P$ and $Q$ have the same denotations for all possible inputs.
 
 For example, the following two programs are semantically equivalent
 (and thus EMI for any input set):
 
-> `\x. x + x` and `\x. 2 * x`
+> $\lambda x. \(x + x\)$ and $\lambda x. \(2 * x\)$
 
 The following two programs are *not* semantically equivalent yet EMI over
-input set `{0}`:
+input set {0}:
 
-> `\x. x` and `\x. 0`
+> $\lambda x. x$ and $\lambda x. 0$
 
 Now that we have a formal definition of EMI, how can we use it as a condition
 to check whether a compiler is buggy or not?
 
-> **EMI-validity**. Given an input set *I*, a compiler *C* is *EMI-valid*
-  relative to *I* if for any program *P* and EMI(I)-variant *Q*,
-  it is the case that `C(P)(i) = C(Q)(i)` for all *i* in input set *I*. 
+> **EMI-validity**. Given an input set $I$, a compiler $C$ is *EMI-valid*
+  relative to $I$ if for any program $P$ and EMI(I)-variant $Q$,
+  it is the case that $C(P)(i) = C(Q)(i)$ for all $i$ in input set $I$. 
 
 **If a compiler is not EMI-valid, then we consider it buggy.** 
 But the inverse is not true: if a compiler *is* EMI-valid, it can
 still be buggy!
 Consider the degenerate compiler that maps all source programs to the same
 target program.
-The compiler is EMI-valid for any input set *I*, but it is obviously buggy.
+The compiler is EMI-valid for any input set, but it is obviously buggy.
 Thus EMI-validity is a conservative overapproximation for compiler correctness.
 
 Why is this useful? Couldn't we just define validity for a compiler over
@@ -117,10 +118,10 @@ EMI solves two hard practical problems in differential testing of compilers:
 2. How do we check that the compiler's output programs are "equivalent"?
 
 Using the more stringent condition of semantic equivalence makes solving
-these practical problems hard&mdash;indeed, in the general case (2) is undecidable
-by a [famous result in computability theory][rice].
+these practical problems hard&mdash;indeed, in the general case
+(2) is undecidable by a [famous result in computability theory][rice].
 But the more relaxed condition of EMI makes these tractable.
-As we'll seen with the implementation of Orion below, using EMI allows us
+As we'll seen with the implementation of Orion below, there is
 an efficient procedure for generating EMI-variants from seed programs,
 thus solving (1).
 We determine that output programs are "equivalent" if they are EMI,
@@ -202,8 +203,9 @@ def validate(compiler, prog, input_set):
       # check if compiled EMI variant is equivalent over all inputs
       for i, o in in_out_set:
         # compiler is not EMI-valid!
-        if out_emi_variant.execute(i) != o:
-          report_bug(compiler, config, prog, emi_variant)
+        emi_o = out_emi_variant.execute(i)
+        if emi_ o != o:
+          report_bug(compiler, config, prog, emi_variant, i, o, emi_o)
 ```
 
 `validate` takes as input a compiler (`compiler`), a seed program (`prog`),
