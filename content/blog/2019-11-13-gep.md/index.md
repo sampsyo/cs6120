@@ -11,7 +11,7 @@ extra.bio = """
 LLVM IR code is not generally memory safe.
 While certain *obviously bad* behaviors are
 disallowed, it is not hard to write code that
-may execute out-of-bounds memory accesses at runtime.
+may execute out-of-bounds memory accesses at run time.
 
 For instance, the size of an
 array may be statically known,
@@ -26,10 +26,10 @@ int foo(int x) {
 ```
 In this project we seek to improve the memory
 safety of LLVM programs by inserting dynamic bounds
-checks at runtime that cause the program to stop
+checks at run time that cause the program to stop
 executing rather than violate memory safety.
 After running our compilation pass the aforementioned
-code would have the following runtime behavior:
+code would have the following run-time behavior:
 
 ```C
 int foo(int x) {
@@ -81,10 +81,11 @@ executes a GEP whose result will then later be the argument of a
 load or store operation.
 
 Our approach in this implementation is to prevent the execution of
-any runtime GEP instructions that might lead to
+any run-time GEP instructions that might lead to
 illegal memory accesses.
 *If a program can never acquire an out-of-bounds pointer,
-it can't violate memory safety.*
+it can't violate memory safety.* As we discuss [later](#soundness-and-completeness), this is not really a sufficient condition for memory safety in LLVM IR,
+but it does cover a large class of problems.
 
 ### Making GEP Safe(r)
 
@@ -130,18 +131,17 @@ integer array of size 10, *and* that `x` is a valid index for such an array.
 
 In general our algorithm for modifying LLVM code is this:
 
-```
-1) Initialize the current type to be the type of the first operand.
-2) Initialize current operand to the first index operand.
-3) If possible, insert instructions to check if current operand is in bounds based on current type.
-4) Set current type to the next element type (e.g. if current type is *int[] the next type is int[]).
-5) If there are no more index operands, exit.
+1. Initialize the current type to be the type of the first operand.
+2. Initialize current operand to the first index operand.
+3. If possible, insert instructions to check if current operand is in bounds based on current type.
+4. Set current type to the next element type (e.g. if current type is *int[] the next type is int[]).
+5. If there are no more index operands, exit. 
    Else, set the current operand to the next in the operand list and goto (3).
-```
+
 
 ### GEP Checking: A Walkthrough
 
-In this section we'll walkthrough the above example in excruciating detail.
+In this section we'll walk through the above example in excruciating detail.
 Feel free to skip ahead to [the next section](#pointer-sizes-and-tracking-allocations)
 if you're an expert in how `getelementptr` works and/or the above algorithm makes intuitive sense.
 
@@ -155,7 +155,7 @@ should get us the type contained by the outer one.
 | t*   | t                 | For pointers, the next type is the type being pointed to |
 | [ size x t ] | t          | For arrays, the next type is the array element type |
 | < size x t > | t | Vectors, like arrays, have an element type |
-| struct { f1, f2,...,fn } | fi | i is the index value, LLVM requires this is a compile time constant |
+| struct { f1, f2,...,fn } | fi | i is the index value; LLVM requires this is a compile time constant |
 
 
 Checking the instruction: 
@@ -187,8 +187,7 @@ CurrentOp = <none>;
 ## Pointer Sizes and Tracking Allocations
 
 In the above examples, we could always tell how big our memory allocations
-were since they were allocated with static sizes. `int tmp[10]` comprises of
-two static allocations: 1) a single pointer-sized memory cell (to contain the local variable `tmp`); 2) a memory cell
+were since they were allocated with static sizes. `int tmp[10]` comprises two static allocations: 1) a single pointer-sized memory cell (to contain the local variable `tmp`); 2) a memory cell
 containing 10 integers (the memory pointed to by `tmp`).
 
 In many cases, the sizes of arrays may be difficult or impossible to determine at compile
@@ -213,7 +212,7 @@ sizes of local allocations we can infer that the above code is safe if and only 
 0 <= y < x //we'll assume x > 0 here
 ```
 
-In our implementation, we simply keep around a map from allocaitons to their sizes.
+In our implementation, we simply keep around a map from allocations to their sizes.
 Additionally, we track heap allocations by scanning for function calls to `malloc`.
 This allows us to calculate maximum pointer index values for GEP instructions
 where the types are unsized. Unfortunately, this is rather imprecise since
@@ -232,6 +231,9 @@ This seemed both out of scope for our current project
 and a potentially questionable design decision. Should
 a compiler pass be modifying the signatures of
 potentially every function?
+
+Alternatively, one could implement a much more heavyweight
+dynamic checker in the style of [Valgrind](http://valgrind.org/) or [this other CS 6120 project](../mempass). These checkers keep track of all allocated pointers and aliases in a large run-time datastructure to ensure that no dereference is illegal. This is a different approach, focused less on static analysis and more on total safety but comes with much larger run-time overheads in both space and time.
 
 Consequently, our pass is unable to improve the
 memory safety of this function:
@@ -270,7 +272,7 @@ In the above code, a GEP that uses `%1` can safely index into elements 0 to 9.
 However, a GEP that uses `%2` as the base can safely index into elements 0 to 31.
 For any bitcast instruction that casts an allocation of known size, we convert
 and track the size of the new value, using integer multiplication and division
-to soundly approximate the maximum safe index. For typical bitcasts (e.g. `char` to `int`)
+to soundly approximate the maximum safe index. For typical bitcasts (e.g., `char` to `int`)
 this will not lose precision; however LLVM does have arbitrary precision integers,
 which could cause this estimate of allocation size to be an underestimate.
 
@@ -283,16 +285,17 @@ In our case, soundness would imply that any LLVM program which uses no
 "type unsafe" features and is compiled with our pass 
 executes *no GEP instructions which would generate out-of-bounds pointers*.
 Completeness, on the other hand, would imply that we can compile
-all programs and allow them to execute.
+and execute *all programs that never execute out-of-bounds accesses*.
+In other words, completeness ensures that all safe programs should still be executable after our instrumentation.
 
 Typically, you cannot achieve both soundness and completeness simultaneously;
-although, the use of code transformation to insert runtime checks does make
+although, the use of code transformation to insert run-time checks does make
 this tractable for some problems. Our solution achieves only completeness and
 not soundness; we allow all programs to execute by skipping checks where we
-cannot determine the legal index bounds. A simple *sound alternative* would be to
-simply reject any programs that fit the above criteria; by placing an unconditional
-exit in front of any such GEP instruction we could ensure safety but would prevent
-some safe programs from executing.
+cannot determine the legal index bounds.
+A simple *sound alternative* would be to simply reject any programs that fit the above criteria;
+by placing an unconditional exit in front of any such GEP instruction
+we could ensure safety but would prevent some safe programs from executing.
 
 ### A Note on Soundness
 
@@ -333,7 +336,7 @@ is what we mean by not using "type unsafe" features.
 To evaluate the utility of our pass,
 we took a selection of [PARSEC](https://parsec.cs.princeton.edu/)
 benchmarks and considered both: 1) How often we failed to determine the
-legal bounds for a pointer; and 2) How much runtime overhead we inccured
+legal bounds for a pointer; and 2) How much run-time overhead we inccured
 with our dynamic checks. Furthermore, we ran a number of microbenchmarks
 to ensure that our pass was properly instrumenting code in the absence
 of the soundness problems that we mentioned above.
@@ -362,7 +365,7 @@ hot loop and omit initialization and clean up times.
 In all of the PARSEC programs we benchmarked, we failed to
 instrument *most* of the unsafe memory acceses. As you can see by
 the graph below, in the best case (Fluidanimate) we managed to instrument 30%
-of GEP instructions, while in the worst we added *no runtime checks* (Blackscholes).
+of GEP instructions, while in the worst we added *no run-time checks* (Blackscholes).
 
 <img src="precision.png"/>
 
@@ -404,7 +407,7 @@ The above allocation translates to the following LLVM IR:
 store i8* %46, i8** bitcast (float** @prices to i8**), align 8
 ```
 
-Our analysis determined that the runtime size of the memory pointed to
+Our analysis determined that the run-time size of the memory pointed to
 by `%46` was given by the value `%45`.
 However, `%46` is not used as the argument to any GEP instruction, instead
 later operations use a `load` to retrieve the array pointer from `prices`.
@@ -425,11 +428,11 @@ via an extra global variable).
 
 ### Evaluation: Overhead
 
-We measured runtime overhead in terms of wall clock time purely because it
-was the simplest thing to instrument. In the following graph we report the
+We measured run-time overhead in terms of wall clock time purely because it
+was the simplest thing to instrument and probably the most relevant bottom-line metric when inserting dynamic checks. In the following graph we report the
 average slowdown caused by our instrumentation (lower is better). At the end
 of this section is a graph reporting our base results (rather than the ratio)
-which reports the mean runtime for both configurations. Error bars on that
+which reports the mean execution time for both configurations. Error bars on that
 graph represent one standard deviation.
 
 <img src="overhead.png"/>
@@ -442,13 +445,13 @@ this to be a likely cause, but it does warrant further examination.
 
 
 Interestingly, the instrumented Canneal and Streamcluster benchmarks run ever so slightly
-faster, however this result is within the standard deviation and could
+faster; however, this result is within the standard deviation and could
 also be influenced by effects covered in the [first blog for this course](../measurement).
 Without running any real statistics, it seems like the instrumentation only had a meaningful
 impact on the Fluidanimate benchmark. Somewhat unsurprisingly, this is also the benchmark
 for which we managed to instrument the most GEP instructions.
 
-Intuitively, our instrumentation *should* add runtime overhead which scales with
+Intuitively, our instrumentation *should* add run-time overhead which scales with
 the number of GEPs and the number of times each of those GEPs are executed. It would
 have been interesting to determine how "hot" each GEP instruction was and drill
 down into where the overhead was coming from. That would have involved much
