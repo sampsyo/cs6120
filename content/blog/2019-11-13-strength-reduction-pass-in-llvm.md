@@ -53,7 +53,7 @@ For example, the basic induction variable `i` in the example code will have an e
 - If we find an assignment of form `k = b * j` where `j` is an induction variable with triple `(i, c, d)`, then add `k => (i, b * c, d)` to the map;
 - If we find an assignment of form `k = j + b` where `j` is an induction variable with triple `(i, c, d)`, then add `k => (i, c, d + b)` to the map. 
 
-The algorithm runs until convergence, i.e., it will stop until the size of the induction variable set does not increase any more. For our simple example, in the first iteration it will add the basic induction variable `i => (i, 1, 0)` into the map, while in the second iteration it will add `j => (i, 3, 2)` into the map. The algorithm will terminate in the third iteration. 
+The algorithm runs until convergence, i.e., it will stop when the size of the induction variable set does not increase any more. For our simple example, in the first iteration it will add the basic induction variable `i => (i, 1, 0)` into the map, while in the second iteration it will add `j => (i, 3, 2)` into the map. The algorithm will terminate in the third iteration. 
 
 ##### Update the Program
 
@@ -141,7 +141,7 @@ We then insert update instructions into the loop body, and set the output as an 
 
 We evaluate our pass on the [embench-iot](https://github.com/embench/embench-iot) benchmark suite, which is a benchmark suite designed to test the performance of deeply embedded systems. The strength reduction pass is performed on each program to evaluate its correctness and efficiency. Experiments are performed on a server with an 2.20GHz Intel Xeon processor and 128GB memory. All programs are single-thread.
 
-To run the optimized program, we first use clang to emit LLVM IR of original program with all optimization pass disabled. Then the IR is passed into LLVM opt, optimized with our pass and compiled into bitcode and objects. Finally we compile the object files into binary and run on physical machines. For each benchmark, there is one macro `CPU_MHZ` to control the number of times the top-level benchmark function executes. We set this number to 1000 to ensure that each benchmark is executed for a sufficient number of times. 
+To run the optimized program, we first use clang to emit LLVM IR of the original program with all optimization passes disabled. Then the IR is passed into LLVM opt, optimized with our pass and compiled into bitcode and objects. Finally we compile the object files into binary and run on physical machines. For each benchmark, there is one macro `CPU_MHZ` to control the number of times the top-level benchmark function executes. We set this number to 1000 to ensure that each benchmark is executed for a sufficient number of times. 
 
 ```shell
 # generate LLVM IR for original program 
@@ -165,7 +165,7 @@ gcc *.o -lm;
 time ./a.out
 ```
 
-The LLVM pass is first compiled into a shared library, which is loaded into LLVM opt as a compiler pass (with -sr argument, which is the custom name of our pass). The experiment results is shown in the following table. To make a fair comparison, we also commented out all the content except the preprocessing and postprocessing part in the code of our strength reduction pass, compile it into a "dummy pass", and use the same commands to compile the benchmarks. The results of executing this version of the benchmarks is recorded as our baseline in the "Original" column of the table. 
+The LLVM pass is first compiled into a shared library, which is loaded into LLVM opt as a compiler pass (with the `-sr` argument, which is the custom name of our pass). The experiment results are shown in the following table. To make a fair comparison, we also commented out all the content except the preprocessing and postprocessing part in the code of our strength reduction pass, compile it into a "dummy pass", and use the same commands to compile the benchmarks. The results of executing this version of the benchmarks is recorded as our baseline in the "Original" column of the table. 
 
 | Benchmark | Original (s) | Optimized (s) | Speedup |
 |:---------:|:------------:|:------------:|-----------|
@@ -190,6 +190,6 @@ The LLVM pass is first compiled into a shared library, which is loaded into LLVM
 |wikisort|0.215|0.276| 0.779 |
 |Geomean|||1.211|
 
-Except for a few designs, the average speedup is 1.211x over the original baseline program. Unfortunately, our pass does not optimize all programs correctly: `nettle-aes`, `sglib-combined`, and `slre` does not produce correct results after our optimization, while `picojpeg` does not terminate after applying our pass. We have not figured out the reason of these errors yet. Possible reasons are:
+Except for a few programs, the average speedup is 1.211x over the original baseline program. Unfortunately, our pass does not optimize all programs correctly: `nettle-aes`, `sglib-combined`, and `slre` do not produce correct results after our optimization, while `picojpeg` does not terminate after applying our pass. We have not figured out the reason of these errors yet. Possible reasons are:
 - We failed to distinguish all the non-induction variables collected at the beginning of the pass in our analysis and optimization process, causing the program to behave incorrectly;
 - When inserting the update instructions, we probably inserted at incorrect positions or inserted multiple times. 
