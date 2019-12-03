@@ -37,7 +37,7 @@ Welcome to [loop perforation][loopperf], an idea that sounds so ludicrous that w
 The basic premise is common across the field of [approximate computing][approx]: many applications spend a lot of time and energy getting results that are _exactly_ right, when they could happily get away with results that are _mostly_ right.
 If a programmer is able to define what exactly "mostly right" means for their particular application, then approximate computing techniques allow them to explore trading off cost and correctness.
 The original [loop perforation paper][paper], "Managing Performance vs. Accuracy Trade-offs with Loop Perforation", from ESEC/FSE’11, takes this idea to a beautifully flippant extreme: look at some loops, and replace something like `i++` with `i += 2` or even `i += 21`.
-Skipping loops like this almost definitely makes your code both faster and more energy efficient (assuming it still runs!)
+Skipping loops like this almost definitely makes your code both faster and more energy efficient (assuming it still runs!).
 
 For this project, we set out to implement simple loop perforation as a [LLVM][] pass, with the goal of a richer exploration into what it means to actually accept worse accuracy from our programs in this domain.
 
@@ -57,7 +57,7 @@ We implemented two new LLVM passes:
 
 Both passes work in conjunction with additional infrastructure:
 
-1. An external driver program, written in python.
+1. An external driver program, written in Python.
 2. User-provided representative inputs.
 3. User-defined accuracy/error metrics.
 
@@ -93,8 +93,8 @@ Conceptually, the driver just needs to take in the `sum_to_n` implementation and
 So, let's also tell the driver how wrong the ultimate answer can be.
 
 To do this, we require a python implementation of an `errors` module.
-At a high level, `errors` should tell the driver 1) what error metrics we care about for this application, and 2) a float value between 0 and 1 for each metric (0 is perfect, 1 is unacceptable.)
-For `sum_to_n1`, let's define a single error metric that's the ratio between our new sum answer and the correct answer:
+At a high level, `errors` should tell the driver 1) what error metrics we care about for this application, and 2) a float value between 0 and 1 for each metric (0 is perfect, 1 is unacceptable).
+For `sum_to_n`, let's define a single error metric that's the ratio between our new sum answer and the correct answer:
 
 ```
 # Provide the name of each metric we care about
@@ -117,7 +117,7 @@ Now, we can hand off this little application to the driver, to determine which l
 $ python3 driver.py tests/sum_to_n -e 0.5
 ```
 
-Let's walk through what happens now. First, the driver needs a basic sense of what the correct behavior for this application should be, so it builds and executes the application (on the representative input, if provided.)
+Let's walk through what happens now. First, the driver needs a basic sense of what the correct behavior for this application should be, so it builds and executes the application (on the representative input, if provided).
 For `sum_to_n`, our basic understanding of arithmetic holds up, and we get that the sum of the numbers from 0 to 4 is indeed:
 
 ```
@@ -247,7 +247,7 @@ For `sum_to_n`, this looks like the following (with some light post-processing f
 ```
 
 Here, our wall-clock execution time is essentially a wash, because the loop is so small that the difference is negligible relative to noise.
-However, we can see that the error ratio does drastically change as we increase the perforation rate, from perfect for the standard run to completely unacceptable at a perforation rate of 5, as we might expect (skipping 4 in every 5 iterations is skipping every integer except 0!) Note that if our application had multiple loops, we would see a results equal to the number of loops times the number of perforation rates (one run for each.)
+However, we can see that the error ratio does drastically change as we increase the perforation rate, from perfect for the standard run to completely unacceptable at a perforation rate of 5, as we might expect (skipping 4 in every 5 iterations is skipping every integer except 0!). Note that if our application had multiple loops, we would see a results equal to the number of loops times the number of perforation rates (one run for each).
 
 The final task of the driver is to combine what it learned about how much it can mangle each loop into one final answer.
 That is, where we were previously perforating each loop in turn, we now want to perforate some subset of the loops that we determined don't hurt the accuracy too much.
@@ -332,7 +332,7 @@ Assuming that the final distance measure is normally distributed (which is more 
 This can be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$.
 Effectively, this gives us a way of turning scalar distances into variance-parameterized error metrics.
 For these reasons, we enter a total accuracy score for each error metric that we collect, as well as for each of many variances.
-We then use all of these metricscass to compute the Pareto frontier.
+We then use all of these metrics to compute the Pareto frontier.
 
 These error metrics are more finicky than they might appear for real programs.
 Consider a Sobel image filter for edge detection.
@@ -357,7 +357,7 @@ Running our driver with a default configuration perforates the loops in this app
 ```
 
 The driver chooses this configuration because one of the error metrics, `"l2_100000"`, only has an error of 0.185.
-However the resulting image looks...very bad.
+However the resulting image looks... very bad.
 
 
 <img src="sobel-perforated-default.png" width=500/>
@@ -395,7 +395,7 @@ We had hoped to run our pass on additional PARSEC benchmarks, but had trouble ei
 
 The following plot shows run times for original programs and the final joined perforated programs.
 Perforation rates were allowed to be 2, 3, 5, 8, 13, and 21.
-Each program was run ten times on a 2017 Macbook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
+Each program was run ten times on a 2017 MacBook Pro (2.3 GHz Intel Core i5, 8 GB RAM), and error bars represent 95% confidence intervals.
 The perforated versions of `img-blur`, `sobel`, and `matrix_multiply` are faster than their corresponding originals because they have so many fewer instructions.
 The other three programs are so small their runtimes are likely dominated by overhead.
 
@@ -417,4 +417,3 @@ The black points at the top are from runs that did not complete successfully and
 In this case, perforating some loops reduced the size of matrices, making them incomparable to the correct program output.
 The frontier shows that perforated programs gain some speed by rapidly incurring error.
 The joined perforations aren't always on the frontier—even for a simple program like this, multiple perforated loops can perform worse than their individually perforated components.
-
