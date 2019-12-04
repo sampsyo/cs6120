@@ -39,7 +39,7 @@ As the profiling logic and data are written in a runtime library disjoint from t
 
 ## Evaluation
 ### Correctness
-To measure performance, we ran a subset of C benchmarks from the [LLVM test suite](https://llvm.org/docs/TestSuiteGuide.html). We collected the tabulated results and CFGs to verify our instrumentation was on an optimal number of edges. We then ran the algorithm described above to extrapolate the uninstrumented edges. We include one test here for visibility.
+To measure performance, we ran a subset of C benchmarks from the [LLVM test suite](https://llvm.org/docs/TestSuiteGuide.html). We collected the tabulated results and CFGs to manually verify our instrumentation was on an optimal number of edges with correct edge counts. We ran the algorithm described above to extrapolate the uninstrumented edges. We include one test here for visibility.
 Consider the following CFGs for a program with two functions, main and testFunc.
  <!-- ![](https://i.imgur.com/h9Stzm2.png =300x) ![](https://i.imgur.com/ls7PM8e.png =300x)  -->
 <img src="main.png"/>
@@ -74,9 +74,9 @@ int main(int num) {
     return 0;
 }
 ```
-In order to automatically verify these results, we implement a naive LLVM pass for edge profiling that instruments every edge. We then compare the results collected and extrapolated from optimal edge profiling with the results from running the naive implementation.
+In order to automatically verify these results, we implement a naïve LLVM pass for edge profiling that instruments every edge. We then compare the results collected and extrapolated from optimal edge profiling with the results from running the naïve implementation.
 
-Consider the results from running the naive implementation.
+Consider the results from running the naïve implementation.
 
 | Edge     | Count |
 |----------|-------|
@@ -89,7 +89,7 @@ Consider the results from running the naive implementation.
 | [9->10]  | 1     |
 
 
-We confirm that our results for optimal placement match the results from naive placement. In order to verify the remaining edges, we run the extrapolation algorithm discussed above by hand. The next step is to implement the extrapolation and automatically verify that the optimal placement pass produces the same results as the naive pass for all edges.
+We confirm that our results for optimal placement match the results from naïve placement. In order to verify the remaining edges, we run the extrapolation algorithm discussed above by hand. The next step is to implement the extrapolation and automatically verify that the optimal placement pass produces the same results as the naïve pass for all edges.
 
 We showed one test here, and performed similar analyses on several tests we designed with tricky CFGs in terms of loops and function calls.
 
