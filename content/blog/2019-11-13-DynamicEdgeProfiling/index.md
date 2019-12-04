@@ -40,7 +40,7 @@ As the profiling logic and data are written in a runtime library disjoint from t
 ## Evaluation
 ### Correctness
 To measure performance, we ran a subset of C benchmarks from the [LLVM test suite](https://llvm.org/docs/TestSuiteGuide.html). We collected the tabulated results and CFGs to verify our instrumentation was on an optimal number of edges. We then ran the algorithm described above to extrapolate the uninstrumented edges. We include one test here for visibility.
-Consider the following CFGS for a program with two functions, main and testFunc.
+Consider the following CFGs for a program with two functions, main and testFunc.
  <!-- ![](https://i.imgur.com/h9Stzm2.png =300x) ![](https://i.imgur.com/ls7PM8e.png =300x)  -->
 <img src="main.png"/>
 <img src="testfunc.png"/>
