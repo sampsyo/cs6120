@@ -31,9 +31,9 @@ The LLVM architecture looks like this:
 
 
 
-IR represents intermediate language. We only need to add one pass that changes the existing IR to another IR (which includes the desired properties like profiling information), following instructions to add an LLVM pass in our instructor, [Adrian](<https://www.cs.cornell.edu/~asampson/>)'s [blog post](<https://www.cs.cornell.edu/~asampson/blog/llvm.html>). We also took help from the github repo [atomicCounter](<https://github.com/pranith/AtomicCounter/blob/master/AtomicCountPass/AtomicCount.cpp>) where it counts the number of all atomic instructions in the program atomically!
+"IR" stands for *intermediate language*. We only need to add one pass that changes the existing IR program to another IR program (program which includes the desired properties like profiling information), following instructions to add an LLVM pass in our instructor, [Adrian](<https://www.cs.cornell.edu/~asampson/>)'s [blog post](<https://www.cs.cornell.edu/~asampson/blog/llvm.html>). We also took help from the Github repo [atomicCounter](<https://github.com/pranith/AtomicCounter/blob/master/AtomicCountPass/AtomicCount.cpp>) where the increments to the global counter variables are atomic updates
 
-We start from [ModulePass](<http://llvm.org/docs/WritingAnLLVMPass.html#the-modulepass-class>) and then access functions inside a Module, Basic Blocks per function and instructions per Basic Block to obtain all information. At the beginning and ending of each module, we also call custom method `initialize` to create global variables in IR  and `finalize` to print global variables. The structure of our atomic counting pass looks like this:
+We start from [ModulePass](<http://llvm.org/docs/WritingAnLLVMPass.html#the-modulepass-class>) and then access functions inside a Module, BasicBlocks per function and instructions per BasicBlock to obtain all information. At the beginning and ending of each module, we also call a custom method `initialize` to create global variables in IR  and `finalize` to print global variables. The structure of our atomic counting pass looks like this:
 
 ```c++
   struct SkeletonPass : public ModulePass {
@@ -65,7 +65,7 @@ We first create global variable `llvmInstrAtomicCounter` and `basicBlockAtomicCo
 new GlobalVariable(M, I64Ty, false, GlobalValue::CommonLinkage, ConstantInt::get(I64Ty, 0), atomicCounter[i]);
 ```
 
- Then in each basic block we obtain pointer to the global variable names with [getOrInsertGlobal](<https://llvm.org/doxygen/classllvm_1_1Module.html#abd8f7242df6ecb10f429c4d39403c334>) method. After getting the instruction number in each block, we create atomic addition with [AtomicRMWInst](<https://llvm.org/doxygen/classllvm_1_1AtomicRMWInst.html#abf7e0649c7f272cc49165e579be010a5>) constructor. The complete code looks like this:
+ Then in each basic block we obtain a pointer to the global variable names with [getOrInsertGlobal](<https://llvm.org/doxygen/classllvm_1_1Module.html#abd8f7242df6ecb10f429c4d39403c334>) method. After getting the instruction number in each block, we create atomic addition with [AtomicRMWInst](<https://llvm.org/doxygen/classllvm_1_1AtomicRMWInst.html#abf7e0649c7f272cc49165e579be010a5>) constructor. The complete code looks like this:
 
 ```c++
 
@@ -101,10 +101,10 @@ bool SkeletonPass::runOnBasicBlock(BasicBlock &bb, Module &M)
 
 ```
 
-Finally, we print the profiling results by first create a function `printf` by specifying input argument and output argument types. Then transverse the `main` function. Right before `return` of the last block in `main`, create string variable corresponding to variables we are tracing and get the pointer to that string variable. Also, get the number variable by first get the pointer pointing to the global variable and then create a load instruction to get the actual pointer to the value. Finally, we can call printf function with input arguments.
+Finally, we print the profiling results with global variable names and the corresponding values. The values are obtained with a `load` instruction. Right before `return` of the last block in `main`, we create string variable corresponding to variables we are tracing and get the pointer to that string variable. Also, we get the number variable by first getting the pointer pointing to the global variable and then creating a load instruction to get the actual pointer to the value. Finally, we can call the `printf` function with input arguments.
 
 ```c++
-    RBuilder<> Builder(M.getContext());
+    IRBuilder<> Builder(M.getContext());
     Function *mainFunc = M.getFunction("main")
     // not the main module
     if (!mainFunc)
@@ -141,7 +141,7 @@ Finally, we print the profiling results by first create a function `printf` by s
 
 ### Expensive Operations Information
 
-The whole part follows the same flow as basic execution information except we need to distinguish the instruction type and increment corresponding counter on block basis. Therefore in each `runOnBasicBlock` method, we need the following lines:
+This part follows the same flow as basic execution information except we need to distinguish the instruction type and increment corresponding counter on a block basis. Therefore in each `runOnBasicBlock` method, we need the following lines:
 
 ```c++
     for (auto it = bb.begin(); it != bb.end(); it++) {
@@ -238,8 +238,8 @@ The numbers match with `gcov`. We compile the results for all benchmarks below.
 
 The following results are for sequential execution of the benchmarks. We have reported the instruction counts in the following table:
 
-| Benchmark | LLVM instruction count |basic block count | multiplication count | memory operation count | branch operation count| 
-| -------------- | :------------------------: | :------------------: | :--------------------: | :---------------------------: | :------------------------: | 
+| Benchmark | LLVM instruction count |basic block count | multiplication count | memory operation count | branch operation count|
+| -------------- | :------------------------: | :------------------: | :--------------------: | :---------------------------: | :------------------------: |
 | Histogram | 1707337893 |  104532503 | 0 | 871090234 | 104532501 |
 | Kmeans | 40091156 |  5019598 | 691267 | 20250888 | 4766547 |
 | Linear regression | 2244735757 |  86335992 | 86335983 | 1093589204 | 86335991 |
