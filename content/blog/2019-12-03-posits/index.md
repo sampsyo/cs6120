@@ -25,6 +25,7 @@ In practice, however, the IEEE 754 floating point standard slightly modifies thi
 
 [//]: # (Note: this is a hyperlink used as a comment lol)
 [//]: # (TODO: insert image of denormalized numbers here, such as from: http://www.toves.org/books/float/#s2.1 )
+[//]: # (TODO: add images of piecewise floating point definition from https://posithub.org/docs/Posits4.pdf)
 
 - Bogus Results: the result of overflow (e.g., dividing by a very small number) or partial functions applied to elements outside of their domains (e.g, division by zero) have no representation
     - The case of overflow is captured by the *positive and negative infinity* values, each represented by the bit pattern corresponding to an all ones exponent and all zeros mantissa, and differentiated by the sign bit.
@@ -39,7 +40,9 @@ The numbers represented by posits are similar to floating points, but differ by 
 
 `useed = 2^(2^es)`, a fundamental quantity in the theory of numerical representations, parametrized by the quantity `es`.
 
-In his seminal paper, Gustafson explains the genius behind this design:
+[//]: # (TODO: add images of piecewise posit definition from https://posithub.org/docs/Posits4.pdf)
+
+In his [seminal paper](https://posithub.org/docs/Posits4.pdf), Gustafson explains the genius behind this design:
 > The regime bits may seem like a weird and artificial construct, 
 but they actually arise from a natural and elegant geometric mapping of binary integers to the projective real numbers on a circle.
 
@@ -73,14 +76,42 @@ Unlike IEEE's extravagantly piecewise nature, posits opt for piecewise minimalis
 - Whereas there are two floating point representations of zero (both positive and negative), there is only one such posits representation: the all zero bit pattern.
 - Further, whereas positive and negative infinity are distinctly represented as floating points, posits unite these values into one representation: the bit pattern with all zeros save for the first bit.
 - Finally, posits do away with the `NaN` values that pollute the floating point numbers.
+ 
 
 # Metric-based Comparison
 
 [//]: # (TODO: fill in Gustafson's metric definitions and comparisons here, from http://www.johngustafson.net/pdfs/BeatingFloatingPoint.pdf)
+Not settling for simple, qualitative comparision, Gustafson proposes a variety of metric-based comparisons for numerical representations.
+He asks: given a represenation, how can we assess how accurately each number is represented?
+To answer this, he proposes the *decimal accuracy* metric: the number of significant bits a real number in the canonical representation of .
 
-Metrics:
-- dynamic range
-- decimal accuracy
+Let us regard *accuracy* as the *inverse of error*. 
+Then each error metric, that is, each way of considering the distance between a computed value and its correct value, induces an accuracy metric. 
+Thankfully, Gustafson reminds us that the choice of error metric is obvious:
+  > A “perfect spacing” of ten numbers between 1 and 10 in a real number system would be not the evenly-spaced counting numbers 1 through 10, 
+  > but exponentially-spaced 1,10^(1/10),10^(2/10),...,10^(9/10),10.
+
+Thus, the "position" of a (positive, non-zero) real number `n` is given by `p`, where `n = 10^(p/10)`,
+and so the distance between `n` and `n'` is given by `| log_10(n / n') | = p - p'`. 
+In other words, we compare the spacing of numbers according to the *decibel system*, the inverse of which yields the *perfect metric for accuracy*.
+Finally, we glean the significant digits of the representation, the *decimal accuracy*, by taking the base 10 logarithm of accuracy.
+
+Gustafson exhaustively plots the decimal accuracy of each representation in 8-bits, demonstrating posit supremacy:
+
+[//]: # (TODO: add image of decimal accuracy plot here)
+
+We make two observations from this plot:
+First, posits distribute decimal accuracy symmetrically across representations, while floating points fail to deliver at larger numbers, which are ignored in favor of `NaN`.
+Furthermore, posits favor decimal accuracy at the meat of the number line, a sizable domain around 0, whereas floating points over-emphasizes the ends of the number line.
+Finally, the posit representation casts the light of representation across a larger domain; its *dynamic range* exceeds that of floating points.
+
+But how does error propagate with successive operations?
+> Note that the values represented by posits represent over two decades more *dynamic range* than the floats, 
+> as well as being as accurate or more for all but the values where floats are close to underflow or overflow.
+
+(note that floating points have better 
+
+- Dynamic Range
 - single argument operation comparisons (sqrt, exp, etc.)
 - two argument operation accuracy and closure
 
