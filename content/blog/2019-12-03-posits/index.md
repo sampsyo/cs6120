@@ -91,25 +91,31 @@ Metrics:
 We compare the accuracy of 32-bit floating point and posit representation by comparing their accuracy under a variety of benchmarks.
 In each benchmark, we express real number calculations in terms of operations over 64-bit `double`s.
 In other words, the `double` type serves as the "oracle" baseline from which we compute accuracy.
-Each `double` benchmark is then compiled to LLVM IR, upon which we apply a `float` LLVM pass and a `posit` LLVM pass respectively to generate `float` and `posit` benchmarks.
+Each `double` benchmark is then compiled to LLVM IR, upon which we apply a `posit` LLVM pass and a `float` LLVM pass respectively to generate associated benchmarks.
 The values produced from these two benchmarks carry the accumulated error arising from the inaccuracy of the particular 32-bit representation, which compounds with successive operations.
 Finally, we derive accuracies by comparing to the value of the `double` baseline benchmark, and use these as metrics to compare the accuracy of the two representations.
 
-Although it is not true that the `double` type has perfect accuracy, since no finite representation is, we assume that the accumulated error in `double` benchmarks will be truncated or rounded off when comparing with the less precise 32-bit floating representations.
-In other words, we assume that the precision of the most significant, inaccurate digit in a 64-bit `double` benchmark result cannot be represented by a 32-bit `float` or `posit`.
-Although this assumption does not generally hold, it usually does, and it helps streamline the implementation of the different benchmarks.
-
-# LLVM `float` pass
-
-The LLVM `float` pass generates a `float` benchmark from a `double` benchmark by casting all `double` operations to `float` operations and all `double` operands to `float` operands.
-Conversion of `double` operations to `float` operations happens "for free", 
-In so doing, the resulting value carries the accumulated error characteristic of the successive `float` operations on 32-bit `float`.
+Although it is not true that the `double` type has perfect accuracy, since no finite representation is, we assume that the accumulated error in `double` benchmarks will be truncated or rounded off when comparing with the less precise 32-bit representations.
+In other words, we that casting to a `double` from a `float` or 32-bit `posit` can be done without loss of information.
+Although this assumption does not always hold, we found it to be sufficient for practical testing and helps streamline the implementation of the different benchmarks.
 
 # LLVM `posit` pass
 
 The LLVM `posit` pass operates analogously: it converts `double` operations and operands to the `posit` versions.
 This conversion is limited by the availability of `posit` operation implementations.
+For this project, we focused on implementing and translating exactly the arithmetic operations `+`, `-`, `*`, and `/` on 32-bit posits.  
 We draw `posit` conversion, addition, subtraction, multiplication, and division implementations from the [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
+
+This pass only operates on these arithmetic operations between exactly doubles; all other values are untouched, and doubles are still stored as such except when applying this posit operation.
+After an arithmetic operation is applied, the result is translated back to a double value until the next computation.
+Through applying this minimal rewrite, we avoid issues with allocation and changing types; additionally, we are able to support programs which would run without this pass, since operations not yet implemented are simply applied as double operations.
+This approach is also extensible, as adding new posit operations simply amounts to implementing each operation in C, then copying and pasting the relevant pass code.
+
+# LLVM `float` pass
+
+The LLVM `float` pass generates a `float` benchmark from a `double` benchmark by casting arithmetic `double` operations to `float` operations via casting the associated `double` operands to `float` operands.
+Conversion of `double` operands to `float` operations occur via the FPTrunc and FPExt commands, while the arithmetic operations simply take in the new `float` arguments.
+As with the posit pass implementation, the resulting calculated value carries the accumulated error characteristic of the successive `float` operations on 32-bit `float`.
 
 ### Benchmarks
 
