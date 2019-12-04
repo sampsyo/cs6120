@@ -15,7 +15,7 @@ extra.latex = true
 
 ## Goal
 
-The goal of the project is to collect run-time information by adding an LLVM pass. We are interested in three kinds of information: 
+The goal of the project is to collect run-time information by adding an LLVM pass that is accurate even in multi-threading program. We are interested in three kinds of information: 
 
 1. Basic execution information including the number of LLVM instructions, basic blocks etc.
 2. Expensive instruction information like the number of memory operations, multiplications and branches since they are most likely to affect execution time.
