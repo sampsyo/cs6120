@@ -4,9 +4,9 @@ extra.author = {"Dietrich Geisler", "Edwin Peguero"}
 +++
 
 Computers are incapable of representing arbitrary real numbers exactly.
-This is due to two insurmountable cardinality facts of real numbers:
+This is due to two intractable facts of real numbers:
 - Uncountably Infinite Quantity: There are an infinite number of real numbers.
-- Uncountably Infinite Precision: Some real numbers require infinite precision.
+- Uncountably Infinite Precision: Some (irrational) real numbers require infinite precision.
  
 Since computers use a finite number of bits, computer architects must settle on capturing a finite number of real numbers at a finite level of precision.
 Furthermore, since bit patterns are finite, a tradeoff must be made between the number of representable numbers and the level of precision.
@@ -14,14 +14,15 @@ This is done by fixing a *representation*, that is, a mapping between bit patter
 
 ## The Floating Point Representation
 
-The *floating point representation* is the most widely used representation.
-Approximately, it represents numbers of the form `(-1^s) * 1.m * 2^e`, where `1.m`, the *mantissa*, and `e`, the *exponent*, are represented under the fractional and integer binary system, respectively, and `s` is a single bit denoting the sign of the represented number.
-The design tradeoff between quantity and precision is captured by the number of bits dedicated to the mantissa and exponent, respectively.
+The *floating point* representation is the most widely used.
+Numbers are written in the form `(-1^s) * 1.m * 2^e`, where `1.m`, the *mantissa*, and `e`, the *exponent*, are fractional and integer binary values, respectively, and `s` is a single bit denoting the sign of the represented number.
+The design tradeoff between quantity and precision is captured by the number of bits dedicated to the mantissa and exponent.
 
 In practice, however, the IEEE 754 floating point standard slightly modifies this scheme to account for two perceived limitations:
 - Small Number Gap: there is a relatively large gap between the representation of the largest negative number, and the smallest positive number
     - To account for this, the numbers with the smallest exponent are *denormalized*. 
-    This means that they are spread out linearly, rather than exponentially, between the largest negative and smallest positive numbers raised to the second largest exponent.
+    Denormalized values are spread out linearly, rather than exponentially.
+    For floating points, denormalization occurs between the largest negative and smallest positive numbers raised to the second largest exponent.
 
 [//]: # (Note: this is a hyperlink used as a comment lol)
 [//]: # (TODO: insert image of denormalized numbers here, such as from: http://www.toves.org/books/float/#s2.1 )
@@ -32,14 +33,14 @@ In practice, however, the IEEE 754 floating point standard slightly modifies thi
 
 ## The Posit Representation
 
-The *posit representation* should be the most widely used representation.
+The *posit representation* _should_ be the most widely used representation.
 The numbers represented by posits are similar to floating points, but differ by the introduction of a so-called *regime* term, as follows: 
 
 ````(-1^s) * 1.m * useed^k * 2^e````
 
 `useed = 2^(2^es)`, a fundamental quantity in the theory of numerical representations, parametrized by the quantity `es`.
 
-In his seminal paper, Gustafson explains the genius behind this design:
+In his seminal paper, Gustafson explains the _genius_ behind this design:
 > The regime bits may seem like a weird and artificial construct, 
 but they actually arise from a natural and elegant geometric mapping of binary integers to the projective real numbers on a circle.
 
@@ -49,7 +50,7 @@ Fascinating.
 
 ## Supremacy of Posits
 
-The posit representation maps numbers around the topological circular loop in quadrants, as prophesied by several major religions.
+The posit representation maps numbers around the topological circular loop in quadrants, as prophesied.
 
 [//]: # (insert image of circle with 4 cardinal points here from https://posithub.org/docs/Posits4.pdf)
 
@@ -58,11 +59,11 @@ At its opposite, the wicked, immoral South of the circle, lies nothing of value,
 Meanwhile, on the earthly plane, God's children enjoy free will, where they choose between positive one at the East and negative one at the West.
 
 The quadrants induced by these points are then symmetrically populated by the rest of the points. 
-`useed` determines where the "center" of these quadrants resides as follows:
+The `useed` determines where the "center" of these quadrants resides as follows:
 
 [//]: # (insert image of circle with useed values here from https://posithub.org/docs/Posits4.pdf)
 
-Much like Adam and Eve did, `useed` determines how the quadrants in the circle are populated.
+Much like Adam and Eve, the `useed` determines how the quadrants in the circle are populated.
 Positive values lie at the right of the circle, while negative values lie at the left, and reciprocal values reflect across the equator.
 
 ## Comparing Numerical Representation Comparison
@@ -71,8 +72,8 @@ Positive values lie at the right of the circle, while negative values lie at the
 
 Unlike IEEE's extravagantly piecewise nature, posits opt for piecewise minimalism:
 - Whereas there are two floating point representations of zero (both positive and negative), there is only one such posits representation: the all zero bit pattern.
-- Further, whereas positive and negative infinity are distinctly represented as floating points, posits unite these values into one representation: the bit pattern with all zeros save for the first bit.
-- Finally, posits do away with the `NaN` values that pollute the floating point numbers.
+- Whereas positive and negative infinity are distinctly represented as floating points, posits unite these values into one representation: the bit pattern with all zeros save for the first bit.
+- Whereas floating point numbers are polluted with `NaN` values, posits are cleansed of such unclean special values.
 
 # Metric-based Comparison
 
@@ -108,7 +109,7 @@ In so doing, the resulting value carries the accumulated error characteristic of
 
 The LLVM `posit` pass operates analogously: it converts `double` operations and operands to the `posit` versions.
 This conversion is limited by the availability of `posit` operation implementations.
-We draw `posit` addition, subtraction, multiplication, and division implementations from the [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
+We draw `posit` conversion, addition, subtraction, multiplication, and division implementations from the [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
 
 ### Benchmarks
 
