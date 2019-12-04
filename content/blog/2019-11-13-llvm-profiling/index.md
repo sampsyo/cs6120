@@ -31,9 +31,9 @@ The LLVM architecture looks like this:
 
 
 
-"IR" stands for *intermediate language*. We only need to add one pass that changes the existing IR program to another IR program (program which includes the desired properties like profiling information), following instructions to add an LLVM pass in our instructor, [Adrian](<https://www.cs.cornell.edu/~asampson/>)'s [blog post](<https://www.cs.cornell.edu/~asampson/blog/llvm.html>). We also took help from the Github repo [atomicCounter](<https://github.com/pranith/AtomicCounter/blob/master/AtomicCountPass/AtomicCount.cpp>) where the increments to the global counter variables are atomic updates
+"IR" stands for *intermediate language*. We only need to add one pass that changes the existing IR program to another IR program (program which includes the desired properties like profiling information), following instructions to add an LLVM pass in our instructor, [Adrian](<https://www.cs.cornell.edu/~asampson/>)'s [blog post](<https://www.cs.cornell.edu/~asampson/blog/llvm.html>). We also took help from the Github repo [atomicCounter](<https://github.com/pranith/AtomicCounter/blob/master/AtomicCountPass/AtomicCount.cpp>) where the increments to the atomic global counter variables are atomic updates. In our project, we don't profile atomic operations but use atomic updates to global variables.
 
-We start from [ModulePass](<http://llvm.org/docs/WritingAnLLVMPass.html#the-modulepass-class>) and then access functions inside a Module, BasicBlocks per function and instructions per BasicBlock to obtain all information. At the beginning and ending of each module, we also call a custom method `initialize` to create global variables in IR  and `finalize` to print global variables. The structure of our atomic counting pass looks like this:
+We start from [ModulePass](<http://llvm.org/docs/WritingAnLLVMPass.html#the-modulepass-class>) and then access functions inside a Module, BasicBlocks per function and instructions per BasicBlock to obtain all information. At the beginning and ending of each module, we also call a custom method `initialize` to create global variables in IR  and `finalize` to print global variables. The structure of our profiling pass looks like this:
 
 ```c++
   struct SkeletonPass : public ModulePass {
@@ -59,107 +59,44 @@ We start from [ModulePass](<http://llvm.org/docs/WritingAnLLVMPass.html#the-modu
 
 ### Basic Execution Information
 
-We first create global variable `llvmInstrAtomicCounter` and `basicBlockAtomicCounter` with [GlobalVariable](<https://llvm.org/doxygen/classllvm_1_1GlobalVariable.html#a3ef813d6bda7e49e31cb6bf239c4e264>) constructor.
+In the `initialize` method, we create global variable `llvmInstrAtomicCounter` and `basicBlockAtomicCounter` with [GlobalVariable](<https://llvm.org/doxygen/classllvm_1_1GlobalVariable.html#a3ef813d6bda7e49e31cb6bf239c4e264>) constructor.
 
 ```c++
 new GlobalVariable(M, I64Ty, false, GlobalValue::CommonLinkage, ConstantInt::get(I64Ty, 0), atomicCounter[i]);
 ```
 
- Then in each basic block we obtain a pointer to the global variable names with [getOrInsertGlobal](<https://llvm.org/doxygen/classllvm_1_1Module.html#abd8f7242df6ecb10f429c4d39403c334>) method. After getting the instruction number in each block, we create atomic addition with [AtomicRMWInst](<https://llvm.org/doxygen/classllvm_1_1AtomicRMWInst.html#abf7e0649c7f272cc49165e579be010a5>) constructor. The complete code looks like this:
+ Then in `runOnBasicBlock`, we obtain a pointer to the global variable names with [`getOrInsertGlobal`](<https://llvm.org/doxygen/classllvm_1_1Module.html#abd8f7242df6ecb10f429c4d39403c334>) method. After getting the instruction number in each block, we create atomic addition with [`AtomicRMWInst`](<https://llvm.org/doxygen/classllvm_1_1AtomicRMWInst.html#abf7e0649c7f272cc49165e579be010a5>) constructor. 
 
-```c++
+Finally, in the `finalize` method, we print the profiling results with global variable names and the corresponding values at the end of `main` block before `return`:
 
-void SkeletonPass::createInstr(BasicBlock &bb, Constant *counter_ptr, int num){
-    // create atomic addition instruction
-    if(num){
-        new AtomicRMWInst(AtomicRMWInst::Add,
-                      counter_ptr, // pointer to global variable
-                      ConstantInt::get(Type::getInt64Ty(bb.getContext()), num), //create integer with value num
-                      AtomicOrdering::SequentiallyConsistent, //operations may not be reordered
-                      SyncScope::System, // synchronize to all threads
-                      bb.getTerminator());//insert right before block terminator
-    }
-}
+- We create `printf` FunctionCallee with [`getOrInsertFunction`](<https://llvm.org/doxygen/classllvm_1_1Module.html#a5310b7bb84192372c55cbc66cd975c59>)) method. 
+- We insert [`CreateGlobalStringPtr`](<https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#aa87594a9d1f908486410d8fa9bea9c1f>) method to create pointer pointing to string we would like print.  
+- Then we obtained the value of corresponding strings with the [`loadInst`](<https://llvm.org/doxygen/classllvm_1_1LoadInst.html>) method. 
+- The last step is to create the function call with [`Create`](<https://llvm.org/doxygen/classllvm_1_1CallInst.html#a850d8262cd900958b3153c4aa080b2bb>). 
 
-bool SkeletonPass::runOnBasicBlock(BasicBlock &bb, Module &M)
-{
-    // get the global variable for atomic counter
-    Type *I64Ty = Type::getInt64Ty(M.getContext());
-    Constant *instrCounter = M.getOrInsertGlobal("llvmInstrAtomicCounter", I64Ty);
-    assert(instrCounter && "Could not declare or find llvmInstrAtomicCounter global");
-    Constant *bbCounter = M.getOrInsertGlobal("basicBlockAtomicCounter", I64Ty);
-    assert(bbCounter && "Could not declare or find basicBlockAtomicCounter global");
-    // get instruction number and basic block number.
-    int basic_block = 1;
-    int instr = bb.size();
-    // create atomic addition instruction
-    createInstr(bb, bbCounter, basic_block);
-    createInstr(bb, instrCounter,instr);
-    
-    return true;
-}
-
-```
-
-Finally, we print the profiling results with global variable names and the corresponding values. The values are obtained with a `load` instruction. Right before `return` of the last block in `main`, we create string variable corresponding to variables we are tracing and get the pointer to that string variable. Also, we get the number variable by first getting the pointer pointing to the global variable and then creating a load instruction to get the actual pointer to the value. Finally, we can call the `printf` function with input arguments.
-
-```c++
-    IRBuilder<> Builder(M.getContext());
-    Function *mainFunc = M.getFunction("main")
-    // not the main module
-    if (!mainFunc)
-        return false;
-
-    // build printf function handle
-    std::vector<Type *> FTyArgs;
-    FTyArgs.push_back(Type::getInt8PtrTy(M.getContext())); // specify the first argument, i8* is the return type of CreateGlobalStringPtr
-    FunctionType *FTy = FunctionType::get(Type::getInt32Ty(M.getContext()), FTyArgs, true); // create function type with return type, argument types and if const argument 
-    FunctionCallee printF = M.getOrInsertFunction("printf", FTy); // create function if not extern or defined
-    
-    for (auto bb = mainFunc->begin(); bb != mainFunc->end(); bb++) {
-        for(auto it = bb->begin(); it != bb->end(); it++) {
-            if ((std::string)it->getOpcodeName() == "ret") {
-                // insert printf at the end of main function, before return function
-                Builder.SetInsertPoint(&*bb, it);
-                for(int i = 0; i < atomicCounter.size(); i++){
-                    Value *format_long = Builder.CreateGlobalStringPtr(atomicCounter[i]+": %ld\n", "formatLong");// create global string variable formatLong, add suffix(.1/.2/...) if already exists
-                    std::vector<Value *> argVec;
-                    argVec.push_back(format_long); 
-                    Value *atomic_counter = M.getGlobalVariable(atomicCounter[i]);// get pointer pointing to the global variable name
-                    Value* finalVal = new LoadInst(atomic_counter, atomic_counter->getName()+".val", &*it);// atomic_counter only points to a string, but we want to print the number the string stores
-                    argVec.push_back(finalVal); 
-                    CallInst::Create(printF, argVec, "printf", &*it); //create printf function with the return value name called printf (with suffix if already exists)
-                }
-            }
-        }
-    }
-    return true;
-}
-```
-
-
+The complete code is post in [Neil's Github repo](<https://github.com/neiladit/llvm_profiling/blob/master/skeleton/Skeleton.cpp>). 
 
 ### Expensive Operations Information
 
 This part follows the same flow as basic execution information except we need to distinguish the instruction type and increment corresponding counter on a block basis. Therefore in each `runOnBasicBlock` method, we need the following lines:
 
 ```c++
-    for (auto it = bb.begin(); it != bb.end(); it++) {
-        switch (it->getOpcode()) {
-            case Instruction::Mul:// multiplication
-                mul_instr++;
-                continue;
-            case Instruction::Br:// branch
-                br_instr++;
-                continue;
-            case Instruction::Store:// store
-            case Instruction::Load:// load
-                mem_instr++;
-                continue;
-            default:
-                break;
-        }
+for (auto it = bb.begin(); it != bb.end(); it++) {
+	switch (it->getOpcode()) {
+        case Instruction::Mul:// multiplication
+            mul_instr++;
+            continue;
+        case Instruction::Br:// branch
+            br_instr++;
+            continue;
+        case Instruction::Store:// store
+        case Instruction::Load:// load
+            mem_instr++;
+            continue;
+        default:
+            break;
     }
+}
 ```
 
 ### Function calls
