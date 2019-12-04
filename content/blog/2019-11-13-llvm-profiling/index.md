@@ -174,7 +174,7 @@ for (auto &function : functionList) { //iterates over the list
 
 ```
 
-Next we want to insert atomic counters at the start of each function definition. This ensures that irrespective of multiple return points in the function we can always increment the counter for it at the beginning. We start with the entry basic block in the function which is given by the iterator `F.begin()`.  To insert it at the top of the basic block we use `getFirstNonPHI()` which returns the first instruction, which is not a PHI node. We insert an atomic add instruction similar to other profiling instructions. 
+Next we want to insert atomic counters at the start of each function definition. This ensures that irrespective of multiple return points in the function we can always increment the counter for it at the beginning. We start with the entry basic block in the function which is given by the iterator `F.begin()`.  To insert it at the top of the basic block we use `getFirstNonPHI()` which returns the first instruction that is not a PHI node. We insert an atomic add instruction similar to other profiling instructions. 
 
 
 
@@ -183,8 +183,8 @@ Next we want to insert atomic counters at the start of each function definition.
 
 ## Hardest Parts
 
-1. For people who are new to LLVM, instructions are hard to find and follow. Searching on google can help if you know what you're looking for. It's difficult to get helpful information unless our search is confined to existing functions. Even though LLVM documentation is pretty exhaustive, it has too many functions to go through and the lack of examples can be off putting. Tutorials and existing backbone codes on Github can be really handy in these scenarios, which we took advantage of. It not only helped us implement specific functions like `printf` but also establish a structure to our IR pass. 
-2. String manipulations: I am not sure if this is the right term to use, but LLVM seems to have 2 string types - Twine and StringRef. `getName` on a function returns a StringRef. In order to make a custom name I perform `F.getName()+"name"` which returns a Twine. But the function `getGlobalVariable` only accepts StringRef. Twine has a function `str` which can be used to convert it into string. Even though this is a straight forward solution, it ended up taking time to figure out the problem and looking into the documentation of these classes.
+1. For people who are new to LLVM, instructions are hard to find and follow. Searching on Google can help if you know what you're looking for. It's difficult to get helpful information unless your search is confined to existing functions. Even though LLVM documentation is pretty exhaustive, it has too many functions to go through and the lack of examples can be off putting. Tutorials and existing backbone codes on Github can be really handy in these scenarios, which we took advantage of. It not only helped us implement specific functions like `printf` but also establish a structure to our IR pass. 
+2. String manipulations: I am not sure if this is the right term to use, but LLVM seems to have 2 string types - Twine and StringRef. `getName` on a function returns a StringRef. In order to make a custom name I perform `F.getName()+"name"` which returns a Twine. But the function `getGlobalVariable` only accepts StringRef. Twine has a function `str` which can be used to convert it into string. Even though this is a straightforward solution, it ended up taking time to figure out the problem and looking into the documentation of these classes.
 3. Setting up and running benchmarks: "It's all fun and games until you run your IR pass on real programs" - anonymous. We faced issues setting up benchmarks like PARSEC on Mac. Embench had multiple source files to compile which ran into trouble partly due to our IR pass not being thoughtfully written. We were defining global variables in all the files irrespective of it being a function/utility file or the main source file. We ended up using [Phoenix](https://github.com/kozyraki/phoenix) which worked well on Linux but was not meant for Mac. Hence for doing our LLVM pass, we had to install and update libraries on Linux machines.
 
 
@@ -197,7 +197,7 @@ To validate and benchmark our profiling results, we use `gcov` testing tool whic
 ```
 gcov -b -c -f foo.c
 ```
-We ran the [Phoenix](https://github.com/kozyraki/phoenix) benchmark suite and used `gcov` to profile statistics of function calls. The makefile initially had optimization flag -O3 but this might lead to incorrect numbers of function calls due to optimizations, hence we compile without any flags.
+We ran the [Phoenix](https://github.com/kozyraki/phoenix) benchmark suite and used `gcov` to profile statistics of function calls. The makefile initially had optimization flag -O3 but this might lead to incorrect numbers of function calls due to optimizations, so we compile without any flags. We picked `Kmeans` arbitrarily to demonstrate a detailed example of our profiling tool below:
 
 #### Kmeans
 
@@ -232,11 +232,13 @@ dump_matrix: 1
 main: 1
 ```
 
+The numbers match with `gcov`. We compile the results for all benchmarks below.
+
 ### Results
 
-The following results is for sequential execution of the benchmarks. We have reported the instruction counts in the following table:
+The following results are for sequential execution of the benchmarks. We have reported the instruction counts in the following table:
 
-| Benchmark | llvm instruction count |basic block count | multiplication count | memory operation count | branch operation count| 
+| Benchmark | LLVM instruction count |basic block count | multiplication count | memory operation count | branch operation count| 
 | -------------- | :------------------------: | :------------------: | :--------------------: | :---------------------------: | :------------------------: | 
 | Histogram | 1707337893 |  104532503 | 0 | 871090234 | 104532501 |
 | Kmeans | 40091156 |  5019598 | 691267 | 20250888 | 4766547 |
