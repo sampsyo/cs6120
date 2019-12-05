@@ -3,7 +3,7 @@ title = "Dynamic Edge Profiling with Optimal Counter Placement"
 [extra]
 bio = """
   [Katy](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
-  [Henry](https://www.linkedin.com/in/liuhenry4428)
+  [Henry](https://www.linkedin.com/in/liuhenry4428) is a Senior interested in Compilers and Systems Programming. He enjoys playing video games and exploring different foods in his free time. 
 """
 +++
 
