@@ -8,7 +8,7 @@ extra.bio = """
 +++
 In previous discussions, we've considered research systems that find bugs in compiler implementations via _differential testing_.
 To page you back in, [CSmith][] and [Equivalence Modulo Inputs (Orion)][emi] both used clever tactics to generate randomized test programs and inputs, with the goal of finding instances where compilers produce different output than expected.
-These system exploit a key assumption: while wee don't have an oracle that determines the ground truth correct behavior for any program in the presence of undefined behavior, we can expect compilers to produce the "same" behavior across different implementations.
+These system exploit a key assumption: while we don't have an oracle that determines the ground truth correct behavior for any program in the presence of undefined behavior, we can expect compilers to produce the "same" behavior across different implementations.
 
 On the other hand, there are fully verified compilers such as CompCert that guarantee against mis-compilations, but do so at the cost of supporting entire language surfaces and getting fast, optimized code.
 
