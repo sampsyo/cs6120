@@ -18,7 +18,7 @@ What about middle ground, where we leverage a correctness oracle for some partic
 Lopes et al.’s [“Provably Correct Peephole Optimizations with Alive”][paper], from PLDI 2015, takes one flavor of this approach.
 Instead of treating the compiler itself as a black-box system that we try to break from the outside, Alive _proves_ that the high-level insights behind certain optimizations are correct.
 Alive is built for [LLVM][], our friendly massively-optimizing, ahead-of-time, heavily-used beast of a compiler.
-Alive aims to hit a design point that is _both_ practical and formal&mdash;the provable guarantees of verified compiler, for one component of a very pragmatic compiler.
+Alive aims to hit a design point that is _both_ practical and formal&mdash;the provable guarantees of verified compilation, for one component of a very pragmatic compiler.
 
 [csmith]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/bug-finding/
 [emi]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/equivalence-modulo-inputs/
@@ -43,8 +43,8 @@ Since its publication in 2015, Alive has been used to fix and prevent dozens of 
 Below is a high-level overview of Alive's approach.
 
 First, Alive comes with its own domain-specific language (DSL) that was designed to resemble LLVM's intermediate representation.
-Optimization are written in this DSL with a source (left hand side) and and target (right hand side) template, which abstract over constant values and exact data types.
-The semantics of each side are encoding into logical formulas.
+Optimizations are written in this DSL with a source (left hand side) and and target (right hand side) template, which abstract over constant values and exact data types.
+The semantics of each side are encoded into logical formulas.
 Then, Alive generates verification conditions that cover the full range of potential cases, including special treatment of undefined behavior.
 The verification conditions are handed to an off-the-shelf SMT (Satisfiability Modulo Theory) solver, [Z3][], which proves their validity of provides a counterexample.
 If the verification conditions are provably correct, Alive is able to generate C++ code that implements the optimization (which the developer can then link into LLVM).
@@ -146,9 +146,12 @@ Later work on Alive (["Alive2"][a2]) has also introduced tools to help translate
 #### *Usability matters in formal methods*
 
 Alive is a formal system, but it is also a deeply practical one.
-It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-today-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
+It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-to-day-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
 In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to LLVM engineers, which undoubtedly paid off in the adoption of this work.
 Finally, the authors of Alive engaged closely with the LLVM community, from frequenting the RFC discussion channels to publishing high-level blog posts on their contributions.
+A less optimistic lesson, however, is that technology transfer is _still_ *really* hard.
+Despite the project's deep engagement with the community, LLVM has still not wholesale replace most of it's instruction combinations with generated code.
+There is always more work to be done reconciling ideals from research prototypes with the difficult constraints of industry-scale software engineering!
 
 #### *Undefined behavior is pernicious*
 One of the trickiest part of the job for both industry compiler engineers and research verification hackers is dealing with undefined behavior.
@@ -171,7 +174,7 @@ Alive has several threats to validity called out in the paper: Alive's implement
 In addition, later work tackles extending Alive to some [floating point optimizations][fp].
 
 In addition, Alive opens the question of whether SMT solving can be used to _synthesize_ optimizations, instead of just verifying them once they are already written.
-This type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands]
+This type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands].
 
 [lean]: https://sf.snu.ac.kr/aliveinlean/
 [fp]: https://www.cs.rutgers.edu/~santosh.nagarakatte/papers/alive-fp-sas16.pdf
