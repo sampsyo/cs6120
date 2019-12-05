@@ -25,7 +25,7 @@ This algorithm works because the acyclic nature of the spanning tree entails tha
 ### Offline Edge Count Extrapolation Algorithm
 After we run our program, we know the number of times our instrumented edges were traversed. In order to determine the number of times the remaining edges were produced, we need to do some post-processing of our CFG with our runtime results.
 
-The idea behind this algorithm is to iterate over the edges and fill in the edge count until convergence. The program will converge under the assumption that the edge profiling information supplied is sufficient to determine the rest of the edge counts. It is valid to fill in an edge count if there is a simple path between two nodes with known edge count. You can find detailed pseudocode and proofs for this offline algorithm in the [LLVM Publication](https://llvm.org/pubs/2010-04-NeustifterProfiling.pdf).
+The idea behind this algorithm is to iterate over the edges and fill in the edge count until convergence. The program will converge under the assumption that the edge profiling information supplied is sufficient to determine the rest of the edge counts. It is valid to fill in an edge count if there is a simple path between two nodes with known edge count. You can find detailed pseudocode and proofs for this offline algorithm in this [dissertation](https://llvm.org/pubs/2010-04-NeustifterProfiling.pdf) by Andreas Neustifter.
 
 ## Implementation
 
