@@ -8,15 +8,13 @@ bio = """
 
   [Greg][] is a second-year student working on machine learning and digital humanities.
 
-"""
-latex = true
-
-
 [alexa]: https://www.cs.cornell.edu/~avh
 [greg]: https://www.cs.cornell.edu/~gyauney
 [oliver]: https://www.cs.cornell.edu/~oli
 [fish truck]: https://www.triphammermarketplace.com/events/
 """
+latex = true
+
 [[extra.authors]]
 name = "Oliver Richardson"
 link = "https://www.cs.cornell.edu/~oli"
