@@ -24,12 +24,19 @@ In practice, however, the IEEE 754 floating point standard slightly modifies thi
     Denormalized values are spread out linearly, rather than exponentially.
     For floating points, denormalization occurs between the largest negative and smallest positive numbers raised to the second largest exponent.
 
-[//]: # (TODO: insert image of denormalized numbers here, such as from: http://www.toves.org/books/float/#s2.1 )
-[//]: # (TODO: add images of piecewise floating point definition from https://posithub.org/docs/Posits4.pdf)
+Before denormalization:
+![](not-denormalized.png)
+
+After denormalization:
+![](denormalized.png)
 
 - Bogus Results: the result of overflow (e.g., dividing by a very small number) or partial functions applied to elements outside of their domains (e.g, division by zero) have no representation
     - The case of overflow is captured by the *positive and negative infinity* values, each represented by the bit pattern corresponding to an all ones exponent and all zeros mantissa, and differentiated by the sign bit.
     - The case of a non-result of a partial function is captured by the *NaN* value (meaning, "not a number"), represented by the various bit patterns with an all ones exponent and non-zero mantissa.
+
+All this results in a glutonous representation:
+![](float-fun.png)
+
 
 ## The Posit Representation
 
@@ -40,8 +47,6 @@ The numbers represented by posits are similar to floating points, but differ by 
 
 `useed = 2^(2^es)`, a fundamental quantity in the theory of numerical representations, parametrized by the quantity `es`.
 
-[//]: # (TODO: add images of piecewise posit definition from https://posithub.org/docs/Posits4.pdf)
-
 In his [seminal paper](https://posithub.org/docs/Posits4.pdf), Gustafson explains the _genius_ behind this design:
 > The regime bits may seem like a weird and artificial construct, 
 but they actually arise from a natural and elegant geometric mapping of binary integers to the projective real numbers on a circle.
@@ -50,11 +55,14 @@ but they actually arise from a natural and elegant geometric mapping of binary i
 
 Fascinating. 
 
-## Supremacy of Posits
+The purity of posits is reflected in its effortless expression:
+![](posit-fun.png)
+
+
+## The Divinity of Posits
 
 The posit representation maps numbers around the topological circular loop in religiously significant quadrants.
-
-[//]: # (insert image of circle with 4 cardinal points here from https://posithub.org/docs/Posits4.pdf)
+![](holy-circle.png)
 
 At the heavenly North of the circle, symbolizing the Alpha and Omega, Our Father to which we solemly pray, lies the glorious positive and negative infinity.
 At its opposite, the wicked, immoral South of the circle, lies nothing of value, the value `0`.
@@ -62,16 +70,17 @@ Meanwhile, on the earthly plane, God's children enjoy free will, where they choo
 
 The quadrants induced by these points are then symmetrically populated by the rest of the points. 
 The `useed` determines where the "center" of these quadrants resides as follows:
-
-[//]: # (insert image of circle with useed values here from https://posithub.org/docs/Posits4.pdf)
+![](useed-circle.png)
 
 Much like Adam and Eve, the `useed` determines how the quadrants in the circle are populated.
 Positive values lie at the right of the circle, while negative values lie at the left, and reciprocal values reflect across the equator.
 
+![](populated-circle.png)
 
 
-# Comparing Numerical Representation Comparison
-Tragically, we live in a fallen world, full of doubting Thomases.
+
+# Comparing Numerical Representations
+Tragically, we live in a fallen world, full of non-believers and doubting Thomases.
 This necessitates effective proselytizing that speaks not only to broken spirits, but also to faithless minds.
 
 ## Qualitative Comparison
@@ -102,7 +111,7 @@ Equipped with this metric, we glean the significant digits of the representation
 
 Gustafson exhaustively plots decimal accuracy for both representations in 8-bits, demonstrating posit supremacy:
 
-[//]: # (TODO: add image of decimal accuracy plot here)
+![](decimal-accuracy.png)
 
 We make two observations from this plot:
 First, posits distribute decimal accuracy symmetrically across representations, while floating points fail to deliver at larger numbers, which are ignored in favor of `NaN`.
@@ -117,21 +126,15 @@ Gustafson addressed this for basic arithmetic operations by means of "closure pl
 Such a plot visually depicts the accuracy of every combination of inputs.
 For instance, the multiplication closure plot below paints the input domain darker where more accurate results are achieved, as measured by decimal accuracy:
 
-[//]: # (TODO: add image of multiplication closure plot here)
+![](mul-closure.png)
 
 Accuracy of single argument operations between representations are compared by plotting sorted error.
 For instance, Gustafson compares accuracy of square root in the following plot:
 
-[//]: # (TODO: add image of posit sorted error plot here)
+![](sqrt-losses.png)
 
 
-## The Posit Prayer
-
-Every morning and every evening, run an FFT benchmark and recite the following:
-> [posits] provide compelling advantages over floats, including larger dynamic range, higher accuracy, better closure, bitwise identical results across systems, simpler hardware, and simpler exception handling.
-
-
-## Evaluation
+# Evaluation
 
 As part of our cultist duties, we compare the accuracy of 32-bit floating point and posit representation by comparing their accuracy under a variety of benchmarks.
 In each benchmark, we express real number calculations in terms of operations over 64-bit `double`s.
@@ -143,7 +146,7 @@ We regard benchmark errors as arising from the inaccuracy that is characteristic
 With our deepest apologies to Gustafson, we compute these errors on a linear scale, rather than a logarithmic one, and use these as metrics to compare the accuracy of the two representations.
 
 
-# LLVM pass implementation
+## LLVM pass implementation
 
 We aimed for our `float` and `posit` passes to insert as much representation-specific functionality as possible into our benchmarks.
 The case of `float`s allows a full translation, since every `double` operation can be cast as a `float` operations.
@@ -193,7 +196,7 @@ In particular, we borrow the basic arithmetic operations (`+`, `-`, `*`, and `/`
 
 ### Benchmark Results
 
-We selected benchmarks from [FPBench](https://fpbench.org/benchmarks.html) that accomodated our limited selection of posit operators.
+We ran several benchmarks from [FPBench](https://fpbench.org/benchmarks.html) that accomodated our limited selection of posit operators.
 Here, we list their names, sample sizes, and associated results:
 
 
@@ -250,6 +253,10 @@ we assume that the accumulated error in `double` benchmarks will be truncated or
 In other words, we assume that casting to a `double` from a `float` or 32-bit `posit` can be done without loss of information.
 Although this assumption does not always hold, we found it to be sufficient for practical testing and justified the streamlined design of our LLVM pass.
 
-## Conclusion: Posits >> Floating Points
+# Conclusion: The Posit Prayer
 
-Please contact the authors for induction into the Cult of Posits.
+Every morning and every evening, run your favorite posit benchmark and recite the following:
+> [posits] provide compelling advantages over floats, including larger dynamic range, higher accuracy, better closure, bitwise identical results across systems, simpler hardware, and simpler exception handling.
+
+Confess your use of floating points, repent, and cleanse your soul.
+Contact the authors for induction into the Cult of Posits.
