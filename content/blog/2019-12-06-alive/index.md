@@ -29,7 +29,8 @@ Alive aims to hit a design point that is _both_ practical and formal&mdash;the p
 In particular, Alive focuses on LLVM's peephole optimizations&mdash;those that involve replacing a small set of (typically adjacent) instructions with an equivalent, faster set.
 For example, a clever compiler might replace `%x = mul i8 %y, 2` (`x = y * 2`) with `%x = shl i8 %y, 1` (`x` = `y` [shift left][shl] `1`).
 While these optimizations may ["delight hackers"][delight], they are also extremely tricky to get right for edge cases and boundary conditions.
-Alive's specific focus was inspired by the author's previous work on [CSmith][], which found that the single buggiest file in LLVM was`InstCombine` (instruction-combine), the home of over 20,000-C++-lines (!) of peephole optimizations.
+
+Alive's specific focus was inspired by the author's previous work on [CSmith][], which found that the single buggiest file in LLVM was in the instruction combiner, the home of over 20,000-C++-lines (!) of peephole optimizations.
 Since its publication in 2015, Alive has been used to fix and prevent dozens of bugs and improve code concision in production LLVM.
 
 [shl]: https://en.wikipedia.org/wiki/Arithmetic_shift
@@ -64,19 +65,109 @@ If the verification conditions fail, Alive provides the developer with a counter
 - Diagram of flow -->
 
 ## Grokking undefined behavior
-- Undefined behavior != unsafe programming!
-- Undef vs. poison
+The greatest technical challenge for a compiler or verification engineer in this space is wrangling with undefined behavior.
+One of the authors of Alive, John Regehr, has [several][jr1] [excellent][jr2] [blog][jr2] posts on the topic.
 
-## Evaluation/impact
-- Ported existing ones: 8 bugs found in InstCombine
-- LLVM+Alive performance (discuss poor test coverage)
-- “dozens” found in WIP patches (include screenshots)
+### Refinement
+By definition, compilers are allowed to produce different results for the same source program in the presence of undefined behavior.
+However, compilers are _not_ allowed to introduce undefined behavior for a program and input that was well-defined in the unoptimized source code.
+That is, the burden on a verifier like Alive is to show that optimizations are _refinements_ of the source: the optimized target can include a more, but not less, specific subset of behaviors of the source.
 
+To illustrate this, let's look at a [real bug][PR20186] in an optimization that Alive discovered in production LLVM (also described [here][jr1]).
+The optimization aims to simplify an expression that negates the division of a variable `x` with a constant `C`, from the explicit `0 - (x/C)`, to the simpler `x / -C`.
+
+In the Alive DSL, we specify this with:
+
+```
+%div = sdiv %x, C
+%r = sub 0, %div
+  =>
+%r = sdiv %x, -C
+```
+
+When we hand this optimization off to Alive, we get:
+
+```
+Precondition: true
+%div = sdiv %x, C
+%r = sub 0, %div
+  =>
+%r = sdiv %x, -C
+
+Done: 1
+ERROR: Domain of definedness of Target is smaller than Source's for i2 %r
+
+Example:
+%x i2 = 2 (0x2)
+C i2 = 1 (0x1)
+%div i2 = 2 (0x2)
+Source value: 2 (0x2)
+Target value: undef
+```
+
+The problem here is the interplay between an edge case (signed integer overflow) and undefined behavior.
+When the concrete type is `i2` and the values are `x = -2` and `C = 1`, `x/-C = -2/-1 = 2`, but `2` overflows a 2-bit signed integer! While mathematically this is also true in the source template, LLVM's language reference states that overflow in `sdiv` is undefined behavior, the same of which is not true for `sub`. Thus, the target template introduced undefined behavior in a case where there previously was done, so it is _not_ a refinement.
+
+In order to fix this bug, the LLVM developers added a precondition that `C != 1` and `C` is not a sign bit.
+In Alive, we can represent this precondition as ` ((C != 1) && !isSignBit(C))`, and the optimization verifies.
+
+### Poison
+An additional complication in handling undefined behavior is that LLVM actually has two flavors of _deferred_ (non-crashing) undefined behavior: the `undef` value, and implicit _poisoned_ values.
+
+Poison values are a stronger form of undefined behavior: they happen when a side-effect-free instruction produces a result that might later trigger undefined behavior.
+The true undefined behavior only occurs if/when a poisoned value is later used by an instruction that _does_ have side effects (for example, a division by zero).
+Poison values are not represented explicitly in LLVM IR, and can only be identified via careful analysis.
+Alive models poison in a similar way to `undef` values: target templates can only yield poison values if the source did as well.
+
+[jr1]: https://blog.regehr.org/archives/1170
+[jr2]: https://blog.regehr.org/archives/1467
+[jr3]: https://blog.regehr.org/archives/1496
+[PR20186]: https://bugs.llvm.org/show_bug.cgi?id=20186
+
+## Evaluation Alive's impact
+At the time of publication in 2015, Alive's authors (manually)ported 334 peephole optimizations. Optimizations varied in verification time from a few seconds to several hours.From these 334 optimizations, Alive found 8 bugs.
+
+In addition, the authors build a version of LLVM with the default instruction combiner replaced by Alive-generated C++ for their 334 optimizations. They found that despite not covering all of the previous optimizations, LLVM+Alive maintained within 10% of the performance of LLVM on SPEC 2000 and 2006 benchmarks. Much more interestingly, however, the authors show how little coverage these optimizations received in the existings tests and benchmarks. An instrumented LLVM-Alive run on LLVM's nightly test suite and both SPEC benchmarks found that only 159 of the 334 optimizations were triggered:
+
+
+That is, nearly half of the peephole optimizations ported to Alive were untested via the existing manual test and benchmark flow!
+
+In addition to their hard performance numbers, Alive's authors reached out to LLVM developers to incorporate Alive into work-in-progress patches.
+TODO
+<!--
 Ongoing impact
 - Incorporated into code review for InstCombine
-- Introduction of “freeze” in LLVM IR
+- Introduction of “freeze” in LLVM IR -->
 
 ## Key take-aways
-- DSL + SMT useful for verifying compilers correctness
-- Trickiest part, for compiler engineers and verification hackers, is reasoning about UB
-- Building robust, usable systems has real world payoff! Benefit of providing small counterexamples
+Alive leaves us with several key nuggets of wisdom:
+
+#### *DSL + SMT = profit*
+Alive demonstrates that finding a domain-specific language for your goals, in this case concise peephole optimizations, can be especially fruitful for verification.
+The authors argue that DSLs help engineers reason about code.
+Beyond that, Alive shows that a DSL makes translation of semantics to a formal logic like SMT more tractable than trying to wrangle with languages like C or LLVM IR directly.
+Later work on Alive (["Alive2"][a2])has also introduced tools to help translate LLVM IR to Alive's DSL in an automated fashion.
+
+[a2]: https://github.com/AliveToolkit/alive2
+
+#### *Usability matters in formal methods*
+
+Alive is a formal system, but it is also a deeply practical one.
+It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-today-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
+In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to working LLVM engineers, which undoubtedly paid off in the adoption of this work.
+
+
+#### *Undefined behavior is pernicious*
+One of the trickiest part of the job for both industry compiler engineers and research verification hackers is dealing with undefined behavior.
+Eliminating undefined behavior entirely isn't feasible in an aggressive optimizing compiler that wants to exploit speculation, so as researches we need to continue to push for better methodology to keep it contained, understandable, and verifiable.
+In particular, the authors of Alive have been among several researchers who have pushed for LLVM to change it's treatment of deferred undefined behavior.
+In 2016, they shared a proposal titled ["Killing undef and spreading poison"][prop] that advocated for removing the `undef` value, adding an IR-level `poison` value, and introducing a `freeze` instruction that would stop the prorogation of poison by resolving to an arbitrary value.
+Just last month, LLVM took another step toward realizing this vision by adding the `freeze` instruction.
+
+<div class="center">
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">the freeze instruction finally landed in LLVM!<a href="https://t.co/W6odosWUe0">https://t.co/W6odosWUe0</a><br>docs:<a href="https://t.co/kKcCpJUH1L">https://t.co/kKcCpJUH1L</a><br>lots of work left to do but this is a big step towards making LLVM have a clear and consistent undefined behavior model</p>&mdash; John Regehr (@johnregehr) <a href="https://twitter.com/johnregehr/status/1191765816422760448?ref_src=twsrc%5Etfw">November 5, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+</div>
+
+[prop]: https://lists.llvm.org/pipermail/llvm-dev/2016-October/106182.html
