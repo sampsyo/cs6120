@@ -3,16 +3,17 @@ title = "Provably Correct Peephole Optimizations with Alive"
 extra.author = "Alexa VanHattum"
 extra.author_link = "https://www.cs.cornell.edu/~avh/"
 extra.bio = """
-  [Alexa VanHattum](https://www.cs.cornell.edu/~avh/) is a second-year student interested in the intersection of compilers and formal methods. She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
+  [Alexa VanHattum](https://www.cs.cornell.edu/~avh/) is a second-year student interested in the intersection of compilers and formal methods.
+  She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
 """
 +++
 In previous discussions, we've considered research systems that find bugs in compiler implementations via _differential testing_.
 To page you back in, [CSmith][] and [Equivalence Modulo Inputs (Orion)][emi] both used clever tactics to generate randomized test programs and inputs, with the goal of finding instances where compilers produce different output than expected.
-These system exploit a key assumption: while we don't have an oracle that determines the ground truth correct behavior for any program in the presence of undefined behavior, we can expect compilers to produce the "same" behavior across different implementations.
+These system exploit a key assumption: while we don't have an oracle that determines the ground truth correct behavior for any program (without a precise semantics), we can expect compilers to produce the "same" behavior across different implementations.
 
-On the other hand, there are fully verified compilers such as CompCert that guarantee against mis-compilations, but do so at the cost of supporting entire language surfaces and getting fast, optimized code.
+On the other hand, there are fully verified compilers such as [CompCert][] that guarantee against mis-compilations, but do so at the cost of supporting entire language surfaces and getting fast, optimized code.
 
-What about middle ground, where we leverage a correctness oracle for some particularly tricky portions of a massive, commonly-used optimizing compiler?
+What about middle ground, where we leverage a correctness oracle for some particularly tricky portions of a commonly-used optimizing compiler?
 
 Lopes et al.’s [“Provably Correct Peephole Optimizations with Alive”][paper], from PLDI 2015, takes one flavor of this approach.
 Instead of treating the compiler itself as a black-box system that we try to break from the outside, Alive _proves_ that the high-level insights behind certain optimizations are correct.
@@ -21,6 +22,7 @@ Alive aims to hit a design point that is _both_ practical and formal&mdash;the p
 
 [csmith]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/bug-finding/
 [emi]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/equivalence-modulo-inputs/
+[compcert]: http://compcert.inria.fr
 [paper]: https://dl.acm.org/citation.cfm?id=2737965
 [LLVM]: https://llvm.org
 
@@ -30,7 +32,7 @@ In particular, Alive focuses on LLVM's peephole optimizations&mdash;those that i
 For example, a clever compiler might replace `%x = mul i8 %y, 2` (`x = y * 2`) with `%x = shl i8 %y, 1` (`x` = `y` [shift left][shl] `1`).
 While these optimizations may ["delight hackers"][delight], they are also extremely tricky to get right for edge cases and boundary conditions.
 
-Alive's specific focus was inspired by the author's previous work on [CSmith][], which found that the single buggiest file in LLVM was in the instruction combiner, the home of over 20,000-C++-lines (!) of peephole optimizations.
+Alive's specific focus was inspired by the author's previous work on [CSmith][], which found that the single buggiest file in LLVM was in the instruction combiner, home of over 20,000-C++-lines (!) of peephole optimizations.
 Since its publication in 2015, Alive has been used to fix and prevent dozens of bugs and improve code concision in production LLVM.
 
 [shl]: https://en.wikipedia.org/wiki/Arithmetic_shift
@@ -40,13 +42,13 @@ Since its publication in 2015, Alive has been used to fix and prevent dozens of 
 
 Below is a high-level overview of Alive's approach.
 
-First, Alive comes with it's own domain-specific language (DSL) that was designed to resemble LLVM's intermediate representation.
+First, Alive comes with its own domain-specific language (DSL) that was designed to resemble LLVM's intermediate representation.
 Optimization are written in this DSL with a source (left hand side) and and target (right hand side) template, which abstract over constant values and exact data types.
 The semantics of each side are encoding into logical formulas.
 Then, Alive generates verification conditions that cover the full range of potential cases, including special treatment of undefined behavior.
 The verification conditions are handed to an off-the-shelf SMT (Satisfiability Modulo Theory) solver, [Z3][], which proves their validity of provides a counterexample.
 If the verification conditions are provably correct, Alive is able to generate C++ code that implements the optimization (which the developer can then link into LLVM).
-If the verification conditions fail, Alive provides the developer with a counter example in terms of the original source and target template.
+If the verification conditions fail, Alive provides the developer with a counter-example (in terms of the original source and target template).
 
 [z3]: https://github.com/Z3Prover/z3
 
@@ -59,7 +61,7 @@ One of the authors of Alive, John Regehr, has [several][jr1] [excellent][jr2] [b
 ### Refinement
 By definition, compilers are allowed to produce different results for the same source program in the presence of undefined behavior.
 However, compilers are _not_ allowed to introduce undefined behavior for a program and input that was well-defined in the unoptimized source code.
-That is, the burden on a verifier like Alive is to show that optimizations are _refinements_ of the source: the optimized target can include a more, but not less, specific subset of behaviors of the source.
+That is, the burden on a verifier like Alive is to show that optimization targets are _refinements_ of the source: the optimized target can include a more, but not less, specific subset of behaviors of the source.
 
 To illustrate this, let's look at a [real bug][PR20186] in an optimization that Alive discovered in production LLVM (also described [here][jr1]).
 The optimization aims to simplify an expression that negates the division of a variable `x` with a constant `C`, from the explicit `0 - (x/C)`, to the simpler `x / -C`.
@@ -94,7 +96,8 @@ Target value: undef
 ```
 
 The problem here is the interplay between an edge case (signed integer overflow) and undefined behavior.
-When the concrete type is `i2` and the values are `x = -2` and `C = 1`, `x/-C = -2/-1 = 2`, but `2` overflows a 2-bit signed integer! While mathematically this is also true in the source template, LLVM's language reference states that overflow in `sdiv` is undefined behavior, the same of which is not true for `sub`. Thus, the target template introduced undefined behavior in a case where there previously was done, so it is _not_ a refinement.
+When the concrete type is `i2` and the values are `x = -2` and `C = 1`, `x/-C = -2/-1 = 2`, but `2` overflows a 2-bit signed integer! While mathematically this is also true in the source template, LLVM's language reference states that overflow in `sdiv` is undefined behavior, the same of which is not true for `sub`.
+Thus, the target template introduced undefined behavior in a case where there previously was none, so it is _not_ a refinement.
 
 In order to fix this bug, the LLVM developers added a precondition that `C != 1` and `C` is not a sign bit.
 In Alive, we can represent this precondition as ` ((C != 1) && !isSignBit(C))`, and the optimization verifies.
@@ -112,25 +115,31 @@ Alive models poison in a similar way to `undef` values: target templates can onl
 [jr3]: https://blog.regehr.org/archives/1496
 [PR20186]: https://bugs.llvm.org/show_bug.cgi?id=20186
 
-## Evaluation Alive's impact
-At the time of publication in 2015, Alive's authors (manually)ported 334 peephole optimizations. Optimizations varied in verification time from a few seconds to several hours.From these 334 optimizations, Alive found 8 bugs.
+## Evaluating Alive's impact
+At the time of publication in 2015, Alive's authors (manually) ported 334 peephole optimizations.
+Optimizations varied in verification time from a few seconds to several hours.
+From these 334 optimizations, Alive found 8 bugs.
 
-In addition, the authors build a version of LLVM with the default instruction combiner replaced by Alive-generated C++ for their 334 optimizations. They found that despite not covering all of the previous optimizations, LLVM+Alive maintained within 10% of the performance of LLVM on SPEC 2000 and 2006 benchmarks. Much more interestingly, however, the authors show how little coverage these optimizations received in the existings tests and benchmarks. An instrumented LLVM-Alive run on LLVM's nightly test suite and both SPEC benchmarks found that only 159 of the 334 optimizations were triggered:
+In addition, the authors build a version of LLVM with the default instruction combiner replaced by Alive-generated C++ for their 334 optimizations.
+They found that despite not covering all of the previous optimizations, LLVM+Alive maintained within 10% of the performance of LLVM on SPEC 2000 and 2006 benchmarks.
+Much more interestingly, however, the authors show how little coverage these optimizations received in the existing tests and benchmarks.
+An instrumented LLVM-Alive run on LLVM's nightly test suite and both SPEC benchmarks found that only 159 of the 334 optimizations were triggered:
 
 <img src="llvm-alive.png" width="500" >
 
 That is, nearly half of the peephole optimizations ported to Alive were untested via the existing manual test and benchmark flow!
 
-In addition to their hard performance numbers, Alive's authors reached out to LLVM developers to incorporate Alive into work-in-progress patches. The authors report they found "dozens" of proposed incorrect optimization implementations, which they were able to provide counter-examples to prevent with the help of Alive.
+In addition to their hard performance numbers, Alive's authors reached out to LLVM developers to incorporate Alive into work-in-progress patches.
+The authors report they found "dozens" of proposed incorrect optimization implementations, which they were able to provide counter-examples to prevent with the help of Alive.
 
 ## Key take-aways
 Alive leaves us with several key nuggets of wisdom:
 
 #### *DSL + SMT = profit*
 Alive demonstrates that finding a domain-specific language for your goals, in this case concise peephole optimizations, can be especially fruitful for verification.
-The authors argue that DSLs help engineers reason about code.
-Beyond that, Alive shows that a DSL makes translation of semantics to a formal logic like SMT more tractable than trying to wrangle with languages like C or LLVM IR directly.
-Later work on Alive (["Alive2"][a2])has also introduced tools to help translate LLVM IR to Alive's DSL in an automated fashion.
+The authors argue that DSLs help compiler engineers reason about code.
+Beyond that, Alive shows that a DSL makes translation of semantics to a formal logic like SMT more tractable than trying to wrangle with the full semantics of languages like C or LLVM IR directly.
+Later work on Alive (["Alive2"][a2]) has also introduced tools to help translate LLVM IR to Alive's DSL in an automated fashion.
 
 [a2]: https://github.com/AliveToolkit/alive2
 
@@ -138,14 +147,15 @@ Later work on Alive (["Alive2"][a2])has also introduced tools to help translate 
 
 Alive is a formal system, but it is also a deeply practical one.
 It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-today-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
-In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to working LLVM engineers, which undoubtedly paid off in the adoption of this work.
+In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to LLVM engineers, which undoubtedly paid off in the adoption of this work.
 Finally, the authors of Alive engaged closely with the LLVM community, from frequenting the RFC discussion channels to publishing high-level blog posts on their contributions.
 
 #### *Undefined behavior is pernicious*
 One of the trickiest part of the job for both industry compiler engineers and research verification hackers is dealing with undefined behavior.
-Eliminating undefined behavior entirely isn't feasible in an aggressive optimizing compiler that wants to exploit speculation, so as researches we need to continue to push for better methodology to keep it contained, understandable, and verifiable.
-In particular, the authors of Alive have been among several researchers who have pushed for LLVM to change it's treatment of deferred undefined behavior.
+Eliminating undefined behavior entirely isn't feasible in an aggressive optimizing compiler that wants to exploit speculation, so researchers need to continue to push for better methodology to keep it contained, understandable, and verifiable.
+In particular, the authors of Alive have been among several researchers who have pushed for LLVM to change its treatment of deferred undefined behavior.
 In 2016, they shared a proposal titled ["Killing undef and spreading poison"][prop] that advocated for removing the `undef` value, adding an IR-level `poison` value, and introducing a `freeze` instruction that would stop the prorogation of poison by resolving to an arbitrary value.
+Alive includes a [branch][] modeling these new semantics.
 Just last month, LLVM took another step toward realizing this vision by adding the `freeze` instruction.
 
 <div class="center">
@@ -153,10 +163,12 @@ Just last month, LLVM took another step toward realizing this vision by adding t
 </div>
 
 [prop]: https://lists.llvm.org/pipermail/llvm-dev/2016-October/106182.html
+[branch]: https://github.com/nunoplopes/alive/tree/newsema
 
 ## What's left on the table
 
-Alive has several threats to validity called out in the paper: Alive's implementation itself is not verified (though a later [AliveInLean][lean] verifies parts), the correctness relies on the authors faithfully translating LLVM semantics, and the bounded-verification with SMT solving is often either incomplete or slow. In addition, later work tackles extending Alive to some [floating point optimizations][fp].
+Alive has several threats to validity called out in the paper: Alive's implementation itself is not verified (though a later [AliveInLean][lean] verifies components), the correctness relies on the authors faithfully manually translating tricky LLVM semantics, and the bounded-verification with SMT solving is often either incomplete or slow.
+In addition, later work tackles extending Alive to some [floating point optimizations][fp].
 
 In addition, Alive opens the question of whether SMT solving can be used to _synthesize_ optimizations, instead of just verifying them once they are already written.
 This type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands]
