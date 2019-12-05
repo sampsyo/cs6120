@@ -36,14 +36,6 @@ Since its publication in 2015, Alive has been used to fix and prevent dozens of 
 [shl]: https://en.wikipedia.org/wiki/Arithmetic_shift
 [delight]: https://dl.acm.org/citation.cfm?id=2462741
 
-<!-- To see why this specific type of optimization is tricky, let's consider a notoriously annoying boundary condition for programmers&mdash;integer overflow!
-Our enterprising compiler engineer might want to exploit their mathematical intuition that for any number `x`, `x + 1 > x`.
-
- `%x = add %y, %y` (`x = y + y`) with the faster `%x = shl %y, 1`.
-While our basic math intuition sense might tell us that this optimization is just as correct as the previous one, this optimization is not allowed in LLVM.
-LLVM has a special value, `undef`, that represents _deferred_ undefined behavior.
-TODO -->
-
 ## System overview
 
 Below is a high-level overview of Alive's approach.
@@ -160,11 +152,14 @@ Just last month, LLVM took another step toward realizing this vision by adding t
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">the freeze instruction finally landed in LLVM!<a href="https://t.co/W6odosWUe0">https://t.co/W6odosWUe0</a><br>docs:<a href="https://t.co/kKcCpJUH1L">https://t.co/kKcCpJUH1L</a><br>lots of work left to do but this is a big step towards making LLVM have a clear and consistent undefined behavior model</p>&mdash; John Regehr (@johnregehr) <a href="https://twitter.com/johnregehr/status/1191765816422760448?ref_src=twsrc%5Etfw">November 5, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 
+[prop]: https://lists.llvm.org/pipermail/llvm-dev/2016-October/106182.html
+
 ## What's left on the table
 
-Alive has several threats to validity called out in the paper: Alive's implementation itself is not verified (though a later [AliveInLean][lean] verified parts), the correctness relies on the authors faithfully translating LLVM semantics, and the bounded-verification with SMT solving is often either incomplete or slow. In addition, later work tackled extending Alive to some [floating point optimizations][fp].
+Alive has several threats to validity called out in the paper: Alive's implementation itself is not verified (though a later [AliveInLean][lean] verifies parts), the correctness relies on the authors faithfully translating LLVM semantics, and the bounded-verification with SMT solving is often either incomplete or slow. In addition, later work tackles extending Alive to some [floating point optimizations][fp].
 
-In addition, Alive opens the question of whether SMT solving can be used to _synthesize_ optimizations, instead of only verifying them. These type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands]
+In addition, Alive opens the question of whether SMT solving can be used to _synthesize_ optimizations, instead of just verifying them once they are already written.
+This type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands]
 
 [lean]: https://sf.snu.ac.kr/aliveinlean/
 [fp]: https://www.cs.rutgers.edu/~santosh.nagarakatte/papers/alive-fp-sas16.pdf
@@ -172,5 +167,3 @@ In addition, Alive opens the question of whether SMT solving can be used to _syn
 [souper]: https://arxiv.org/pdf/1711.04422.pdf
 [optgen]: https://link.springer.com/chapter/10.1007/978-3-662-46663-6_9
 [sands]: https://llvm.org/devmtg/2011-11/Sands_Super-optimizingLLVMIR.pdf
-
-[prop]: https://lists.llvm.org/pipermail/llvm-dev/2016-October/106182.html
