@@ -24,7 +24,6 @@ In practice, however, the IEEE 754 floating point standard slightly modifies thi
     Denormalized values are spread out linearly, rather than exponentially.
     For floating points, denormalization occurs between the largest negative and smallest positive numbers raised to the second largest exponent.
 
-[//]: # (Note: this is a hyperlink used as a comment lol)
 [//]: # (TODO: insert image of denormalized numbers here, such as from: http://www.toves.org/books/float/#s2.1 )
 [//]: # (TODO: add images of piecewise floating point definition from https://posithub.org/docs/Posits4.pdf)
 
@@ -53,7 +52,7 @@ Fascinating.
 
 ## Supremacy of Posits
 
-The posit representation maps numbers around the topological circular loop in quadrants, as prophesied.
+The posit representation maps numbers around the topological circular loop in religiously significant quadrants.
 
 [//]: # (insert image of circle with 4 cardinal points here from https://posithub.org/docs/Posits4.pdf)
 
@@ -69,88 +68,188 @@ The `useed` determines where the "center" of these quadrants resides as follows:
 Much like Adam and Eve, the `useed` determines how the quadrants in the circle are populated.
 Positive values lie at the right of the circle, while negative values lie at the left, and reciprocal values reflect across the equator.
 
-## Comparing Numerical Representation Comparison
 
-# Qualitative Comparison
+
+# Comparing Numerical Representation Comparison
+Tragically, we live in a fallen world, full of doubting Thomases.
+This necessitates effective proselytizing that speaks not only to broken spirits, but also to faithless minds.
+
+## Qualitative Comparison
 
 Unlike IEEE's extravagantly piecewise nature, posits opt for piecewise minimalism:
 - Whereas there are two floating point representations of zero (both positive and negative), there is only one such posits representation: the all zero bit pattern.
 - Whereas positive and negative infinity are distinctly represented as floating points, posits unite these values into one representation: the bit pattern with all zeros save for the first bit.
 - Whereas floating point numbers are polluted with `NaN` values, posits are cleansed of such unclean special values.
 
-# Metric-based Comparison
+Often, this simple observation suffices to awaken floating point enthusiasts out of their delusion.
 
-[//]: # (TODO: fill in Gustafson's metric definitions and comparisons here, from http://www.johngustafson.net/pdfs/BeatingFloatingPoint.pdf)
-Not settling for simple, qualitative comparision, Gustafson proposes a variety of metric-based comparisons for numerical representations.
-He asks: given a represenation, how can we assess how accurately each number is represented?
-To answer this, he proposes the *decimal accuracy* metric: the number of significant bits a real number in the canonical representation of .
+## Decimal Accuracy Comparison
 
-Let us regard *accuracy* as the *inverse of error*. 
-Then each error metric, that is, each way of considering the distance between a computed value and its correct value, induces an accuracy metric. 
-Thankfully, Gustafson reminds us that the choice of error metric is obvious:
+At other times, a more quantitive approach is called for;
+to this end, Gustafson proposes a variety of metric-based comparisons for numerical representation.
+First, he asks: how can we assess how accurately a number is represented in a given representation?
+To answer this, he proposes the *decimal accuracy* metric: the number of significant bits of a real number on a logarithmic scale, as in the decibel system.
+
+Charitably, Gustafson elucidates non-believers why the logarithmic scale is the one true choice:
   > A “perfect spacing” of ten numbers between 1 and 10 in a real number system would be not the evenly-spaced counting numbers 1 through 10, 
   > but exponentially-spaced 1,10^(1/10),10^(2/10),...,10^(9/10),10.
 
-Thus, the "position" of a (positive, non-zero) real number `n` is given by `p`, where `n = 10^(p/10)`,
-and so the distance between `n` and `n'` is given by `| log_10(n / n') | = p - p'`. 
-In other words, we compare the spacing of numbers according to the *decibel system*, the inverse of which yields the *perfect metric for accuracy*.
-Finally, we glean the significant digits of the representation, the *decimal accuracy*, by taking the base 10 logarithm of accuracy.
+Thus, the "canonical position" of a (positive, non-zero) real number `n` is given by `p`, where `n = 10^(p/10)`,
+and so it follows that the distance, or representation error, between a real number `n` and its representation `n'` is given by `| log_10(n / n') | `.
+A straightforward adjustment adapts this scheme to negative numbers as well, and we ignore zero, since posits represents it exactly.
+The inverse of this error which yields the *perfect metric for accuracy*.
+Equipped with this metric, we glean the significant digits of the representation, the *decimal accuracy*, by taking its base 10 logarithm.
 
-Gustafson exhaustively plots the decimal accuracy of each representation in 8-bits, demonstrating posit supremacy:
+Gustafson exhaustively plots decimal accuracy for both representations in 8-bits, demonstrating posit supremacy:
 
 [//]: # (TODO: add image of decimal accuracy plot here)
 
 We make two observations from this plot:
 First, posits distribute decimal accuracy symmetrically across representations, while floating points fail to deliver at larger numbers, which are ignored in favor of `NaN`.
 Furthermore, posits favor decimal accuracy at the meat of the number line, a sizable domain around 0, whereas floating points over-emphasizes the ends of the number line.
-Finally, the posit representation casts the light of representation across a larger domain; its *dynamic range* exceeds that of floating points.
+Finally, posits represents more numbers: they cast the light of representation across a larger domain. 
+In other words, the *dynamic range* of posits, a further metric, exceeds that of floating points.
 
-But how does error propagate with successive operations?
-> Note that the values represented by posits represent over two decades more *dynamic range* than the floats, 
-> as well as being as accurate or more for all but the values where floats are close to underflow or overflow.
+## Operation Accuracy Comparison
 
-(note that floating points have better 
+Besides raw representation error, there is the possibility of errors generated from primitive operations.
+Gustafson addressed this for basic arithmetic operations by means of "closure plots".
+Such a plot visually depicts the accuracy of every combination of inputs.
+For instance, the multiplication closure plot below paints the input domain darker where more accurate results are achieved, as measured by decimal accuracy:
 
-- Dynamic Range
-- single argument operation comparisons (sqrt, exp, etc.)
-- two argument operation accuracy and closure
+[//]: # (TODO: add image of multiplication closure plot here)
+
+Accuracy of single argument operations between representations are compared by plotting sorted error.
+For instance, Gustafson compares accuracy of square root in the following plot:
+
+[//]: # (TODO: add image of posit sorted error plot here)
+
+
+## The Posit Prayer
+
+Every morning and every evening, run an FFT benchmark and recite the following:
+> [posits] provide compelling advantages over floats, including larger dynamic range, higher accuracy, better closure, bitwise identical results across systems, simpler hardware, and simpler exception handling.
 
 
 ## Evaluation
 
-We compare the accuracy of 32-bit floating point and posit representation by comparing their accuracy under a variety of benchmarks.
+As part of our cultist duties, we compare the accuracy of 32-bit floating point and posit representation by comparing their accuracy under a variety of benchmarks.
 In each benchmark, we express real number calculations in terms of operations over 64-bit `double`s.
 In other words, the `double` type serves as the "oracle" baseline from which we compute accuracy.
 Each `double` benchmark is then compiled to LLVM IR, upon which we apply a `posit` LLVM pass and a `float` LLVM pass respectively to generate associated benchmarks.
-The values produced from these two benchmarks carry the accumulated error arising from the inaccuracy of the particular 32-bit representation, which compounds with successive operations.
-Finally, we derive accuracies by comparing to the value of the `double` baseline benchmark, and use these as metrics to compare the accuracy of the two representations.
 
-Although it is not true that the `double` type has perfect accuracy, since no finite representation is, we assume that the accumulated error in `double` benchmarks will be truncated or rounded off when comparing with the less precise 32-bit representations.
-In other words, we that casting to a `double` from a `float` or 32-bit `posit` can be done without loss of information.
-Although this assumption does not always hold, we found it to be sufficient for practical testing and helps streamline the implementation of the different benchmarks.
+Finally, we compute percent error by comparing `float` and `posit` benchmark results to the `double` baseline benchmark.
+We regard benchmark errors as arising from the inaccuracy that is characteristic of the particular 32-bit representation, compounded with successive operations.
+With our deepest apologies to Gustafson, we compute these errors on a linear scale, rather than a logarithmic one, and use these as metrics to compare the accuracy of the two representations.
 
-# LLVM `posit` pass
 
-The LLVM `posit` pass operates analogously: it converts `double` operations and operands to the `posit` versions.
-This conversion is limited by the availability of `posit` operation implementations.
-For this project, we focused on implementing and translating exactly the arithmetic operations `+`, `-`, `*`, and `/` on 32-bit posits.  
-We draw `posit` conversion, addition, subtraction, multiplication, and division implementations from the [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
+# LLVM pass implementation
 
-This pass only operates on these arithmetic operations between exactly doubles; all other values are untouched, and doubles are still stored as such except when applying this posit operation.
-After an arithmetic operation is applied, the result is translated back to a double value until the next computation.
-Through applying this minimal rewrite, we avoid issues with allocation and changing types; additionally, we are able to support programs which would run without this pass, since operations not yet implemented are simply applied as double operations.
-This approach is also extensible, as adding new posit operations simply amounts to implementing each operation in C, then copying and pasting the relevant pass code.
+We aimed for our `float` and `posit` passes to insert as much representation-specific functionality as possible into our benchmarks.
+The case of `float`s allows a full translation, since every `double` operation can be cast as a `float` operations.
+The case of `posit`s lacked full support, however: we did not provide implementations for all existing LLVM `double` operations.
 
-# LLVM `float` pass
+To accommodate both cases under one pass implementation, 
+we designed our pass such that it first lowers each supported `double` operation and operands down to the target representation, subsequently lifting the result back to a `double`.
 
-The LLVM `float` pass generates a `float` benchmark from a `double` benchmark by casting arithmetic `double` operations to `float` operations via casting the associated `double` operands to `float` operands.
-Conversion of `double` operands to `float` operations occur via the FPTrunc and FPExt commands, while the arithmetic operations simply take in the new `float` arguments.
-As with the posit pass implementation, the resulting calculated value carries the accumulated error characteristic of the successive `float` operations on 32-bit `float`.
+Since each rewrite has a purely local effect, we can avoid reasoning about complex allocation and type casting scenarios.
+Though computationally inefficient, this approach immediately supports all programs and is easily extendible.
 
-### Benchmarks
+In pseduo-LLVM, the general structure of a pass to type `typ` converts an arbitrary `double` operation `op` and its operands proceeds as follows:
 
-[//]: # (TODO: figure out this part)
+```llvm 
+x : double = ..
+y : double = ..
+result : double = op double x y
+```
 
-## Conclusion
+-->
 
-[//]: # (TODO: do this after benchmarks)
+
+```llvm
+x : double = ..
+y : double = ..
+
+x_typ : typ = convert double x to typ;
+y_typ : typ = convert double y to typ;
+result_typ : typ = typ_op x_typ y_typ; 
+
+result double = convert result_typ typ to double
+```
+
+This generic pass structure parametrizes `typ` into three components:
+- `convert double to typ`: conversion from `double` to `typ`
+- `convert typ to double`: conversion from `typ` to `double`
+- `typ_op`: implementation over `typ` values of `op`, the corresponding `double` operation
+
+The `float` pass specifies these components as:
+- `fptrunc double to float`
+- `fpext float to double`
+- LLVM's floating point operations with type parameter set to `float` (e.g., `fadd float x y`)
+
+The `posit` pass draws these components from external `C` functions implemented in [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
+In particular, we borrow the basic arithmetic operations (`+`, `-`, `*`, and `/`) over 32-bit posits. 
+
+
+### Benchmark Results
+
+We selected benchmarks from [FPBench](https://fpbench.org/benchmarks.html) that accomodated our limited selection of posit operators.
+Here, we list their names, sample sizes, and associated results:
+
+
+| `sum` | Mean Error | Error Std Dev |
+|-------|------------|---------------|
+| Float | 7.7e-8     | 4.8e-8        |
+| Posit | 5.1e-9     | 3.2e-9        |
+|`n`= 1000 |||
+
+
+| `x_by_xy` | Mean Error | Error Std Dev |
+|-------|------------|---------------|
+| Float | 1.1e-7     | 9.2e-8        |
+| Posit | 6.9e-9     | 5.7e-9        |
+| `n` = 961 | | |
+
+
+| `delta4` | Mean Error | Error Std Dev |
+|-------|------------|---------------|
+| Float | 5.8e-7     | 6.5e-6        |
+| Posit | 3.6e-8     | 3.8e-7        |
+| `n`= 262144 |   |    |
+
+
+
+| `kepler0` | Mean Error | Error Std Dev |
+|-------|------------|---------------|
+| Float | 2.5e-7     | 1.0e-7        |
+| Posit | 1.6e-8     | 7.9e-9        |
+| `n`= 262144  |  |        |
+
+
+| `floudas1`  | Mean Error | Error Std Dev |
+|-------|------------|---------------|
+| Float | 2.1e-7     | 1.6e-7        |
+| Posit | 1.4e-8     | 1.2e-8        |
+| `n`= 92572956 |   |        |
+
+
+# Discussion
+
+As prophesied by Gustafson, posits consistently outperform floating points by orders of magnitude.
+However, our LLVM `posit` pass is grossly inefficient: it introduces loads and stores operations to convert between `double` and `posit` for each `double` operation.
+We blame this sad state of affairs on ignorant, non-posit architectures, which necessitate such a pass in the first place.
+
+Gustafson shares what we're missing out on by not being woke:
+>  A posit processing unit takes less circuitry than an IEEE float FPU. With lower power use and smaller silicon footprint, the posit operations per second (POPS) supported by a chip can be significantly higher than the FLOPS using similar hardware resources. GPU accelerators and Deep Learning processors, in particular,can do more per watt and per dollar with posits, yet deliver superior answer quality
+Indeed, we could be talking in terms of POPS instead of FLOPS.
+Nonetheless, our pass allows us to simulate and give thanks for posit accuracy.
+
+As mentioned previously, our approach treats `double` as the "ground truth" representation for benchmarks. 
+Although this is an approximation, since no finite representation has perfect accuracy, 
+we assume that the accumulated error in `double` benchmarks will be truncated or rounded off when comparing with the less precise 32-bit representations.
+In other words, we assume that casting to a `double` from a `float` or 32-bit `posit` can be done without loss of information.
+Although this assumption does not always hold, we found it to be sufficient for practical testing and justified the streamlined design of our LLVM pass.
+
+## Conclusion: Posits >> Floating Points
+
+Please contact the authors for induction into the Cult of Posits.
