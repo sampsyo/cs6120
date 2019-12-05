@@ -126,8 +126,10 @@ For `sum_to_n`, our basic understanding of arithmetic holds up, and we get that 
 
 This output is saved to disk for later comparisons.
 
-Executing the application a single time assumes that the application's output is deterministic, which is obviously a huge potential blindspot in loop perforation.
-In particular, our implementation does nothing to detect non-determinism, which seems consistent with the prior published work on this topic.
+Executing the application a single time assumes that the application's output is deterministic, which is potentially a huge blindspot in loop perforation.
+In particular, our implementation does nothing to detect non-determinism in the intact program, which seems consistent with much published work on this topic (though some do address this by collecting multiple runs e.g., (ACCEPT)[https://dada.cs.washington.edu/research/tr/2015/01/UW-CSE-15-01-01.pdf]). 
+However, we do run the perforated variants multiple times, as we will see below.
+
 
 After the driver executes the standard variant of the application, it needs to determine what loop structures the program has to exploit.
 To accomplish this, the driver runs our first pass, `LoopCountPass`.
@@ -203,7 +205,10 @@ To:
   %7 = add nsw i32 %.0, 2              ;; <- Perforated rate here
   br label %2
 ```
-After the driver perforates the desired loop, it executes that modified executable on the representative input.
+
+After the driver perforates the desired loop, it executes that modified executable on the representative input, this time multiple times, as these could be non-deterministic even if the original program was not.[^1]
+
+
 The driver checks the return code of the execution and treats crashing programs as unacceptable.
 It also measures the execution of each program in wall-clock time.
 The output is saved to disk then compared with the standard, non-perforated output.
@@ -251,8 +256,8 @@ However, we can see that the error ratio does drastically change as we increase 
 
 The final task of the driver is to combine what it learned about how much it can mangle each loop into one final answer.
 That is, where we were previously perforating each loop in turn, we now want to perforate some subset of the loops that we determined don't hurt the accuracy too much.
-Here, we follow the lead of the original loop perforated paper in making a greedy assumption—that we can choose an final loop perforation strategy based on joining the maximum perforation rate for each loop that that was below the error tolerance.
-This strategy makes the very optimistic assumption that errors are not additive; in the published paper their system backtracks in the case that the combined executable is unacceptable.
+Here, we follow the lead of the original loop perforation paper in making a greedy assumption—that we can choose an final loop perforation strategy based on joining the maximum perforation rate for each loop that that was below the error tolerance.
+This strategy makes the very optimistic assumption that errors do not interfere in destructive ways to cause crashes; in the published paper their system backtracks in the case that the combined executable is unacceptable.
 For the purpose of this project, we simply ungracefully fail in that case.
 
 In our `sum_to_n` toy example, this joined result sees that only a loop perforation rate of 2 produces an executable that is below our error threshold of 50%. We thus see the following final joined summary in the results:
@@ -278,11 +283,14 @@ That reader would be right!
 However, the promise of loop perforation (along with many other optimizations that rely on dynamic analysis) is that we can run the expensive analysis on a small, representative input, and have the performance improvements scale to much larger examples.
 For this silly toy, imagine we wanted to sum a list of millions of numbers—we would not need to rerun analysis, but could simply use the same executable.
 
+[^1]: Perforated programs could be non-deterministic even if the original program was not. For instance, the perforated `alloc-loop` reads allocated but uninitialized values, which are vestigal, meaningless bytes from a bygone age.
+
+
 ### Design Decisions
 
 We made the following design decisions in our implementation:
 
-- Our driver is less clever about "critically testing" (that is, determining which loops are safe to perforate) than the original paper.
+- Our driver is less clever about "criticality testing" (that is, determining which loops are safe to perforate) than the original paper.
 In particular, in addition to not implementing backtracking when combining loop perforation rates, we do not use Valgrind or anything similar to detect memory errors in perforated runs, and instead rely only on process return code and the user-defined accuracy metrics.
 - In some implementations of loop perforation, rather than modifying the induction variable directly the pass instruments an additional counter to each loop.
 For example, this is the approach taken in [ACCEPT's loop perforation pass][].
@@ -387,6 +395,8 @@ We additionally ran loop perforation on three larger benchmark programs:
 1. `sobel`: A Sobel filter from the [ACCEPT benchmarks][] for approximate computing.
 2. `img-blur`: A Gaussian blur that operates on the same inputs as `sobel`; we implemented this ourselves using Sobel as a model. They share PGM processing code.
 3. `blackscholes`: From the [PARSEC][] benchmark suite. We chose this benchmark for ease and simplicity of compilation, as well as having a straightforward potential for error metrics for the output data.
+
+It is worth noting that the `blackscholes` benchmark is meant to be a stress test and hence wrapped in one outer loop which duplicates the computation in order to get more robust estimates. Skipping iterations of the outer loop, which does not degrade performance, clearly undermines the intent of the benchmark, once again suggesting that loop perforation gains may be overfitted to the evaluation metrics they're trained on.
 
 We had hoped to run our pass on additional PARSEC benchmarks, but had trouble either 1) compiling them with LLVM on our machines, or 2) determining reasonable error metrics.
 
