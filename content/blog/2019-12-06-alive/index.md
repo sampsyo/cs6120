@@ -60,10 +60,6 @@ If the verification conditions fail, Alive provides the developer with a counter
 
 <img src="sys-diagram.png" width="700" >
 
-<!-- - Introduce DSL
-- Show a simple correct/incorrect optimization
-- Diagram of flow -->
-
 ## Grokking undefined behavior
 The greatest technical challenge for a compiler or verification engineer in this space is wrangling with undefined behavior.
 One of the authors of Alive, John Regehr, has [several][jr1] [excellent][jr2] [blog][jr2] posts on the topic.
@@ -129,15 +125,11 @@ At the time of publication in 2015, Alive's authors (manually)ported 334 peephol
 
 In addition, the authors build a version of LLVM with the default instruction combiner replaced by Alive-generated C++ for their 334 optimizations. They found that despite not covering all of the previous optimizations, LLVM+Alive maintained within 10% of the performance of LLVM on SPEC 2000 and 2006 benchmarks. Much more interestingly, however, the authors show how little coverage these optimizations received in the existings tests and benchmarks. An instrumented LLVM-Alive run on LLVM's nightly test suite and both SPEC benchmarks found that only 159 of the 334 optimizations were triggered:
 
+<img src="llvm-alive.png" width="500" >
 
 That is, nearly half of the peephole optimizations ported to Alive were untested via the existing manual test and benchmark flow!
 
-In addition to their hard performance numbers, Alive's authors reached out to LLVM developers to incorporate Alive into work-in-progress patches.
-TODO
-<!--
-Ongoing impact
-- Incorporated into code review for InstCombine
-- Introduction of “freeze” in LLVM IR -->
+In addition to their hard performance numbers, Alive's authors reached out to LLVM developers to incorporate Alive into work-in-progress patches. The authors report they found "dozens" of proposed incorrect optimization implementations, which they were able to provide counter-examples to prevent with the help of Alive.
 
 ## Key take-aways
 Alive leaves us with several key nuggets of wisdom:
@@ -155,7 +147,7 @@ Later work on Alive (["Alive2"][a2])has also introduced tools to help translate 
 Alive is a formal system, but it is also a deeply practical one.
 It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-today-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
 In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to working LLVM engineers, which undoubtedly paid off in the adoption of this work.
-
+Finally, the authors of Alive engaged closely with the LLVM community, from frequenting the RFC discussion channels to publishing high-level blog posts on their contributions.
 
 #### *Undefined behavior is pernicious*
 One of the trickiest part of the job for both industry compiler engineers and research verification hackers is dealing with undefined behavior.
@@ -165,9 +157,20 @@ In 2016, they shared a proposal titled ["Killing undef and spreading poison"][pr
 Just last month, LLVM took another step toward realizing this vision by adding the `freeze` instruction.
 
 <div class="center">
-
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">the freeze instruction finally landed in LLVM!<a href="https://t.co/W6odosWUe0">https://t.co/W6odosWUe0</a><br>docs:<a href="https://t.co/kKcCpJUH1L">https://t.co/kKcCpJUH1L</a><br>lots of work left to do but this is a big step towards making LLVM have a clear and consistent undefined behavior model</p>&mdash; John Regehr (@johnregehr) <a href="https://twitter.com/johnregehr/status/1191765816422760448?ref_src=twsrc%5Etfw">November 5, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
 </div>
+
+## What's left on the table
+
+Alive has several threats to validity called out in the paper: Alive's implementation itself is not verified (though a later [AliveInLean][lean] verified parts), the correctness relies on the authors faithfully translating LLVM semantics, and the bounded-verification with SMT solving is often either incomplete or slow. In addition, later work tackled extending Alive to some [floating point optimizations][fp].
+
+In addition, Alive opens the question of whether SMT solving can be used to _synthesize_ optimizations, instead of only verifying them. These type of work is often in the category of super-optimization, and is undertaken by both the previously-discussed [Chlorophyll][] project and [other][souper] [related][optgen] [projects][sands]
+
+[lean]: https://sf.snu.ac.kr/aliveinlean/
+[fp]: https://www.cs.rutgers.edu/~santosh.nagarakatte/papers/alive-fp-sas16.pdf
+[chlorophyll]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/chlorophyll/
+[souper]: https://arxiv.org/pdf/1711.04422.pdf
+[optgen]: https://link.springer.com/chapter/10.1007/978-3-662-46663-6_9
+[sands]: https://llvm.org/devmtg/2011-11/Sands_Super-optimizingLLVMIR.pdf
 
 [prop]: https://lists.llvm.org/pipermail/llvm-dev/2016-October/106182.html
