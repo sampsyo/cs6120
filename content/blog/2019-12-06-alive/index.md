@@ -9,7 +9,7 @@ extra.bio = """
 +++
 In previous discussions, we've considered research systems that find bugs in compiler implementations via _differential testing_.
 To page you back in, [CSmith][] and [Equivalence Modulo Inputs (Orion)][emi] both used clever tactics to generate randomized test programs and inputs, with the goal of finding instances where compilers produce different output than expected.
-These system exploit a key assumption: while we don't have an oracle that determines the ground truth correct behavior for any program (without a precise semantics), we can expect compilers to produce the "same" behavior across different implementations.
+These systems exploit a key assumption: while we don't have an oracle that determines the ground truth correct behavior for any program (without a precise semantics), we can expect compilers to produce the "same" behavior across different implementations.
 
 On the other hand, there are fully verified compilers such as [CompCert][] that guarantee against mis-compilations, but do so at the cost of supporting entire language surfaces and getting fast, optimized code.
 
@@ -149,8 +149,8 @@ Alive is a formal system, but it is also a deeply practical one.
 It recognized that there is impact to be had from building verification systems closer to where working programmers spend their day-to-day-hacking, in part by targeting a massive existing code base in a piecewise, workable way.
 In addition, Alive's DSL and counter-examples were designed with an interface meant to be familiar to LLVM engineers, which undoubtedly paid off in the adoption of this work.
 Finally, the authors of Alive engaged closely with the LLVM community, from frequenting the RFC discussion channels to publishing high-level blog posts on their contributions.
-A less optimistic lesson, however, is that technology transfer is _still_ *really* hard.
-Despite the project's deep engagement with the community, LLVM has still not wholesale replace most of it's instruction combinations with generated code.
+A less optimistic lesson, however, is that technology transfer is _still_ **really** hard.
+Despite the project's deep engagement with the community, LLVM has still not wholesale replaced most of its instruction combinations with Alive-generated code.
 There is always more work to be done reconciling ideals from research prototypes with the difficult constraints of industry-scale software engineering!
 
 #### *Undefined behavior is pernicious*
