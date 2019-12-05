@@ -18,7 +18,7 @@ To select the edges to profile, we used Knuth's algorithm:
 <!-- ![](https://i.imgur.com/NbavLnq.png) -->
 <img src="array.png" style="max-width: 100%" >
 ---
-Essentially, this algorithm first finds the (acyclic) minimum spanning tree of the edges in a function and then adds profiling instrumentation---code that logs profiling information---to all edges not in the spanning tree. Note that this algorithm uses the first block in a function as the root of the spanning tree, and that edges are treated as bidirectional when checking for cycles.
+Essentially, this algorithm first finds the minimum spanning tree of the edges in a function and then adds profiling instrumentation---code that logs profiling information---to all edges not in the spanning tree. Note that this algorithm uses the first block in a function as the root of the spanning tree, and that edges are treated as bidirectional when checking for cycles.
 
 This algorithm works because the acyclic nature of the spanning tree entails that there is exactly one path between any two instrumented edges (or the entry or exit of the function). Thus, logging the traversal of one instrumented edge implies traversal of the program through the path from the previously logged edge location to the current one. This also implies that this is the minimum number of instrumented edges because having one less instrumented edge would either create a path that could be traversed without logging any profiling information or create multiple paths that lack sufficient profiling information to deduce which path was taken. 
 
