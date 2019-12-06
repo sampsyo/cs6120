@@ -131,12 +131,15 @@ Most of the correctness tests were either simple sanity checks or specifically c
 <img src="diamond.png" style="width: 30%">
 
 For this graph, my algorithm generated the following inc values:
+
 | Edge | Inc |
 |:-:|:-:|
 | D -> F | 1 |
 | C -> D | 4 |
 | B -> C | -2 |
+
 This gives the following path numberings:
+
 | Path | value |
 |:-:|:-:|
 |A,B,D,E,F | 0|
