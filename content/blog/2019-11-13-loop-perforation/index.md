@@ -127,7 +127,7 @@ For `sum_to_n`, our basic understanding of arithmetic holds up, and we get that 
 This output is saved to disk for later comparisons.
 
 Executing the application a single time assumes that the application's output is deterministic, which is potentially a huge blindspot in loop perforation.
-In particular, our implementation does nothing to detect non-determinism in the intact program, which seems consistent with much published work on this topic (though some do address this by collecting multiple runs e.g., (ACCEPT)[https://dada.cs.washington.edu/research/tr/2015/01/UW-CSE-15-01-01.pdf]). 
+In particular, our implementation does nothing to detect non-determinism in the intact program, which seems consistent with much published work on this topic (though some do address this by collecting multiple runs e.g., [ACCEPT](https://dada.cs.washington.edu/research/tr/2015/01/UW-CSE-15-01-01.pdf)). 
 However, we do run the perforated variants multiple times, as we will see below.
 
 
