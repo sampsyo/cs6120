@@ -88,7 +88,7 @@ To the language specification I have added three instructions,
 
  - `flip`: an instruction which stores a random boolean in its target destination
  - `obv`: an "observe" primitive, used for conditioning, which can be thought of as an assert---if it fails, the world and any mass on it are destroyed, netting a sub-distribution. If one thinks of programs as being normalized distributions (that is, conditioned on a program finishing), then this mass is re-distributed to the other runs, and this instruction is equivalent to a restart of the program.
- - `clear`: clears the environment variables, removing all bindings<!--[^1]-->. `obv` can be compiled to a branch which restarts the program, with a `clear`.
+ - `clear`: clears the environment variables, removing all bindings.[^1] `obv` can be compiled to a branch which restarts the program, with a `clear`.
 
 
 
@@ -348,4 +348,4 @@ Low $p$-values are bad, because they suggest that the expected distribution is d
 Nonetheless, one can see that the expected frequencies mirror the expected ones. One might worry that this sample does not include many interesting programs with control flow that generates things with more than powers of two---and this is largely true, but every once in a while it does happen, and anecdotally `xbrili` still gets them right.
 
 
-<!--[^1]: This can also be seen as the analog of freeing all heap variables at once, but for the stack, or the creation of a new stack frame (where the old one doesn't need to be saved due to tail recursion).-->
+[^1]: This can also be seen as the analog of freeing all heap variables at once, but for the stack, or the creation of a new stack frame (where the old one doesn't need to be saved due to tail recursion).
