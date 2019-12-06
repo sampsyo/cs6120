@@ -1,16 +1,16 @@
 +++
 title = "The Cult of Posits"
-extra.author = {"Dietrich Geisler", "Edwin Peguero"}
+extra.author = "Dietrich Geisler & Edwin Peguero"
 +++
 
 Computers are incapable of representing arbitrary real numbers exactly.
 This is due to two intractable facts of real numbers:
-- Uncountably Infinite Quantity: There are an infinite number of real numbers.
-- Uncountably Infinite Precision: Some (irrational) real numbers require infinite precision.
+- Uncountably Infinite Domain: There are an infinite number of real numbers.
+- Uncountably Infinite Precision: Some real numbers require infinite precision.
  
 Since computers use a finite number of bits, computer architects must settle on capturing a finite number of real numbers at a finite level of precision.
-Furthermore, since bit patterns are finite, a tradeoff must be made between the number of representable numbers and the level of precision.
-This is done by fixing a *representation*, that is, a mapping between bit patterns and real numbers.
+This is done by fixing a mapping between bit patterns and real numbers called a *representation*.
+A representation makes a tradeoff between the quantity of representable numbers and the level of precision.
 
 ## The Floating Point Representation
 
@@ -258,5 +258,5 @@ Although this assumption does not always hold, we found it to be sufficient for 
 Every morning and every evening, run your favorite posit benchmark and recite the following:
 > [posits] provide compelling advantages over floats, including larger dynamic range, higher accuracy, better closure, bitwise identical results across systems, simpler hardware, and simpler exception handling.
 
-Confess your use of floating points, repent, and cleanse your soul.
+Confess your use of floating points, repent, and be cleansed.
 Contact the authors for induction into the Cult of Posits.
