@@ -1,24 +1,33 @@
++++
+title = "Register Allocation for Bril"
+extra.author = "Hongbo Zhang, Sachille Atapattu, Wen-Ding Li"
+extra.bio = """
+  Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architectures. He is also okay archer shooting recurve bow.
+  [Wen-Ding Li](https://www.cs.cornell.edu/~wdli/) is a Ph.D. student at Cornell interested in high-performance code generation.
+"""
++++
+
 # Strength Reduction for Multiplication
 
 ## Motivation
 
-The strength reduction method is to replace expensive operations with a cheaper but equivalent one, so we can obtain a faster program. For this project, we will focus on the weak form of strength reduction. Specifically, we focus on how to replace constant multiplications with cheaper operations.
+The strength reduction method is to replace expensive operations with cheaper but equivalent ones, so we can obtain a faster program. For this project, we will focus on the weak form of strength reduction. Specifically, we focus on how to replace constant multiplications with cheaper operations.
 
-Most modern processors have different latencies and throughputs for different kinds of instructions. It is sometimes possible to find instructions that are mathematically equivalent but fasters in practice. For example, on some processors, multiplication may run slower than a bitwise shift. Therefore, it is possible to replace multiplication `x * 2` with bitwise left shift operation `x << 1` for better performance.
+Most modern processors have different latencies and throughputs for different kinds of instructions. It is sometimes possible to find instructions that are mathematically equivalent but faster in practice. For example, on most processors, multiplication may run slower than a bitwise shift. Therefore, it is possible to replace a multiplication `x * 2` with bitwise left a shift operation `x << 1` for better performance.
 
 ## Alternatives for Multiplication with Constants
 
-The strength reduction for multiplication with a constant of powers of $2$ is obvious. However, even the constant is not a power of $2$, reducing multiplications to bitwise shifts is still possible.
+The strength reduction for multiplication with a constant of powers of $2$ is obvious. However, even when the constant is not a power of $2$, reducing multiplications to bitwise shifts is still possible.
 
 Since constants can be represented as sum of powers of $2$, we can use sum of bitwise shifts to replace multiplication operations. For example, `x * 7` can be represented as `(x << 2) + (x << 1) + x`.
 
-$7$ can be also represented as $8-1$, a power of $2$ substracts a constant. In fact, $7$ is "closer" to the next number. If we reduce `x * 7` to `x * (8 - 1) = x * 8 - x * 1 = (x << 3) - x`, it requires less number bitwise shifts and add/substract operations.
+$7$ can be also represented as $8-1$, a power of $2$ subtracts a constant. In fact, $7$ is "closer" to the next number. If we reduce `x * 7` to `x * (8 - 1) = x * 8 - x * 1 = (x << 3) - x`, it requires fewer bitwise shifts and add/subtract operations.
 
 Therefore, we have three choices for multiplying a constant:
 
 1. multiply the constant directly
 2. binary decompose the constant, and sum up the results of bitwise shifts
-3. represent the constant as $2^k-c$, left shift $x$ by $k$ bits, and binary decompose $c$ then substracts those bitwise shifts
+3. represent the constant as $2^k-c$, left shift $x$ by $k$ bits, and binary decompose $c$ then subtracts those bitwise shifts
 
 In order to determine with methods we want to use for a multiplication reduction, we need a cost function to compare the cost of those instructions. 
 
@@ -32,9 +41,9 @@ The function calculates the total costs of these three approaches and determines
 
 ## Evaluation
 
-In order to get an estimation of how much cost can be saved by multiplication strength reduction, we have run the cost analysis that reports the average cost reduced of multiplying each integer constant less than a given upper bound $n$.
+In order to get an estimation of how much cost can be saved by multiplication strength reduction, we have run the cost analysis that reports the average cost reduction of multiplying each integer constant less than a given upper bound $n$.
 
-In this analysis, we scaled the cost of add/subtract operations and bitwise operations to $1$ unit. According to [Agner's benchmarks on different AMD processors](https://www.agner.org/optimize/instruction_tables.pdf), multiplication operations could cost $2-16$ times more clock cycles compared to add/subtract operations. In the following table, we show the expected proportion of clock cycles it can save by multiplication strength reduction on the different cost of multiplication operations and range of the constant factor.
+In this analysis, we scaled the cost of add/subtract operations and bitwise operations to $1$ unit. According to [Agner Fog's benchmarks on different AMD processors](https://www.agner.org/optimize/instruction_tables.pdf), multiplication operations could cost $2-16$ times more clock cycles compared to add/subtract operations. In the following table, we show the expected proportion of clock cycles it can save by multiplication strength reduction on the different cost of multiplication operations and range of the constant factor.
 
 ||n<=128|n<=1024|n<=8192|
 |---|---|---|---|
@@ -45,7 +54,7 @@ In this analysis, we scaled the cost of add/subtract operations and bitwise oper
 
 From the table, we can find that the larger the performance gap between `ADD/SUB` and `MUL` is, and the smaller the constant is, then more clock cycles we can save on multiplication strength reduction.
 
-In order to show how much cost it can reduce on real benchmark programs, such as PARSEC, we implement an llvm pass to insert two instruction counters: one is to count the cost of the original instruction and the other is to count the cost of optimized instruction. For each multiplication instruction, we instrument instructions to update the costs. Unfortunately, we have not gotten the PARSEC benchmark working yet.
+In order to show how much cost it can reduce on real benchmark programs, such as PARSEC, we implement an LLVM pass to insert two instruction counters: one is to count the cost of the original instruction and the other is to count the cost of optimized instruction. For each multiplication instruction, we instrument instructions to update the costs. Unfortunately, we have not gotten the PARSEC benchmark working yet.
 
 ## Our Thoughts
 
