@@ -309,7 +309,7 @@ We made this decision to make it easier to assess progress and debug as we used 
 
 The [original loop perforation paper][paper] uses the following accuracy metric:
 
-\[ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| \]
+$$ \text{acc} = \frac{1}{m} \sum_{i=1}^m w_i \left|\frac{o_i - \hat o_i}{o_i}\right| $$
 
 That is to say, it comes with a pre-selected division of the accuracy into pre-selected "components" $o_i$.
 Though these components are sold as a modular feature of the approach, this exact equation is extremely restrictive.
@@ -332,7 +332,7 @@ We still want a "normalized error" in order to run the loop-perforation algorith
 Rather than using the absolute scale of the correct answer as our measuring stick, we effectively provide the variance as an input.
 Assuming that the final distance measure is normally distributed (which is more and more appropriate the more sums and multiplications of random variables are involved) with variance $\sigma^2/2$, then the probability that the observed variable lies within a distance $d$ of the correct one is exactly the [_error function_](https://en.wikipedia.org/wiki/Error_function):
 
-\[ \text{erf}(x) := \frac{1}{\sqrt{\pi}} \int_{-x}^x e^{-t^2} \mathrm{d}t \]
+$$ \text{erf}(x) := \frac{1}{\sqrt{\pi}} \int_{-x}^x e^{-t^2} \mathrm{d}t $$
 
 
 This can be scaled to a specific variance $\sigma^2/2$ by dividing $t$ by $\sigma^2$.
