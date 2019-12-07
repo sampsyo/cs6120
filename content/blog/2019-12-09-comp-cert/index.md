@@ -14,21 +14,25 @@ The primary motivation of this paper is that compilers these days form a base of
 
 ## Semantic Preservation
 
-In order for a compiler to be correct it needs to preserve the semantics of our source program. In this section, we formalize the notion of semantic correctness.
+In order for a compiler to be correct it needs to preserve the semantics of our source program. In this section, we discuss how the paper formalizes the notion of semantic correctness.
 
-We assume that we have a formal semantics for our source and target languages that assigns *observable behaviors* to each program. We write $S \Downarrow B$ to mean $S$ executes with observable behavior $B$. An observable behavior includes things like whether the program terminates or not, various *going wrong* behaviors such as accessing an array out of bounds or invoking an undefined operation like dividing by zero. It also includes a trace of all external calls (system calls). However, it doesn't include the state of memory.
+The paper assumes that the source and target languages have formal languages that assign *observable behaviors* to each program. The notation $S \Downarrow B$ means that the program $S$ executes with observable behavior $B$. An observable behavior includes things like whether the program terminates or not, and various *going wrong* behaviors such as accessing an array out of bounds or invoking an undefined operation like dividing by zero. It also includes a trace of all external calls (system calls) that record the the input and output of the external functions. However, it doesn't include the state of memory.
 
-A possible definition of semantic preservation is, with $S$ being a source program and $C$ being a compiled program:
+The strongest definition of semantic perservation is that a source program $S$ has exactly the same set of possible behaviors as a compiled program $C$:
 
 $\forall B, S \Downarrow B \Leftrightarrow C \Downarrow B$
 
-This definition is too strict because a compiler might want to optimize away certain *going wrong* behaviors if, for example, they come from dead code. For this reason, we want to give the compiler a little bit more freedom and so the following definition is preferable:
+However, this definition is too strict because it doesn't give the compiler room to perform certain desirable optimizations, such as dead code elimination, because doing so may optimize away certain *going wrong* behaviors. For example, if the result of an operation that divides a number by zero is never used, we want the compiler to be able to get rid of it. But doing so means that the compiled program has one fewer going wrong behavior than the source program. For this reason, the paper only requires that all of the safe behaviors of the source program are preserved in the compiled program:
 
 $S \texttt{safe} \Rightarrow (\forall B, C \Downarrow B \Rightarrow S \Downarrow B)$
 
-$S \texttt{safe}$ means that $S$ doesn't go wrong. This definition is saying that all of the observable behaviors of $C$ are a subset of the observable behaviors of $S$ and that if $S$ doesn't go wrong, then $C$ doesn't go wrong.
+$S \texttt{safe}$ is a predicate that means $S$ doesn't have any going wrong behaviors. This definition enforces that all observable behaviors of $C$ are a subset of the possible behaviors of $S$ and that if $S$ does not go wrong, then $C$ doesn't go wrong either.
 
-#### Verification vs. Validation
+The paper actually uses the contrapositive of this statement because it is practically easier to prove since you can induct on the execution of $S$:
+
+$\forall B \notin \texttt{Wrong}, S \Downarrow B \Rightarrow C \Downarrow B$
+
+### Verification vs. Validation
 The paper models a compiler as a total function, `Comp(S)`, from source programs to either `OK(C)`, a compiled program, or `Error`, the output that represents a compile-time error, signifying that the compiler was unable to produce code. There are two approaches for establishing that a compiler has the semantic preservation property discussed above: verifying the compiler directly using formal methods or verifying a *validator*, a boolean function accompanying the compiler that verifies the output of the compiler separately. An unverified compiler along with a verified validator provides the same guarantees as a verified compiler because you can guard the result of the unverified compiler with the validator:
 
     Comp'(S) =
@@ -37,6 +41,12 @@ The paper models a compiler as a total function, `Comp(S)`, from source programs
       | OK(C) -> if Validate(S, C) then OK(C) else Error
 
 The validation approach is convenient because sometimes the validator is significantly simpler than the compiler. We'll see this approach used later for verifying part of the register pass.
+
+Verifying the compiler directly using formal methods amounts to proving that each step in the semantics of the source program corresponds to a sequence of steps in the semantics of the target program with the same observable effects. If you can also show that the initial states and final states of the source and target programs are equivalent then this proves semantic equivalence. This is represented in the following simulation diagram:
+
+<img src="simulation.png" style="width: 50">
+
+$S_1$ represents a state in the execution of a program from the source language and $S_1'$ represents the equivalent state in the execution of the target program. The `~` line is an equivalence relation between states from the source semantics to states in the target semantics. The `~` line in the diagram is showing that $S_1$ and $S_1'$ are equivalent states. The down arrows represent a single step in the execution of the program and the $t$ label represents the observable effects that took place in this step.
 
 ## Structure of the Compiler
 
