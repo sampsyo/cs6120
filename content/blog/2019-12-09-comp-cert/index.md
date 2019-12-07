@@ -8,9 +8,9 @@ extra.bio = """
 """
 +++
 
-### Motivation / Introduction
+## Motivation / Introduction
 
-### Semantic Preservation
+## Semantic Preservation
 In order for a compiler to be correct it needs to preserve the semantics of our source program. In this section, we formalize the notion of semantic correctness.
 
 We assume that we have a formal semantics for our source and target languages that assigns *observable behaviors* to each program. We write $S \Downarrow B$ to mean $S$ executes with observable behavior $B$. An observable behavior includes things like whether the program terminates or not, various *going wrong* behaviors such as accessing an array out of bounds or invoking an undefined operation like dividing by zero. It also includes a trace of all external calls (system calls). However, it doesn't include the state of memory.
@@ -25,12 +25,14 @@ $S \texttt{safe} \Rightarrow (\forall B, C \Downarrow B \Rightarrow S \Downarrow
 
 $S \texttt{safe}$ means that $S$ doesn't go wrong. This definition is saying that all of the observable behaviors of $C$ are a subset of the observable behaviors of $S$ and that if $S$ doesn't go wrong, then $C$ doesn't go wrong.
 
-#### Verification vs. Validation
+### Verification vs. Validation
 The paper models a compiler as a total function from source programs to either `OK(C)`, a compiled program, or `Error`, the output that represents a compile-time error, signifying that the compiler was unable to produce code. There are two approaches for establishing that a compiler has the semantic preservation property discussed above: verifying the compiler directly using formal methods or verifying a *validator*, a boolean function accompanying the compiler that verifies the output of the compiler separately. The second approach is convenient because sometimes the validator is significantly simpler than the compiler. We'll see this approach used later for verifying part of the register pass.
 
-### Structure of the Compiler
+## Structure of the Compiler
 
 The source language of the CompCert compiler is Clight, which is a subset of C that includes most familiar C programming constructs like pointers, arrays, structs, if/then statements and loops. The compiler front end consists of an unverified parser that parses a source file to a Clight AST. From there, the formally verified section of the compiler performs several passes that repeatedly simplify and transform the representation of the source code all the way to PowerPC assembly code. Then, an unverified assembler and linker take the assembly code and generate an executable that can be run.
+
+<img src="structure.png" style="width: 100%">
 
 In total, CompCert formally defines 8 intermediate languages and 14 passes over them. The 14 passes must be proven to preserve the semantics of the original program. The first few passes simplify the C code by converting all types to either ints or floats (pointers get converted to ints) and explicitly describing memory accesses. The result of these passes is an intermediate representation called Cminor, and below is an example of a translation from Clight to Cminor.
 
@@ -38,8 +40,44 @@ In total, CompCert formally defines 8 intermediate languages and 14 passes over 
 
 As you can see, function signatures have been made explicit, implicit casts have been made explicit (like the cast from float to int), array accesses have been transformed into exact byte offsets from pointers, and the size of the function's activation record has been made explicit (this is for dealing with the address of operator, which requires function local variables to be mapped to a location on the stack frame of the function).
 
-Next, CompCert performs instruction selection for the specific architecture that is targeting. This is done via instruction tiling which can recognize basic algebraic identities. Next, comp CERT translates C minor sel into RTL which represents control flow in a CFG. This is a convenient representation to perform optimizations on. In this representation, comp CERT is able to run several dataflow analyses on the program in order to perform optimizations such as constant propagation, common sub expression elimination, and lazy code motion. Lazy code motion was limited using the validator approach, likely due to its complexity, while the other two where written in coq and formally proven correct. The RTL representation still uses pseudo registers to store values. The next transformation past executed by comp CERT is to allocate the pseudo registers two hardware registers using a register allocation pass. The register allocation pass also uses the validator method, with the coloring algorithm implemented oh camel. Further passes linear rise the CFG, spill registers on the stack and insert the necessary loads from temporaries, and creating function prologue and epilogues. Finally, comp CERT performs Instruction scheduling to increase instruction level parallelism on super scaler processors, such as the powerpc architecture, and generates PowerPC assembly code. All of these transformations are formally verified to preserve the semantics of the original program.
+Next, CompCert performs instruction selection for the specific architecture that is targeting. This is done via instruction tiling which can recognize basic algebraic identities. For example, the instruction selection pass will transform `8 + (x + 1) × 4` into `x × 4 + 12`. These algebraic identities are proven in CompCert in order to assist in the semantic preservation proof. The selected instructions are very similar to available PowerPC instructions. Next, CompCert makes the control flow of the program more explicit via a transformation to an RTL which represents control flow using a CFG. In addition to generating a CFG, the RTL representation transforms variables into pseudo-registers, of which there are an unlimited supply of. The RTL representation is a convenient representation to perform optimizations on, so CompCert runs  several dataflow analyses on the program in order to perform optimizations such as constant propagation, common sub expression elimination, and lazy code motion. 
 
-### Verification of the Register Allocation Pass
+The next transformation pass performed by CompCert maps the pseudo registers to hardware registers or abstract stack locations using a register allocation algorithm. The register allocation algorithm uses the validator method and is discussed in a bit more detail later in the paper. The algorithm implements an approximation of the the coloring algorithm in OCaml which is used in CompCert using the validator method. Further passes linearize the CFG, spill registers on the stack and insert the necessary loads for temporaries. Some simple optimizations like branch tunneling (removing branches to branches) are also performed as part of these passes. Finally, CompCert performs instruction scheduling to increase instruction level parallelism on super scaler processors, such as PowerPC processors, and generates PowerPC assembly code.
 
-### Evaluation
+## Verification of the Register Allocation Pass
+
+In order to explain the verification process in more depth, the paper describes some of the more technical details of the register allocation pass. The register allocation pass operates on the RTL representation of the program. In this representation functions are represented as CFGs with instructions that roughly map to assembly instructions supported by the PowerPC architecture. However, the instructions use an infinite supply of pseudo-registers, also known as temporaries. The execution semantics of the RTL are given by a set of small step semantics. The small step semantics operate over a global environment, which includes a list of all of the temporaries and their values as well as the state of memory. CompCert represents memory as a collection of blocks with a bounded size. Pointers are described as pointing to some offset from the base of a memory block. 
+
+In order to produce performant code, as many of the temporaries as possible should be mapped to hardware registers instead of being stored on the stack. The register allocation algorithm starts with a liveness analysis of each program point. For every program point $l$ the liveness analysis computes the set of variables that are live coming into program point $l$. This is typically expressed by solving the reverse dataflow equations with a transfer function that removes all defined temporaries at program point $l$ and adds all temporaries that were used at program point $l$. Consider the following code snippet:
+
+```
+1  b = a + 2; 
+2  c = b*b;   
+3  b = c + 1;
+4  return b*a;
+```
+
+On line 4, the variables $a$ and $b$ are live. Program point 3 defines $b$ and uses $c$. Therefore, variable $c$ must be live at line 3. However, $b$ must no longer be live before line 3 because it was just redefined. On line 2, $c$ is defined and $b$ is used, so $c$ is no longer live but $b$ is. Finally, on line 1 $b$ is defined so it is not live before line 1. This gives the following live variable sets coming into each program point:
+
+```
+1  b = a + 2;     LV = {a}
+2  c = b*b;       LV = {a,b}
+3  b = c + 1;     LV = {a,c}
+4  return b*a;    LV = {a,b}
+```
+
+The reason live variable analysis is important for register allocation is that it helps build an interference graph. The interference graph represents temporaries as nodes. Edges between two nodes A and B mean that temporaries A and B cannot be assigned the same hardware register. If two temporaries are live at the same time, then they cannot be assigned to the same hardware register. When building the interference graph you simply inspect the live variable sets at each program point and add edges between all temporaries in the live variable set. Then, you need to color the graph to assign temporaries to hardware registers. For the above code snippet the interference graph would be:
+
+<img src="int.png" style="width: 40%">
+
+The live variable analysis is implemented in coq. Furthermore, the analysis is proven to generate live variable sets that are supersets of the actual live variable sets at a program point. The paper claims this is easier to prove and does not violate the correctness of the register allocation step. This is because supersets of the actual live variable sets only add more edges to the interference graph, which still maintains the correctness of the register allocation pass.
+
+The actual coloring of the interference graph is implemented in unverified OCaml code due to its complexity. The function is then used in the proof of semantic preservation using the validator approach. As a reminder, the validator approach allows CompCert to use the OCaml code only if the output is valid. Otherwise, compilation fails and no code is emitted. The correctness conditions for the coloring $\phi$ of the temporaries is:
+
+1. $\phi(r) \neq \phi(r')$ if $r$ and $r'$ interfere
+2. $\phi(r) \neq l$ if $r$ and $l$ interfere (l is a machine register or stack location. The interference graph can be pre-colored and some pseudo registers can interfere with hardware registers or stack locations)
+3. $\phi(r)$ and $r$ have the same register class (either int or float)
+
+After coloring the graph, the RTL code is transformed to LTL code by replacing temporaries according to the coloring $\phi$, which is either a hardware register or a stack location. In order to prove that the transformation preserve the semantics of the original program, the lock-step simulation approach discussed above is used. The equivalence relation on states requires that control flow is preserved, memory contents are the same, and that the registers are somehow preserved. The first two properties are intuitaley correct because register allocation doesn't really affect control flow or memory state at a program point. However, the equivalence between temporaries and hardware registers is a bit more subtle. If 
+
+## Evaluation
