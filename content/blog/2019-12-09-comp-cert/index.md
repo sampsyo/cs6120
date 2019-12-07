@@ -28,8 +28,15 @@ $S \texttt{safe} \Rightarrow (\forall B, C \Downarrow B \Rightarrow S \Downarrow
 
 $S \texttt{safe}$ means that $S$ doesn't go wrong. This definition is saying that all of the observable behaviors of $C$ are a subset of the observable behaviors of $S$ and that if $S$ doesn't go wrong, then $C$ doesn't go wrong.
 
-### Verification vs. Validation
-The paper models a compiler as a total function from source programs to either `OK(C)`, a compiled program, or `Error`, the output that represents a compile-time error, signifying that the compiler was unable to produce code. There are two approaches for establishing that a compiler has the semantic preservation property discussed above: verifying the compiler directly using formal methods or verifying a *validator*, a boolean function accompanying the compiler that verifies the output of the compiler separately. The second approach is convenient because sometimes the validator is significantly simpler than the compiler. We'll see this approach used later for verifying part of the register pass.
+#### Verification vs. Validation
+The paper models a compiler as a total function, `Comp(S)`, from source programs to either `OK(C)`, a compiled program, or `Error`, the output that represents a compile-time error, signifying that the compiler was unable to produce code. There are two approaches for establishing that a compiler has the semantic preservation property discussed above: verifying the compiler directly using formal methods or verifying a *validator*, a boolean function accompanying the compiler that verifies the output of the compiler separately. An unverified compiler along with a verified validator provides the same guarantees as a verified compiler because you can guard the result of the unverified compiler with the validator:
+
+    Comp'(S) =
+      match Comp(S) with
+      | Error -> Error
+      | OK(C) -> if Validate(S, C) then OK(C) else Error
+
+The validation approach is convenient because sometimes the validator is significantly simpler than the compiler. We'll see this approach used later for verifying part of the register pass.
 
 ## Structure of the Compiler
 
@@ -43,19 +50,19 @@ In total, CompCert formally defines 8 intermediate languages and 14 passes over 
 
 As you can see, function signatures have been made explicit, implicit casts have been made explicit (like the cast from float to int), array accesses have been transformed into exact byte offsets from pointers, and the size of the function's activation record has been made explicit (this is for dealing with the address of operator, which requires function local variables to be mapped to a location on the stack frame of the function).
 
-Next, CompCert performs instruction selection for the specific architecture that is targeting. This is done via instruction tiling which can recognize basic algebraic identities. For example, the instruction selection pass will transform `8 + (x + 1) × 4` into `x × 4 + 12`. These algebraic identities are proven in CompCert in order to assist in the semantic preservation proof. The selected instructions are very similar to available PowerPC instructions. Next, CompCert makes the control flow of the program more explicit via a transformation to an RTL which represents control flow using a CFG. In addition to generating a CFG, the RTL representation transforms variables into pseudo-registers, of which there are an unlimited supply of. The RTL representation is a convenient representation to perform optimizations on, so CompCert runs  several dataflow analyses on the program in order to perform optimizations such as constant propagation, common sub expression elimination, and lazy code motion. 
+Next, CompCert performs instruction selection for the specific architecture that is targeting. This is done via instruction tiling which can recognize basic algebraic identities. For example, the instruction selection pass will transform `8 + (x + 1) × 4` into `x × 4 + 12`. These algebraic identities are proven in CompCert in order to assist in the semantic preservation proof. The selected instructions are very similar to available PowerPC instructions. Next, CompCert makes the control flow of the program more explicit via a transformation to an RTL which represents control flow using a CFG. In addition to generating a CFG, the RTL representation transforms variables into pseudo-registers, of which there are an unlimited supply of. The RTL representation is a convenient representation to perform optimizations on, so CompCert runs  several dataflow analyses on the program in order to perform optimizations such as constant propagation, common sub expression elimination, and lazy code motion.
 
 The next transformation pass performed by CompCert maps the pseudo registers to hardware registers or abstract stack locations using a register allocation algorithm. The register allocation algorithm uses the validator method and is discussed in a bit more detail later in the paper. The algorithm implements an approximation of the the coloring algorithm in OCaml which is used in CompCert using the validator method. Further passes linearize the CFG, spill registers on the stack and insert the necessary loads for temporaries. Some simple optimizations like branch tunneling (removing branches to branches) are also performed as part of these passes. Finally, CompCert performs instruction scheduling to increase instruction level parallelism on super scaler processors, such as PowerPC processors, and generates PowerPC assembly code.
 
 ## Verification of the Register Allocation Pass
 
-In order to explain the verification process in more depth, the paper describes some of the more technical details of the register allocation pass. The register allocation pass operates on the RTL representation of the program. In this representation functions are represented as CFGs with instructions that roughly map to assembly instructions supported by the PowerPC architecture. However, the instructions use an infinite supply of pseudo-registers, also known as temporaries. The execution semantics of the RTL are given by a set of small step semantics. The small step semantics operate over a global environment, which includes a list of all of the temporaries and their values as well as the state of memory. CompCert represents memory as a collection of blocks with a bounded size. Pointers are described as pointing to some offset from the base of a memory block. 
+In order to explain the verification process in more depth, the paper describes some of the more technical details of the register allocation pass. The register allocation pass operates on the RTL representation of the program. In this representation functions are represented as CFGs with instructions that roughly map to assembly instructions supported by the PowerPC architecture. However, the instructions use an infinite supply of pseudo-registers, also known as temporaries. The execution semantics of the RTL are given by a set of small step semantics. The small step semantics operate over a global environment, which includes a list of all of the temporaries and their values as well as the state of memory. CompCert represents memory as a collection of blocks with a bounded size. Pointers are described as pointing to some offset from the base of a memory block.
 
 In order to produce performant code, as many of the temporaries as possible should be mapped to hardware registers instead of being stored on the stack. The register allocation algorithm starts with a liveness analysis of each program point. For every program point $l$ the liveness analysis computes the set of variables that are live coming into program point $l$. This is typically expressed by solving the reverse dataflow equations with a transfer function that removes all defined temporaries at program point $l$ and adds all temporaries that were used at program point $l$. Consider the following code snippet:
 
 ```
-1  b = a + 2; 
-2  c = b*b;   
+1  b = a + 2;
+2  c = b*b;
 3  b = c + 1;
 4  return b*a;
 ```
