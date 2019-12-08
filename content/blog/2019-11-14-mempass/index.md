@@ -33,9 +33,9 @@ ptr2 = (int *)malloc(4 * sizeof(int));
 printf("%d", ptr[0]);
 ```
 
-Since `ptr` has been freed, the second call to `malloc` (which is of same size as the first) is likely to allocate the free space `ptr` points to. Now, lets assume a malicious attacker managed to store a dangerous payload in this space. Since the program tries to use `ptr` after it has been freed, it might actually end up accessing the attacker's payload, not the original `ptr` data as intended!
+Since `ptr` has been freed, the second call to `malloc` (which is of same size as the first) is likely to allocate the free space `ptr` points to. Now, let's assume a malicious attacker managed to store a dangerous payload in this space. Since the program tries to use `ptr` after it has been freed, it might actually end up accessing the attacker's payload, not the original `ptr` data as intended!
 
-Double free errors occur upon consecutive `free()` call with the same memory address. For instance, consider the following code snippet taken from a Double-Free Toyota ITC test case:
+Double free errors occur upon consecutive `free()` call with the same memory address. For instance, consider the following code snippet from our test cases (described in the evaluation section):
 
 ``` c
 int main() {
@@ -45,7 +45,7 @@ int main() {
 }
 ```
 
-Here, `ptr` is allocated and then freed twice.  Generally, double-freeing a block of main memory will corrupt the state of the memory manager, resulting in a write-what-where condition. In this case, a malicious attacker may be able to write arbitrary dangerous code to the memory location that was freed twice.
+Here, `ptr` is allocated and then freed twice.  Generally, double-freeing a block of main memory will corrupt the state of the memory manager, and could allow a malicious attacker to write arbitrary dangerous code to the memory location that was freed twice.
 
 Memory Leaks occur when the programmer forgets to free memory which is no longer needed.
 
@@ -59,7 +59,7 @@ The consequences of memory leaks is often degraded performance. Memory leaks red
 
 ## Introducing MemPass
 
-Here, we present a analysis tool (creatively titled MemPass) for LLVM to detect use after free bugs, double free bugs, and memory leakage. Here's how it works. 
+Here, we present an analysis tool (creatively titled MemPass) for LLVM to detect use after free bugs, double free bugs, and memory leakage. Here's how it works. 
 
 Once any of the above vulnerabilities are detected, the program will throw a warning to the user, along with the line numbers of the original error to allow the programmer to debug the issue. Upon completion of a program's execution, MemPass will generate a report listing the detected vulnerabilities in the original program.
 
@@ -68,7 +68,7 @@ In practice, we can only detect memory leaks after the program has completely ex
 ## Design Overview
 As mentioned at the beginning, there is a large breadth of possible memory safety vulnerabilities. In order to tackle a modest subset of these bugs, our strategy of choice is a simple dynamic analysis pass over the LLVM IR.
 
-MemPass inserts instrumentation after relevant memory allocation instructions, recording the relevant addresses. Anytime the program attempts to either access or deallocate memory, MemPass will then check if those addresses are still available for use. If not, the program will throw a warning.
+MemPass inserts instrumentation after relevant memory allocation instructions, recording the relevant addresses. Any time the program attempts to either access or deallocate memory, MemPass will then check if those addresses are still available for use. If not, the program will throw a warning.
 
 In essence, if the program ever try to deallocate or access a memory address that isn't currently allocated in MemPass's hashtable, we have a bug!
 
@@ -178,13 +178,11 @@ In reality, programs also allocates stack frame memory with `alloca` instruction
 
 However, there's another problem. Some of the load and store instructions use pointers of arbitrary types. If MemPass doesn't know what the pointer types are, it can't pass those addresses to the runtime library for evaluation.
 
-A solution that MemPass employs is to insert `bitcast` instructions after every load or store instruction, converting the address pointer from its arbitrary type to an 8-bit integer pointer. Since we're only comparing addresses and not the actual values at these addresses, this should work somewhat well. However, the breadth of types in LLVM could allow for some imprecision here.
+A solution that MemPass employs is to insert `bitcast` instructions after every load or store instruction, converting the address pointer from its arbitrary type to an 8-bit integer pointer. Since we're only comparing addresses and not the actual values at these addresses, this should work somewhat well.
 
 With `i8*` pointers, all MemPass needs is the size of the memory chunk that a load or store plans to interact with. While this data is not immediately accessible, LLVM provides a handy DataLayout class. After grabbing the type of the element that the *original* pointer points to, MemPass can extract its size and pass that to our library functions.
 
 Finally, we need to actually check if we are accessing memory that is available as per the allocation table. MemPass takes the difference of the address in question with every pointer address in the allocation table, and compares it to the appropriate sizes. If the address is within the bounds of a chunk of memory, then we are fine. Otherwise, the program will emit a use after free warning, and continue to look for more vulnerabilities.
-
-> **Note**: These pointer address comparisons are somewhat sketchy, there likely may be a better approach to memory access checking that we were unable to find.
 
 ## Program Termination
 
@@ -192,11 +190,11 @@ On program termination, we need to check the allocation table for any remaining 
 
 ## Implementation extras
 
-Another possible implementation scheme we considered was the use of a *deallocation* hashmap in addition to the allocation hashmap, to store memory that has been freed. This way, MemPass does not need add instrumentation after `alloca` instructions, it just needs to store memory addresses allocated with malloc. However, every time memory is allocated or deallocated, MemPass must check addresses in the other map to ensure there are no overlaps.
+Another possible implementation scheme we considered was the use of a *deallocation* hashmap in addition to the allocation hashmap, to store memory that has been freed. This way, MemPass does not need add instrumentation after `alloca` instructions; it just needs to store memory addresses allocated with malloc. However, every time memory is allocated or deallocated, MemPass must check addresses in the other map to ensure there are no overlaps.
 
-Both for the proposed framework and our current one, some sort of segmentation tree implementation to store memory bounds as intervals and compare them quickly. However, the overhead of building this tree might not be worth the benefits for small programs.
+Both for the proposed framework and our current one, some sort of segmentation tree implementation could be useful to store memory bounds as intervals and compare them quickly. However, the overhead of building this tree might not be worth the benefits for small programs.
 
-Another implementation idea that would have been much more effective in hindsight would be to find some way invalidate pointers after they are freed. This way, MemPass does not need to add instrumentation after every load and store (the program can exit when accesssing a specific 'invalid' pointer). 
+Another implementation idea that would have been much more effective in hindsight would be to find some way invalidate pointers after they are freed. This way, MemPass does not need to add instrumentation after every load and store (the program can exit when accesssing a specific "invalid" pointer). 
 
 ## Evaluation
 
@@ -246,18 +244,18 @@ In order to evaluate the overhead cost due to MemPass, we instrumented a subset 
 MemPass's overhead can be anywhere from a 100x slowdown to over 1000x in the case of Bubblesort. This can be attributed to the fact that MemPass adds instrumentation not only after `malloc` and `free` calls, but also after every `load` and `store`. The benchmarks in question (especially FloatMM, IntMM, and RealMM) do many matrix computations, which end up blowing up the performance cost of our instrumentation significantly. In hindsight, restricting instrumentation to only `malloc` and `free` would significantly reduce the overhead of MemPass. As explained before, we could find some clever way to invalidate pointers once they are freed, thus causing the program to exit when trying to access an invalid location in memory.
 
 ### Benchmark Testing: Correctness
-We evaluated the correctness of MemPass on subsets of the Toyota ITC and SARD-100 benchmark tests. The Toyota benchmark tests consist of a family of memory tests, and two test suites that we used are `Double Free` and `Memory Leak` tests.  The Sard-100 benchmark tests are similar, and we used the `cwe-401-memory-leak`, `cwe-415-double-free` and `cwe-416-use-after-free` suites.
+We evaluated the correctness of MemPass on subsets of the [Toyota ITC](https://github.com/regehr/itc-benchmarks) and [SARD-100](https://samate.nist.gov/SRD/testsuite.php#sardsuites) benchmark tests. The Toyota benchmark tests consist of a family of memory tests, and two test suites that we used are `Double Free` and `Memory Leak` tests.  The SARD-100 benchmark tests are similar, and we used the `cwe-401-memory-leak`, `cwe-415-double-free` and `cwe-416-use-after-free` suites.
 
 >**Note**: We wanted to use the Invalid Memory Access (Use After Free) test set in Toyota as well, but we kept running into segmentation faults with the tests and struggled to debug them.
 
-In general, the`Double Free` and `cwe-415-double-free` benchmark tests consist of normal double free errors, freeing in constant/variable if statements, freeing in a function, freeing in conditional while loops, and freeing in for loops.
+In general, the `Double Free` and `cwe-415-double-free` benchmark tests consist of normal double free errors, freeing in constant/variable if statements, freeing in a function, freeing in conditional while loops, and freeing in for loops.
 
 The `Memory Leak`, `cwe-401-memory-leak`, and `cwe-416-use-after-free` benchmark tests consist of a series of tests such as allocating memory without freeing, allocating in conditional statements, freeing based on function return values, allocating memory in mutually recursive functions and various branching scenarios.
 
-A comprehensive description of each test case can be found on the respective pages: [Toyota ITC](https://github.com/regehr/itc-benchmarks) and [SARD-100](https://samate.nist.gov/SRD/testsuite.php#sardsuites).
-
 ### Benchmark Results
 In [Detection of Security Vulnerabilities in C Code using Runtime Verification](https://nikolai-kosmatov.eu/publications/vorobyov_ks_tap_2018.pdf), the authors provide benchmark test results for E-ACSL, Google Sanitizer, and RV-Match on both the Toyota-ITC and SARD-100 test suites.
+
+With the Toyota dataset, all three of these related memory vulnerability detection tools were run on their dynamic memory tests, which look for errors such as `Double Free`, `Memory Leak`, `Null Memory`, among many others. The numbers below refer to the percent of tests the tools were able to correctly detect the appropriate memory vulnerability for.
 
 | Defect Type          | E-ACSL | Sanitizer | RV-Match |
 |----------------------|--------|-----------|----------|
@@ -287,6 +285,6 @@ Once again, the double free test cases that we fail are related to casting issue
 
 While a dynamic analysis is certainly interesting and useful, it's difficult to analyze certain memory bugs such as memory leaks, since they cannot be detected until the program terminates. In addition, a dynamic analysis can only check individual executions of a program, and therefore might miss bugs with programs that have a large number of inputs.
 
-A static analysis that uses some sort of use-def chain would be another interesting way to triage these vulnerabilities, and would relax much of the overhead that our method produces. In addition, it would be able to analyze all possible execution paths at once, and therefore complete a more 'sound' analysis of the various bugs that may be present in the program.
+A static analysis that uses some sort of use-def chain would be another interesting way to triage these vulnerabilities, and would relax much of the overhead that our method produces. In addition, it would be able to analyze all possible execution paths at once, and therefore complete a more "sound" analysis of the various bugs that may be present in the program.
 
 The code for MemPass can be found here: https://github.com/splashofcrimson/memPass
