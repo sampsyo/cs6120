@@ -47,7 +47,7 @@ Starting from the top of the entry block, we traverse instructions in program or
 | Function Call  | Inline Function | Remove Call
 | Phi Node (only in -O1+)  | Update program dependencies to last defined variable | Remove Phi Node
 
-Block merging transfers all of the instructions from a block into the entry block and removes the branch linking the blocks. Function inlining uses the built-in LLVM inline tool. Our algorithm is effectively recursive so control can be traced through branches nested in branches, functions in functions, branches in functions, etc..
+Block merging transfers all of the instructions from a block into the entry block and removes the branch linking the blocks. Function inlining uses the built-in LLVM inline tool. Our algorithm is effectively recursive so control can be traced through branches nested in branches, functions in functions, branches in functions, etc.
 
 We illustrate our pass with a simple test function shown below.
 
