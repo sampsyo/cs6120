@@ -16,7 +16,7 @@ In a real system, an interpreter would internally implement both of these passes
 
 ## Background
 
-Trace-based compilers have found many use cases in computer systems. In tracing compilers, A piece of a program (generally a loop body) is compiled to only execute a single path through that piece as shown below. 
+Trace-based compilers have found many use cases in computer systems. In tracing compilers, a loop body is compiled to only execute a single path (a trace) from the beginning of the loop body to the end. A trace is a single basic block with the original branches removed. Fewer branches can have a significant performance impact.
 
 <img src="tracing-jit.png" alt="Tracing" width="20%">
 
@@ -28,11 +28,14 @@ More recently, tracing has found success in Just-in-Time compilers (JITs) for dy
 
 ## Trace Detection
 
-To determine all the traces in a given program, we first use LLVM functions to detect branch instructions. We isolate branch instructions that diverge control flow and then insert a function call to a runtime library to log the condition upon divergence. At runtime, when the conditions to the diverging branch instructions are resolved, the sequence of branch selection at execution is generated as a CSV file of boolean values. This sequence of branch selection forms a trace through the entire program taken at the execution of trace detection runtime.
+To determine all the traces in a given program, we first use LLVM functions to detect branch instructions. We isolate branch instructions that diverge control flow and use an LLVM pass to insert a function call to a run-time library to log the condition upon divergence. At run time, when the conditions to the diverging branch instructions are resolved, the sequence of branch selections during execution is logged in a CSV file of boolean values. This sequence of branch selection forms a trace through the entire program taken during the profiled execution.
 
-This LLVM pass was created broadly following the "Linking With a Runtime Library" section from [LLVM for Grad Students](https://www.cs.cornell.edu/~asampson/blog/llvm.html) blog post. However, a `Value` was created from `FunctionCallee` object before passing into `CreateCall` function from [`IRBuilder`](https://llvm.org/doxygen/classllvm_1_1IRBuilder.html) to avoid a casting error. This pass is registered as `-skull` in `Skull.cpp`.
+<!-- This LLVM pass was created broadly following the "Linking With a Runtime Library" section from [LLVM for Grad Students](https://www.cs.cornell.edu/~asampson/blog/llvm.html) blog post. However, a `Value` was created from `FunctionCallee` object before passing into `CreateCall` function from [`IRBuilder`](https://llvm.org/doxygen/classllvm_1_1IRBuilder.html) to avoid a casting error. This pass is registered as `-skull` in `Skull.cpp`. -->
 
-The next step in trace detection was detecting back-edges and clipping off isolated traces from the full execution trace. LLVM provides great tools to achieve this through "interactions between passes" detailed in [Writing an LLVM Pass](http://llvm.org/docs/WritingAnLLVMPass.html#specifying-interactions-between-passes). Using [LoopPass](https://llvm.org/doxygen/classllvm_1_1Loop.html) analysis to gather loop information, LLVM provides a nice way to detect loops and whether each basic block is within a loop or not. However, accessing entry point to the loop and exit point turned out to be hard. The pass is expected to mark the start and end points of each loop in the trace log, thereby enabling trace selection and optimizing. Work in progress on this pass can be found using `-pelvis` in `Pelvis.cpp`.
+In order to trace loop bodies, we first need to identify where the loops are in the program. We attempted to this using an LLVM loop pass and trace within each individual loop. Unfortunately, we were not able to get this pass working. Instead, we manually extracted loops from programs and traced them in isolation from the rest of the original program.
+
+
+<!-- The next step in trace detection was detecting back-edges and clipping off isolated traces from the full execution trace. LLVM provides great tools to achieve this through "interactions between passes" detailed in [Writing an LLVM Pass](http://llvm.org/docs/WritingAnLLVMPass.html#specifying-interactions-between-passes). Using [LoopPass](https://llvm.org/doxygen/classllvm_1_1Loop.html) analysis to gather loop information, LLVM provides a nice way to detect loops and whether each basic block is within a loop or not. However, accessing entry point to the loop and exit point turned out to be hard. The pass is expected to mark the start and end points of each loop in the trace log, thereby enabling trace selection and optimizing. Work in progress on this pass can be found using `-pelvis` in `Pelvis.cpp`. -->
 
 ## Trace Generation
 
@@ -125,11 +128,11 @@ The traces generated take the place of the given function. They do not contain g
 
 We evaluate on a subset of benchmarks from [Embench](https://github.com/embench/embench-iot). These are single-threaded benchmarks targeted at embedded systems.
 
-We do not have an interpreter or language runtime so we could not inject trace code into the program, and importantly handle failed traces. Additionally, there are no guards to hook into this language runtime even if it did exist. For these reasons, we do not evaluate on entire programs, but rather small sections of the programs. Our methodology is a shown below.
+We do not have an interpreter or language run time so we could not inject trace code into the program, and importantly handle failed traces. Additionally, there are no guards to hook into this language run time even if it did exist. For these reasons, we do not evaluate on entire programs, but rather small sections of the programs. Our methodology is a shown below.
 
 |         | Step | 
 | ------------- | ------------------- | 
-| 1 | Extract the body of a "hot" loop into a function
+| 1 | Manually extract the body of a "hot" loop into a function
 | 2 | Compile the function and run with the profiling pass
 | 3 | Compile the function with the trace generation pass
 | 4 | Run the generated trace
@@ -157,3 +160,5 @@ Our performance metric is the number of machine instructions generated by the op
 | synthetic | 39 | 12 | 69
 
 We see a reduction in the number of instructions generated for all programs with branches and inline-able functions.
+
+We also executed the traces as standalone functions to check correctness. For each benchmark, we compared the output of a single loop iteration of the original loop and compared it the output of the trace for the same input. In all case, the result was equivalent between the original loop and trace.
