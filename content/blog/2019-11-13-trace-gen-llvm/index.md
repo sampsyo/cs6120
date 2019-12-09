@@ -129,7 +129,7 @@ We do not have an interpreter or language runtime so we could not inject trace c
 
 |         | Step | 
 | ------------- | ------------------- | 
-| 1 | Extract the body of a 'hot' loop into a function
+| 1 | Extract the body of a "hot" loop into a function
 | 2 | Compile the function and run with the profiling pass
 | 3 | Compile the function with the trace generation pass
 | 4 | Run the generated trace
