@@ -16,7 +16,7 @@ In a real system, an interpreter would internally implement both of these passes
 
 ## Background
 
-Trace-based compilers have found many use cases in computer systems. In tracing compilers, a loop body is compiled to only execute a single path (a trace) from the beginning of the loop body to the end. A trace is a single basic block with the original branches removed. Fewer branches can have a significant performance impact.
+Trace-based compilers have found many use cases in computer systems. In tracing compilers, a loop body is compiled to only execute a single path (a trace) from the beginning of the loop body to the end. A trace, by definition, is a single basic block with the original branches removed. The reduction in branches can have a significant performance impact in many architectures.
 
 <img src="tracing-jit.png" alt="Tracing" width="20%">
 
