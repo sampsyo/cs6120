@@ -68,6 +68,27 @@ these designs use hardware to efficiently check whether or not a memory access
 is allowed by the system's security policy. In these designs,
 the protection provided by virtual addressing is either mostly or completely redundant.
 
+# Removing Virtual Addressing
 
+Let us imagine that we are running code on one of these tagged memory architectures
+and we want to eliminate virtual addressing and the overheads it entails.
+In this world, we can still ask our OS for memory via `malloc`; however it returns
+back to us a physically contiguous memory region (rather than virtually contiguous).
+For the large memory applications described above that manage their own memory,
+they would likely start by `malloc`-ing most of the computer's physical memory
+and then never calling `malloc` again. Little would change for such programs
+(except that the spatial locality assumptions their designers had originally
+made about memory layout are more likely to reflect reality).
 
+However, programs which request new allocations throughout their lifetimes
+may no longer function as often. Since `malloc` is returning a physical memory region,
+the OS needs to find a large enough space inside the memory to allocate. Due to the
+presence of [fragmentation](https://en.wikipedia.org/wiki/Fragmentation_(computing)),
+it is possible that no such region exists. In that case, `malloc` returns `0` and,
+in all likelihood, the program explodes.
 
+Remember that such fragmentation was present
+with virtual addressing as well, but the OS could stitch together various fragmented segments
+to form a single virtual allocation. Therefore, programs should strive to allocate memory in fixed-size chunks; essentially,
+they should assume that the OS can only allocate them pages of physical memory
+and it's _their job to stripe datastructures across them_.
