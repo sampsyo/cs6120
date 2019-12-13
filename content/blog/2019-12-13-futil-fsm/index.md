@@ -15,15 +15,21 @@ extra.latex = true
 
 ## Goal
 
-The goal of the project is to 
 
+The goal of this project to generate Control FSM for FuTIL, which can be divided into the following two parts:
 
+- Convert a Control AST in FuTIL to an intermediate FSM structure
+- Generate RTL from the intermediate FSM structure
 
 ## Background
+
+FuTIL is an intermediate language that represents hardware as a combination of *structure* and *control*. The *structure* represents how subcomponents are instanced and wired together, while the *control* determines how these subcomponents are activated at different times. The ultimate goal of FuTIL is to provide an RTL backend for the Dahlia language. The structure is fairly straightforward to convert to RTL, which easily represents components and wires, but the control flow statements have no straightforward representation in RTL. We will convert the control statements in FuTIL into an RTL FSM to facilitate RTL generation from FuTIL.
 
 
 
 ## Design Overview
+
+
 
 
 
@@ -32,9 +38,11 @@ The goal of the project is to
 
 
 
+
+
 ## Hardest Parts
 
-1. Designing FSM inner representation
+1. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. 
 2. 
 
 ## Evaluation 
