@@ -89,6 +89,49 @@ in all likelihood, the program explodes.
 
 Remember that such fragmentation was present
 with virtual addressing as well, but the OS could stitch together various fragmented segments
-to form a single virtual allocation. Therefore, programs should strive to allocate memory in fixed-size chunks; essentially,
-they should assume that the OS can only allocate them pages of physical memory
+to form a single virtual allocation. Therefore, programs should strive to allocate memory in fixed-size chunks;
+essentially, they should assume that the OS can only allocate them pages of physical memory
 and it's _their job to stripe datastructures across them_.
+
+
+# Dealing With The Stack
+
+The [stack](https://en.wikipedia.org/wiki/Call_stack) presents another potential issue.
+Current compilers assume that stack-allocated variabled can be addressed relative to the
+stack pointer, which is stored in a register.
+Obviously, while this is an efficient mechanism for address computation,
+this scheme doesn't work if any given stack frame is not comprised of physically contiguous memory.
+
+For certain applications, it is likely that we can allocate a single stack page at startup
+and then go on with our lives. In this case, the restrictions mentioned above aren't really
+an issue. However, programs _may_ allocate large data structures on the stack, may recurse
+deeply or may have dynamically sized stack allocations. In these cases, we can run into
+the issues described above since the stack we've already allocated may not be large enough.
+
+One solution to this problem is to dynamically allocate stack frames whenever a function call
+is made. In this case, every function prologue needs to check the current stack and see if
+there's enough space. If there is, then the function executes normally; otherwise,
+the function asks the OS for a memory region big enough to store the current function's
+entire stack frame before running. During the function epilogue, the program should
+then `free` that memory.
+
+It turns out that [gcc](https://gcc.gnu.org/) has implemented
+exactly this functionality and calls it ["stack splitting"](https://gcc.gnu.org/wiki/SplitStacks).
+You can check out that link for a detailed explanation of the `-fsplit-stack` option for
+gcc but it essentially implements the algorithm described above, modulo some tricks
+for making the common case fast and maintaining its own small free list for stack pages.
+
+## Overhead of Stack Checking
+
+We evaluated the performance impact of using split stacks on several [PARSEC](https://parsec.cs.princeton.edu/)
+benchmarks, as well as a microbenchmark designed to be bottlenecked on function calls.
+Our microbenchmark was a simple fibonnaci program (without memoization),
+that makes a very large number of recursive calls.
+
+## Overhead of Dynamic Allocations
+
+## Discussion
+
+# Dealing With Large Objects
+
+#Evaluation Methodology
