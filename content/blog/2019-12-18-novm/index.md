@@ -118,15 +118,20 @@ then `free` that memory.
 It turns out that [gcc](https://gcc.gnu.org/) has implemented
 exactly this functionality and calls it ["stack splitting"](https://gcc.gnu.org/wiki/SplitStacks).
 You can check out that link for a detailed explanation of the `-fsplit-stack` option for
-gcc but it essentially implements the algorithm described above, modulo some tricks
+gcc, but it essentially implements the algorithm described above, modulo some tricks
 for making the common case fast and maintaining its own small free list for stack pages.
 
 ## Overhead of Stack Checking
 
 We evaluated the performance impact of using split stacks on several [PARSEC](https://parsec.cs.princeton.edu/)
 benchmarks, as well as a microbenchmark designed to be bottlenecked on function calls.
-Our microbenchmark was a simple fibonnaci program (without memoization),
-that makes a very large number of recursive calls.
+Our microbenchmark was a naive program to compute the 50th
+number in the fibonnacci sequence without memoization.
+This program recurses quite a lot and thus should magnify the overhead
+of checking whether or not allocation is required for each function call.
+
+
+
 
 ## Overhead of Dynamic Allocations
 
