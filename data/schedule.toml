@@ -161,6 +161,8 @@ event = "Thanksgiving break"
 [[days]]
 date = "December 2"
 mon = true
+canceled = true
+event = "Snow Day!"
 
 [[days]]
 date = "December 4"
@@ -168,7 +170,9 @@ notes = ["Design Review: [MemPass](../blog/mempass/), by Eashan & Sameer"]
 
 [[days]]
 date = "December 6"
+notes = ["Design Review: [Path Profiling](../blog/efficient-path-prof/), by Daniel"]
 
 [[days]]
 date = "December 9"
+notes = ["Design Review: Partial Redundancy Elimination, by Siqiu"]
 mon = true
