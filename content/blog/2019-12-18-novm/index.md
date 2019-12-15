@@ -104,6 +104,14 @@ Finally, we assumed that some reasonable amount of stack could be pre-allocated 
 even on a physically addressed machine. We chose 32KB since that was approximately the smallest
 sized stack required to execute the benchmarks normally.
 
+Unfortunately, we could not actually execute any tests using physical addressing,
+since there is no reliable method for allocating physical memory in user space.
+While there are several [proposals](https://blog.linuxplumbersconf.org/2017/ocw/system/presentations/4669/original/Support%20user%20space%20POSIX%20conformant%20contiguous__v1.00.pdf) for how to support these
+features, they aren't currently supported in Linux. Therefore, our results
+are overhead measurements that represent worst-case performance; we don't actually
+expect any of our tests to result in speedups.
+
+
 # Dealing With The Stack
 
 The [stack](https://en.wikipedia.org/wiki/Call_stack) presents another potential issue.
