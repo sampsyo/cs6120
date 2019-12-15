@@ -93,6 +93,16 @@ to form a single virtual allocation. Therefore, programs should strive to alloca
 essentially, they should assume that the OS can only allocate them pages of physical memory
 and it's _their job to stripe datastructures across them_.
 
+# Experimental Setup
+
+To evaluate the impact of software changes required in lieu of virtual addressing,
+we ran experiments with the following configuraions. First, we ran all of our tests
+on an 8 core Intel TODO processor, with 32GB of physical memory, running Ubuntu 16.04.
+Secondly, we followed the guidlines provided by [llvm](https://llvm.org/docs/Benchmarking.html) to reduce
+variance; in particular, every test was executed on a single, isolated processor core.
+Finally, we assumed that some reasonable amount of stack could be pre-allocated contiguously,
+even on a physically addressed machine. We chose 32KB since that was approximately the smallest
+sized stack required to execute the benchmarks normally.
 
 # Dealing With The Stack
 
@@ -131,6 +141,7 @@ This program recurses quite a lot and thus should magnify the overhead
 of checking whether or not allocation is required for each function call.
 
 
+<img src="stackchecking.png" style="width:100%"/>
 
 
 ## Overhead of Dynamic Allocations
