@@ -1,5 +1,5 @@
 +++
-title = "Tail Call Elimination"
+title = "Dynamic Null Pointer Checks Using LLVM"
 [extra]
 bio = """
   Christopher Roman is a second semester MEng student in computer science. He is interested in compilers and distributed systems. He is also the best [Melee](https://en.wikipedia.org/wiki/Super_Smash_Bros._Melee) player at Cornell. :)
@@ -54,9 +54,6 @@ void nullcheck(void *p) {
   }
 }
 ```
-Note that this is all done at the IR level. Some difficulties that I encountered
-were trying to get the
-
 Then we created a compiler pass called `AddNullCheckPass`. This is a `FunctionPass`
 which looks for a `LoadInst` or `StoreInst`, as these are the instructions which
 actually dereference a pointer. Let's look at how a dereference gets translated to
@@ -98,15 +95,15 @@ looking for pointers that are *definitely not null* rather than those that are
 Therfore, to perform this null pointer analysis, we do a dataflow analysis
 that is similar to CCP (Conditional Constant Propagation). Our lattice elements
 will be a mapping from pointers in the program to `PossiblyNull` or `DefinitelyNonNull`.
-(We assume `PossiblyNull` and `DefiniteNonNull` also form a lattice with the former as *Top*
-and the latter as *Bottom*).
+(We assume `PossiblyNull` and `DefinitelyNonNull` also form a lattice with the former as *Top*
+and the latter as *Bottom*.)
 Our *Top* value will be a map where everything maps to `PossiblyNull`, and *Bottom*
 is a map where everything maps to `DefinitelyNonNull`. The analysis is a forward
 analysis. The *Meet* operator is simply an elementwise *meet* on elements in the map.
 For example, if we have the two lattice elements `X = {p: DefinitelyNonNull, q: PossiblyNull}`
 and `Y = {p: DefinitelyNonNull, q: DefinitelyNonNull}`, then `meet(X, Y) = {p: DefinitelyNonNull, q: PossiblyNull}`.
 
-Our transfer function is tricky to get right. Consider
+Our transfer function is tricky to get right. Consider:
 ```
 store i32* %p, i32** %q, align 8
 ```
@@ -140,7 +137,7 @@ as shown by the programs that require an alias analysis.
 
 We also want to see how much of an impact these null checks have on the performance
 of programs. Unfortunately I wasn't able to get the PARSEC benchmark tests running.
-Instead, I found benchmarks from https://benchmarksgame-team.pages.debian.net/benchmarksgame/
+Instead, I found benchmarks from [online](https://benchmarksgame-team.pages.debian.net/benchmarksgame/)
 which has various benchmarks for different languages. I chose a small portion of
 these tests to run with and without my compiler passes.
 
@@ -160,12 +157,12 @@ Here we simply show the mean time taken to run these programs and the standard
 deviation. There are three columns, representing the three different ways we
 compiled the program.
 - *Baseline* is just compiling using Clang without our null check passes.
-Compiled with `/usr/local/opt/llvm/bin/clang++ -O2 <benchmark>.cpp -o <benchmark>`, e.g.,
-`/usr/local/opt/llvm/bin/clang++ -O2 binary-trees.cpp -o binary-trees`
+Compiled with `clang++ -O2 <benchmark>.cpp -o <benchmark>`, e.g.,
+`clang++ -O2 binary-trees.cpp -o binary-trees`
 - *No NPA* is compiling using the null check passes, but without taking into
 consideration which pointers are `PossiblyNull` or `DefinitelyNonNull`. That is,
-we do a null check on every pointer dereference.
-NOTE: Had to go into source code and remove the check for if pointers are `PossiblyNull`
+we do a null check on every pointer dereference. To get this to work, I had 
+to go into source code and remove the check for if pointers are `PossiblyNull`
 Compiled with `../tests/compile-with-opt.sh nbody.cpp -O2`
 - *With NPA* is compiling using the null check passes *and* eliding null checks
 if the pointer is `DefinitelyNonNull`.
@@ -212,7 +209,7 @@ on an incorrect solution that looks as follows:
 This project gives me a newfound appreciation for compilers writers.
 
 ## Extras
-When trying to debug certain programs, I found that certain variable were being
+When trying to debug certain programs, I found that certain variables were being
 optimized away, which was quite annoying. In searching for a way to prevent this,
 I found [this great talk](https://www.youtube.com/watch?v=nXaxk27zwlk) by Chandler Carruth
 who discusses microbenchmarking of C++ code. He showed two special functions that
