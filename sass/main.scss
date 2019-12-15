@@ -193,7 +193,7 @@ article {
   }
 
   code {
-      background-color: #EAEAEA;
+      background-color: #eff0f1;
       padding: 2px 4px;
       border-radius: 2px;
   }
@@ -204,7 +204,8 @@ article {
 }
 
 pre {
-    line-height: 120%;
+  line-height: 120%;
+  overflow-x: auto;
 }
 
 .details {
