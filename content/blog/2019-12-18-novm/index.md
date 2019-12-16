@@ -38,7 +38,7 @@ to even reference memory owned by another process
 ## The Case Against Virtual Addressing
 
 The translation of virtual addresses is accelerated by dedicated hardware
-called the [Translation Lookaside Buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer)(TLB).
+called the [Translation Lookaside Buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer) (TLB).
 This acts as a "translation cache" and hides most of the cost of virtual address translation,
 except for when an address is not present in the TLB.
 Missing in the TLB triggers a complex series of physical memory accesses
@@ -53,15 +53,15 @@ which would like to manage its own memory anyway; the aforementioned advantages
 of virtual addressing are significantly reduced but the cost in TLB misses can be devastating to performance.
 The other major cause of TLB misses is frequent context switching between processes,
 which typically triggers a complete flush of the TLB state. For multithreaded applications
-which rely heavily on system calls (e.g., webservers), this can incur [overheads around 20%!]
-(https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/osr2007_rethinkingsoftwarestack.pdf).
+which rely heavily on system calls (e.g., webservers), this can incur
+[overheads of up to 20%](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/osr2007_rethinkingsoftwarestack.pdf).
 
 Furthermore, virtual addressing is not a requirement for memory security.
 There are many different proposals (and even some usable implementations)
 of _tagged memory_ architectures, where physical memory locations are associated with
 _tags_ that control how those locations can be accessed by software.
-Some examples included the [CHERI capability architecture](https://www.cl.cam.ac.uk/research/security/ctsrd/cheri/),
-the [PUMP processor for software-defined metadata](https://dl.acm.org/citation.cfm?id=2694383)
+Some examples include: the [CHERI capability architecture](https://www.cl.cam.ac.uk/research/security/ctsrd/cheri/);
+the [PUMP processor for software-defined metadata](https://dl.acm.org/citation.cfm?id=2694383);
 and the [secure information flow CPU, Hyperflow](https://dl.acm.org/citation.cfm?id=3243743).
 Instead of relying on a process' inability to address memory,
 these designs use hardware to efficiently check whether or not a memory access
@@ -81,7 +81,7 @@ and then never calling `malloc` again. Little would change for such programs
 made about memory layout are more likely to reflect reality).
 
 However, programs which request new allocations throughout their lifetimes
-may no longer function as often. Since `malloc` is returning a physical memory region,
+may no longer be able to execute correctly. Since `malloc` returns a physical memory region,
 the OS needs to find a large enough space inside the memory to allocate. Due to the
 presence of [fragmentation](https://en.wikipedia.org/wiki/Fragmentation_(computing)),
 it is possible that no such region exists. In that case, `malloc` returns `0` and,
@@ -97,16 +97,19 @@ and it's _their job to stripe datastructures across them_.
 
 To evaluate the impact of software changes required in lieu of virtual addressing,
 we ran experiments with the following configuraions. First, we ran all of our tests
-on an 8 core Intel TODO processor, with 32GB of physical memory, running Ubuntu 16.04.
-Secondly, we followed the guidlines provided by [llvm](https://llvm.org/docs/Benchmarking.html) to reduce
+on a computer with 8 Intel i7-7700 CPUs running at 3.60GHz, with 32GB of physical memory, running Ubuntu 16.04.
+Secondly, we followed the [guidlines](https://llvm.org/docs/Benchmarking.html) provided by llvm to reduce
 variance; in particular, every test was executed on a single, isolated processor core.
+While we ran all of our tests ten times and report averages of our measurements, with
+this setup we observed very little variance with typically less than 0.01% standard deviation
+most of the time.
 Finally, we assumed that some reasonable amount of stack could be pre-allocated contiguously,
 even on a physically addressed machine. We chose 32KB since that was approximately the smallest
 sized stack required to execute the benchmarks normally.
 
 Unfortunately, we could not actually execute any tests using physical addressing,
 since there is no reliable method for allocating physical memory in user space.
-While there are several [proposals](https://blog.linuxplumbersconf.org/2017/ocw/system/presentations/4669/original/Support%20user%20space%20POSIX%20conformant%20contiguous__v1.00.pdf) for how to support these
+While there are several [proposals](https://blog.linuxplumbersconf.org/2017/ocw/system/presentations/4669/original/Support%20user%20space%20POSIX%20conformant%20contiguous__v1.00.pdf) for how to implement these
 features, they aren't currently supported in Linux. Therefore, our results
 are overhead measurements that represent worst-case performance; we don't actually
 expect any of our tests to result in speedups.
@@ -115,7 +118,7 @@ expect any of our tests to result in speedups.
 # Dealing With The Stack
 
 The [stack](https://en.wikipedia.org/wiki/Call_stack) presents another potential issue.
-Current compilers assume that stack-allocated variabled can be addressed relative to the
+Current compilers assume that stack-allocated variables can be addressed relative to the
 stack pointer, which is stored in a register.
 Obviously, while this is an efficient mechanism for address computation,
 this scheme doesn't work if any given stack frame is not comprised of physically contiguous memory.
@@ -141,26 +144,50 @@ for making the common case fast and maintaining its own small free list for stac
 
 ## Overhead of Stack Checking
 
-We evaluated the performance impact of using split stacks on several [PARSEC](https://parsec.cs.princeton.edu/)
-benchmarks, as well as a microbenchmark designed to be bottlenecked on function calls.
-Our microbenchmark was a naive program to compute the 50th
-number in the fibonnacci sequence without memoization.
-This program recurses quite a lot and thus should magnify the overhead
-of checking whether or not allocation is required for each function call.
+We evaluated the performance impact of using split stacks on two microbenchmarks
+designed to be bottlenecked on function calls which respectively do and do not
+trigger run-time memory allocations.
+The first microbenchmark was a naive program to compute the 50th
+number in the fibonnacci sequence without memoization; this did not require
+a large amount of stack space so we use it to measure the overhead of _just checking_
+whether or not there is enough stack space.
+The other microbenchmark naively recursively computes the sum of the first _n_ integers.
+We executed this benchmark with `n=1000000000` so that it would trigger run-time allocations
+by recursing very deeply.
 
-<img src="stackchecking.png" style="width:100%"/>
+<img src="stackcheckmicro.png" style="width:100%"/>
 
 
-
+This diagram plots the execution time of these two microbenchmarks with the `-fstack-split`
+option enabled, normalized to regular execution, without that option enabled.
 As you can see, our fibonnacci benchmark has only about a 15% increase in runtime
-caused by the overhead of checking the remaining stack space. We also instrumented
-the benchmarks (in a separate execution) to report how many times they allocated new
-stack frames; only "ferret" benchmark ever actually needed to increase its stack size dynamically.
+caused by checking remaining stack space.
+The recursive sum benchmark ended up executing 6410250 different run-time allocations
+of 1544 bytes. While it had a very large performance impact, we could certainly tune
+the stack allocation algorithm to request larger chunks of memory to reduce the frequency
+of `malloc` system calls.
 
-<img src="stackallocations.png" style="width:100%"/>
+### PARSEC Benchmarks
 
-This likely explains why ferret's runtime was increased more significantly than any of the others.
+While these microbenchmarks give us a good upper bound on worst-case overhead,
+we wanted to evaluate some more realistic tests. We chose the [PARSEC](https://parsec.cs.princeton.edu/)
+benchmarks, mostly because we used them for a prior project in this class and could test them easily.
+The execution times for these benchmarks are the built-in "Regions of Interest" and exclude initialization
+and warm up times for each program.
 
+<img src="stackcheckparsec.png" style="width:100%"/>
+
+With these four benchmarks, there was almost no impact of applying the split-stack option.
+We should note that the StreamCluster benchmark actually _sped up_ when using split-stack;
+likely this is some sort of memory alignment effect à la [Mytcowicz et al.](https://dl.acm.org/citation.cfm?id=1508275).
+In any case, we should probably consider this impact to be negligible.
+
+Of these benchmarks, only Ferret actually required dynamically allocating stack space.
+Each of these allocations was 618 KB, which is a potential concern. It is unclear, in a real
+system using only physical addressing, whether or not allocations of this size would
+be frequently servicable or not. I hypothesize that real systems with many gigabytes or terabytes
+of memory with even severe fragmentation will be able to regularly respond to allocations
+in the kilobyte range; however, proving this is future work.
 
 ## Overhead of Dynamic Allocations
 
@@ -169,3 +196,4 @@ This likely explains why ferret's runtime was increased more significantly than 
 # Dealing With Large Objects
 
 #Evaluation Methodology
+
