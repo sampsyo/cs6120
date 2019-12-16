@@ -196,7 +196,9 @@ it is probably unreliable to request very large contiguous memory regions, we mu
 strategy. To evaluate the potential impact of these changes, we modified the Blackscholes
 benchmark from the PARSEC suite. Blackscholes uses two dynamically allocated arrays,
 which we replaced with custom `Array` objects that we implemented to use only fixed size
-allocations.
+allocations. We chose to modify this application not only because it consists of a single,
+easily-modifiable source file, but also because it iterates through large arrays
+and is very likely to be negatively impacted by poor spatial locality.
 
 ## Custom Array Implementation
 
@@ -217,9 +219,29 @@ and no **L2** or **L3** pages will be allocated.
 
 ## Evaluating Tree Overheads
 
+We had to modify the Blackscholes benchmark slightly to replace the calls
+to `malloc` to use our C++ `Array` objects. This only involved modifying
+the array allocation and deallocation since we overloaded the `[]` operator
+for normal array dereferences.
+Blackscholes only uses pointer arithmetic for allocation purposes so we didn't
+need to modify any other instructions.
+
+The main sources of overhead we anticipated from these datastructures
+were not only the increased number of instructions to access data,
+but also the reduced spatial locality of data within the array.
+Therefore, we evaluated a number of different configurations, where
+our library used different sized "pages," ranging from 4KB to 1MB.
+
+Furthermore, the original Blackscholes program used complicated pointer
+arithmetic to allocate five contiguous arrays from a single call to `malloc`.
+In our original modification, we treated these as five separate `Array` objects
+since we can't guarantee address continuity. In the "Modified Blackscholes"
+test, we re-wrote this to be a single array of `struct` objects so that
+there might be more spatial locality between objects accessed around the same time.
 
 <img src="treearraybs.png" style="width:100%"/>
 
+In these results, you can see that 
 
 ## Discussion
 
