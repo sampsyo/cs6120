@@ -237,15 +237,29 @@ arithmetic to allocate five contiguous arrays from a single call to `malloc`.
 In our original modification, we treated these as five separate `Array` objects
 since we can't guarantee address continuity. In the "Modified Blackscholes"
 test, we re-wrote this to be a single array of `struct` objects so that
-there might be more spatial locality between objects accessed around the same time.
+there might be more spatial locality between fields accessed around the same time.
 
 <img src="treearraybs.png" style="width:100%"/>
 
-In these results, you can see that 
+We saw a worst-case overhead around 17% with 8 KB pages. Out of the
+base `Array` object implementation, 32 KB performed the best. Intuitively,
+it makes sense that larger pages start to provide diminishing returns once they
+exceed L1 and L2 CPU cache sizes. We tried to confirm these intuitions using
+performance counters but found that L1 cache miss rates were very close across
+all configurations and LLC (last level cache) miss rates varied wildly even
+across executions of the same configuration.
+
+However, using other performance counters we did notice that both the
+original and modified Blackscholes programs had very similar IPC (instruction per cycle)
+values, indicating that CPU efficiency wasn't significantly impacted and
+the primary overhead was simply caused by executing more instructions.
+
+As a simple test of this, we modified the `Array` code to always use trees
+of depth three (two layers of pointers and a single data layer), which removed
+some of the runtime checks required to access data. The results for that test are
+in the "No Branches" column above. Other than in the 1 MB case, this configuration
+performed much better than the others, with only a 3% overhead in the 16 KB case.
 
 ## Discussion
 
-# Dealing With Large Objects
-
-#Evaluation Methodology
 
