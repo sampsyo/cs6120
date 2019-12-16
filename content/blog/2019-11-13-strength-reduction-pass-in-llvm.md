@@ -192,4 +192,4 @@ The LLVM pass is first compiled into a shared library, which is loaded into LLVM
 
 Except for a few programs, the average speedup is 1.211x over the original baseline program. Unfortunately, our pass does not optimize all programs correctly: `nettle-aes`, `sglib-combined`, and `slre` do not produce correct results after our optimization, while `picojpeg` does not terminate after applying our pass. We have not figured out the reason of these errors yet. Possible reasons are:
 - We failed to distinguish all the non-induction variables collected at the beginning of the pass in our analysis and optimization process, causing the program to behave incorrectly;
-- When inserting the update instructions, we probably inserted at incorrect positions or inserted multiple times. 
+- When inserting the update instructions, we probably inserted at incorrect positions or inserted multiple times. This may also explain the 20x speedup for huffbench program (i.e., the loop exits before finishing all the work, but the [verification function](https://github.com/embecosm/embench-beebs/blob/master/src/huffbench/libhuffbench.c#L456) still returns the correct result).
