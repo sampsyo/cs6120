@@ -148,8 +148,18 @@ number in the fibonnacci sequence without memoization.
 This program recurses quite a lot and thus should magnify the overhead
 of checking whether or not allocation is required for each function call.
 
-
 <img src="stackchecking.png" style="width:100%"/>
+
+
+
+As you can see, our fibonnacci benchmark has only about a 15% increase in runtime
+caused by the overhead of checking the remaining stack space. We also instrumented
+the benchmarks (in a separate execution) to report how many times they allocated new
+stack frames; only "ferret" benchmark ever actually needed to increase its stack size dynamically.
+
+<img src="stackallocations.png" style="width:100%"/>
+
+This likely explains why ferret's runtime was increased more significantly than any of the others.
 
 
 ## Overhead of Dynamic Allocations
