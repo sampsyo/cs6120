@@ -189,7 +189,37 @@ be frequently servicable or not. I hypothesize that real systems with many gigab
 of memory with even severe fragmentation will be able to regularly respond to allocations
 in the kilobyte range; however, proving this is future work.
 
-## Overhead of Dynamic Allocations
+# Large Object Allocations
+
+The other major modification to programs would be supporting large memory allocations; since
+it is probably unreliable to request very large contiguous memory regions, we must adopt a new
+strategy. To evaluate the potential impact of these changes, we modified the Blackscholes
+benchmark from the PARSEC suite. Blackscholes uses two dynamically allocated arrays,
+which we replaced with custom `Array` objects that we implemented to use only fixed size
+allocations.
+
+## Custom Array Implementation
+
+We implemented our `Array` using a tree-based datastructure that mimics
+the functionality of page tables in a virtual address environment.
+We support up to three levels of allocation, where the final
+level contains data and all previous levels contain pointers to
+other pages. In the following diagram, the **L1** page contains
+pointers to **L2** pages, which contain pointers to the **L3** pages.
+Each **L3** page contains the actual object array data.
+
+<img src="treedata.png" style="width:100%"/>
+
+As an optimization, the constructor for `Array` determines how many
+levels of pages are required to store all of the data. For instance,
+in the event the data fits in a single page, then the **L1** page will hold data
+and no **L2** or **L3** pages will be allocated.
+
+## Evaluating Tree Overheads
+
+
+<img src="treearraybs.png" style="width:100%"/>
+
 
 ## Discussion
 
