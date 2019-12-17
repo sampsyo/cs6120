@@ -73,7 +73,7 @@ FuTIL is the backend for Dahlia. The FuTIL semantics is designed in favor of sma
 
 ### *Read* Signals
 
-In FuTIL semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any data wire to have one extra bit to specify whether the signal is readable.
+In FuTIL semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any *data* wire to have one extra bit to specify whether the signal is readable.
 
 ### *MUX*
 
@@ -108,11 +108,21 @@ Consider the syntax `(enable A B)` . The **Start** state transfers to the **Inte
 
 <img src="flow.png" style="width: 100%">
 
-### Adding FSM Passes 
+At implementation, to realize what we describe in design overview, we gradually added intermediate passes.  
 
-We first add a pass that translates control syntax to FSM components.
+### First Intermediate Pass
 
-Based on the design logic of FSMs, we can specify the inputs and outputs of each FSM component and the wires connecting each ports to its subcomponents. Notice we also need add *cond_read* signals to specify whether the *condition* signal from the comparison component is readable.
+There is a *Visitor* trait in this pass, which performs a recursive walk of abstract syntax tree (AST), so each individual pass can perform modification to the AST with function calls including `add_structure`, `add_input_port`, `remove_structure`, and etc provided in struct `Changes`.
+
+#### Read Wires
+
+The first pass is adding read wires. We go though all input and output ports of each component, adding corresponding *read* ports, and then each wire of the components and adding *read* wires to the ports. We do this pass ahead of creating FSM signatures because we don't want to create *read* wires for control signals like *valid* and *ready*.
+
+#### FSM Signatures
+
+This pass translates control syntax to FSM components.
+
+Based on the design logic of FSMs, we can specify the inputs and outputs of each FSM component and the wires connecting each ports to its subcomponents. Notice we also need to add *cond_read* signals to specify whether the *condition* signal from the comparison component is readable.
 
 | FSM                  | Input Ports                                   | Output Ports                 |
 | -------------------- | --------------------------------------------- | ---------------------------- |
@@ -122,11 +132,25 @@ Based on the design logic of FSMs, we can specify the inputs and outputs of each
 
 
 
-### Adding LUT Passes
+### Interfacing
 
+This pass creates input port *clock* for all components and *valid* for the top level component. Notice in FuTIL we actually does not have the notion of logical time step. However, to make things easier for RTL translation, we created these ports.
 
+#### MUX Signatures
 
+Similar to creating FSM signatures, we need to specify the inputs and outputs of each MUX component and the wires connecting each ports to its subcomponents. To do this, we create a Hashmap indexing with destination ports and store a vector of source ports according to the wiring of the component. For each destination port, if there are more than one source port connecting to it, we create an MUX. 
 
+Notice there is a difference between control signal and data signals though. Control signals do not have corresponding *read* wires and no matter which control signal is high, the output is high. On the other hand, data signals always have corresponding *read* wires to explicitly specify if the data on the *data* wire is readable. The data signal should be chosen according to its *read* wires. Therefore at implementation, we go through wires twice. The first time we go through it we record *read* wires going to the same destination components. The second time we go through it we actually create the large MUX with both *data* and corresponding *read* wires.
+
+The last step is removing old wires connecting the same destination port with more than one source port.
+
+### Second Intermediate Pass
+
+#### FSM Implementation
+
+This pass creates true FSM representation in FuTIL AST.  Each `FSM` has a *name* field, a *states* Hashmap storing states and indexing of the state, a *start index* corresponding to the first state being created and a *last index* pointing to the last state being created. Each `State` is composed of a vector of *outputs*, where each *output* is specified with output *value* and *port name* and a vector for *transitions*, where each transition is a tuple of *next state index* and *inputs* of *value* and *port name*, so that the transition happens when the input has certain *value*. Finally, there is a default state for each state that is an optional field, telling which state it should transit to when no *transition* condition is met.
+
+We provide abstract methods `new(name: &str) -> StateIndex`, `new_state() -> StateIndex`, `get_state(idx: StateIndex) -> &mut State` for `FSM` and `push_output(output: ValuedPort)`and `add_transition(transition: Edge) ` for `State` to generate actual FSM inner logic according to the graph we made in design review.
 
 
 
@@ -134,8 +158,8 @@ Based on the design logic of FSMs, we can specify the inputs and outputs of each
 ## Hardest Parts
 
 1. FuTIL is implemented with [Rust](<https://www.rust-lang.org/>), so we spent some time to get familiar with the language. 
-2. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. 
-3. 
+2. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. Rust will force the user use reference counter, which we did not realize at first. Also, even with reference counting, our implementation will result in endless loop when printed out. We therefore rely on Hashmap in the end.
+3. FuTIL *read* signals are not common in Verilog coding convention. We had two models in our minds, the Verilog valid/response model and our FuTIL valid/read model. We messed things up because of the existing of the two models and spent huge amount of time discussing which one should be the most ideal design.
 
 ## Evaluation 
 
