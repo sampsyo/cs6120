@@ -63,31 +63,49 @@ In this project, we are interested in changing all the control logic to finite s
 
 ## Design Overview
 
-In our design, an intermediate FSM is a component with `fsm_[control]` as name prefix. For example, a `if` statement will be converted to an FSM component with`fsm_if`  prefix. Before we getting into the input and outputs of this component, let's take a look at how an FSM works.
+### Finite State Machine Components
 
-An FSM has one **Start** state, some **Intermediate** states and **End** state. A state transfers to another according to some input signals, while at each state, some output signal is sent out. Consider the syntax `(enable A B)` . The **Start** state transfers to the **Intermediate** when the *valid* signal is high. At the **Intermediate** state, the FSM sends out valid signals to subcomponents `A` and `B`, and waits for *ready* signals from them to be high. Once both of the *ready* signals are high, the FSM transfers to **End** state and outputs *ready* signals to notify upper components. It transfers back to **Start** state when *valid* signal is low, indicating the upper components have received the *ready* signal and finished execution so it is safe for the FSM to go back to the **Start** state. The same design logic applies to all FSMs. The only difference happens in intermediate state(s): `seq` FSM has one or more intermediate states and one intermediate only transfers to next state when receiving high *ready* signal from the previous state; `if` FSM send *valid* to the module that execute the comparison and receive both *ready* and *condition* signals and determine which state it should transfer to with the *condition* signal; `while` FSM transfers to loop **Body** state when *condition* signal is high and goes to **End** State when condition is low.
+In our design, an intermediate FSM is a component with `fsm_[control]` as name prefix. An FSM component has:
+
+- input and output ports,
+- connection of wires between its own ports and other components's port,
+- internal control logic that determine the output signals.
+
+The internal control logic of a FSM component can be divided into several states that determines the output signals. A state transfers to another according to some input signals. In general, all FSM components are composed of one **Start** state, some **Intermediate** states and **End** state. 
+
+Consider the syntax `(enable A B)` . The **Start** state transfers to the **Intermediate** when the *valid* signal is high. At the **Intermediate** state, the FSM sends out valid signals to subcomponents `A` and `B`, and waits for *ready* signals from them to be high. Once both of the *ready* signals are high, the FSM transfers to **End** state and outputs *ready* signals to notify upper components. It transfers back to **Start** state when *valid* signal is low, indicating the upper components have received the *ready* signal and finished execution so it is safe for the FSM to go back to the **Start** state. The same design logic applies to all FSMs. The only difference happens in intermediate state(s): `seq` FSM has one or more intermediate states and one intermediate only transfers to next state when receiving high *ready* signal from the previous state; `if` FSM send *valid* to the module that execute the comparison and receive both *ready* and *condition* signals and determine which state it should transfer to with the *condition* signal; `while` FSM transfers to loop **Body** state when *condition* signal is high and goes to **End** State when condition is low.
 
 <img src="fsm.pdf" style="width: 100%">
 
+### *Read* Signals
 
+`enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into  hardware. However, this implicitly assumes that the signal on a wire is not readable until we `enable` a component. We therefore require any data wire extra one bit to specify whether the signal is readable.
+
+### Lookup Tables (LUT)
+
+A component can be used more than once. For instance, if we write to register `x` more than once, we actually reused this register component. We therefore need to create a lookup table (LUT) to learn the correct input to this component.
 
 
 
 ## Implementation
 
-FuTIL is implemented with [Rust](<https://www.rust-lang.org/>). So as the first step, we spend some time to get familiar with the language. 
-
-
+### Adding FSM Passes 
 
 We first add a pass that translates control syntax to FSM components.
 
-Based on the design logic of FSMs, we can specify the inputs and outputs of each FSM component and the wires connecting each ports to its subcomponents.
+Based on the design logic of FSMs, we can specify the inputs and outputs of each FSM component and the wires connecting each ports to its subcomponents. Notice we also need add *cond_read* signals to specify whether the *condition* signal from the comparison component is readable.
 
-| FSM                  | Input Ports                  | Output Ports                       |
-| -------------------- | ---------------------------- | ---------------------------------- |
-| `enable`/`par`/`seq` | *val, val_A, val_B, ...*     | *rdy, rdy_A, rdy_B, ...*           |
-| `if`                 | *val, val_con, val_T, val_F* | *rdy, cond, rdy_con, rdy_T, rdy_F* |
-| `while`              | *val, val_con, val_body*     | *rdy, cond, rdy_con, rdy_body*     |
+| FSM                  | Input Ports                                   | Output Ports                 |
+| -------------------- | --------------------------------------------- | ---------------------------- |
+| `enable`/`par`/`seq` | *val, rdy_A, rdy_B, ...*                      | *rdy, val_A, val_B, ...*     |
+| `if`                 | *val, rdy_con, cond, cond_read, rdy_T, rdy_F* | *rdy, val_con, val_T, val_F* |
+| `while`              | *val, rdy_con, cond, cond_read, rdy_body*     | *rdy, val_con, val_body*     |
+
+
+
+### Adding LUT Passes
+
+
 
 
 
@@ -96,8 +114,9 @@ Based on the design logic of FSMs, we can specify the inputs and outputs of each
 
 ## Hardest Parts
 
-1. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. 
-2. 
+1. FuTIL is implemented with [Rust](<https://www.rust-lang.org/>), so we spent some time to get familiar with the language. 
+2. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. 
+3. 
 
 ## Evaluation 
 
