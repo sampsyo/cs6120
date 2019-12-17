@@ -63,9 +63,32 @@ In this project, we are interested in changing all the control logic to finite s
 
 ## Design Overview
 
-### Finite State Machine Components
+FuTIL is the backend for Dahlia. The FuTIL semantics is designed in favor of smallest effort from high level language Dahlia to FuTIL language, but this opens a gap between FuTIL semantics and RTL implementations. The table below shows the efforts required to translate the FuTIL semantics to synthesizable Verilog implementations.
 
-In our design, an intermediate FSM is a component with `fsm_[control]` as name prefix. An FSM component has:
+| FuTIL Semantics   | Verilog         |
+| ----------------- | --------------- |
+| Invalid wire      | Read wires      |
+| Component Reusing | MUX, Read wires |
+| Control           | FSM             |
+
+### *Read* Signals
+
+In FuTIL semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any data wire to have one extra bit to specify whether the signal is readable.
+
+### *MUX*
+
+A component can be used more than once in FuTIL. For instance, if we reuse variable `a0`, then the register need to choose the input from const0 and const2. This introduces a multiplexer (MUX).  
+
+```futil
+(enable a0 const0)
+(enable a0 const2)
+```
+
+At different time step, read signals tells which wire to the MUX is readable. Therefore, read wires serve as **sel** signals for MUX.
+
+### *FSM*
+
+In FuTIL, there are control logics like `if`, `while` and etc. This can be translated into FSM in Verilog implementation, which is the main goal of this project. However, before getting to that, we created intermediate FSM expressions in FuTIL. An FSM component has:
 
 - input and output ports,
 - connection of wires between its own ports and other components's port,
@@ -75,19 +98,15 @@ The internal control logic of a FSM component can be divided into several states
 
 Consider the syntax `(enable A B)` . The **Start** state transfers to the **Intermediate** when the *valid* signal is high. At the **Intermediate** state, the FSM sends out valid signals to subcomponents `A` and `B`, and waits for *ready* signals from them to be high. Once both of the *ready* signals are high, the FSM transfers to **End** state and outputs *ready* signals to notify upper components. It transfers back to **Start** state when *valid* signal is low, indicating the upper components have received the *ready* signal and finished execution so it is safe for the FSM to go back to the **Start** state. The same design logic applies to all FSMs. The only difference happens in intermediate state(s): `seq` FSM has one or more intermediate states and one intermediate only transfers to next state when receiving high *ready* signal from the previous state; `if` FSM send *valid* to the module that execute the comparison and receive both *ready* and *condition* signals and determine which state it should transfer to with the *condition* signal; `while` FSM transfers to loop **Body** state when *condition* signal is high and goes to **End** State when condition is low.
 
-<img src="fsm.pdf" style="width: 100%">
+<img src="fsm.png" style="width: 100%">
 
-### *Read* Signals
 
-`enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into  hardware. However, this implicitly assumes that the signal on a wire is not readable until we `enable` a component. We therefore require any data wire extra one bit to specify whether the signal is readable.
-
-### Lookup Tables (LUT)
-
-A component can be used more than once. For instance, if we write to register `x` more than once, we actually reused this register component. We therefore need to create a lookup table (LUT) to learn the correct input to this component.
 
 
 
 ## Implementation
+
+<img src="flow.png" style="width: 100%">
 
 ### Adding FSM Passes 
 
