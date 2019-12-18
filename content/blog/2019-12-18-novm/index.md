@@ -6,9 +6,6 @@ extra.bio = """
 """
 +++
 
-
-# Evaluating the Software Costs and Benefits of Physical Addressing
-
 ## Introduction to Virtual Addressing
 
 Modern processors use [_virtual addressing_](https://en.wikipedia.org/wiki/Virtual_address_space)
