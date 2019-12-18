@@ -15,7 +15,7 @@ Modern processors use [_virtual addressing_](https://en.wikipedia.org/wiki/Virtu
 to access _actual_ memory locations through a translation layer.
 Only highly privileged software, such as the operating system (OS),
 has access to physical memory addresses while all other processes
-can only refer to memory via these virtual addresses.
+can only refer to memory via these virtual ones.
 When a process requests memory (e.g., via `malloc`),
 the OS will allocate physical memory in fixed size chunks, called pages,
 and then map them into the process' virtual address space.
