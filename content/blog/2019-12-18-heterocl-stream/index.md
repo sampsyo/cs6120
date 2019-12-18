@@ -63,21 +63,21 @@ The purpose of this algorithm is to schedule each module by assigning it with a 
 
 To begin with, we first assign each module with a group number. Modules within the same group are executed in sequential, while modules in different groups can be executed in parallel. To assign the group number, we first build a dataflow graph (DFG) according to the input program. An example is shown in the following figure, where the solid lines mean normal read/write operations while the dotted lines refer to the read/write of data streams.
 
-[Insert Figure]
+<img src="DFG.png" width="300" >
 
 After the DFG is built, we remove all the dotted lines. Then, we assign a unique ID to each connected component. This ID will be the group number. An example is shown below.
 
-[Insert Figure]
+<img src="group.png" width="300" >
 
 Now, we can start the scheduling process by assigning the timestep to each module. We first perform a very simple as-soon-as-possible (ASAP) algorithm. Namely, the first module within each group will be assigned with timestep 0. After that, we assign the timestep of each module according to the data dependence. An example is shown below.
 
-[Insert Figure]
+<img src="schedule1.png" width="300" >
 
-However, this is not correct because as we mentioned above, modules connected with streams should be run in parallel. Namely, they will share the same timestep. To solve that, we add one dotted line back at a time and correct the timesteps. We also need to correct its succeeding modules accordingly.
+However, this is not correct because as we mentioned above, modules connected with streams should be run in parallel. Namely, they will share the same timestep. To solve that, we add one dotted line back at a time and correct the timesteps. We also need to correct its succeeding modules accordingly. After all dotted lines are added, we finish our scheduling algorithm.
 
-[Insert Figure]
+<img src="schedule2.png" width="300" >
 
-After all dotted lines are added, we finish our scheduling algorithm. Note that there exist cases where we cannot solve. For example, if two modules ``A`` and ``B`` are connected with a solid line, and the producer ``A`` streams to a module ``M`` while ``B`` also streams from ``M``, then there exists no valid scheduling according to our constraints. One possible way to solve that is by merging ``A`` and ``B`` into a new module ``A_B``. In this case, the streaming from/to ``M`` becomes an internal stream, which can be scheduled easily by assigning ``A_B`` and ``C`` with the same timestep.
+Note that there exist cases where we cannot solve. For example, if two modules ``A`` and ``B`` are connected with a solid line, and the producer ``A`` streams to a module ``M`` while ``B`` also streams from ``M``, then there exists no valid scheduling according to our constraints. One possible way to solve that is by merging ``A`` and ``B`` into a new module ``A_B``. In this case, the streaming from/to ``M`` becomes an internal stream, which can be scheduled easily by assigning ``A_B`` and ``C`` with the same timestep.
 
 #### Parallel Execution with Threads
 
