@@ -65,7 +65,7 @@ In this project, we used the [built-in profile generation via the instrumentatio
 
 ## Block Reordering Algorithm
 
-We implemeted one variant of algo2 in Profile Guided Code Positioning as one LLVM pass. The frequencies of each branch in conditional jump and switch instrucitons are used as edges weight. We also experimented with marking weight of unconditional branch to be infinity.
+We implemented one variant of algo2 in Profile Guided Code Positioning as one LLVM pass. The frequencies of each branch in conditional jump and switch instrucitons are used as edges weight. We also experimented with marking the weight of unconditional branches to be infinity.
 
 The algorithm first identifies frequently executed "chains", i.e., paths of basic blocks. It starts by setting all basic blocks as individual chains. Then the edges are iterated from highest weight to lowest. For each edge, if it is connecting tail and head of two chains, the chains will be merged. We implemented this by maintaining the start of chains and the next block relationships in hashmaps. Then we iterate through all the block terminators to collect edges with weights and rank them by weights. Finally we merge the chains if and only if the edge is jumping from the end of a chain to the start of a chain.
 
@@ -79,7 +79,7 @@ Initially we tested our pass on simple programs with only one conditional branch
 
 ### Benchmark Testing
 
-We also evaluated the pass on [PARSEC](https://parsec.cs.princeton.edu/). Due to machine and time constraints, we only managed to run streamcluster programs with profiles provided by running the simulated inputs. We compared clang with only our optimization pass against clang with no optimization. Unfortunately, there isn't a significant improvement in either the branch misses or the runtime. We suspect there is at least some improvement in streamcluster, considering the drastically lowered standard deviation and modestly reduced branch misses.
+We also evaluated the pass on [PARSEC](https://parsec.cs.princeton.edu/). Due to machine and time constraints, we only managed to run streamcluster programs with profiles provided by running the simulated inputs. We use `parsecmgmt` to run the benchmarks, and report the branch misses as well as the total runtimes. We compared clang (no optimizations) with only our optimization pass against clang (no optimizations). Unfortunately, there isn't a significant improvement in either the branch misses or the runtime. We suspect there is at least some improvement in streamcluster, considering the drastically lowered standard deviation and modestly reduced branch misses.
 
 | Benchmark                              |No optimizations     | Our pass            |
 |----------------------------------------|---------------------|---------------------|
