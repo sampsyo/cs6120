@@ -26,7 +26,7 @@ function-initialization tasks. Also, some of the state of the calling function
 (e.g., caller-saved registers) will need to be stored in preparation for the
 call, such that it will not be overwritten by the called function. Separating
 out functions also gives the compiler less information for optimizing the
-program, as, when looking at a function, the compiler cannot be sure of the
+program, because when looking at a function, the compiler cannot be sure of the
 context that it will be running in. As such, it is often beneficial for
 compilers to be able to get rid of function calls.
 
@@ -61,8 +61,8 @@ With a method for inlining in place, the next step is to determine when we want
 to inline calls. Some function calls can be immediately eliminated from
 consideration because they would be impossible to inline correctly. For example,
 functions not defined locally cannot be inlined, as their implementations are
-unknown. Also, any functions that include indirect branch instructions cannot be
-inlined as doing so would modify the functions' memory locations, and as such
+unknown. Also, functions that include indirect branch instructions may directly
+address function locations, and if they do, they cannot be inlined, as doing so
 could cause the indirect branches to go to unexpected positions in the program.
 
 Even if a function is able to be inlined without breaking the semantics of the
@@ -88,7 +88,7 @@ gets caught in a loop trying to inline a recursive function. However, there are
 cases when it is beneficial to inline deeply (i.e., inline calls that were
 created from the inlining of another call). As such, our implementation provides
 the capability to iterate through the program multiple times. In the evaluation,
-we consider the effect that multiple iterations has on the program performance.
+we consider the effect that multiple iterations have on program performance.
 
 ## Evaluation
 
