@@ -62,8 +62,8 @@ to inline calls. Some function calls can be immediately eliminated from
 consideration because they would be impossible to inline correctly. For example,
 functions not defined locally cannot be inlined, as their implementations are
 unknown. Also, functions that include indirect branch instructions may directly
-address function locations, and if they do, they cannot be inlined, as doing so
-could cause the indirect branches to go to unexpected positions in the program.
+address locations, and if they do, they cannot be inlined, as doing so could
+cause the indirect branches to go to unexpected positions in the program.
 
 Even if a function is able to be inlined without breaking the semantics of the
 program, it still may not be beneficial to do so. For one, inlining functions
