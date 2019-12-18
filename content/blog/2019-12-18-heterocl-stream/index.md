@@ -30,7 +30,7 @@ The key feature of HeteroCL is to decouple the algorithm specification from the 
 
 ### Software Simulation for Data Streaming
 
-It is not enough with the programming language support only. We also need the ability to simulate the programs after applying data streaming. One way to do that is by using the existing HeteroCL back ends. Namely, we can generate HLS code with data streaming and use the HLS tools to run software simulation. Note that the software simulation here refers to cycle-inaccurate simulation. The reason why we only focus on cycle-inaccurate simulation is that to complete cycle-accurate simulation, we need to run through high-level synthesis, which could be time-consuming in some cases. We can see that the existing back ends require users to have HLS tools installed, which is not ideal for an open-srouce programming framework. Moreover, the users will need a separate compilation to run the simulation. Thus, inthis project, we introduce a CPU simulation flow to HeteroCL by extending the LLVM JIT runtime. With this feature, users can easily verified the correctness of a program after introducing data streaming.
+It is not enough with the programming language support only. We also need the ability to simulate the programs after applying data streaming. One way to do that is by using the existing HeteroCL back ends. Namely, we can generate HLS code with data streaming and use the HLS tools to run software simulation. Note that the software simulation here refers to cycle-inaccurate simulation. The reason why we only focus on cycle-inaccurate simulation is that to complete cycle-accurate simulation, we need to run through high-level synthesis, which could be time-consuming in some cases. We can see that the existing back ends require users to have HLS tools installed, which is not ideal for an open-srouce programming framework. Moreover, the users will need a separate compilation to run the simulation. Thus, in this project, we introduce a CPU simulation flow to HeteroCL by extending the LLVM JIT runtime. With this feature, users can easily verified the correctness of a program after introducing data streaming.
 
 ### Implementation Details
 
@@ -56,10 +56,25 @@ However, this is not correct because as we mention above, modules connected with
 
 [Insert Figure]
 
-After all dotted lines are added, we finish our scheduling algorithm.
+After all dotted lines are added, we finish our scheduling algorithm. Note that there exist cases where we cannot solve. For example, if two modules ``A`` and ``B`` are connected with a solid line, and the producer ``A`` streams to a module ``M`` while ``B`` also streams from ``M``, then there exists no valid scheduling according to our constraints. One potential way to solve that is by merging ``A`` and ``B`` into a new module ``A_B``. In this case, the streaming from/to ``M`` becomes an internal stream, which can be scheduled easily by assigning ``A_B`` and ``C`` with the same timestep.
+
+#### Parallel Execution with Threads
+
+After we assign each module with a timestep, we can start to execute them via threads. Before we execute a module with a new thread, we check whether all modules assigned with smaller timesteps are completed. In other word, we first check whether all modules assigned with smaller timesteps are fired. If not, we schedule the current module to be executed in the future by pushing it into a sorted execution queue. Then, if all modules with smaller timesteps are fired, we check whether they are finised. If not, we perform thread synchronization (e.g., by using ``thread.join()`` in C++). Finally, we need to execute the modules in the execution queue. Since the queue is sorted, we do not need to worry about new modules being inserted into the queue.
 
 #### Stream Buffers
 
-#### Thread Pool Management
+In this work, we implement the streams with buffers that act like FIFOs. Instead of actually popping from or pushing to the buffers, we maintain a **head** and a **tail** pointer for each buffer. The pointers are stored as integer numbers. The head pointer points to the next element that will be read from and the tail pointer points to the next element that will be written to. We update the pointers each time an element is written to or read from the buffer. We need to perform modulo operations if the pointer value is greater than the buffer size (i.e., FIFO depth). Since we may have two threads updating the pointers at the same time, we declare them as atomic numbers. Finally, we maintain a map so that we can access a stream according to its ID.
 
 #### LLVM JIT Extension
+
+To enable users with a one-pass compilation, we extend the existing LLVM JIT runtime in HeteroCL. It is complicated and hard to maintain if we implement both threads and stream buffers using only LLVM. Thus, we implement them with C++ and design an interface composed of a set of functions. For instance, we have ``BlockingRead``, ``BlockingWrite``, ``ThreadLaunch``, and ``ThreadSync``. Then, inside our JIT compiler, we call the functions by using LLVM external calls.  
+
+### Evaluation
+
+In this section, we evalutate our implementation by using both unit tests and realistic benchmarks.
+
+#### Unit Tests
+
+The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs.
+
