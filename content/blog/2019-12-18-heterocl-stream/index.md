@@ -37,7 +37,7 @@ M3(C, E)
 
 In this example, ``M1`` takes in one input tensor ``A`` and writes to two output tensors ``B`` and ``C``. Then, ``M2`` and ``M3`` read from ``B`` and ``C`` and write to ``D`` and ``E``, respectively. We can see that ``Ml2`` and ``M3`` have no data dependence and can thus be run in parallel. Moreover, these two modules can start as soon as they receive an output produced by ``M1``. To realize such task-level parallelism, we can replace the intermediate results ``B`` and ``C`` with data streams. We illustrate the difference between before and after applying data streaming with the following figure.
 
-[Insert Figure]
+<img src="exec_time.png" width="500" >
 
 ### Data Streaming in HeteroCL
 
