@@ -315,3 +315,6 @@ on the stack, the cost of checking stack size and occasionally allocating new st
 frame pages would be negligible. All in all, if we could actually address physical
 memory, we very well might see improvements in performance while also
 simplifying much of the underlying hardware and operating system.
+
+The source code for the `Array` object, the microbenchmarks and the instrumentation
+modifications we made to libgcc can be found on [github](https://github.com/dz333/non-contiguous-mem).
