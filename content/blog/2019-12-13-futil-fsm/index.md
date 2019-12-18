@@ -154,6 +154,23 @@ We provide abstract methods `new(name: &str) -> StateIndex`, `new_state() -> Sta
 
 
 
+###  FSM to RTL generation
+
+After generating an FSM, we need to translate the entire structure of inputs, outputs and states to synthesizable hardware using Verilog. This is done by breaking down a verilog file into distinct components.
+
+1. Module Declaration- Here we define the name of the module alongwith the inputs and outputs for it.
+2. Wire/reg definitions- These are internal signals that are used within the module.
+3. FSM- FSMs can be represented in Verilog using 3 `always` blocks - State transition, Next state logic, State outputs. 
+
+To expand on how all the 3 `always` blocks are generated we discuss them below:
+
+1. State transition- This is pretty standard. It actually changes the state at a clock edge. Since this is a generic block it can be create without any inputs.
+2. Next state logic- This block has a bunch of cases for all the states. For each state in the FSM struct, based on the input transitions to it, we have `if else`  statements for next state logic. 
+3. Output logic- This block contains output signals for each state represented by cases, similar to the previous block. In addition to having verilog statements for all the relevant outputs in the state, we also assign the rest of the outputs of the FSM to be zero for now. This is done to avoid inferred latches, which can occur if all outputs are not assigned in each state even though they don't change.
+
+We used `RcDoc` for formatting the Verilog files.
+
+
 
 ## Hardest Parts
 
