@@ -97,7 +97,7 @@ and it's _their job to stripe datastructures across them_.
 To evaluate the impact of software changes required in lieu of virtual addressing,
 we ran experiments with the following configurations. First, we ran all of our tests
 on a computer with 8 Intel i7-7700 CPUs clocked at 3.60GHz, with 32GB of physical memory, running Ubuntu 16.04.
-Secondly, we followed the [guidlines](https://llvm.org/docs/Benchmarking.html) provided by llvm to reduce
+Secondly, we followed the [guidlines](https://llvm.org/docs/Benchmarking.html) provided by LLVM to reduce
 variance; in particular, every test was executed on a single, isolated processor core.
 While we ran all of our tests ten times and report averages of our measurements, with
 this setup we observed very little variance with typically less than 0.01% standard deviation.
@@ -108,9 +108,11 @@ sized stack required to execute the benchmarks normally.
 Unfortunately, we could not actually execute any tests using physical addressing,
 since there is no reliable method for allocating physical memory in user space.
 While there are several [proposals](https://blog.linuxplumbersconf.org/2017/ocw/system/presentations/4669/original/Support%20user%20space%20POSIX%20conformant%20contiguous__v1.00.pdf) for how to implement these
-features, they aren't currently supported in Linux. Therefore, our results
-are overhead measurements that represent worst-case performance; we don't actually
-expect any of our tests to result in speedups.
+features, they aren't currently supported in Linux.
+While there are reconfigurations and workarounds that could enable
+this evaluation the solutions are not lightweight.
+Therefore, our results are overhead measurements that represent worst-case performance;
+we don't actually expect any of our tests to result in speedups.
 
 
 # Dealing With The Stack
@@ -146,7 +148,7 @@ We evaluated the performance impact of using split stacks on two microbenchmarks
 designed to be bottlenecked on function calls, which respectively do and do not
 trigger run-time memory allocations.
 The first microbenchmark was a naive program to compute the 50th
-number in the fibonnacci sequence without memoization; this did not require
+number in the Fibonnacci sequence without memoization; this did not require
 a large amount of stack so we use it to measure the overhead of _just checking_
 whether or not there is enough space.
 The other microbenchmark naively recursively computes the sum of the first _n_ integers.
@@ -158,7 +160,7 @@ by recursing very deeply.
 
 This diagram plots the execution time of these two microbenchmarks with the `-fstack-split`
 option enabled, normalized to regular execution (statically allocated stacks).
-As you can see, our fibonnacci benchmark has only about a 15% increase in runtime
+As you can see, our Fibonnacci benchmark has only about a 15% increase in runtime
 caused by checking remaining stack space. While not an insignificant cost, most
 programs will not execute nearly as high a density of function calls and should not
 see such high overheads.
@@ -187,7 +189,7 @@ Each of these allocations was 618 KB, which is a potential concern. It is unclea
 system using only physical addressing, whether or not allocations of this size would
 be frequently servicable or not. I hypothesize that real systems with many gigabytes or terabytes
 of memory with even severe fragmentation will be able to regularly respond to allocations
-in the kilobyte range; however, proving this is future work.
+in the kilobyte range; however, evalutaing this is future work.
 
 # Large Object Allocations
 
