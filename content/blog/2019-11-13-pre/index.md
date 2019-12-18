@@ -26,7 +26,7 @@ There are only pointers representing the results of instructions,
 which means I cannot create a new variable with a specific name. 
 
 I can use built-in functions to create an instruction and get the result pointer, 
-but the real trouble is that I don't find a way to implement this: 
+but the real trouble is that there is no way to do this: 
 create the same instruction in two branches, 
 and refer them using one pointer after branches merge. 
 What I can do is to create a `phi` function to get a merged result, 
@@ -44,8 +44,8 @@ Also, since the code is in SSA form,
 the values of each variable (register) never change,
 which means expressions also never change.
 Therefore, 
-some analysis in lazy code motion becomes useless,
-for example, `kill(b)` means the set of expressions whose values are changed in block `b`.
+some analysis in lazy code motion becomes useless.
+For example, `kill(b)` means the set of expressions whose values are changed in block `b`.
 For LLVM IR, it is always empty.
 This shows that SSA form is not the most ideal situation to apply this algorithm, and there are PRE algorithms designed for SSA form, such as ["A new algorithm for partial redundancy elimination based on SSA form"](https://dl.acm.org/citation.cfm?id=258940).
 
@@ -59,7 +59,7 @@ to run large-scale test sets.
 
 #### Setting
 
-The benchmarks I run contains: 
+The benchmarks I run are: 
 
 ```
 BenchmarkGame, CoyoteBench, Dhrystone, Linpack, McGill, Misc, PolyBench, Shootout, Stanford
@@ -77,7 +77,7 @@ I compare the performance of four settings:
 
 ![chart2](./chart2.png)
 
-Above is a chart showing relative runtime running my select benchmarks of the later three settings over baseline. 
+Above is a chart showing relative runtime running my select benchmarks of the latter three settings over the baseline. 
 The result shows that:
 
 1. Overall, both `gvn` and `lcm` occasionally optimize the program significantly (ratio < 0.9): 15/98 for `gvn`, and 7/98 for `lcm`.
