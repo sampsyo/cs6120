@@ -98,13 +98,12 @@ and it's _their job to stripe datastructures across them_.
 # Experimental Setup
 
 To evaluate the impact of software changes required in lieu of virtual addressing,
-we ran experiments with the following configuraions. First, we ran all of our tests
-on a computer with 8 Intel i7-7700 CPUs running at 3.60GHz, with 32GB of physical memory, running Ubuntu 16.04.
+we ran experiments with the following configurations. First, we ran all of our tests
+on a computer with 8 Intel i7-7700 CPUs clocked at 3.60GHz, with 32GB of physical memory, running Ubuntu 16.04.
 Secondly, we followed the [guidlines](https://llvm.org/docs/Benchmarking.html) provided by llvm to reduce
 variance; in particular, every test was executed on a single, isolated processor core.
 While we ran all of our tests ten times and report averages of our measurements, with
-this setup we observed very little variance with typically less than 0.01% standard deviation
-most of the time.
+this setup we observed very little variance with typically less than 0.01% standard deviation.
 Finally, we assumed that some reasonable amount of stack could be pre-allocated contiguously,
 even on a physically addressed machine. We chose 32KB since that was approximately the smallest
 sized stack required to execute the benchmarks normally.
@@ -125,7 +124,7 @@ stack pointer, which is stored in a register.
 Obviously, while this is an efficient mechanism for address computation,
 this scheme doesn't work if any given stack frame is not comprised of physically contiguous memory.
 
-For certain applications, it is likely that we can allocate a single stack page at startup
+For certain applications, it is likely that we can allocate a single stack page at start-up
 and then go on with our lives. In this case, the restrictions mentioned above aren't really
 an issue. However, programs _may_ allocate large data structures on the stack, may recurse
 deeply or may have dynamically sized stack allocations. In these cases, we can run into
@@ -147,12 +146,12 @@ for making the common case fast and maintaining its own small free list for stac
 ## Overhead of Stack Checking
 
 We evaluated the performance impact of using split stacks on two microbenchmarks
-designed to be bottlenecked on function calls which respectively do and do not
+designed to be bottlenecked on function calls, which respectively do and do not
 trigger run-time memory allocations.
 The first microbenchmark was a naive program to compute the 50th
 number in the fibonnacci sequence without memoization; this did not require
-a large amount of stack space so we use it to measure the overhead of _just checking_
-whether or not there is enough stack space.
+a large amount of stack so we use it to measure the overhead of _just checking_
+whether or not there is enough space.
 The other microbenchmark naively recursively computes the sum of the first _n_ integers.
 We executed this benchmark with `n=1000000000` so that it would trigger run-time allocations
 by recursing very deeply.
@@ -161,9 +160,11 @@ by recursing very deeply.
 
 
 This diagram plots the execution time of these two microbenchmarks with the `-fstack-split`
-option enabled, normalized to regular execution, without that option enabled.
+option enabled, normalized to regular execution (statically allocated stacks).
 As you can see, our fibonnacci benchmark has only about a 15% increase in runtime
-caused by checking remaining stack space.
+caused by checking remaining stack space. While not an insignificant cost, most
+programs will not execute nearly as high a density of function calls and should not
+see such high overheads.
 The recursive sum benchmark ended up executing 6410250 different run-time allocations
 of 1544 bytes. While it had a very large performance impact, we could certainly tune
 the stack allocation algorithm to request larger chunks of memory to reduce the frequency
@@ -193,14 +194,14 @@ in the kilobyte range; however, proving this is future work.
 
 # Large Object Allocations
 
-The other major modification to programs would be supporting large memory allocations; since
-it is probably unreliable to request very large contiguous memory regions, we must adopt a new
+The other major modification to programs would be supporting large memory allocations.
+Since it is probably unreliable to request very large contiguous memory regions, we must adopt a new
 strategy. To evaluate the potential impact of these changes, we modified the Blackscholes
 benchmark from the PARSEC suite. Blackscholes uses two dynamically allocated arrays,
 which we replaced with custom `Array` objects that we implemented to use only fixed size
 allocations. We chose to modify this application not only because it consists of a single,
 easily-modifiable source file, but also because it iterates through large arrays
-and is very likely to be negatively impacted by poor spatial locality.
+and is very likely to be negatively impacted by array access latency and spatial locality within the array.
 
 ## Custom Array Implementation
 
@@ -250,7 +251,8 @@ it makes sense that larger pages start to provide diminishing returns once they
 exceed L1 and L2 CPU cache sizes. We tried to confirm these intuitions using
 performance counters but found that L1 cache miss rates were very close across
 all configurations and LLC (last level cache) miss rates varied wildly even
-across executions of the same configuration.
+across executions of the same configuration. Likely this was caused by interference
+with processes running on other cores or the OS itself.
 
 However, using other performance counters we did notice that both the
 original and modified Blackscholes programs had very similar IPC (instruction per cycle)
@@ -262,7 +264,12 @@ of depth three (two layers of pointers and a single data layer), which removed
 some of the runtime checks required to access data. The results for that test are
 in the "No Branches" column above. Other than in the 1 MB case, this configuration
 performed much better than the others, with only a 3% overhead in the 16 KB case.
-
+In a robust implementation, one could achieve this effect by
+using a ["factory"](https://en.wikipedia.org/wiki/Factory_method_pattern) pattern
+to create the appropriate depth `Array` for the given allocation. Ideally,
+we would be able to determine this requirement statically so that array accesses
+could be in-lined; this would probably avoid the vast majority of the overheads
+caused by using this data structure.
 
 ## Random Access Overheads
 
@@ -280,16 +287,17 @@ can be configured to use a small or large array. The small test was
 sized to fit into a single data page and therefore should not incur extra memory
 accesses compared to the traditional array implementation. For this test, we
 used 4KB pages. Like before, we include a "No Branches" configuration which is
-precompiled to remove the run-time checks for determine the correct element lookup behavior.
+precompiled to remove the run-time checks to determine the correct element look-up behavior.
 
 <img src="randomtest.png" style="width:100%"/>
 
-We can see here that the random access cost on large arrays is, unsurprisingly
+We can see here that the random access cost on large arrays is, unsurprisingly,
 expensive. In the linear access case, there is still quite a bit of spatial locality
-and Tree pointer pages are likely to be in cache for multiple data accesses. With random
+and `Array` pointer pages are likely to be in cache for multiple data accesses. With random
 access, the larger amount of memory required to store the data increases the cache pressure.
-Small arrays do suffer from some overhead in these but likely this is just
-caused by the increase in dynamic instruction count (1.5 times as many in the "No Branches" case).
+Small arrays do suffer from some overhead in this test but likely this is primarily
+caused by the increase in dynamic instruction count (the "No Branches" case executes 1.5 times
+as many instructions as the baseline).
 
 # Conclusion
 
@@ -303,7 +311,7 @@ setting (e.g., by using [Stabilizer](https://emeryberger.com/research/stabilizer
 These preliminary results suggest that highly optimized datastructures,
 tuned for physical memory allocation could impose very little overhead.
 Furthermore, at least for programs which do not allocate large amounts of memory
-on the stack, the cost of checking stack size and occaisonally allocating new stack
+on the stack, the cost of checking stack size and occasionally allocating new stack
 frame pages would be negligible. All in all, if we could actually address physical
-memory, we very well might see improvements in performance and
- simplify much of the underlying hardware and operating system.
+memory, we very well might see improvements in performance while also
+simplifying much of the underlying hardware and operating system.
