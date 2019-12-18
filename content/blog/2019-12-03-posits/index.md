@@ -211,7 +211,10 @@ In particular, we borrow the basic arithmetic operations (`+`, `-`, `*`, and `/`
 We ran several benchmarks from [FPBench](https://fpbench.org/benchmarks.html) that accomodated our limited selection of posit operators.
 
 For each input, we calculate percent error for `float` and `posit` benchmark results, regarding the corresponding `double` benchmark results as the correct, "oracular" values. 
-We report the mean and standard deviation of the percent error over all inputs:
+We chose computationally feasible sample sizes for each benchmark approximately using the heuristic $20^{vars}$, where $vars$ denotes the number of input variables for the benchmark, reflecting the need for more samples over larger input spaces.
+Inputs were linearly sampled over the valid input ranges specified for each benchmark.
+This simple strategy ensured that test cases would also include the case of exactly representable integers, in which all of the error arises from operation error.
+We report the mean and standard deviation of the percent error over all examined inputs:
 
 
 | `sum` | Mean Error | Error Std Dev |
