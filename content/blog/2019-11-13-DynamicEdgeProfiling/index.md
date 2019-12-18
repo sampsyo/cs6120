@@ -1,5 +1,11 @@
 +++
 title = "Dynamic Edge Profiling with Optimal Counter Placement"
+[[extra.authors]]
+name = "Katy Voor"
+link = "https://github.com/kavoor"  
+[[extra.authors]]
+name = "Henry Liu"
+link = "https://www.linkedin.com/in/liuhenry4428/"  
 [extra]
 bio = """
   [Katy](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
