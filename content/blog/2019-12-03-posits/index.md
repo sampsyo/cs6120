@@ -1,25 +1,37 @@
 +++
 title = "The Cult of Posits"
-extra.author = "Dietrich Geisler & Edwin Peguero"
+[extra]
+katex_enable = true
+latex = true
+[[extra.authors]]
+name = "Dietrich Geisler"
+[[extra.authors]]
+name = "Edwin Peguero"
 +++
 
 Computers are incapable of representing arbitrary real numbers exactly.
 This is due to two intractable facts of real numbers:
-- Uncountably Infinite Domain: There are an infinite number of real numbers.
-- Uncountably Infinite Precision: Some real numbers require infinite precision.
+- **Uncountably Infinite Domain**: There are an infinite number of real numbers.
+- **Uncountably Infinite Precision**: Some real numbers require infinite precision.
  
 Since computers use a finite number of bits, computer architects must settle on capturing a finite number of real numbers at a finite level of precision.
-This is done by fixing a mapping between bit patterns and real numbers called a *representation*.
+This is done by fixing a mapping between bit patterns and real numbers called a **representation**.
 A representation makes a tradeoff between the quantity of representable numbers and the level of precision.
 
 ## The Floating Point Representation
 
-The *floating point* representation is the most widely used.
-Numbers are written in the form `(-1^s) * 1.m * 2^e`, where `1.m`, the *mantissa*, and `e`, the *exponent*, are fractional and integer binary values, respectively, and `s` is a single bit denoting the sign of the represented number.
+The **floating point representation** is the most widely used.
+Numbers are written in the form: 
+$$\(-1^s) * 1.m * 2^e$$ 
+
+- $1.m$, the *mantissa*, and $e$, the *exponent*, are fractional and integer binary values, respectively. 
+
+- $s$ is a single bit denoting the sign of the represented number.
+
 The design tradeoff between quantity and precision is captured by the number of bits dedicated to the mantissa and exponent.
 
 In practice, however, the IEEE 754 floating point standard slightly modifies this scheme to account for two perceived limitations:
-- Small Number Gap: there is a relatively large gap between the representation of the largest negative number, and the smallest positive number
+- Small Number Gap: there is a relatively large gap between the representation of the largest negative number, and the smallest positive number.
     - To account for this, the numbers with the smallest exponent are *denormalized*. 
     Denormalized values are spread out linearly, rather than exponentially.
     For floating points, denormalization occurs between the largest negative and smallest positive numbers raised to the second largest exponent.
@@ -30,7 +42,7 @@ Before denormalization:
 After denormalization:
 ![](denormalized.png)
 
-- Bogus Results: the result of overflow (e.g., dividing by a very small number) or partial functions applied to elements outside of their domains (e.g, division by zero) have no representation
+- Bogus Results: the result of overflow (e.g., dividing by a very small number) or partial functions applied to elements outside of their domains (e.g, division by zero) have no representation.
     - The case of overflow is captured by the *positive and negative infinity* values, each represented by the bit pattern corresponding to an all ones exponent and all zeros mantissa, and differentiated by the sign bit.
     - The case of a non-result of a partial function is captured by the *NaN* value (meaning, "not a number"), represented by the various bit patterns with an all ones exponent and non-zero mantissa.
 
@@ -43,15 +55,15 @@ All this results in a glutonous representation:
 The *posit representation* _should_ be the most widely used representation.
 The numbers represented by posits are similar to floating points, but differ by the introduction of a so-called *regime* term, as follows: 
 
-````(-1^s) * 1.m * useed^k * 2^e````
+$$(-1^s) * 1.m * useed^k * 2^e$$
 
-`useed = 2^(2^es)`, a fundamental quantity in the theory of numerical representations, parametrized by the quantity `es`.
+- $useed = 2^{2^{es}}$, where $es$ is a parameter of the representation.
 
 In his [seminal paper](https://posithub.org/docs/Posits4.pdf), Gustafson explains the _genius_ behind this design:
 > The regime bits may seem like a weird and artificial construct, 
 but they actually arise from a natural and elegant geometric mapping of binary integers to the projective real numbers on a circle.
 
-> ... The value 2^(2^es) is called useed because it arises so often.
+> ... The value $2^{2^{es}}$ is called useed because it arises so often.
 
 Fascinating. 
 
@@ -65,14 +77,14 @@ The posit representation maps numbers around the topological circular loop in re
 ![](holy-circle.png)
 
 At the heavenly North of the circle, symbolizing the Alpha and Omega, Our Father to which we solemly pray, lies the glorious positive and negative infinity.
-At its opposite, the wicked, immoral South of the circle, lies nothing of value, the value `0`.
+At its opposite, the wicked, immoral South of the circle, lies nothing of value, the value $0$.
 Meanwhile, on the earthly plane, God's children enjoy free will, where they choose between positive one at the East and negative one at the West.
 
 The quadrants induced by these points are then symmetrically populated by the rest of the points. 
-The `useed` determines where the "center" of these quadrants resides as follows:
+The $useed$ determines where the "center" of these quadrants resides as follows:
 ![](useed-circle.png)
 
-Much like Adam and Eve, the `useed` determines how the quadrants in the circle are populated.
+Much like Adam and Eve, the $useed$ determines how the quadrants in the circle are populated.
 Positive values lie at the right of the circle, while negative values lie at the left, and reciprocal values reflect across the equator.
 
 ![](populated-circle.png)
@@ -101,10 +113,10 @@ To answer this, he proposes the *decimal accuracy* metric: the number of signifi
 
 Charitably, Gustafson elucidates non-believers why the logarithmic scale is the one true choice:
   > A “perfect spacing” of ten numbers between 1 and 10 in a real number system would be not the evenly-spaced counting numbers 1 through 10, 
-  > but exponentially-spaced 1,10^(1/10),10^(2/10),...,10^(9/10),10.
+  > but exponentially-spaced $1,10^{\frac{1}{10}},10^{\frac{2}{10}},...,10^{\frac{9}{10}},10$.
 
-Thus, the "canonical position" of a (positive, non-zero) real number `n` is given by `p`, where `n = 10^(p/10)`,
-and so it follows that the distance, or representation error, between a real number `n` and its representation `n'` is given by `| log_10(n / n') | `.
+Thus, the "canonical position" of a (positive, non-zero) real number $n$ is given by $p$, where $n = 10^{\frac{p}{10}}$,
+and so it follows that the distance, or representation error, between a real number $n$ and its representation $n'$ is given by $| \log_{10}(\frac{n}{n'}) | $.
 A straightforward adjustment adapts this scheme to negative numbers as well, and we ignore zero, since posits represents it exactly.
 The inverse of this error which yields the *perfect metric for accuracy*.
 Equipped with this metric, we glean the significant digits of the representation, the *decimal accuracy*, by taking its base 10 logarithm.
@@ -185,40 +197,42 @@ This generic pass structure parametrizes `typ` into three components:
 - `convert typ to double`: conversion from `typ` to `double`
 - `typ_op`: implementation over `typ` values of `op`, the corresponding `double` operation
 
-The `float` pass specifies these components as:
-- `fptrunc double to float`
-- `fpext float to double`
+The `float` pass specifies these components using the following LLVM constructs:
+- The LLVM precision-demotion instruction: `fptrunc double to float`
+- The LLVM precision-promotion instruction: `fpext float to double`
 - LLVM's floating point operations with type parameter set to `float` (e.g., `fadd float x y`)
 
-The `posit` pass draws these components from external `C` functions implemented in [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
+The `posit` pass draws these components from external C functions implemented in [Cerlane Leong's SoftPosit repository](https://gitlab.com/cerlane/SoftPosit-Python).
 In particular, we borrow the basic arithmetic operations (`+`, `-`, `*`, and `/`) over 32-bit posits. 
 
 
 ### Benchmark Results
 
 We ran several benchmarks from [FPBench](https://fpbench.org/benchmarks.html) that accomodated our limited selection of posit operators.
-Here, we list their names, sample sizes, and associated results:
+
+For each input, we calculate percent error for `float` and `posit` benchmark results, regarding the corresponding `double` benchmark results as the correct, "oracular" values. 
+We report the mean and standard deviation of the percent error over all inputs:
 
 
 | `sum` | Mean Error | Error Std Dev |
 |-------|------------|---------------|
 | Float | 7.7e-8     | 4.8e-8        |
 | Posit | 5.1e-9     | 3.2e-9        |
-|`n`= 1000 |||
+|$n$= 1000 |||
 
 
 | `x_by_xy` | Mean Error | Error Std Dev |
 |-------|------------|---------------|
 | Float | 1.1e-7     | 9.2e-8        |
 | Posit | 6.9e-9     | 5.7e-9        |
-| `n` = 961 | | |
+| $n$ = 961 | | |
 
 
 | `delta4` | Mean Error | Error Std Dev |
 |-------|------------|---------------|
 | Float | 5.8e-7     | 6.5e-6        |
 | Posit | 3.6e-8     | 3.8e-7        |
-| `n`= 262144 |   |    |
+| $n$= 262144 |   |    |
 
 
 
@@ -226,14 +240,14 @@ Here, we list their names, sample sizes, and associated results:
 |-------|------------|---------------|
 | Float | 2.5e-7     | 1.0e-7        |
 | Posit | 1.6e-8     | 7.9e-9        |
-| `n`= 262144  |  |        |
+| $n$= 262144  |  |        |
 
 
 | `floudas1`  | Mean Error | Error Std Dev |
 |-------|------------|---------------|
 | Float | 2.1e-7     | 1.6e-7        |
 | Posit | 1.4e-8     | 1.2e-8        |
-| `n`= 92572956 |   |        |
+| $n$= 92572956 |   |        |
 
 
 # Discussion
@@ -244,10 +258,11 @@ We blame this sad state of affairs on ignorant, non-posit architectures, which n
 
 Gustafson shares what we're missing out on by not being woke:
 >  A posit processing unit takes less circuitry than an IEEE float FPU. With lower power use and smaller silicon footprint, the posit operations per second (POPS) supported by a chip can be significantly higher than the FLOPS using similar hardware resources. GPU accelerators and Deep Learning processors, in particular,can do more per watt and per dollar with posits, yet deliver superior answer quality
+
 Indeed, we could be talking in terms of POPS instead of FLOPS.
 Nonetheless, our pass allows us to simulate and give thanks for posit accuracy.
 
-As mentioned previously, our approach treats `double` as the "ground truth" representation for benchmarks. 
+Our approach relies on treating the `double` type as the "ground truth" representation for benchmarks. 
 Although this is an approximation, since no finite representation has perfect accuracy, 
 we assume that the accumulated error in `double` benchmarks will be truncated or rounded off when comparing with the less precise 32-bit representations.
 In other words, we assume that casting to a `double` from a `float` or 32-bit `posit` can be done without loss of information.
