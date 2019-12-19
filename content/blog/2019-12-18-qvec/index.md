@@ -136,7 +136,7 @@ Our theoretical results for each benchmark on a quantum computer is given below 
 | Grover | 1 | 4 |
 | Ground State | 3 | 8 |
 
-We also experimentally compile each benchmark with our pass and execute the program through the simulator to check for "correctness". Each program successfully compiled and executed on the simulator. We explicitly checked the `cat` program for correctness. In this algorithm a group of 4 qubits are entangled to be either all 0s or all 1s. We verified that there were multiple groups of 4 qubits with this property. The other algorithms also seemed to have reasonable outputs (a mix of 0s and 1s that changed on a run-by-run basic).
+We also experimentally compile each benchmark with our pass and execute the program through the simulator to check for "correctness". Each program successfully compiled and executed on the simulator. We explicitly checked the `cat` program for correctness. In this algorithm a group of 4 qubits are entangled to be either all 0s or all 1s. We verified that there were multiple groups of 4 qubits with this property. The other algorithms also seemed to have reasonable outputs (a mix of 0s and 1s that changed on a run-by-run basis).
 
 ## Conclusion
 
