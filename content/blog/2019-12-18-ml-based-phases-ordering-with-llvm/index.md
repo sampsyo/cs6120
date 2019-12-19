@@ -32,6 +32,8 @@ We built a simple linear regression model to predict how much one optimization p
 
 To collect data points of program performance counters, optimization pass and performace difference, we randomly sampled optimization sequences as in the analysis but with random length. We then collect the runtimes and performance counter values without the last optimization as features. The performance counters we used are:
 
+Clock per Instruction, Branch Misprediction Ratio, Instructions per Branch, % Cycles without Execution, % Cycles Without Execution due to L1D, % Cycles Without Execution due to L2, % Cycles Without Execution due to memory loads, Packed Single Precision MFLOP/S, Packed Double Precision MFLOP/S
+
 We then fit a linear regression model to predict normalized performance improvement. 
 
 ## Evaluation
@@ -41,23 +43,23 @@ We then fit a linear regression model to predict normalized performance improvem
 We constructed a optimization sequence of length 100 using Hill Climbing for the program stream cluster:
 
 ```
--loop-distribute -basicaa -instsimplify -aa -lazy-block-freq -domtree -loops -simplifycfg -block-freq -called-value-propagation 
+-loop-distribute -basicaa -instsimplify -aa -lazy-block-freq -domtree -loops -simplifycfg -block-freq -called-value-propagation
 
--lazy-branch-prob -opt-remark-emitter -basicaa -loop-rotate -correlated-propagation -basicaa -instcombine -simplifycfg -aa -scalar-evolution 
+-lazy-branch-prob -opt-remark-emitter -basicaa -loop-rotate -correlated-propagation -basicaa -instcombine -simplifycfg -aa -scalar-evolution
 
--basicaa -simplifycfg -lazy-value-info -aa -transform-warning -basicaa -domtree -aa -basicaa -jump-threading 
+-basicaa -simplifycfg -lazy-value-info -aa -transform-warning -basicaa -domtree -aa -basicaa -jump-threading
 
--loop-accesses -loops -lcssa-verification -domtree -loop-distribute -lazy-block-freq -speculative-execution -instcombine -loops -block-freq 
+-loop-accesses -loops -lcssa-verification -domtree -loop-distribute -lazy-block-freq -speculative-execution -instcombine -loops -block-freq
 
--early-cse -loops -lazy-branch-prob -loop-simplify -domtree -prune-eh -loop-rotate -lcssa-verification -tti -lazy-block-freq 
+-early-cse -loops -lazy-branch-prob -loop-simplify -domtree -prune-eh -loop-rotate -lcssa-verification -tti -lazy-block-freq
 
--globalopt -loops -lazy-branch-prob -prune-eh -lcssa -targetlibinfo -aa -loops -mem2reg -constmerge 
+-globalopt -loops -lazy-branch-prob -prune-eh -lcssa -targetlibinfo -aa -loops -mem2reg -constmerge
 
--basicaa -aa -loop-simplify -loop-unswitch -loop-unroll -basicaa -basicaa -block-freq -tbaa -lazy-branch-prob 
+-basicaa -aa -loop-simplify -loop-unswitch -loop-unroll -basicaa -basicaa -block-freq -tbaa -lazy-branch-prob
 
--block-freq -lazy-block-freq -basicaa -basicaa -tti -basicaa -basicaa -lazy-branch-prob -loops -opt-remark-emitter 
+-block-freq -lazy-block-freq -basicaa -basicaa -tti -basicaa -basicaa -lazy-branch-prob -loops -opt-remark-emitter
 
--functionattrs -simplifycfg -loop-simplify -lazy-branch-prob -lazy-block-freq -block-freq -aa -branch-prob -lazy-branch-prob -transform-warning 
+-functionattrs -simplifycfg -loop-simplify -lazy-branch-prob -lazy-block-freq -block-freq -aa -branch-prob -lazy-branch-prob -transform-warning
 
 -aa -domtree -branch-prob -basiccg -scalar-evolution -gvn -lazy-block-freq -basicaa -opt-remark-emitter -loop-accesses
 ```
