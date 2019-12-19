@@ -14,14 +14,14 @@ The code used in this blog post is hosted [here](https://github.com/pbb59/ScaffC
 
 In this blog, we describe our efforts to develop a compiler pass to vectorize the implicit parallelism present in quantum algorithms. Quantum algorithms are probabilistic, and so need to be run multiple times to get a ``reliable'' result. Since each of these program runs are independent, several can be performed simultaneously on the same hardware without changing the final result, so long as the hardware has space to support the additional logic.  
 
-In this project, we developed an LLVm pass to transform code to help take advantage of this program structure.  Our LLVM pass rewrites code to duplicate all algorithm instructions associated with each array onto physical hardware.  We cannot conclude if this approach provides speedup without a proper experimental setup, but we have found that such a pass can be run on realistic quantum code to produce somewhat vectorized algorithms.
+In this project, we developed an LLVM pass to transform code to help take advantage of this program structure.  Our LLVM pass rewrites code to duplicate all algorithm instructions associated with each array onto physical hardware.  We cannot conclude if this approach provides speedup without a proper experimental setup, but we have found that such a pass can be run on realistic quantum code to produce somewhat vectorized algorithms.
 
 
 ## Quantum Computing
 
 Quantum Computing has exploded into the popular imagination in the past decade due to the promise of massive theoretical speedups over conventional digital computers. Whether real quantum hardware can live up to the promise remains to be seen, but that has not stopped researchers from developing complex toolflows and algorithms.
 
-The computing paradigm of quantum computers is inherently different from a standard "classical" computer. Instead of representing a bit as either a `0` or `1`, quantum bits (qubits) represent a bit of information using a quantum superposition `a |0> + b |1>`, where `|0>` and `|1>` represent possible realizable states and `a` and `b` are normalized constants related to probability of measuring the respective state. Although `a` and `b` theoretically hold infinite information, it is only practially possible to measure a bit of information from the state as in the classical case as the state collapses to one of the realizable state `|0>` or `|1>` upon measurement.
+The computing paradigm of quantum computers is inherently different from a standard "classical" computer. Instead of representing a bit as either a `0` or `1`, quantum bits (qubits) represent a bit of information using a quantum superposition `a |0> + b |1>`, where `|0>` and `|1>` represent possible realizable states and `a` and `b` are normalized constants related to probability of measuring the respective state. Although `a` and `b` theoretically hold infinite information, it is only practically possible to measure a bit of information from the state as in the classical case as the state collapses to one of the realizable state `|0>` or `|1>` upon measurement.
 
 Quantum computing offers unique computing properties due to the nature of a qubit. The main computational differences between quantum and classical computing include the following properties:
 
@@ -93,9 +93,11 @@ Now that we have an data-parallel outer loop, we can schedule multiple runs toge
 
 We designed a quantum compiler pass within the [ScaffCC](https://github.com/epiqc/ScaffCC) compiler infrastructure. ScaffCC adds IR passes and quantum computer backends on top of LLVM, so our pass is written as one would for a classical compiler.
 
-Our LLVM pass iterates through a LLVM program produced by the ScaffCC gen-ll tool.  The pass records each instance of the `alloca` command for vectorization.  We make the assumption that qbit arrays are the only memory structures allocated by these programs.  This assumption is based on observations of program samples included in the ScaffCC repository.
+The pass first records each instance of the `alloca` command for vectorization. We make the assumption that qbit arrays are the only memory structures allocated by these programs.  This assumption is based on observations of program samples included in the ScaffCC repository.
 
-Once every allocation is recorded, each of these commands is cloned a number of times equal to the `qvlen` argument.  Each instruction using the original allocation is then cloned and referenced to the appropriate allocation argument.  This process is repeated until each instruction dependent on the original allocation is resolved throughout the program.  This process is sufficient to separately vectorize each qbit allocation.
+Once every allocation is recorded, each of these commands is cloned a number of times equal to the `qvlen` argument. We then fully traverse the dataflow graph to copy all dependent instructions. We traverse the dependence graph starting from the allocations in a breadth-first manner, so that we copy a dependent instruction only when all of it's dependencies have already been copied. This is required to have the copied values available for use in later instruction copies. Quantum computers are spatial architectures, so functions are inlined to a single basic block. Thus, our dataflow graph algorithm was able to reach the whole program.
+
+<!-- Each instruction using the original allocation is then cloned and referenced to the appropriate allocation argument. This process is repeated until each instruction dependent on the original allocation is resolved throughout the program.  This process is sufficient to separately vectorize each qbit allocation. -->
 
 It is worth noting that this implementation does not scale to situations where qbit allocations include dependencies (such as if a qbit allocation used the size of a previous allocation).  We choose to ignore these cases as a simplifying assumption.
 
@@ -134,7 +136,7 @@ Our theoretical results for each benchmark on a quantum computer is given below 
 | Grover | 1 | 4 |
 | Ground State | 3 | 8 |
 
-TODO somehow quantify what we actually did?
+We also experimentally compile each benchmark with our pass and execute the program through the simulator to check for "correctness". Each program successfully compiled and executed on the simulator. We explicitly checked the `cat` program for correctness. In this algorithm a group of 4 qubits are entangled to be either all 0s or all 1s. We verified that there were multiple groups of 4 qubits with this property. The other algorithms also seemed to have reasonable outputs (a mix of 0s and 1s that changed on a run-by-run basic).
 
 ## Conclusion
 
