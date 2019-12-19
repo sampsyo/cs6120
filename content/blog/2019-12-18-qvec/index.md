@@ -93,15 +93,13 @@ Now that we have a data-parallel outer loop, we can schedule multiple runs toget
 
 We designed a quantum compiler pass within the [ScaffCC](https://github.com/epiqc/ScaffCC) compiler infrastructure. ScaffCC adds IR passes and quantum computer backends on top of LLVM, so our pass is written as one would for a classical compiler.
 
-The pass first records each instance of the `alloca` command for vectorization. We make the assumption that qbit arrays are the only memory structures allocated by these programs.  This assumption is based on observations of program samples included in the ScaffCC repository.
+The pass first records each instance of the `alloca` command for vectorization. We make the assumption that qubit arrays are the only memory structures allocated by these programs.  This assumption is based on observations of program samples included in the ScaffCC repository.
 
 Once every allocation is recorded, each of these commands is cloned a number of times equal to the `qvlen` argument. We then fully traverse the dataflow graph to copy all dependent instructions. We traverse the dependence graph starting from the allocations in a breadth-first manner, so that we copy a dependent instruction only when all of it's dependencies have already been copied. This is required to have the copied values available for use in later instruction copies. Quantum computers are spatial architectures, so functions are inlined to a single basic block. Thus, our dataflow graph algorithm was able to reach the whole program.
 
-<!-- Each instruction using the original allocation is then cloned and referenced to the appropriate allocation argument. This process is repeated until each instruction dependent on the original allocation is resolved throughout the program.  This process is sufficient to separately vectorize each qbit allocation. -->
-
 We do not actually implement vector instructions because it would require extensive backend work to target the simulator. The simulator does support operations in parallel, but does not have give any timing information. Because of this, the extensive backend work would also not show any meaningful results.
 
-It is worth noting that this implementation does not scale to situations where qbit allocations include dependencies (such as if a qbit allocation used the size of a previous allocation).  We choose to ignore these cases as a simplifying assumption.
+It is worth noting that this implementation does not scale to situations where qubit allocations include dependencies (such as if a qubit allocation used the size of a previous allocation).  We choose to ignore these cases as a simplifying assumption.
 
 ## Evaluation
 
