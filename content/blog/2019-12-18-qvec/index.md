@@ -27,7 +27,7 @@ Quantum computing offers unique computing properties due to the nature of a qubi
 
 |  Property       |  Quantum    | Classical CPU |
 | ------  | ------------- | ------------------- |
-| Architecture   | Spatial | Von-Neumann  |
+| Architecture   | Spatial | von Neumann  |
 | Data    | Quantum State | Voltage Level |
 | Control | External (Laser) | Voltage Level |
 | States per bit | Exponential | Linear |
