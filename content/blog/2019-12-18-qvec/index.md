@@ -126,7 +126,7 @@ We consider relative speedup to baseline, so the actual time to execute a gate i
 
 `Speedup = Floor(Max Qubits / Used Qubits)`
 
-Our theoretical results for each benchmark on a quantum computer is given below for a 20 qubit machine and a 53 qubit machine like Google's recent Sycamore computer, which achieved quantum supremacy for the first time.
+Our theoretical results for each benchmark on a quantum computer is given below for a 20 qubit machine and a 53 qubit machine like Google's recent Sycamore computer, which [arguably](https://www.ibm.com/blogs/research/2019/10/on-quantum-supremacy/) achieved quantum supremacy for the first time.
 
 | Benchmark | Speedup (20 qubits)  | Speedup (53 qubits)
 | ----------------| ------------- | -------------- |
