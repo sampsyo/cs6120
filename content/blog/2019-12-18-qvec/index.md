@@ -91,7 +91,7 @@ void main () {
 }
 ```
 
-Now that we have a data-parallel outer loop, we can schedule multiple runs together in spare quantum resource and potentially vectorize the runs if the architecture allows. By exposing this parallelism, we expect to achieve speedup over running the repeats sequentially. Note that we are _not_ trying to vectorize non-data structure in the underlying algorithm; such an implementation would require more information about each algorithm and may fail due to data dependencies. We are instead vectorizing the implicit data-parallel nature of data structures in probabilistic computing.
+Now that we have a data-parallel outer loop, we can schedule multiple runs together in spare quantum resource and potentially vectorize the runs if the architecture allows. By exposing this parallelism, we expect to achieve speedup over running the repeats sequentially. Note that we are _not_ trying to vectorize the underlying algorithm; such an implementation would require more information about each algorithm and may fail due to data dependencies. We are instead vectorizing the implicit data-parallel nature of data structures in probabilistic computing.
 
 ## Implementation
 
