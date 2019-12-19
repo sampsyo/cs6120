@@ -87,7 +87,7 @@ void main () {
 }
 ```
 
-Now that we have an data-parallel outer loop, we can schedule multiple runs together in spare quantum resource and potentially vectorize the runs if the architecture allows. By exposing this parallelism, we expect to achieve speedup over running the repeats sequentially. Note that we are _not_ trying to vectorize non-data structure in the underlying algorithm; such an impementation would require more information about each algorithm and may fail due to data dependencies. We are instead vectorizing the implicit data-parallel nature of data structures in probabilistic computing.
+Now that we have an data-parallel outer loop, we can schedule multiple runs together in spare quantum resource and potentially vectorize the runs if the architecture allows. By exposing this parallelism, we expect to achieve speedup over running the repeats sequentially. Note that we are _not_ trying to vectorize non-data structure in the underlying algorithm; such an implementation would require more information about each algorithm and may fail due to data dependencies. We are instead vectorizing the implicit data-parallel nature of data structures in probabilistic computing.
 
 ## Implementation
 
@@ -140,4 +140,4 @@ We also experimentally compile each benchmark with our pass and execute the prog
 
 ## Conclusion
 
-We implemented an LLVM pass to vectorize the implicit data parallel repitition loop needed to produce precise quantum computing results.  Through this implementation, we show that such an optimization is possible and can be readily applied to some common quantum programs.  We then used this pass with a quantum gate simulator to predict the speedup possible by applying such an optimization.
+We implemented an LLVM pass to vectorize the implicit data parallel repetition loop needed to produce precise quantum computing results.  Through this implementation, we show that such an optimization is possible and can be readily applied to some common quantum programs.  We then used this pass with a quantum gate simulator to predict the speedup possible by applying such an optimization.
