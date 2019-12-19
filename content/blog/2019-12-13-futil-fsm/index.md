@@ -14,23 +14,28 @@ extra.latex = true
 
 
 ## Goal
+The goal of this project was to experiment with a novel approach writing a HLS compiler. In particuar we compile [Futil](https://github.com/cucapra/futil), a novel intermediate representation, to Verilog by generating finite state machines
+that implement Futil's control constructs. This project is divided into two main parts:
 
-
-The goal of this project to generate Control FSM for FuTIL, which can be divided into the following two parts:
-
-- Convert a Control AST in FuTIL to an intermediate FSM structure
-- Generate RTL from the intermediate FSM structure
+- Convert a Control AST in Futil to an intermediate FSM structure
+- Generate RTL from the intermediate FSM structure as well as the Futil structure
 
 ## Background
 
-FuTIL is an intermediate language that represents hardware as a combination of *structure* and *control*. The *structure* represents how subcomponents are instanced and wired together, while the *control* determines how these subcomponents are activated at different times. The ultimate goal of FuTIL is to provide an RTL backend for the Dahlia language. The structure is fairly straightforward to convert to RTL, which easily represents components and wires, but the control flow statements have no straightforward representation in RTL. We will convert the control statements in FuTIL into an RTL FSM to facilitate RTL generation from FuTIL.
+Futil is made of two sub-languages, a *structure* language for describing a static computation graph that represents the physical structure of a circuit,
+and a *control* language for dynamically choosing which part of the static computation graph runs at a particular time.
+The ultimate goal of Futil is to be a general framework, similar to LLVM, for working with optimizing HLS compilers.
+However, the immediate goal of Futil is to provide an Verilog backend for the Dahlia language. This is what we present in this blog.
+
+The structural language is straightforward to convert to Verilog; it already is very close to Verilog. However, the control language does not have a straightforward representation in Verilog. Our plan is to convert these statements into a finite state machine with the same semantics.
+The finite state machine is then easy to translate into Verilog.
 
 A typical FuTIL program is shown below:
 
 ```lisp
 (define/namespace prog
   (define/component main () ()
-    ((new-std a0 (std_reg 32 0))
+==> ((new-std a0 (std_reg 32 0))
      (-> (@ const0 out) (@ a0 in))
      (new-std const0 (std_const 32 2))
      (new-std b0 (std_reg 32 0))
@@ -46,7 +51,7 @@ A typical FuTIL program is shown below:
      (new-std z0 (std_reg 32 0))
      (-> (@ const4 out) (@ z0 in))
      (new-std const4 (std_const 32 4)))
-    (seq
+==> (seq
      (par
       (enable a0 const0)
       (enable b0 const1))
@@ -55,7 +60,8 @@ A typical FuTIL program is shown below:
          (enable z0 const4)))))
 ```
 
-It is composed of structure and control parts. The structure part is straight forward: ` (new-std b0 (std_reg 32 0))` stands for instantiation of the library component `b0` with parameter `32` and `0`, and `(-> (@ a0 out) (@ gt0 left))` stands for wiring the `out` port of component `a0` with `left` port of component `gt0`. The control part specifies which components are active with `enable` keyword, and the execution logic with `par`, `seq`,`if` and`while` keywords.
+The first arrow is pointing to the structure and the second arrow is pointing to the control.
+The structure is an unordered list of two kinds of simple statements: `(new-std b0 (std_reg 32 0))` stands for instantiation of the library component `b0` with bitwidth parameter `32` and value parameter of `0`, and `(-> (@ a0 out) (@ gt0 left))` represents wiring the `out` port of component `a0` with the `left` port of component `gt0`. The control part specifies which components are *active* with `enable` keyword, and the execution logic with `par`, `seq`,`if` and`while` keywords. Think of activating a component like a function call. When a component is *active* it is allowed to *run* and produce valid outputs.
 
 In this project, we are interested in changing all the control logic to finite state machines (FSMs) and then generate simulatable Verilog program based on both FSMs and the structures.
 
@@ -63,7 +69,7 @@ In this project, we are interested in changing all the control logic to finite s
 
 ## Design Overview
 
-FuTIL is the backend for Dahlia. The FuTIL semantics is designed in favor of smallest effort from high level language Dahlia to FuTIL language, but this opens a gap between FuTIL semantics and RTL implementations. The table below shows the efforts required to translate the FuTIL semantics to synthesizable Verilog implementations.
+Futil is the backend for Dahlia. The Futil semantics are designed to allow for easy translation from higher level language, like Dahlia, but this creates a gap between the Futil semantics and Verilog implementations. The table below shows the efforts required to translate the Futil semantics to synthesizable Verilog implementations.
 
 | FuTIL Semantics   | Verilog         |
 | ----------------- | --------------- |
@@ -180,11 +186,9 @@ We used `RcDoc` for formatting the Verilog files.
 
 ## Evaluation
 We evaluated our compiler by simulating the generated Verilog. We did this using an open source tool called [verilator](https://www.veripool.org/projects/verilator/wiki/Intro) which turns Verilog into a `C++` object that you can link to, manipulate
-the inputs, and watch the outputs. This generates a `.vcd` file that you can view in a wave form viewer. From here you can explore the values different
-wires across time.
+the inputs, and watch the outputs. This generates a `.vcd` file that you can view in a wave form viewer like `gtkwave`. From here you can explore the values of different wires across time.
 
-Although we got the core of the compiler working, we still weren't able to test anything beyond very simple Dahlia programs because we had bugs
-in muxing between different data wires. Below is a very simple program that simply checks whether a number is greater than 5.
+Although we got the core of the compiler working, we weren't able to test very complicated programs because we did not implement memories. We also do not correctly generate the logic to multiplex between different inputs to a single component so we were not able to fully take advantage of the parallelism that hardware can provide. Despite these problems, we were still able to get some programs working. Below is a very simple program that simply checks whether a number is greater than 5.
 
 ```C
 let a = 10;
@@ -246,7 +250,7 @@ From top to bottom, the signals are:
 
 From this diagram, we can see that the true branch of the program was correctly taken and that value `20` was put into the register `y`. The `z` register remains in it's default state.
 
-For a slightly more intersting example, and to test that while loops were functioning, we implemented a counter. The Dahlia code is the following:
+For a slightly more interesting example, and because it's the classic hello world program of hardware, we implemented a counter. The Dahlia code is the following:
 
 ```C
 let i = 0;
@@ -282,7 +286,30 @@ Running the resulting 509 lines of verilog code gives us the following trace:
 
 <img src="while_trace.png" width="200%">
 
-We tried running a fibonacci program, but ran into problems with our data muxing implementation.
+Finally, we got a simple implementation of Fibonacci running. Here is the Dahlia code:
+
+```C
+let a = 1;
+let i = 0;
+---
+let b = 1;
+---
+while (i < 10) {
+  let tmp = b;
+  i := i + 1;
+  ---
+  b := a + tmp;
+  ---
+  a := tmp;
+}
+```
+
+Notice that we have a lot more triple dashes than Dahlia requires. This is because without them we run into the aforementioned problems with muxing.
+
+<img src="fib.png" width="100%">
+
+Our compiler resulted in 1412 lines of Verilog code. I compared this against the equivalent C++ program compiled with the Vivado toolchain. Their compiler resulted in 148 lines of Verilog code. Although this is an imperfect metric, it does show that this method of compiling to hardware has a large overhead.
+
 
 ## Conclusion
 Overall this was a very interesting project. Although the overhead of this approach is very high, we successfully demonstrated that you can build a simple but functional HLS compiler in ~2 weeks with this approach. Additionally, because most of the compilation work took place within Futil, it would be straightforward to improve the quality of the output by writing more passes. I think that this provides an excellent baseline so that we can explore the impact of more optimizations.
