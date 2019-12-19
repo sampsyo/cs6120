@@ -12,7 +12,7 @@ The code used in this blog post is hosted [here](https://github.com/pbb59/ScaffC
 
 ## Introduction
 
-In this blog, we describe our efforts to develop a compiler pass to vectorize the implicit parallelism present in quantum algorithms. Quantum algorithms are probabilistic, and so need to be run multiple times to get a ``reliable'' result. Since each of these program runs are independent, several can be performed simultaneously on the same hardware without changing the final result, so long as the hardware has space to support the additional logic.  
+In this blog, we describe our efforts to develop a compiler pass to vectorize the implicit parallelism present in quantum algorithms. Quantum algorithms are probabilistic, and so need to be run multiple times to get a "reliable" result. Since each of these program runs are independent, several can be performed simultaneously on the same hardware without changing the final result, so long as the hardware has space to support the additional logic.  
 
 In this project, we developed an LLVM pass to transform code to help take advantage of this program structure.  Our LLVM pass rewrites code to duplicate all algorithm instructions associated with each array onto physical hardware.  We cannot conclude if this approach provides speedup without a proper experimental setup, but we have found that such a pass can be run on realistic quantum code to produce somewhat vectorized algorithms.
 
