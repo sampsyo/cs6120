@@ -7,7 +7,7 @@ extra.bio = """
 """
 +++
 
-With the pursuit of higher performance under physical constraints, there has been an increasing deployment of special-purpose hardware accelerators such as FPGAs. The traditional approach to program such devices is by using hardware description languages (HDLs). However, with the rising complexity of the applications, we need a higher level of abstraction for productive programming. C-based high-level synthesis (HLS) is thus proposed and adopted by many industries such as Xilinx and Intel. Nonetheless, to achieve high performance, users usually need to modify the algorithms of applications to incorporate different types of hardware optimization, which makes the programs less productive and maintainable. To solve the challenge, recent work such as [HeteroCL](http://heterocl.csl.cornell.edu/) proposes the idea of decoupling the algorithm from the hardware customization techniques, which allows users to explore the design space and the trade-offs efficiently. In this project, we focus on extending HeteroCL with data streaming support by providing cycle-inaccurate software simulation. Experimental results show that with LLVM JIT runtime, we can have orders of speedup compared with the software simulation provided by HLS tools.
+With the pursuit of higher performance under physical constraints, there has been an increasing deployment of special-purpose hardware accelerators such as FPGAs. The traditional approach to program such devices is by using hardware description languages (HDLs). However, with the rising complexity of the applications, we need a higher level of abstraction for productive programming. C-based high-level synthesis (HLS) is thus proposed and adopted by many industries such as Xilinx and Intel. Nonetheless, to achieve high performance, users usually need to modify the algorithms of applications to incorporate different types of hardware optimization, which makes the programs less productive and maintainable. To solve the challenge, recent work such as [HeteroCL](http://heterocl.csl.cornell.edu/) proposes the idea of decoupling the algorithm from the hardware customization techniques, which allows users to explore the design space and the trade-offs efficiently. In this project, we focus on extending HeteroCL with data streaming support by providing functional software-level simulation (in contrast with hardware-level simulation, where we simulate after hardware synthesis). Experimental results show that with LLVM JIT runtime, we can have orders of speedup compared with the software simulation provided by HLS tools.
 
 ### Why Data Streaming?
 
@@ -59,9 +59,9 @@ The code can be seen [here](https://github.com/Hecmay/heterocl/tree/stream). The
 
 #### Module Scheduling
 
-The purpose of this algorithm is to schedule each module by assigning it with a timestep, which indicates the execution order between modules. Namely, modules that can be executed in parallel are assigned with the same timestep. Similarly, if two modules are executed in sequential, they are assigned with different timesteps. Note that the numbers assigned to two consecutive executions do not need to be continuous. Since each module is executed with a single thread, a thread synchronization is enforced between two consecutive timesteps.
+The purpose of this algorithm is to schedule each module by assigning it with a timestep, which indicates the execution order between modules. Namely, modules that can be executed in parallel are assigned with the same timestep. Similarly, if two modules are executed in sequence, they are assigned with different timesteps. Note that the numbers assigned to two consecutive executions do not need to be continuous. Since each module is executed with a single thread, a thread synchronization is enforced between two consecutive timesteps.
 
-To begin with, we first assign each module with a group number. Modules within the same group are executed in sequential, while modules in different groups can be executed in parallel. To assign the group number, we first build a dataflow graph (DFG) according to the input program. An example is shown in the following figure, where the solid lines mean normal read/write operations while the dotted lines refer to the read/write of data streams.
+To begin with, we first assign each module with a group number. Modules within the same group are executed in sequence, while modules in different groups can be executed in parallel. To assign the group number, we first build a dataflow graph (DFG) according to the input program. An example is shown in the following figure, where the solid lines mean normal read/write operations while the dotted lines refer to the read/write of data streams.
 
 <img src="DFG.png" width="300" >
 
@@ -77,7 +77,7 @@ However, this is not correct because as we mentioned above, modules connected wi
 
 <img src="schedule2.png" width="300" >
 
-Note that there exist cases where we cannot solve. For example, if two modules ``A`` and ``B`` are connected with a solid line, and the producer ``A`` streams to a module ``M`` while ``B`` also streams from ``M``, then there exists no valid scheduling according to our constraints. One possible way to solve that is by merging ``A`` and ``B`` into a new module ``A_B``. In this case, the streaming from/to ``M`` becomes an internal stream, which can be scheduled easily by assigning ``A_B`` and ``C`` with the same timestep.
+Note that there exist cases where we cannot solve. For example, if two modules ``A`` and ``B`` are connected with a solid line, and the producer ``A`` streams to a module ``M`` while ``B`` also streams from ``M``, then there exists no valid scheduling according to our constraints. One possible way to solve that is by merging ``A`` and ``B`` into a new module ``A_B``. In this case, the streaming from/to ``M`` becomes an internal stream, which can be scheduled easily by assigning ``A_B`` and ``C`` with the same timestep. The reason why in this implementation we do not merge the two modules is that it is possible that we reuse ``A`` or ``B`` for other computations. In this case, we will need to reconstruct the DFG. Thus, we leave this as our future work.
 
 #### Parallel Execution with Threads
 
@@ -85,7 +85,7 @@ After we assign each module with a timestep, we can start to execute them via th
 
 #### Stream Buffers
 
-In this work, we implement the streams with buffers that act like FIFOs. Instead of popping from or pushing to the buffers, we maintain a **head** and a **tail** pointer for each buffer. The pointers are stored as integer numbers. The head pointer points to the next element that will be read from, and the tail pointer points to the next element that will be written to. We update the pointers each time an element is written to or read from the buffer. We need to perform modulo operations if the pointer value is greater than the buffer size (i.e., FIFO depth). Since we may have two threads updating the pointers at the same time, we declare them as atomic numbers. Finally, we maintain a map so that we can access a stream according to its ID.
+In this work, we implement the streams with buffers that act like FIFOs. Instead of popping from or pushing to the buffers, we maintain a **head** and a **tail** pointer for each buffer. The pointers are stored as integer numbers. The head pointer points to the next element that will be read from, and the tail pointer points to the next element that will be written to. We update the pointers each time an element is written to or read from the buffer. We need to perform modulo operations if the pointer value is greater than the buffer size (i.e., FIFO depth). Since we may have two threads updating the pointers at the same time, we use ``std::atomic`` provided by C++ to make sure there is no data race. Finally, we maintain a map so that we can access a stream according to its ID.
 
 #### LLVM JIT Extension
 
@@ -142,7 +142,7 @@ We also show the evaluation results from a realistic benchmark, which is more co
 | Simulation Method | Simulation Time (s) | Compilation Overhead (s) | Total Run Time (s) |
 |:---------:|------------|------------|--------|
 |LLVM JIT|0.00094|0|0.00094|
-|Vivado HLS csim|1.63|1.29|1.92|
+|Vivado HLS csim|1.63|1.29|2.92|
 
 We can see that with LLVM JIT runtime, we can have orders of speedup compared with HLS simulation. Moreover, the overhead caused by compilation is not negligible for HLS simulation.
 
