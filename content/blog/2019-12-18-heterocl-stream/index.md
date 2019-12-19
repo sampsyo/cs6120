@@ -55,7 +55,7 @@ It is not enough with the programming language support only. We also need the ab
 
 ### Implementation Details
 
-The key idea is to simulate data streaming with threads. In other words, each module will be executed using a single thread. We also implement a scheduling algorithm to decide the firing of a thread and the synchronization between threads. For streaming, we implement the streams by using one-dimensional buffers. We assign the size of a buffer according to the specified FIFO depth. Currently, we only provide blocking reads and blocking writes. Non-blocking operations will be left as our future work. In the following sections, we describe the algorithms and implementation details.
+The code can be seen [here](https://github.com/Hecmay/heterocl/tree/stream). The key idea is to simulate data streaming with threads. In other words, each module will be executed using a single thread. We also implement a scheduling algorithm to decide the firing of a thread and the synchronization between threads. For streaming, we implement the streams by using one-dimensional buffers. We assign the size of a buffer according to the specified FIFO depth. Currently, we only provide blocking reads and blocking writes. Non-blocking operations will be left as our future work. In the following sections, we describe the algorithms and implementation details.
 
 #### Module Scheduling
 
@@ -150,7 +150,7 @@ We can see that with LLVM JIT runtime, we can have orders of speedup compared wi
 
 In this work, we implement a software simulation runtime for data streams in HeteroCL by extending the existing LLVM JIT back end. We implement the simulation runtime with multi-threading in C++. Moreover, we propose a scheduling algorithm that exploits the task-level parallelism of a program after applying data streaming. Finally, we use unit tests to verify our work and use a realistic benchmark to demonstrate the programming efficiency over existing HLS tools.
 
-Our next step will be testing our extension with more realistic benchmarks. In addition, by parsing HLS reports, we may be able to perform cycle-accurate simulation. Then we can compare the performance of our scheduling algorithm with those implemented in exsiting HLS tools.
+Our next step will be testing our extension with more realistic benchmarks. In addition, by parsing HLS reports, we may be able to perform the cycle-accurate simulation. Then we can compare the performance of our scheduling algorithm with those implemented in existing HLS tools. In the end, we want to submit a pull request to the upstream HeteroCL repository.
 
 
 
