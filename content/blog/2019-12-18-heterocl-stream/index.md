@@ -128,3 +128,7 @@ The average speedup of our testcases is 1.232. The original program executes the
  The second benchmark is digit recognition.
 
 
+<img src="unit_test.png" width="700" >
+
+
+
