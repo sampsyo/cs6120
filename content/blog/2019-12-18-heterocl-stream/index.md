@@ -93,9 +93,38 @@ To enable users with a one-pass compilation, we extend the existing LLVM JIT run
 
 ### Evaluation
 
-In this section, we evalutate our implementation by using both unit tests and realistic benchmarks.
+In this section, we evalutate our implementation by using both unit tests and realistic benchmarks. Experiments are performed on a server with 2.20GHz Intel Xeon processor and 128 GB memory. We verified the correctness of the final result and compared the total runtime in different cases. i.e., LLVM JIT execution with or without multi-threading, as well as the software simulation provided by Xilinx Vivado where streaming channels are implemented with `hls::stream` struct.
 
 #### Unit Tests
 
-The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs.
+The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs. We constructed examples of different data flows:
+  * two stage: the output of first stage is sent to second stage.
+  * three stage: stages are connected in chain. The input of the current stage is the output of teh previous stage.
+  * internal stage: the master stage sends data to internal stage, and gets the processed data back.  
+  * fork stage: fisrt stage distributes data to multiple following stages.
+  * merge stage: multiple stages send their outputs to a single stage.
+
+| Testcase | Original (s) | Multi-threading (s) | Speedup |
+|:---------:|:------------:|:------------:|-----------|
+|two stage|0.0592|0.0554| 1.070 |
+|three stage|0.0831|0.0715| 1.162 |
+|internal stage|0.0823|0.0638| 1.290 |
+|fork stage|0.0865|0.0758| 1.141 |
+|merge stage|0.0906|0.0739| 1.226 |
+
+The average speedup of our testcases is 1.232. The original program executes the operations one by one, and results from the previous operation are written back to memory, while the multi-threading exploits the benefits of parallelizable operations and uses pointer based FIFO (which is faster with less indirection). 
+
+#### Realistic Benchmark 
+
+ We used two realistic benchmark programs to evaluate the correctness and performance of our simulation flow. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing.  
+
+| Simulation | Simulation time (s) | Compilation overhead (s) | 
+|:---------:|:------------:|:------------:|-----------|
+|LLVM|9.74e-4|0|
+|LLVM with streaming|9.40e-4|0|
+|Vivado CSim|1.38|1.3| 
+|Vivado CSim with streaming|1.63|1.29|
+
+ The second benchmark is digit recognition.
+
 
