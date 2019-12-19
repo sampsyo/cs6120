@@ -81,7 +81,7 @@ Note that there exist cases where we cannot solve. For example, if two modules `
 
 #### Parallel Execution with Threads
 
-After we assign each module with a timestep, we can start to execute them via threads. Before we execute a module with a new thread, we check whether all modules assigned with smaller timesteps are completed. In other words, we first check whether all modules assigned with smaller timesteps are fired. If not, we schedule the current module to be executed in the future by pushing it into a sorted execution queue. Then, if all modules with smaller timesteps are fired, we check whether they are finished. If not, we perform thread synchronization (e.g., by using ``thread.join()`` in C++). Finally, we need to execute the modules in the execution queue. Since the queue is sorted, we do not need to worry about new modules being inserted into the queue.
+After we assign each module with a timestep, we can start to execute them via threads. Before we execute a module with a new thread, we check whether all modules assigned with smaller timesteps are completed. In other words, we first check whether all modules assigned with smaller timesteps are fired. If not, we schedule the current module to be executed in the future by pushing it into a sorted execution list. Then, if all modules with smaller timesteps are fired, we check whether they are finished. If not, we perform thread synchronization (e.g., by using ``thread.join()`` in C++). Finally, we need to execute the modules in the execution list. Since the list is sorted, we do not need to worry about new modules being inserted into the list.
 
 #### Stream Buffers
 
