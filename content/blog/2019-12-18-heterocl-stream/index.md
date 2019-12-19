@@ -93,7 +93,7 @@ To enable users with a one-pass compilation, we extend the existing LLVM JIT run
 
 ### Evaluation
 
-In this section, we evalutate our implementation by using both unit tests and realistic benchmarks. Experiments are performed on a server with 2.20GHz Intel Xeon processor and 128 GB memory. We verified the correctness of the final result and compared the total runtime in different cases. i.e., LLVM JIT execution with or without multi-threading, as well as the software simulation provided by Xilinx Vivado where streaming channels are implemented with `hls::stream` struct.
+In this section, we evalutate our implementation by using both unit tests and realistic benchmarks. Experiments are performed on a server with 2.20GHz Intel Xeon processor and 128 GB memory. We verify the correctness of the final result and compare the total run time in different cases.
 
 #### Unit Tests
 
@@ -137,7 +137,7 @@ We can see that without applying streaming, the production of ``D`` is not affec
 
 #### Realistic Benchmarks
 
-We also show the evalutation results from two realistic benchmarks, which are more complicated then the synthetic tests in the unit tests. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we compare with  ``csim`` from ``Vivado HLS``. The evaluation results are shown below. We also show the time overhead due to compilation.
+We also show the evalutation results from two realistic benchmarks, which are more complicated then the synthetic tests in the unit tests. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we first generate Vivado HLS code with ``hls::stream``. Then we use ``csim`` to run the software simulation. The evaluation results are shown below. We also show the time overhead due to compilation.
 
 | Simulation | Simulation Time (s) | Compilation Overhead (s) | 
 |:---------:|:------------:|:------------:|
