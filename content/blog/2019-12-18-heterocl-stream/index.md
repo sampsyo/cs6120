@@ -97,38 +97,57 @@ In this section, we evalutate our implementation by using both unit tests and re
 
 #### Unit Tests
 
-The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs. We constructed examples of different data flows:
-  * two stage: the output of first stage is sent to second stage.
-  * three stage: stages are connected in chain. The input of the current stage is the output of teh previous stage.
-  * internal stage: the master stage sends data to internal stage, and gets the processed data back.  
-  * fork stage: fisrt stage distributes data to multiple following stages.
-  * merge stage: multiple stages send their outputs to a single stage.
+The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs. 
+
+<img src="unit_test.png" width="700" >
+
+For unit tests, we compare the run time before and after applying data streaming. The results are shown in the following table.
 
 | Testcase | Original (s) | Multi-threading (s) | Speedup |
 |:---------:|:------------:|:------------:|-----------|
-|two stage|0.0592|0.0554| 1.070 |
-|three stage|0.0831|0.0715| 1.162 |
-|internal stage|0.0823|0.0638| 1.290 |
-|fork stage|0.0865|0.0758| 1.141 |
-|merge stage|0.0906|0.0739| 1.226 |
+|two_stages|0.0592|0.0554| 1.070 |
+|three_stages|0.0831|0.0715| 1.162 |
+|internal_stage|N/A|0.0638| N/A |
+|fork_stage|0.0865|0.0758| 1.141 |
+|merge_stage|0.0906|0.0739| 1.226 |
 
-The average speedup of our testcases is 1.232. The original program executes the operations one by one, and results from the previous operation are written back to memory, while the multi-threading exploits the benefits of parallelizable operations and uses pointer based FIFO (which is faster with less indirection). 
+The average speedup of our testcases is 1.232, which makes sense because now we use multi-thread execution. Note that for the third benchmark (i.e., ``test_internal_stage``), the functionalities are different before and after applying data streaming. To be more specific, we list the test program here.
 
-#### Realistic Benchmark 
+```python
+@hcl.def_([A.shape, B.shape, C.shape, D.shape])
+def M1(A, B, C, D):
+    with hcl.for_(0, 10) as i:
+        B[i] = A[i] + 1
+        D[i] = C[i] + 1
 
- We used two realistic benchmark programs to evaluate the correctness and performance of our simulation flow. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing.  
+@hcl.def_([B.shape, C.shape])
+def M2(B, C):
+    with hcl.for_(0, 10) as i:
+        C[i] = B[i] + 1
+
+M1(A, B, C, D)
+M2(B, C)
+
+s = hcl.create_schedule([A, B, C, D])
+s.to(B, s[M2], s[M1], depth=1)
+s.to(C, s[M1], s[M2], depth=1)
+```
+
+We can see that without applying streaming, the production of ``D`` is not affected by ``M2``. However, if we specify ``C`` to be streamed from ``M2`` to ``M1``, the original memory read of ``C`` in ``M1`` now becomes a blocking read. This also demonstrates that without the simulation support for streaming, some hardware behaviors cannot be correctly represented.
+
+#### Realistic Benchmarks
+
+We also show the evalutation results from two realistic benchmarks, which are more complicated then the synthetic tests in the unit tests. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we compare with  ``csim`` from ``Vivado HLS``.
 
 | Simulation | Simulation time (s) | Compilation overhead (s) | 
 |:---------:|:------------:|:------------:|-----------|
-|LLVM|9.74e-4|0|
-|LLVM with streaming|9.40e-4|0|
-|Vivado CSim|1.38|1.3| 
+|LLVM|9.40e-4|0|
 |Vivado CSim with streaming|1.63|1.29|
 
  The second benchmark is digit recognition.
 
 
-<img src="unit_test.png" width="700" >
+
 
 
 
