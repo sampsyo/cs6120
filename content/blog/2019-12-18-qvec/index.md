@@ -32,7 +32,7 @@ Quantum computing offers unique computing properties due to the nature of a qubi
 | Control | External (Laser) | Voltage Level |
 | States per bit | Exponential | Linear |
 
-In general, quantum computer can implement all of the computation primitives that a classical one can. Both, in theory, can be turing complete with a universal set of logic gates. However, quantum computing also has computational primitives that classical computers don't share. These primitives are key to quantum supremacy: the concept that a quantum computer can theoretically outperform classical computers.
+In general, a quantum computer can implement all of the computation primitives that a classical one can. Both, in theory, can be turing complete with a universal set of logic gates. However, quantum computing also has computational primitives that classical computers don't share. These primitives are key to quantum supremacy: the concept that a quantum computer can theoretically outperform classical computers.
 
 | Unique compute | Example Usage |
 | ----------------| ------------- |
