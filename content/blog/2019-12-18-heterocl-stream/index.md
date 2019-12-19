@@ -140,7 +140,7 @@ We can see that without applying streaming, the production of ``D`` is not affec
 We also show the evalutation results from two realistic benchmarks, which are more complicated then the synthetic tests in the unit tests. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we compare with  ``csim`` from ``Vivado HLS``.
 
 | Simulation | Simulation time (s) | Compilation overhead (s) | 
-|:---------:|:------------:|:------------:|-----------|
+|:---------:|:------------:|:------------:|
 |LLVM|9.40e-4|0|
 |Vivado CSim with streaming|1.63|1.29|
 
