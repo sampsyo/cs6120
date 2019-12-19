@@ -7,7 +7,7 @@ extra.bio = """
 """
 +++
 
-With the pursuit of higher performance under physical constraints, there has been an increasing deployment of special-purpose hardware accelerators such as FPGAs. The traditional approach to program such devices is by using hardware description languages (HDLs). However, with the rising complexity of the applications, we need a higher level of abstraction for productive programming. C-based high-level synthesis (HLS) is thus proposed and adopted by many industries such as Xilinx and Intel. Nonetheless, to achieve high performance, users usually need to modify the algorithms of applications to incorporate different types of hardware optimization, which makes the programs less productive and maintainable. To solve the challenge, recent work such as [HeteroCL](http://heterocl.csl.cornell.edu/) proposes the idea of decoupling the algorithm from the hardware customization techniques, which allows users to explore the design space and the trade-offs efficiently. In this project, we focus on extending HeteroCL with data streaming support by providing cycle-inaccurate software simulation. Experimental results show that ...
+With the pursuit of higher performance under physical constraints, there has been an increasing deployment of special-purpose hardware accelerators such as FPGAs. The traditional approach to program such devices is by using hardware description languages (HDLs). However, with the rising complexity of the applications, we need a higher level of abstraction for productive programming. C-based high-level synthesis (HLS) is thus proposed and adopted by many industries such as Xilinx and Intel. Nonetheless, to achieve high performance, users usually need to modify the algorithms of applications to incorporate different types of hardware optimization, which makes the programs less productive and maintainable. To solve the challenge, recent work such as [HeteroCL](http://heterocl.csl.cornell.edu/) proposes the idea of decoupling the algorithm from the hardware customization techniques, which allows users to explore the design space and the trade-offs efficiently. In this project, we focus on extending HeteroCL with data streaming support by providing cycle-inaccurate software simulation. Experimental results show that with LLVM JIT runtime, we can have orders of speedup compared with the software simulation provided by HLS tools.
 
 ### Why Data Streaming?
 
@@ -93,25 +93,25 @@ To enable users with a one-pass compilation, we extend the existing LLVM JIT run
 
 ### Evaluation
 
-In this section, we evalutate our implementation by using both unit tests and realistic benchmarks. Experiments are performed on a server with 2.20GHz Intel Xeon processor and 128 GB memory. We verify the correctness of the final result and compare the total run time in different cases.
+In this section, we evaluate our implementation by using both unit tests and realistic benchmarks. Experiments are performed on a server with 2.20GHz Intel Xeon processor and 128 GB memory. We verify the correctness of the final result and compare the total run time in different cases.
 
 #### Unit Tests
 
-The tests can be found [here](). Following we breifly illustrate what each test does by using the DFGs. 
+The tests can be found [here](https://github.com/Hecmay/heterocl/blob/stream/tests/test_cpu_stream.py). Following we breifly illustrate what each test does by using the DFGs. 
 
 <img src="unit_test.png" width="700" >
 
 For unit tests, we compare the run time before and after applying data streaming. The results are shown in the following table. We run the results for 1000 times and calculate the average.
 
 | Testcase | Original (ms) | Multi-threading (ms) | Speedup |
-|:---------:|:------------:|:------------:|-----------|
+|:---------:|------------|------------|-----------|
 |two_stages|0.0592|0.0554| 1.070 |
 |three_stages|0.0831|0.0715| 1.162 |
 |internal_stage|N/A|0.0638| N/A |
 |fork_stage|0.0865|0.0758| 1.141 |
 |merge_stage|0.0906|0.0739| 1.226 |
 
-The average speedup of our testcases is 1.150, which makes sense because now we use multi-thread execution. Note that for the third benchmark (i.e., ``test_internal_stage``), the functionalities are different before and after applying data streaming. To be more specific, we list the test program here.
+The average speedup of our test cases is 1.150, which makes sense because now we use multi-thread execution. Note that for the third benchmark (i.e., ``test_internal_stage``), the functionalities are different before and after applying data streaming. To be more specific, we list the test program here.
 
 ```python
 @hcl.def_([A.shape, B.shape, C.shape, D.shape])
@@ -135,17 +135,22 @@ s.to(C, s[M1], s[M2], depth=1)
 
 We can see that without applying streaming, the production of ``D`` is not affected by ``M2``. However, if we specify ``C`` to be streamed from ``M2`` to ``M1``, the original memory read of ``C`` in ``M1`` now becomes a blocking read. This also demonstrates that without the simulation support for streaming, some hardware behaviors cannot be correctly represented.
 
-#### Realistic Benchmarks
+#### Realistic Benchmark
 
-We also show the evalutation results from two realistic benchmarks, which are more complicated then the synthetic tests in the unit tests. The first benchmark is sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we first generate Vivado HLS code with ``hls::stream``. Then we use ``csim`` to run the software simulation. The evaluation results are shown below. We also show the time overhead due to compilation.
+We also show the evaluation results from a realistic benchmark, which is more complicated than the synthetic tests in the unit tests. Due to time limitation, we only use the Sobel edge detector, which is a popular edge detecting algorithm in image processing. We compare the results with the software simulation tool provided by the HLS compiler. More specifically, we first generate Vivado HLS code with ``hls::stream``. Then we use ``csim`` to run the software simulation. The evaluation results are shown below. We also show the time overhead due to compilation.
 
-| Simulation | Simulation Time (s) | Compilation Overhead (s) | 
-|:---------:|:------------:|:------------:|
-|LLVM|0.00094|0|
-|Vivado HLS csim|1.63|1.29|
+| Simulation Method | Simulation Time (s) | Compilation Overhead (s) | Total Run Time (s) |
+|:---------:|------------|------------|--------|
+|LLVM JIT|0.00094|0|0.00094|
+|Vivado HLS csim|1.63|1.29|1.92|
 
- The second benchmark is digit recognition.
+We can see that with LLVM JIT runtime, we can have orders of speedup compared with HLS simulation. Moreover, the overhead caused by compilation is not negligible for HLS simulation.
 
+### Conclusion and Future Work
+
+In this work, we implement a software simulation runtime for data streams in HeteroCL by extending the existing LLVM JIT back end. We implement the simulation runtime with multi-threading in C++. Moreover, we propose a scheduling algorithm that exploits the task-level parallelism of a program after applying data streaming. Finally, we use unit tests to verify our work and use a realistic benchmark to demonstrate the programming efficiency over existing HLS tools.
+
+Our next step will be testing our extension with more realistic benchmarks. In addition, by parsing HLS reports, we may be able to perform cycle-accurate simulation. Then we can compare the performance of our scheduling algorithm with those implemented in exsiting HLS tools.
 
 
 
