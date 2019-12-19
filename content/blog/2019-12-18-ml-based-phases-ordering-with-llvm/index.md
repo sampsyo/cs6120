@@ -24,7 +24,7 @@ For each n optimization passes, we uniformly randomly select n optimization pass
 
 ### Hill Climbing
 
-One popular approach for phase ordering is Hill Climbing: selecting the optimization that gives the most performance boost at each step. However, it can be really expensive to rebuild and run 270 times at every step, while also rerun the program multiple times to reduce performance variance. In fact, it could take more than a day to build even 15 passes. In the experiment, we sampled 5 optimizations at each step instead of trying all and only used the performance of one run to save the time.
+One popular approach for phase ordering is Hill Climbing([1](http://www.cs.cmu.edu/~./745/papers/kulkarni-cgo2007.pdf),[2](http://rsim.cs.uiuc.edu/arch/qual_papers/compilers/almagor04.pdf)): selecting the optimization that gives the most performance boost at each step. However, it can be really expensive to rebuild and run 270 times at every step, while also rerun the program multiple times to reduce performance variance. In fact, it could take more than a day to build even 15 passes. In the experiment, we sampled 5 optimizations at each step instead of trying all and only used the performance of one run to save the time.
 
 ### Linear Regression
 
@@ -34,7 +34,7 @@ We built a simple linear regression model to predict how much one optimization p
 
 ### Hill Climbing baseline
 
-We constructed a optimization sequence of length 100 using Hill Climbing for the program streamcluster. The performance changing is plotted as bellow as passes are added (the box plots are same as in the analysis):
+We constructed a optimization sequence of length 100 using Hill Climbing for the program streamcluster ([result order](./order.txt)). The performance changing is plotted as bellow as passes are added (the box plots are same as in the analysis):
 
 ![Hill Climbing order](./wh.png)
 
