@@ -48,7 +48,7 @@ A potential downside to quantum computing is that it is inherently probabilistic
 
 The probabilistic nature requires that multiple repeated runs of the same program be executed. The number of runs required to obtain a "correct" result depends on one's error threshold and the design of the algorithm; specifically, the number of runs to obtain error `e` is given as `O(log(1/e))`. Thus, there are diminishing returns for running the algorithm many times, but it is important to run the algorithm a "reasonable" amount to achieve acceptably low error.
 
-The naive method to repeatedly apply the algorithm is to run many iterations of the algorithm sequentially. This serialization can potentially increase the runtime depending on how many repeated applications are required. Consider, for instance, the entanglement program below, which must be run a large number of times to produce a correct result:
+The naive method to repeatedly apply the algorithm is to run many iterations of the algorithm sequentially. This serialization can potentially increase the runtime depending on how many repeated applications are required. Consider, for instance, the entanglement program below written in [Scaffold](https://www.cs.princeton.edu/research/techreps/TR-934-12). It must be run multiple times to get representative results.
 
 ```C
 module catN ( qbit *bit, const int n ) {
@@ -57,7 +57,9 @@ module catN ( qbit *bit, const int n ) {
     CNOT( bit[0][i-1], bit[0][i] );
     CNOT( bit[1][i-1], bit[1][i] );
   }
-  MeasZ(bit);
+  // measure each bit
+  for ( int i=0; i < n; i++ )
+    MeasZ(bit[i]);
 }
 
 void main () {
@@ -76,7 +78,9 @@ module catN ( qbit *bit, const int n ) {
     CNOT( bit[0][i-1], bit[0][i] );
     CNOT( bit[1][i-1], bit[1][i] );
   }
-  MeasZ(bit);
+  // measure each bit
+  for ( int i=0; i < n; i++ )
+    MeasZ(bit[i]);
 }
 
 void main () {
