@@ -99,6 +99,8 @@ Once every allocation is recorded, each of these commands is cloned a number of 
 
 <!-- Each instruction using the original allocation is then cloned and referenced to the appropriate allocation argument. This process is repeated until each instruction dependent on the original allocation is resolved throughout the program.  This process is sufficient to separately vectorize each qbit allocation. -->
 
+We do not actually implement vector instructions because it would require extensive backend work to target the simulator. The simulator does support operations in parallel, but does not have give any timing information. Because of this, the extensive backend work would also not show any meaningful results.
+
 It is worth noting that this implementation does not scale to situations where qbit allocations include dependencies (such as if a qbit allocation used the size of a previous allocation).  We choose to ignore these cases as a simplifying assumption.
 
 ## Evaluation
