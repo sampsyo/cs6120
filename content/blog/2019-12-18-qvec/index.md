@@ -42,7 +42,7 @@ In general, a quantum computer can implement all of the computation primitives t
 | Probabilistic (multiple results) | ? |
 | Phase | ? |
 
-A potential downside to quantum computing is that it is inherently probabilistic. An output on one execution may be entirely different from the output on the next run. Quantum algorithms must be designed so that the correct answer must have measurement probability >50%. The answer can then be inferred by repeating the execution many times and taking the majority result. Many quantum algorithms exist in Bounded Quantum polynomial class (BQP) where the correct answer can be found in polynomial time with probability at least 2/3.  It can, however, practically be time and resource intensive to run quantum programs a sufficient number of times to achieve a reasonable confidence.
+A potential downside to quantum computing is that it is inherently probabilistic. An output on one execution may be entirely different from the output on the next run. Quantum algorithms must be designed so that the correct answer must have measurement probability >50%. The answer can then be inferred by repeating the execution many times and taking the majority result. Many quantum algorithms exist in Bounded Quantum Polynomial class (BQP) where the correct answer can be found in polynomial time with probability at least 2/3.  It can, however, practically be time and resource intensive to run quantum programs a sufficient number of times to achieve a reasonable confidence.
 
 ## Opportunities for Vectorization
 
