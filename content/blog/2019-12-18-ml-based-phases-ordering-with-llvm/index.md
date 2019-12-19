@@ -42,7 +42,7 @@ As shown in the figure, Hill Climbing gives the almost optimal results found in 
 
 ### Linear Regression
 
-To collect data points of program performance counters, optimization pass and performace difference, we randomly sampled optimization sequences as in the analysis but with random length. We then collect the runtimes and performance counter values without the last optimization as features. The performance counters we used are:
+To collect training data points, we randomly sampled optimization sequences S + P (one random optimization pass) with random length. We then collect the performance counter values given by running the program optimized by S together with the name of P as features, to predict the runtime reduction given by adding the last pass P. The performance counters we used are:
 
 - Clock per Instruction
 - Branch Misprediction Ratio
