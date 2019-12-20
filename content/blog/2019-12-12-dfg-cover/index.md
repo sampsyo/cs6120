@@ -83,6 +83,41 @@ profiling analysis can be found [here][source].
 [llvm]: https://llvm.org
 [source]: https://github.com/avanhatt/dfg-coverings
 
+## Formal Description of the Task
+
+If we ignore control flow, we can look at the problem purely graph theoretically. For a single trace through the program, the data flow graph $G$ is acyclic, and we would like to cover as much of it as possible with sub-graphs, corresponding to the stencils that we accelerate.
+Statically, we do not know what the final data flow graph is, but we do know that we will be able to assemble one by connecting dangling edges from control-flow-free components: basic blocks.
+This is the approach we take.  
+
+We would like to find a small collection of graph components $\mathcal H = \{H_i, \ldots, H_k\}$, which we can use to replace parts of and accelerate programs having basic blocks $\mathcal G = \{G_1,\ldots,G_n\}$, that maximizes the total saved time:
+
+$$ \mathcal S_{\cal H}(\mathcal G) := \max_{\mathcal C \in \text{Cov}(\mathcal G, \mathcal H)}~ \sum_{G \in \mathcal G} w_G \cdot  \sum_{H \in \mathcal C_G} f_H \cdot |H|$$
+
+where:
+
+- $\text{Cov}(\mathcal G, \mathcal H)$ is the set of all valid (partial) coverings of basic blocks with at most one stencil, that is, injective graph morphisms $\varphi: (\cup \mathcal G) \to \cup \mathcal H$.
+
+- $\mathcal C_G$ is the component of the total covering on the particular basic block graph $G$.
+
+- $w_G$ is independent of $\mathcal H$ and proportional to the expected number of times $G$ is executed.
+
+- $f_H$ is the expected speedup factor from accelerating the component $H$.
+
+Of course, supposing that $f_H$ was roughly constant, we could trivially achieve the maximum savings by choosing $\mathcal H := \mathcal G$, there are a few problems with this:
+
+1.  $|\mathcal H|$ is large; there are many of these sub-graphs, which makes the search process substantially less efficient.
+2. Each $H_i \in \mathcal H$ is also large, making the specialized component more expensive.
+3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
+
+
+In fact, only the third issue is really important; the first two are roughly heuristics which help solve it. To cast this as a learning problem, imagine that there's some underlying distribution $\mathtt{Programs}$ of programs that people write; we can now cast our work as a solution to the optimization problem of finding
+
+$$ \arg\max_{\mathcal H}\left( \mathop{\mathbb E}\limits_{\mathcal G\sim \texttt{Programs}}~ \mathcal S_{\mathcal H}(\mathcal G) - \text{Cost}(\mathcal H) \right)$$
+
+where $\text{Cost}(\mathcal H)$ is the additional compilation cost incurred by $\mathcal H$, which is higher for larger graphs.
+Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), exposing knobs that could be used in future work to automate the entire optimization.
+
+
 ## Building data flow graphs from LLVM
 
 - Trade-offs:
@@ -97,6 +132,16 @@ profiling analysis can be found [here][source].
 
 ## Generating common DFG stencils
 
+Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
+
+We have implemented this in two different ways
+
+
+###
+
+### Noe
+
+
 - n-node vs. n-edge stencils
 - Beam search
 - Scaling
@@ -108,6 +153,7 @@ profiling analysis can be found [here][source].
 - Use fast stencils for slow/big applications
 
 ## Ongoing directions
+
 - Extend to hyperblock/superblock
 - Compare against dynamic DFGs
 - Evaluate on accelerated hardware
