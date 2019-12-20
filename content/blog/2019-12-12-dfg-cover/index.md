@@ -83,11 +83,30 @@ profiling analysis can be found [here][source].
 [llvm]: https://llvm.org
 [source]: https://github.com/avanhatt/dfg-coverings
 
-## Formal Description of the Task
+
+## Building data flow graphs from LLVM
+
+- Trade-offs:
+- Machine instructions vs. IR instructions
+- Static vs. dynamic DFGs
+- Getting simple data flow "for free" vs. complexities of control flow
+
+## Matching fixed DFG stencils
+
+- Defining node matches
+- Finding isomorphisms
+
+## Generating common DFG stencils
+
+Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
+
+We have implemented this in two different ways TODO
+
+### Formal Description of the Task
 
 If we ignore control flow, we can look at the problem purely graph theoretically. For a single trace through the program, the data flow graph $G$ is acyclic, and we would like to cover as much of it as possible with sub-graphs, corresponding to the stencils that we accelerate.
 Statically, we do not know what the final data flow graph is, but we do know that we will be able to assemble one by connecting dangling edges from control-flow-free components: basic blocks.
-This is the approach we take.  
+This is the approach we take.
 
 We would like to find a small collection of graph components $\mathcal H = \{H_i, \ldots, H_k\}$, which we can use to replace parts of and accelerate programs having basic blocks $\mathcal G = \{G_1,\ldots,G_n\}$, that maximizes the total saved time:
 
@@ -118,28 +137,9 @@ where $\text{Cost}(\mathcal H)$ is the additional compilation cost incurred by $
 Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), exposing knobs that could be used in future work to automate the entire optimization.
 
 
-## Building data flow graphs from LLVM
-
-- Trade-offs:
-- Machine instructions vs. IR instructions
-- Static vs. dynamic DFGs
-- Getting simple data flow "for free" vs. complexities of control flow
-
-## Matching fixed DFG stencils
-
-- Defining node matches
-- Finding isomorphisms
-
-## Generating common DFG stencils
-
-Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
-
-We have implemented this in two different ways
 
 
-###
-
-### Noe
+### TODO
 
 
 - n-node vs. n-edge stencils
