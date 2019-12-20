@@ -124,27 +124,52 @@ block boundaries, which lack branching control flow.
 
 [ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
 
-## Matching DFG stencils
+## Matching fixed DFG stencils
 
-From a modeling perspective, a stencil is more than just the topology of the graph: a stencil also includes the class of operation for each node. For instance, consider stencil formed by the chain of instructions `pointer -> getelementptr -> load` --- the load instruction cannot be mapped arbitrarily onto other instructions: we want it to align only with program instructions which are in some sense the same. Thinking of the opcodes as each specifying a color, this makes a stencil a colored graph, and a stencil isomorphism is a bijection of colored graphs.
+To begin, let's imagine we already have some oracle that has given us a great
+candidate subgraph (which we'll call a _stencil_), and our jobs is to find all
+the redundant instantiations of that stencil. If we consider a large program
+DFG $G$ and a smaller stencil DFG $H$, the task is to find as many subgraph
+isomorphisms of `H` and `G`. Here, the larger program DFG `G` is generated
+directly from the LLVM in-memory representation as described above, but does not
+include edges across control flow boundaries. Rather, `G` is a collection of DFG
+components per basic block. In addition, we focus on operations that consume and
+produce values directly (such as arithmetic and shift operations) rather than
+those that read or write from memory or modify control flow (`load`, `store`,
+`branch`, and `return`).
 
-While graph isomorphism is a notoriously tricky problem, it is also a very common one, and we make heavy use of the `networkx.isomorphism` package, which provides tools for iterating over matches (colored graph isomorphisms) between program instructions $G$ and a stencil $H$.
+While graph isomorphism is a notoriously tricky problem, it is also a very
+common one, and we make heavy use of out-of-the-box graph algorithms. We employ
+the `networkx.isomorphism`  Python package, which provides tools for iterating
+over matches (graph isomorphisms) between the program DFG `G` and a stencil DFG
+`H`. The main additional constraint we added around the simple (but
+computationally expensive) isomorphism problem is that our goal is to choose
+mutually exclusive subgraphs, where each node can be assigned to at most once
+isomorphic instance (to model actual hardware acceleration). In the case of a
+single stencil, we use a greedy heuristic to randomly choose isomorphisms until
+there are no longer any remaining choices that are mutually exclusive. When
+trying to match multiple stencils, our heuristic tries to find the largest
+stencils first.
 
-We started our testing with the following hand-picked chains of instructions extracted from the `embench/matmult-int` code:
+We started our testing by hand-picked chains of instructions found in our
+benchmarking code. From the [Embench][] embedded programming benchmarking suite,
+we used `matmult-int.c` to chose a few common chains of operations:
 
 ```
 	chains = [
 		["mul", "add", "srem"],
 		["shl", "add"],
 		["sdiv", "mul", "add"],
-		["load", "mul"],
 	]
 ```
 
-Though it was never our goal to end here, it quickly became apparent that this was not going to be even a little bit effective, and would be very overfit to the program we were looking at. The original program, `matmult-int`, only matched ~4% of instructions, and other programs, such as `add.c` did not match a single one of them.
+As we expected, these small human-selected stencils subgraphs performed
+especially poorly. On the original program, `matmult-int.c`, these stencils only
+matched less than 4% of instructions.
 
+[embench]: https://embench.org
 
-## Generating common DFG stencils
+## Identifying common DFG stencils
 
 Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
 
@@ -236,7 +261,7 @@ In addition, it would be interesting to compare this project against dynamic
 data flow graphs. For example, the [Redux][] paper essentially introduced the
 formulation of dynamic data flow graphs as we desribe them here, and outlines
 how to generate efficiently generate them. From the perspective of hardware
-acceleration, the [RADISH][] paper (“Iterative Search for Reconfigurable
+acceleration, the [RADISH][] project (“Iterative Search for Reconfigurable
 Accelerator Blocks with a Compiler in the Loop”) uses Python wrappers to
 generate dynamic data flow graphs, and heuristic genetic algorithms to "fuse"
 similar dynamic graphs together.
