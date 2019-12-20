@@ -155,13 +155,12 @@ We started our testing by hand-picked chains of instructions found in our
 benchmarking code. From the [Embench][] embedded programming benchmarking suite,
 we used `matmult-int.c` to chose a few common chains of operations:
 
-```
-	chains = [
-		["mul", "add", "srem"],
-		["shl", "add"],
-		["sdiv", "mul", "add"],
-	]
-```
+`mul` &rarr; `add` &rarr; `srem`
+
+`shl` &rarr; `add`
+
+`sdiv` &rarr; `mul` &rarr; `add`
+
 
 As we expected, these small human-selected stencils subgraphs performed
 especially poorly. On the original program, `matmult-int.c`, these stencils only
@@ -252,10 +251,10 @@ Note that each benchmark's coverage was calculated with the subgraphs generated 
 
 Digging into `nettle-256sha`, the benchmark with the best coverage, we can see that the following two three-node subgraph stencils were chosen out of 66 possible three-node subgraphs:
 
-| Stencil | Number of static matches      | 
+| Stencil | Number of static matches      |
 |:--------|:-----------------------------:|
-|`lshr` &mdash;> `or` <&mdash; `shl`| 208 |
-|`xor` &mdash;> `xor` &mdash;> `add`| 80  |
+|`lshr` &rarr; `or` &larr; `shl`| 208 |
+|`xor` &rarr; `xor` &rarr; `add`| 80  |
 
 Here are a close-up and a closer-up (marked with a heavy black rectangle) view of the DFG, with vertices matched to a stencil shown in bright red.
 The latter shows three matches of the first stencil and one of the second.
