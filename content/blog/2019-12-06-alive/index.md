@@ -3,8 +3,12 @@ title = "Provably Correct Peephole Optimizations with Alive"
 extra.author = "Alexa VanHattum"
 extra.author_link = "https://www.cs.cornell.edu/~avh/"
 extra.bio = """
-  [Alexa VanHattum](https://www.cs.cornell.edu/~avh/) is a second-year student interested in the intersection of compilers and formal methods.
-  She also enjoys feminist book clubs and cooking elaborate [fish truck][] meals.
+  [Alexa][] is a second-year student interested in the intersection of compilers
+  and formal methods. She also enjoys feminist book clubs and cooking elaborate
+  [fish truck][] meals.
+
+[alexa]: https://www.cs.cornell.edu/~avh
+[fish truck]: https://www.triphammermarketplace.com/events/
 """
 +++
 In previous discussions, we've considered research systems that find bugs in compiler implementations via _differential testing_.
