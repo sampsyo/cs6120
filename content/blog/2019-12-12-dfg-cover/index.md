@@ -66,41 +66,87 @@ structure in the data flow graph may indicate core computational patterns.
 If our goal is to compile faster or more energy-efficient code, data flow graphs
 can help show us where to focus. By identifying redundant subgraphs in the
 structure of data flow graphs, we can find groupings of operations that we
-expect to occur frequently enough to benefit from hardware acceleration. What's
-more, the shape of the subgraphs is also a signal for how _useful_ the
-acceleration might be: subgraphs that are wider, rather than simply linear
-chains, indicate more opportunity for [_fine-grained parallelism_][fgp].
+expect to occur frequently enough to benefit from additional optimization
+effort. What's more, the shape of the subgraphs is also a signal for how
+_useful_ the acceleration might be: subgraphs that are wider, rather than simply
+linear chains, indicate more opportunity for [_fine-grained parallelism_][fgp].
+Our goals in this project are shaped by the domain of hardware acceleration with
+[_heterogeneous computing_][hc], where a compiler's goal is to target multiple
+processors, each with differing strengths and weaknesses.
 
 For this project, we build on the [LLVM compiler infrastructure][llvm] to find
 redundant structures in programs' static data flow graphs. Our goal is to find a
 fixed number of subgraph structures that occur the most frequently (that is,
 cover the highest number of instructions) throughout the program. We focus on
-finding candidate subgraphs with high frequency, and leave analysis of the shape
-of those subgraphs to later work. The source code for this project and our
-profiling analysis can be found [here][source].
+finding candidate subgraphs with high frequency, and leave analysis and
+heterogeneous compilation of those subgraphs to later work. The source code for
+this project and our profiling analysis can be found [here][source].
 
 [fgp]: https://en.wikipedia.org/wiki/Granularity_(parallel_computing)#Fine-grained_parallelism
+[hc]: https://en.wikipedia.org/wiki/Heterogeneous_computing
 [llvm]: https://llvm.org
 [source]: https://github.com/avanhatt/dfg-coverings
 
-
 ## Building data flow graphs from LLVM
 
-- Trade-offs:
-- Machine instructions vs. IR instructions
-- Static vs. dynamic DFGs
-- Getting simple data flow "for free" vs. complexities of control flow
+Data flow graphs exist at multiple levels of abstraction in a compiler
+toolchain, and there are trade-offs to targeting any particular choice.
 
-## Matching fixed DFG stencils
+First, data flow graphs can either represent a program _statically_, purely from
+the program's source code, or _dynamically_, from a program execution trace. A
+static DFG has a one-to-one relation to the source code: each operation and its
+dependencies are directly translated. The control flow of the program exists
+only implicitly: if a data value's flow depends on the branching structure of
+the program, the DFG would have back edges and cycles. A dynamic DFG captures a
+single trace throughout the program, where operations are repeated each time
+they are executed. In this case, the data flow graph remains acyclic (with
+values only flowing "down"), and loops in the control flow repeat in the
+subgraph for each time the loop is executed. However, dynamic data flow graphs
+only represent a single execution of the program, and may not even cover the
+full program behavior. They also may be infeasible to generate ahead of time
+for long-running applications.
 
-- Defining node matches
-- Finding isomorphisms
+In addition, DFGs can target either the _intermediate representation_ level,
+with LLVM-level operations, or at the _machine code_ level, with operations
+corresponding to the exact instruction set architecture. The machine code
+data flow graph corresponds more directly to the program's actual execution, but
+is not as general across different targets.
+
+For this project, we use LLVM to target the static DFG at the intermediate
+representation level of abstraction. LLVM translates the program source to
+[_static single assignment (SSA)_][ssa] form, where every variable name can only
+be assigned to once. Thus, each instruction represents one operation. Because
+LLVM's in memory intermediate representation stores pointers to instructions'
+operands, we can build a program's static data flow graph by inserting edges
+to an instruction and from each of its operands. We narrow the project's scope
+to only consider acyclic subgraphs by considering subgraphs only within basic
+block boundaries, which lack branching control flow.
+
+[ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
+
+## Matching DFG stencils
+
+From a modeling perspective, a stencil is more than just the topology of the graph: a stencil also includes the class of operation for each node. For instance, consider stencil formed by the chain of instructions `pointer -> getelementptr -> load` --- the load instruction cannot be mapped arbitrarily onto other instructions: we want it to align only with program instructions which are in some sense the same. Thinking of the opcodes as each specifying a color, this makes a stencil a colored graph, and a stencil isomorphism is a bijection of colored graphs.
+
+While graph isomorphism is a notoriously tricky problem, it is also a very common one, and we make heavy use of the `networkx.isomorphism` package, which provides tools for iterating over matches (colored graph isomorphisms) between program instructions $G$ and a stencil $H$.
+
+We started our testing with the following hand-picked chains of instructions extracted from the `embench/matmult-int` code:
+
+```
+	chains = [
+		["mul", "add", "srem"],
+		["shl", "add"],
+		["sdiv", "mul", "add"],
+		["load", "mul"],
+	]
+```
+
+Though it was never our goal to end here, it quickly became apparent that this was not going to be even a little bit effective, and would be very overfit to the program we were looking at. The original program, `matmult-int`, only matched ~4% of instructions, and other programs, such as `add.c` did not match a single one of them.
+
 
 ## Generating common DFG stencils
 
 Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
-
-We have implemented this in two different ways TODO
 
 ### Formal Description of the Task
 
@@ -116,7 +162,7 @@ where:
 
 - $\text{Cov}(\mathcal G, \mathcal H)$ is the set of all valid (partial) coverings of basic blocks with at most one stencil, that is, injective graph morphisms $\varphi: (\cup \mathcal G) \to \cup \mathcal H$.
 
-- $\mathcal C_G$ is the component of the total covering on the particular basic block graph $G$.
+- $\mathcal C_G$ is the component of the covering $\mathcal C$ of the total covering on the particular basic block graph $G$.
 
 - $w_G$ is independent of $\mathcal H$ and proportional to the expected number of times $G$ is executed.
 
@@ -129,25 +175,44 @@ Of course, supposing that $f_H$ was roughly constant, we could trivially achieve
 3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
 
 
-In fact, only the third issue is really important; the first two are roughly heuristics which help solve it. To cast this as a learning problem, imagine that there's some underlying distribution $\mathtt{Programs}$ of programs that people write; we can now cast our work as a solution to the optimization problem of finding
+In fact, only the third issue is really important; the first two are roughly heuristics which help solve it.
+To cast this as a learning problem, imagine that there's some underlying distribution $\mathtt{Programs}$ of programs that people write; we can now cast our work as a solution to the optimization problem of finding
 
 $$ \arg\max_{\mathcal H}\left( \mathop{\mathbb E}\limits_{\mathcal G\sim \texttt{Programs}}~ \mathcal S_{\mathcal H}(\mathcal G) - \text{Cost}(\mathcal H) \right)$$
 
 where $\text{Cost}(\mathcal H)$ is the additional compilation cost incurred by $\mathcal H$, which is higher for larger graphs.
-Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), exposing knobs that could be used in future work to automate the entire optimization.
+In this learning analogy, finding common DFGs for a particular collection of programs is training data.
+
+Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), which are effectively regularization knobs that could be used in future work to automate the entire optimization.
 
 
+### Two Implementations
+We implemented (partially by accident) two separate algorithms for finding the stencils from example programs.
+In both cases, the general idea is to keep a connected component and explore edges, being careful not to double count different graphs that are isomorphic but presented in different orders.
 
 
-### TODO
+#### The Tricky Details
+TODO. @ Greg
 
-### Node Sub-graphs
 
-- n-node vs. n-edge stencils
-- Beam search
-- Scaling
+#### Mutually Exclusive Matches
+
+To generate a _valid_ covering $\mathcal C$, we need more than simply an enumeration of all sub-graphs in a program and a way to match them: we also have to make sure the matches don't step on one another's toes---that is, we need to throw out matches until each instruction is only covered by at most a single component
+
+Finding the optimal one is difficult: it is related to the weighted optimal scheduling problem (which [can be solved with dynamic programming](https://courses.cs.washington.edu/courses/cse521/13wi/slides/06dp-sched.pdf) in $O(n \log n)$ time, but on a general directed graph, we get an exponential factor in the branching coefficient.
+Rather than solve this problem optimally in the general case, we implement the greedy biggest-first strategy, and focus instead on searching for collections of matches which have higher coverage in the first place.
+
+### Search
+
+Ultimately, we do not need to search the space exhaustively if we have reasonable heuristics that might cause us to believe that we're going in the right direction with certain stencils.
+We can then do our search traversal in a different order, guided by the objective function.
+
+This can be done in the form of a beam search: we only keep around the $k$ best sub-graphs in the search frontier, and at each step try to expand one to a random neighboring node.
+
+- Scaling? TODO: what is this?
 
 ## Static and dynamic coverage
+NOTE: while the implementation is maybe best put here, we needed to describe the static coverage metric earlier to explain the search process above.
 
 - Annotations on LLVM
 - Embench benchmark suite
@@ -176,7 +241,37 @@ The latter shows three matches of the first stencil and one of the second.
 
 ## Ongoing directions
 
-- Extend to hyperblock/superblock
-- Compare against dynamic DFGs
-- Evaluate on accelerated hardware
-- Find stencils for groups of applications
+While finding redundancies in DFGs within each basic block is a good initial
+approach, this project could be extended in several directions.
+
+We could build on existing literature in [extended basic blocks][ebb] to find
+subgraphs that _speculatively_ occur. That is, in extended basic blocks, we
+consider control flows that are likely to jump from one block to another in the
+common case, and only fall back to different branches in the case that our guess
+of the next block was wrong. In the context of hardware acceleration, we can
+imagine building accelerators that handle these larger speculative subgraphs
+when possible, and fall back to slower CPU execution if the control flow
+differs.
+
+In addition, it would be interesting to compare this project against dynamic
+data flow graphs. For example, the [Redux][] paper essentially introduced the
+formulation of dynamic data flow graphs as we desribe them here, and outlines
+how to generate efficiently generate them. From the perspective of hardware
+acceleration, the [RADISH][] paper (“Iterative Search for Reconfigurable
+Accelerator Blocks with a Compiler in the Loop”) uses Python wrappers to
+generate dynamic data flow graphs, and heuristic genetic algorithms to "fuse"
+similar dynamic graphs together.
+
+Like RADISH, we could extend our application to target _groups_ of applications
+instead of single programs. The scale of this undertaking would require more
+clever heuristics than our current search strategies, but would ideally help us
+find more general subgraphs to accelerate.
+
+Finally, the impact of this project could be more clearly explicated by
+evaluating our subgraph identification with actual computational acceleration.
+In particular, we hope this strategy will prove useful in conjunction with other
+work that aims use compile-time analysis to target heterogeneous targets.
+
+[ebb]: https://en.wikipedia.org/wiki/Extended_basic_block
+[redux]: http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=7CE631B431BCCBA459061BC458D53E8F?doi=10.1.1.63.2083&rep=rep1&type=pdf
+[RADISH]: https://ieeexplore.ieee.org/document/8509181
