@@ -44,11 +44,10 @@ For all of these reasons, in 2002, it was common practice and widely considered 
 
 Of course, even without any experiments, it is easy to see how doing this could be a mistake: the effectiveness of any of these relies on certain assumptions about the programs, and so any modifications need to be done while keeping the custom allocator in mind. Moreover, non-standard allocation schemes make it much more difficult to use existing tools to analyze your code. In more detail:
 
-* Accidentally calling the standard `free` on a custom-allocated object could corrupt the heap and lead to errors
-* Custom memory allocation makes it impossible to use leak detection tools
-* It also prevents you from using a different custom allocator to do something else that's more valuable in the future
-* It keeps you from using garbage collection
-
+* Accidentally calling the standard `free` on a custom-allocated object could corrupt the heap and lead to errors.
+* Custom memory allocation makes it impossible to use leak detection tools.
+* It also prevents you from using a different custom allocator to do something else that's more valuable in the future.
+* It keeps you from using garbage collection.
 
 
 # The Paper: Reconsidering Custom Memory Management
@@ -80,14 +79,11 @@ This paper uses the following three bins to classify allocators:
 
 Although this paper is well-regarded and remembered primarily for its evaluation, the actual experimental data involves only 8 programs, each run with a single input. The table containing the programs and their inputs can be seen in the figure below:
 
-<!-- ![](expts.png) -->
 <img src="expts.png" alt="drawing" width="400" style="margin-left:100px;"/>
 
 All of the other graphs in this blog post will reference the 8 benchmarks on the left, and run their experiments for a single input, a single time, not reporting variance, the impact of parameters, machine loads, or any other confounders. For a paper that is purported to be an exemplar takedown of a common design practice, and appears to have had a large impact on the state of memory allocation, its actual empirical backing could be more robust.
 
 Given that there are only 8 data points, with no reported statistics, and more than 8 graphs presented in the paper alone (we must imagine the authors conducted far more that they did not report), that dozens of features were exposed, and that the authors were willing to consider non-linear decision boundaries (the _is it a region_ decision stump[^2]), makes things even more worrying. The authors also give very little attention to allocators that are not region-based. The hypothesis that the only design point of a custom allocator that could give it an edge over a general one is making use of regions, while very possibly true, is not particularly evident from the data: many of the region allocators also fail to outperform `dlmalloc`, and some non-region allocators have a slight edge.
-
-<!--As we will see, the hypothesis that the primary reason for the difference in performance is the existence of regions also does not even fit the data particularly well: many of the region allocators, too, fail to outperform `dlmalloc`-->
 
 ### Emulation
 
@@ -107,12 +103,9 @@ The observation the authors make is that regions can provide performance benefit
 
 ![drag](drag-graphs.png)
 
-
-
 # Regions and Reaps
 In order to provide the performance benefits of regions to general purpose allocators, Berger et al. introduce "reaps", a merging of regions and heaps, sold as a generalization of both.
 Recall that a heap exposes `malloc` and `free`; a region gives you a `malloc` and `freeAll`. The example in the paper is the following:
-<!-- ![](heap-layer-imp.png) -->
 
 <img src="reap-example.png" alt="reap example" width="400" style="margin-left:100px;"/>
 
@@ -176,11 +169,6 @@ These reaps do not seem to have been used more than once or twice since 2002, an
 
 Even so, the general message is well-articulated, appears to have rung true in retrospect, and perhaps necessarily so. As general-purpose allocators get even better, and perhaps even begin to be tunable to custom programs, out-performing them becomes increasingly difficult. This is a general trend: while knowing something about the matrices you want to multiply may have been an invaluable place to mine in order to edge out general purpose matrix multiplication algorithms, today it is almost impossible to out-perform standard libraries for doing them---so much so, that it is often beneficial to rewrite other computations in terms of matrix multiplications to accelerate them; moreover, representing computations in this generic way often provides some more standard insights into the structure of your problem and allows you to immediately make use of relevant algorithms. For similar reasons, it is hard to imagine that custom memory allocators will do any more than dwindle.
 
-<!--- THOUGHTS.
-One key thing to keep in mind is that this custom memory allocation is just another abstraction _that can be built with the default allocator_. It's built on top of the system `malloc`, and so anything you can
-
-
---->
 [^1]: Of course, there are only 8 programs, and so it is hard to really trust this analysis.
 [^2]: A decision stump is a depth-1 decision tree, which is already a non-linearity, as it has a branch.
 [^3]: https://suniphrase.wordpress.com/2015/10/27/jemalloc-vs-tcmalloc-vs-dlmalloc/
