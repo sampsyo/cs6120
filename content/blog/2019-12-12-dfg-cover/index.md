@@ -153,6 +153,27 @@ Rather than solve this optimization problem in closed form, we optimize for heur
 - Embench benchmark suite
 - Use fast stencils for slow/big applications
 
+For each benchmark, we generated all allowable three-node subgraphs and chose the two that statically covered the most instructions in that benchmark's DFG.
+The following graphs show static and dynamic code coverage for each benchmark.
+Note that each benchmark's coverage was calculated with the subgraphs generated from that benchmark.
+
+<img src="embench-profiling_best-stencil-combos-per-benchmark_half-1.png" width=100%/>
+<img src="embench-profiling_best-stencil-combos-per-benchmark_half-2.png" width=100%/>
+
+Digging into `nettle-256sha`, the benchmark with the best coverage, we can see that the following two three-node subgraph stencils were chosen out of 66 possible three-node subgraphs:
+
+| Stencil | Number of static matches      | 
+|:--------|:-----------------------------:|
+|`lshr` &mdash;> `or` <&mdash; `shl`| 208 |
+|`xor` &mdash;> `xor` &mdash;> `add`| 80  |
+
+Here are a close-up and a closer-up (marked with a heavy black rectangle) view of the DFG, with vertices matched to a stencil shown in bright red.
+The latter shows three matches of the first stencil and one of the second.
+
+<img src="nettle-sha256-cropped.png" width=100%/>
+
+<img src="nettle-sha256-cropped-zoomed.png" width=100% style='border:2px solid black;'/>
+
 ## Ongoing directions
 
 - Extend to hyperblock/superblock
