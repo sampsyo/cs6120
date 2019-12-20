@@ -66,20 +66,24 @@ structure in the data flow graph may indicate core computational patterns.
 If our goal is to compile faster or more energy-efficient code, data flow graphs
 can help show us where to focus. By identifying redundant subgraphs in the
 structure of data flow graphs, we can find groupings of operations that we
-expect to occur frequently enough to benefit from hardware acceleration. What's
-more, the shape of the subgraphs is also a signal for how _useful_ the
-acceleration might be: subgraphs that are wider, rather than simply linear
-chains, indicate more opportunity for [_fine-grained parallelism_][fgp].
+expect to occur frequently enough to benefit from additional optimization
+effort. What's more, the shape of the subgraphs is also a signal for how
+_useful_ the acceleration might be: subgraphs that are wider, rather than simply
+linear chains, indicate more opportunity for [_fine-grained parallelism_][fgp].
+Our goals in this project are shaped by the domain of hardware acceleration with
+[_heterogeneous computing_][hc], where a compiler's goal is to target multiple
+processors, each with differing strengths and weaknesses.
 
 For this project, we build on the [LLVM compiler infrastructure][llvm] to find
 redundant structures in programs' static data flow graphs. Our goal is to find a
 fixed number of subgraph structures that occur the most frequently (that is,
 cover the highest number of instructions) throughout the program. We focus on
-finding candidate subgraphs with high frequency, and leave analysis of the shape
-of those subgraphs to later work. The source code for this project and our
-profiling analysis can be found [here][source].
+finding candidate subgraphs with high frequency, and leave analysis and
+heterogeneous compilation of those subgraphs to later work. The source code for
+this project and our profiling analysis can be found [here][source].
 
 [fgp]: https://en.wikipedia.org/wiki/Granularity_(parallel_computing)#Fine-grained_parallelism
+[hc]: https://en.wikipedia.org/wiki/Heterogeneous_computing
 [llvm]: https://llvm.org
 [source]: https://github.com/avanhatt/dfg-coverings
 
@@ -114,9 +118,9 @@ representation level of abstraction. LLVM translates the program source to
 be assigned to once. Thus, each instruction represents one operation. Because
 LLVM's in memory intermediate representation stores pointers to instructions'
 operands, we can build a program's static data flow graph by inserting edges
-whenever operands are used. We narrow the project's scope to only consider
-acyclic subgraphs by considering subgraphs only within basic block boundaries,
-which lack branching control flow.
+to an instruction and from each of its operands. We narrow the project's scope
+to only consider acyclic subgraphs by considering subgraphs only within basic
+block boundaries, which lack branching control flow.
 
 [ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
 
@@ -180,9 +184,6 @@ $$ \arg\max_{\mathcal H}\left( \mathop{\mathbb E}\limits_{\mathcal G\sim \texttt
 where $\text{Cost}(\mathcal H)$ is the additional compilation cost incurred by $\mathcal H$, which is higher for larger graphs.
 Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), exposing knobs that could be used in future work to automate the entire optimization.
 
-
-
-
 ### Edge Subgaphs
 
 ### Node Sub-graphs
@@ -199,7 +200,37 @@ Rather than solve this optimization problem in closed form, we optimize for heur
 
 ## Ongoing directions
 
-- Extend to hyperblock/superblock
-- Compare against dynamic DFGs
-- Evaluate on accelerated hardware
-- Find stencils for groups of applications
+While finding redundancies in DFGs within each basic block is a good initial
+approach, this project could be extended in several directions.
+
+We could build on existing literature in [extended basic blocks][ebb] to find
+subgraphs that _speculatively_ occur. That is, in extended basic blocks, we
+consider control flows that are likely to jump from one block to another in the
+common case, and only fall back to different branches in the case that our guess
+of the next block was wrong. In the context of hardware acceleration, we can
+imagine building accelerators that handle these larger speculative subgraphs
+when possible, and fall back to slower CPU execution if the control flow
+differs.
+
+In addition, it would be interesting to compare this project against dynamic
+data flow graphs. For example, the [Redux][] paper essentially introduced the
+formulation of dynamic data flow graphs as we desribe them here, and outlines
+how to generate efficiently generate them. From the perspective of hardware
+acceleration, the [RADISH][] paper (“Iterative Search for Reconfigurable
+Accelerator Blocks with a Compiler in the Loop”) uses Python wrappers to
+generate dynamic data flow graphs, and heuristic genetic algorithms to "fuse"
+similar dynamic graphs together.
+
+Like RADISH, we could extend our application to target _groups_ of applications
+instead of single programs. The scale of this undertaking would require more
+clever heuristics than our current search strategies, but would ideally help us
+find more general subgraphs to accelerate.
+
+Finally, the impact of this project could be more clearly explicated by
+evaluating our subgraph identification with actual computational acceleration.
+In particular, we hope this strategy will prove useful in conjunction with other
+work that aims use compile-time analysis to target heterogeneous targets.
+
+[ebb]: https://en.wikipedia.org/wiki/Extended_basic_block
+[redux]: http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=7CE631B431BCCBA459061BC458D53E8F?doi=10.1.1.63.2083&rep=rep1&type=pdf
+[RADISH]: https://ieeexplore.ieee.org/document/8509181
