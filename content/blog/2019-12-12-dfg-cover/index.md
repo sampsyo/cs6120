@@ -34,7 +34,7 @@ its predecessor completes.
 [vn]: https://en.wikipedia.org/wiki/Von_Neumann_architecture
 
 
-<img src="dominos.gif" width=60%/>
+<img src="dominos.gif" width=30%/>
 
 
 Of course, this mental model is far from the truth—in modern [out-of-order][ooo]
@@ -50,7 +50,7 @@ a [_data flow graph_ (DFG)][dfg] for the program.
 [ooo]: https://en.wikipedia.org/wiki/Out-of-order_execution
 [dfg]: https://en.wikipedia.org/wiki/Data-flow_analysis
 
-<img src="pipes.gif" width=50%/>
+<img src="pipes.gif" width=30%/>
 
 ## Go with the flow
 
