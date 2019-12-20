@@ -116,8 +116,6 @@ Though it was never our goal to end here, it quickly became apparent that this w
 
 Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
 
-We have implemented this in two different ways TODO
-
 ### Formal Description of the Task
 
 If we ignore control flow, we can look at the problem purely graph theoretically. For a single trace through the program, the data flow graph $G$ is acyclic, and we would like to cover as much of it as possible with sub-graphs, corresponding to the stencils that we accelerate.
@@ -132,7 +130,7 @@ where:
 
 - $\text{Cov}(\mathcal G, \mathcal H)$ is the set of all valid (partial) coverings of basic blocks with at most one stencil, that is, injective graph morphisms $\varphi: (\cup \mathcal G) \to \cup \mathcal H$.
 
-- $\mathcal C_G$ is the component of the total covering on the particular basic block graph $G$.
+- $\mathcal C_G$ is the component of the covering $\mathcal C$ of the total covering on the particular basic block graph $G$.
 
 - $w_G$ is independent of $\mathcal H$ and proportional to the expected number of times $G$ is executed.
 
@@ -145,25 +143,44 @@ Of course, supposing that $f_H$ was roughly constant, we could trivially achieve
 3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
 
 
-In fact, only the third issue is really important; the first two are roughly heuristics which help solve it. To cast this as a learning problem, imagine that there's some underlying distribution $\mathtt{Programs}$ of programs that people write; we can now cast our work as a solution to the optimization problem of finding
+In fact, only the third issue is really important; the first two are roughly heuristics which help solve it.
+To cast this as a learning problem, imagine that there's some underlying distribution $\mathtt{Programs}$ of programs that people write; we can now cast our work as a solution to the optimization problem of finding
 
 $$ \arg\max_{\mathcal H}\left( \mathop{\mathbb E}\limits_{\mathcal G\sim \texttt{Programs}}~ \mathcal S_{\mathcal H}(\mathcal G) - \text{Cost}(\mathcal H) \right)$$
 
 where $\text{Cost}(\mathcal H)$ is the additional compilation cost incurred by $\mathcal H$, which is higher for larger graphs.
-Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), exposing knobs that could be used in future work to automate the entire optimization.
+In this learning analogy, finding common DFGs for a particular collection of programs is training data.
+
+Rather than solve this optimization problem in closed form, we optimize for heuristics (1) and (2), which are effectively regularization knobs that could be used in future work to automate the entire optimization.
 
 
+### Two Implementations
+We implemented (partially by accident) two separate algorithms for finding the stencils from example programs.
+In both cases, the general idea is to keep a connected component and explore edges, being careful not to double count different graphs that are isomorphic but presented in different orders.
 
 
-### Edge Subgaphs
+#### The Tricky Details
+TODO. @ Greg
 
-### Node Sub-graphs
 
-- n-node vs. n-edge stencils
-- Beam search
-- Scaling
+#### Mutually Exclusive Matches
+
+To generate a _valid_ covering $\mathcal C$, we need more than simply an enumeration of all sub-graphs in a program and a way to match them: we also have to make sure the matches don't step on one another's toes---that is, we need to throw out matches until each instruction is only covered by at most a single component
+
+Finding the optimal one is difficult: it is related to the weighted optimal scheduling problem (which [can be solved with dynamic programming](https://courses.cs.washington.edu/courses/cse521/13wi/slides/06dp-sched.pdf) in $O(n \log n)$ time, but on a general directed graph, we get an exponential factor in the branching coefficient.
+Rather than solve this problem optimally in the general case, we implement the greedy biggest-first strategy, and focus instead on searching for collections of matches which have higher coverage in the first place.
+
+### Search
+
+Ultimately, we do not need to search the space exhaustively if we have reasonable heuristics that might cause us to believe that we're going in the right direction with certain stencils.
+We can then do our search traversal in a different order, guided by the objective function.
+
+This can be done in the form of a beam search: we only keep around the $k$ best sub-graphs in the search frontier, and at each step try to expand one to a random neighboring node. 
+
+- Scaling? TODO: what is this?
 
 ## Static and dynamic coverage
+NOTE: while the implementation is maybe best put here, we needed to describe the static coverage metric earlier to explain the search process above.
 
 - Annotations on LLVM
 - Embench benchmark suite
