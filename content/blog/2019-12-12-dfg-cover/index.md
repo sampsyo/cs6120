@@ -91,10 +91,26 @@ profiling analysis can be found [here][source].
 - Static vs. dynamic DFGs
 - Getting simple data flow "for free" vs. complexities of control flow
 
-## Matching fixed DFG stencils
+## Matching DFG stencils
 
-- Defining node matches
-- Finding isomorphisms
+From a modeling perspective, a stencil is more than just the topology of the graph: a stencil also includes the class of operation for each node. For instance, consider stencil formed by the chain of instructions `pointer -> getelementptr -> load` --- the load instruction cannot be mapped arbitrarily onto other instructions: we want it to align only with program instructions which are in some sense the same. Thinking of the opcodes as each specifying a color, this makes a stencil a colored graph, and a stencil isomorphism is a bijection of colored graphs.
+
+While graph isomorphism is a notoriously tricky problem, it is also a very common one, and we make heavy use of the `networkx.isomorphism` package, which provides tools for iterating over matches (colored graph isomorphisms) between program instructions $G$ and a stencil $H$.
+
+We started our testing with the following hand-picked chains of instructions extracted from the `embench/matmult-int` code:
+
+```
+	chains = [
+		["mul", "add", "srem"],
+		["shl", "add"],
+		["sdiv", "mul", "add"],
+		["load", "mul"],
+	]
+```
+
+Though it was never our goal to end here, it quickly became apparent that this was not going to be even a little bit effective, and would be very overfit to the program we were looking at. The original program, `matmult-int`, only matched ~4% of instructions, and other programs, such as `add.c` did not match a single one of them.
+
+
 
 ## Generating common DFG stencils
 
@@ -139,7 +155,7 @@ Rather than solve this optimization problem in closed form, we optimize for heur
 
 
 
-### TODO
+### Edge Subgaphs
 
 ### Node Sub-graphs
 
