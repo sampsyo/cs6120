@@ -65,7 +65,7 @@ This is the approach we take.
 
 We would like to find a small collection of graph components $\mathcal H = \{H_i, \ldots, H_k\}$, which we can use to replace parts of and accelerate programs having basic blocks $\mathcal G = \{G_1,\ldots,G_n\}$, that maximizes the total saved time:
 
-$$ \mathcal S_{\cal H}(\mathcal G) := \max_{\mathcal C \in \text{Cov}(\mathcal G, \mathcal H)}~ \sum_{G \in \mathcal G} w_G \cdot  \sum_{H \in \mathcal C_G} f_H \cdot |H|$$
+$$\mathcal S_{\mathcal H}(\mathcal G) := \max_{\mathcal C \in \text{Cov}(\mathcal G, \mathcal H)}~ \sum_{G \in \mathcal G} w_G \cdot  \sum_{H \in \mathcal C_G} f_H \cdot |H|$$
 
 where:
 
@@ -113,7 +113,7 @@ We have implemented this in two different ways
 
 ###
 
-### Noe
+### Node Sub-graphs
 
 
 - n-node vs. n-edge stencils
