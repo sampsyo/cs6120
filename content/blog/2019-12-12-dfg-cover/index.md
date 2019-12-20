@@ -26,6 +26,9 @@ name = "Gregory Yauney"
 link = "https://www.cs.cornell.edu/~gyauney"
 +++
 
+*The source code for this project and our profiling analysis can be found
+[here][source].*
+
 In a conventional [von Neumann architecture][vn], we might think of computation
 at a high level as as our computers faithfully carrying out a series of steps.
 Like dominoes in a line, the program counter runs through each instruction once
@@ -79,8 +82,7 @@ redundant structures in programs' static data flow graphs. Our goal is to find a
 fixed number of subgraph structures that occur the most frequently (that is,
 cover the highest number of instructions) throughout the program. We focus on
 finding candidate subgraphs with high frequency, and leave analysis and
-heterogeneous compilation of those subgraphs to later work. The source code for
-this project and our profiling analysis can be found [here][source].
+heterogeneous compilation of those subgraphs to later work.
 
 [fgp]: https://en.wikipedia.org/wiki/Granularity_(parallel_computing)#Fine-grained_parallelism
 [hc]: https://en.wikipedia.org/wiki/Heterogeneous_computing
@@ -246,14 +248,19 @@ TODO. @ Greg
 
 #### Mutually Exclusive Matches
 
-To generate a _valid_ covering $\mathcal C$, we need more than simply an
+To generate a _valid_ choice of subgraph stencils, we need more than simply an
 enumeration of all sub-graphs in a program and a way to match them: we also have
-to make sure the matches don't step on one another's toes---that is, we need to
+to make sure the matches don't step on one another's toes—that is, we need to
 throw out matches until each instruction is only covered by at most a single
 component.
 
-Finding the optimal one is difficult: it is related to the weighted optimal scheduling problem (which [can be solved with dynamic programming](https://courses.cs.washington.edu/courses/cse521/13wi/slides/06dp-sched.pdf) in $O(n \log n)$ time, but on a general directed graph, we get an exponential factor in the branching coefficient.
-Rather than solve this problem optimally in the general case, we implement the greedy biggest-first strategy, and focus instead on searching for collections of matches which have higher coverage in the first place.
+Finding the optimal one is difficult: it is related to the weighted optimal
+scheduling problem (which [can be solved with dynamic programming](https://courses.cs.washington.edu/courses/cse521/13wi/slides/06dp-sched.pdf)
+in $O(n \log n)$ time, but on a general directed graph, we get an exponential
+factor in the branching coefficient. Rather than solve this problem optimally in
+the general case, we implement the greedy biggest-first strategy, and focus
+instead on searching for collections of matches which have higher coverage in
+the first place.
 
 ### Search
 
@@ -262,7 +269,6 @@ We can then do our search traversal in a different order, guided by the objectiv
 
 This can be done in the form of a beam search: we only keep around the $k$ best sub-graphs in the search frontier, and at each step try to expand one to a random neighboring node.
 
-- Scaling? TODO: what is this?
 
 ## Static and dynamic coverage
 NOTE: while the implementation is maybe best put here, we needed to describe the static coverage metric earlier to explain the search process above.
