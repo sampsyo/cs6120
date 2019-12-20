@@ -83,13 +83,42 @@ profiling analysis can be found [here][source].
 [llvm]: https://llvm.org
 [source]: https://github.com/avanhatt/dfg-coverings
 
-
 ## Building data flow graphs from LLVM
 
-- Trade-offs:
-- Machine instructions vs. IR instructions
-- Static vs. dynamic DFGs
-- Getting simple data flow "for free" vs. complexities of control flow
+Data flow graphs exist at multiple levels of abstraction in a compiler
+toolchain, and there are trade-offs to targeting any particular choice.
+
+First, data flow graphs can either represent a program _statically_, purely from
+the program's source code, or _dynamically_, from a program execution trace. A
+static DFG has a one-to-one relation to the source code: each operation and its
+dependencies are directly translated. The control flow of the program exists
+only implicitly: if a data value's flow depends on the branching structure of
+the program, the DFG would have back edges and cycles. A dynamic DFG captures a
+single trace throughout the program, where operations are repeated each time
+they are executed. In this case, the data flow graph remains acyclic (with
+values only flowing "down"), and loops in the control flow repeat in the
+subgraph for each time the loop is executed. However, dynamic data flow graphs
+only represent a single execution of the program, and may not even cover the
+full program behavior. They also may be infeasible to generate ahead of time
+for long-running applications.
+
+In addition, DFGs can target either the _intermediate representation_ level,
+with LLVM-level operations, or at the _machine code_ level, with operations
+corresponding to the exact instruction set architecture. The machine code
+data flow graph corresponds more directly to the program's actual execution, but
+is not as general across different targets.
+
+For this project, we use LLVM to target the static DFG at the intermediate
+representation level of abstraction. LLVM translates the program source to
+[_static single assignment (SSA)_][ssa] form, where every variable name can only
+be assigned to once. Thus, each instruction represents one operation. Because
+LLVM's in memory intermediate representation stores pointers to instructions'
+operands, we can build a program's static data flow graph by inserting edges
+whenever operands are used. We narrow the project's scope to only consider
+acyclic subgraphs by considering subgraphs only within basic block boundaries,
+which lack branching control flow.
+
+[ssa]: https://en.wikipedia.org/wiki/Static_single_assignment_form
 
 ## Matching DFG stencils
 
@@ -109,7 +138,6 @@ We started our testing with the following hand-picked chains of instructions ext
 ```
 
 Though it was never our goal to end here, it quickly became apparent that this was not going to be even a little bit effective, and would be very overfit to the program we were looking at. The original program, `matmult-int`, only matched ~4% of instructions, and other programs, such as `add.c` did not match a single one of them.
-
 
 
 ## Generating common DFG stencils
