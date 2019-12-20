@@ -1,5 +1,5 @@
 +++
-title = "A simple way to implement a bad High Level Synthesis compiler"
+title = "A Simple Way to Implement a Bad High Level Synthesis Compiler"
 extra.author = "Yi Jing, Zhijing Li, Neil Adit, Kenneth Fang, Sam Thomas"
 extra.bio = """
 [Zhijing Li](https://tissue3.github.io/) is a 2nd year Phd student at ECE department, Cornell. She is interested in compiler optimization and domain-specific languages.
@@ -14,7 +14,7 @@ extra.latex = true
 
 
 ## Goal
-The goal of this project was to experiment with a novel approach writing a HLS compiler. In particuar we compile [Futil](https://github.com/cucapra/futil), a novel intermediate representation, to Verilog by generating finite state machines
+The goal of this project was to experiment with a novel approach to writing a HLS compiler. In particuar we compile [Futil](https://github.com/cucapra/futil), a novel intermediate representation, to Verilog by generating finite state machines
 that implement Futil's control constructs. This project is divided into two main parts:
 
 - Convert a Control AST in Futil to an intermediate FSM structure
@@ -30,7 +30,7 @@ However, the immediate goal of Futil is to provide an Verilog backend for the Da
 The structural language is straightforward to convert to Verilog; it already is very close to Verilog. However, the control language does not have a straightforward representation in Verilog. Our plan is to convert these statements into a finite state machine with the same semantics.
 The finite state machine is then easy to translate into Verilog.
 
-A typical FuTIL program is shown below:
+A typical Futil program is shown below:
 
 ```lisp
 (define/namespace prog
@@ -71,7 +71,7 @@ In this project, we are interested in changing all the control logic to finite s
 
 Futil is the backend for Dahlia. The Futil semantics are designed to allow for easy translation from higher level language, like Dahlia, but this creates a gap between the Futil semantics and Verilog implementations. The table below shows the efforts required to translate the Futil semantics to synthesizable Verilog implementations.
 
-| FuTIL Semantics   | Verilog         |
+| Futil Semantics   | Verilog         |
 | ----------------- | --------------- |
 | Invalid wire      | Read wires      |
 | Component Reusing | MUX, Read wires |
@@ -79,11 +79,11 @@ Futil is the backend for Dahlia. The Futil semantics are designed to allow for e
 
 ### *Read* Signals
 
-In FuTIL semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any *data* wire to have one extra bit to specify whether the signal is readable.
+In Futil semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any *data* wire to have one extra bit to specify whether the signal is readable.
 
 ### *MUX*
 
-A component can be used more than once in FuTIL. For instance, if we reuse variable `a0`, then the register need to choose the input from const0 and const2. This introduces a multiplexer (MUX).
+A component can be used more than once in Futil. For instance, if we reuse variable `a0`, then the register need to choose the input from const0 and const2. This introduces a multiplexer (MUX).
 
 ```futil
 (enable a0 const0)
@@ -94,7 +94,7 @@ At different time step, read signals tells which wire to the MUX is readable. Th
 
 ### *FSM*
 
-In FuTIL, there are control logics like `if`, `while` and etc. This can be translated into FSM in Verilog implementation, which is the main goal of this project. However, before getting to that, we created intermediate FSM expressions in FuTIL. An FSM component has:
+In Futil, there are control logics like `if`, `while` and etc. This can be translated into FSM in Verilog implementation, which is the main goal of this project. However, before getting to that, we created intermediate FSM expressions in Futil. An FSM component has:
 
 - input and output ports,
 - connection of wires between its own ports and other components's port,
@@ -140,7 +140,7 @@ Based on the design logic of FSMs, we can specify the inputs and outputs of each
 
 ### Interfacing
 
-This pass creates input port *clock* for all components and *valid* for the top level component. Notice in FuTIL we actually does not have the notion of logical time step. However, to make things easier for RTL translation, we created these ports.
+This pass creates input port *clock* for all components and *valid* for the top level component. Notice in Futil we actually does not have the notion of logical time step. However, to make things easier for RTL translation, we created these ports.
 
 #### MUX Signatures
 
@@ -154,7 +154,7 @@ The last step is removing old wires connecting the same destination port with mo
 
 #### FSM Implementation
 
-This pass creates true FSM representation in FuTIL AST.  Each `FSM` has a *name* field, a *states* Hashmap storing states and indexing of the state, a *start index* corresponding to the first state being created and a *last index* pointing to the last state being created. Each `State` is composed of a vector of *outputs*, where each *output* is specified with output *value* and *port name* and a vector for *transitions*, where each transition is a tuple of *next state index* and *inputs* of *value* and *port name*, so that the transition happens when the input has certain *value*. Finally, there is a default state for each state that is an optional field, telling which state it should transit to when no *transition* condition is met.
+This pass creates true FSM representation in Futil AST.  Each `FSM` has a *name* field, a *states* Hashmap storing states and indexing of the state, a *start index* corresponding to the first state being created and a *last index* pointing to the last state being created. Each `State` is composed of a vector of *outputs*, where each *output* is specified with output *value* and *port name* and a vector for *transitions*, where each transition is a tuple of *next state index* and *inputs* of *value* and *port name*, so that the transition happens when the input has certain *value*. Finally, there is a default state for each state that is an optional field, telling which state it should transit to when no *transition* condition is met.
 
 We provide abstract methods `new(name: &str) -> StateIndex`, `new_state() -> StateIndex`, `get_state(idx: StateIndex) -> &mut State` for `FSM` and `push_output(output: ValuedPort)`and `add_transition(transition: Edge) ` for `State` to generate actual FSM inner logic according to the graph we made in design review.
 
@@ -164,15 +164,15 @@ We provide abstract methods `new(name: &str) -> StateIndex`, `new_state() -> Sta
 
 After generating an FSM, we need to translate the entire structure of inputs, outputs and states to synthesizable hardware using Verilog. This is done by breaking down a verilog file into distinct components.
 
-1. Module Declaration- Here we define the name of the module alongwith the inputs and outputs for it.
-2. Wire/reg definitions- These are internal signals that are used within the module.
-3. FSM- FSMs can be represented in Verilog using 3 `always` blocks - State transition, Next state logic, State outputs.
+1. Module Declaration: Here we define the name of the module along with the inputs and outputs for it.
+2. Wire/reg definitions: These are internal signals that are used within the module.
+3. FSM: FSMs can be represented in Verilog using 3 `always` blocks - State transition, Next state logic, State outputs.
 
 To expand on how all the 3 `always` blocks are generated we discuss them below:
 
-1. State transition- This is pretty standard. It actually changes the state at a clock edge. Since this is a generic block it can be create without any inputs.
-2. Next state logic- This block has a bunch of cases for all the states. For each state in the FSM struct, based on the input transitions to it, we have `if else`  statements for next state logic.
-3. Output logic- This block contains output signals for each state represented by cases, similar to the previous block. In addition to having verilog statements for all the relevant outputs in the state, we also assign the rest of the outputs of the FSM to be zero for now. This is done to avoid inferred latches, which can occur if all outputs are not assigned in each state even though they don't change.
+1. State transition: This is pretty standard. It actually changes the state at a clock edge. Since this is a generic block it can be create without any inputs.
+2. Next state logic: This block has a bunch of cases for all the states. For each state in the FSM struct, based on the input transitions to it, we have `if else`  statements for next state logic.
+3. Output logic: This block contains output signals for each state represented by cases, similar to the previous block. In addition to having verilog statements for all the relevant outputs in the state, we also assign the rest of the outputs of the FSM to be zero for now. This is done to avoid inferred latches, which can occur if all outputs are not assigned in each state even though they don't change.
 
 We used `RcDoc` for formatting the Verilog files.
 
@@ -180,15 +180,15 @@ We used `RcDoc` for formatting the Verilog files.
 
 ## Hardest Parts
 
-1. FuTIL is implemented with [Rust](<https://www.rust-lang.org/>), so we spent some time to get familiar with the language.
+1. Futil is implemented with [Rust](<https://www.rust-lang.org/>), so we spent some time to get familiar with the language.
 2. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. Rust will force the user use reference counter, which we did not realize at first. Also, even with reference counting, our implementation will result in endless loop when printed out. We therefore rely on Hashmap in the end.
-3. FuTIL *read* signals are not common in Verilog coding convention. We had two models in our minds, the Verilog valid/response model and our FuTIL valid/read model. We messed things up because of the existing of the two models and spent huge amount of time discussing which one should be the most ideal design.
+3. Futil *read* signals are not common in Verilog coding convention. We had two models in our minds, the Verilog valid/response model and our Futil valid/read model. We messed things up because of the existing of the two models and spent huge amount of time discussing which one should be the most ideal design.
 
 ## Evaluation
-We evaluated our compiler by simulating the generated Verilog. We did this using an open source tool called [verilator](https://www.veripool.org/projects/verilator/wiki/Intro) which turns Verilog into a `C++` object that you can link to, manipulate
+We evaluated our compiler by simulating the generated Verilog. We generated Futil programs with a simple backend we wrote for the Dahlia compiler. The Verilog simulation was donew with an open source tool called [Verilator](https://www.veripool.org/projects/verilator/wiki/Intro) which turns Verilog into a `C++` object that you can link to, manipulate
 the inputs, and watch the outputs. This generates a `.vcd` file that you can view in a wave form viewer like `gtkwave`. From here you can explore the values of different wires across time.
 
-Although we got the core of the compiler working, we weren't able to test very complicated programs because we did not implement memories. We also do not correctly generate the logic to multiplex between different inputs to a single component so we were not able to fully take advantage of the parallelism that hardware can provide. Despite these problems, we were still able to get some programs working. Below is a very simple program that simply checks whether a number is greater than 5.
+Although we got the core of the compiler working, we weren't able to test very complicated Dahlia programs because we did not implement memories. We also do not correctly generate the logic to multiplex between different inputs to a single component so we were not able to fully take advantage of the parallelism that hardware can provide. Despite these problems, we were still able to get some programs working. Below is a very simple program that simply checks whether a number is greater than 5.
 
 ```C
 let a = 10;
@@ -248,9 +248,9 @@ From top to bottom, the signals are:
 
  Notice that the read output signal goes high twice. The first one corresponds to the first time we do the comparison and the second time it goes high is for the comparison in the condition of the if statement.
 
-From this diagram, we can see that the true branch of the program was correctly taken and that value `20` was put into the register `y`. The `z` register remains in it's default state.
+From this diagram, we can see that the true branch of the program was correctly taken and that value `20` was put into the register `y`. The `z` register remains in its default state.
 
-For a slightly more interesting example, and because it's the classic hello world program of hardware, we implemented a counter. The Dahlia code is the following:
+For a slightly more interesting example, and because it is the classic hello world program of hardware, we implemented a counter. The Dahlia code is the following:
 
 ```C
 let i = 0;
@@ -308,7 +308,7 @@ Notice that we have a lot more triple dashes than Dahlia requires. This is becau
 
 <img src="fib.png" width="100%">
 
-Our compiler resulted in 1412 lines of Verilog code. I compared this against the equivalent C++ program compiled with the Vivado toolchain. Their compiler resulted in 148 lines of Verilog code. Although this is an imperfect metric, it does show that this method of compiling to hardware has a large overhead.
+Our compiler resulted in 1412 lines of Verilog code. I compared this against the equivalent C++ program compiled with the Vivado HLS toolchain. Their compiler resulted in 148 lines of Verilog code. Although this is an imperfect metric, it does show that this method of compiling to hardware has a large overhead.
 
 
 ## Conclusion

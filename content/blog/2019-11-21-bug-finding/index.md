@@ -156,7 +156,7 @@ The first kind of pointer safety problem is null pointer dereference.
 
 ```c++
 int a = 10;
-void nullDereference(int *p){
+void nullDereference(int *p) {
     *p = a; // cause execption if p is NULL
 }
 ```
