@@ -78,7 +78,6 @@ cover the highest number of instructions) throughout the program. We focus on
 finding candidate subgraphs with high frequency, and leave analysis of the shape
 of those subgraphs to later work. The source code for this project and our
 profiling analysis can be found [here][source].
-<<<<<<< HEAD
 
 [fgp]: https://en.wikipedia.org/wiki/Granularity_(parallel_computing)#Fine-grained_parallelism
 [llvm]: https://llvm.org
@@ -101,30 +100,6 @@ profiling analysis can be found [here][source].
 
 Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
 
-=======
-
-[fgp]: https://en.wikipedia.org/wiki/Granularity_(parallel_computing)#Fine-grained_parallelism
-[llvm]: https://llvm.org
-[source]: https://github.com/avanhatt/dfg-coverings
-
-
-## Building data flow graphs from LLVM
-
-- Trade-offs:
-- Machine instructions vs. IR instructions
-- Static vs. dynamic DFGs
-- Getting simple data flow "for free" vs. complexities of control flow
-
-## Matching fixed DFG stencils
-
-- Defining node matches
-- Finding isomorphisms
-
-## Generating common DFG stencils
-
-Of course, doing this by hand is tedious and not particularly effective; we would like to automate the process of finding the stencils to accelerate.
-
->>>>>>> 616e3a59a4f30b3129788700066b4d7a856c7636
 We have implemented this in two different ways TODO
 
 ### Formal Description of the Task
