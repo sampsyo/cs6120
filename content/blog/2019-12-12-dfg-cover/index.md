@@ -263,6 +263,17 @@ The latter shows three matches of the first stencil and one of the second.
 
 <img src="nettle-sha256-cropped-zoomed.png" width=100% style='border:2px solid black;'/>
 
+### Stencil generalization
+
+We also explored generating stencils from one benchmark and testing how well they generalized to the other benchmarks.
+The three-node stencils generated and chosen from `minver`:
+1. `fcmp` &rarr; `select` &larr; `fsub`
+2. `getelementptr` &larr; `pointer` &rarr; `getelementptr`)
+
+were found at least once in all but five of the other Embench benchmarks, producing dynamic coverage ratios between 0 and 7.68% (with an average of 1.45% &plusmn; 2.35).
+
+Stencils generated from other benchmarks achieved even less coverage on the rest of the benchmarks. For example, stencils generated from `edn`, `libwiki`, and `nbody` were not matched in any other benchmarks.
+
 ## Ongoing directions
 
 While finding redundancies in DFGs within each basic block is a good initial
