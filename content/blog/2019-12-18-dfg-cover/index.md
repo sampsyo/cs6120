@@ -132,7 +132,7 @@ To begin, let's imagine we already have some oracle that has given us a great
 candidate subgraph (which we'll call a _stencil_), and our jobs is to find all
 the redundant instantiations of that stencil. If we consider a large program
 DFG $G$ and a smaller stencil DFG $H$, the task is to find as many subgraph
-isomorphisms of `H` and `G`. Here, the larger program DFG `G` is generated
+isomorphisms of $H$ and $G$. Here, the larger program DFG $G$ is generated
 directly from the LLVM in-memory representation as described above, but does not
 include edges across control flow boundaries. Rather, `G` is a collection of DFG
 components per basic block. In addition, we focus on operations that consume and
@@ -140,15 +140,16 @@ produce values directly (such as arithmetic and shift operations) rather than
 those that read or write from memory or modify control flow (`load`, `store`,
 `branch`, and `return`).
 
-While graph isomorphism is a notoriously tricky problem, it is also a very
+While graph isomorphism is a notoriously tricky problem, it is also a
 common one, and we make heavy use of out-of-the-box graph algorithms. We employ
 the `networkx.isomorphism`  Python package, which provides tools for iterating
-over matches (graph isomorphisms) between the program DFG `G` and a stencil DFG
-`H`. The main additional constraint we added around the simple (but
-computationally expensive) isomorphism problem is that our goal is to choose
+over matches (subgraph isomorphisms) between the program DFG `G` and a stencil DFG
+`H`. There are two features of a matching which distinguish it from a subgraph isomorphism:
+(1) nodes must be matched to nodes of the same `opcode`, which technically makes the problem
+a _colored_ subgraph isomorphism (which fortunately makes the problem easier), and (2) we need to select
 mutually exclusive subgraphs, where each node can be assigned to at most once
-isomorphic instance (to model actual hardware acceleration). In the case of a
-single stencil, we use a greedy heuristic to randomly choose isomorphisms until
+isomorphic instance (to model actual hardware acceleration).
+In the case of a single stencil, we use a greedy heuristic to randomly choose isomorphisms until
 there are no longer any remaining choices that are mutually exclusive. When
 trying to match multiple stencils, our heuristic tries to find the largest
 stencils first. We describe this search process in more detail in our
