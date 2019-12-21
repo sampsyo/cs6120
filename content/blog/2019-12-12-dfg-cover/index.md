@@ -182,7 +182,7 @@ of finding the common DFG stencils to accelerate.
 In this context of ignore control flow and considering data flows within basic
 block, we can look at the problem purely graph theoretically. For a single trace
 through the program, the data flow graph $G$ is acyclic, and we would like to
-cover as much of it as possible with sub-graphs corresponding to the stencils
+cover as much of it as possible with subgraphs corresponding to the stencils
 that we accelerate. Statically, we do not know what the final data flow graph
 is, but we do know that we will be able to assemble one by connecting dangling
 edges from control-flow-free components: basic blocks.
@@ -204,7 +204,7 @@ where:
 
 <!-- Of course, supposing that $f_H$ was roughly constant, we could trivially achieve the maximum savings by choosing $\mathcal H := \mathcal G$, there are a few problems with this:
 
-1.  $|\mathcal H|$ is large; there are many of these sub-graphs, which makes the search process substantially less efficient.
+1.  $|\mathcal H|$ is large; there are many of these subgraphs, which makes the search process substantially less efficient.
 2. Each $H_i \in \mathcal H$ is also large, making the specialized component more expensive.
 3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
 
@@ -240,16 +240,17 @@ components, successively building larger subgraphs. Our first approach is
 node-based, and exhaustively considers node subsets up to some size. The second
 approach is edge-based, and uses smaller subgraph components to build graphs of
 the desired size. In preliminary experiments we found the edge-based approach to
-be slightly faster, so we focused the latter implementation on that approach.
+be slightly faster, so we used that approach for our evaluation.
 
-#### The Tricky Details
-TODO. @ Greg
+The edge-based subgraph stencil generation iteratively grows connected components.
+For each $k$-edge subgraph in the DFG, the algorithm considers adding every edge in the DFG, keeping the new $k+1$-edge subgraphs that are connected.
+It then finds which of these subgraphs are isomorphic to each other, and constructs a canonical stencil name for each isomorphic set.
+These $k+1$-edge subgraphs are used for the next iteration of the algorithm.
 
-
-#### Mutually Exclusive Matches
+#### Mutually exclusive matches
 
 To generate a _valid_ choice of subgraph stencils, we need more than simply an
-enumeration of all sub-graphs in a program and a way to match them: we also have
+enumeration of all subgraphs in a program and a way to match them: we also have
 to make sure the matches don't step on one another's toes—that is, we need to
 throw out matches until each instruction is only covered by at most a single
 component.
@@ -257,18 +258,19 @@ component.
 Finding the optimal one is difficult: it is related to the weighted optimal
 scheduling problem (which [can be solved with dynamic programming](https://courses.cs.washington.edu/courses/cse521/13wi/slides/06dp-sched.pdf)
 in $O(n \log n)$ time, but on a general directed graph, we get an exponential
-factor in the branching coefficient. Rather than solve this problem optimally in
+factor in the branching coefficient). Rather than solve this problem optimally in
 the general case, we implement the greedy biggest-first strategy, and focus
 instead on searching for collections of matches which have higher coverage in
 the first place.
+
+After generating possible subgraph stencils, we choose a combination that achieves the highest static coverage of the DFG using only mutually exclusive matches.
 
 ### Search
 
 Ultimately, we do not need to search the space exhaustively if we have reasonable heuristics that might cause us to believe that we're going in the right direction with certain stencils.
 We can then do our search traversal in a different order, guided by the objective function.
-
-This can be done in the form of a beam search: we only keep around the $k$ best sub-graphs in the search frontier, and at each step try to expand one to a random neighboring node.
-
+This can be done in the form of a beam search: we only keep around the $k$ best subgraphs in the search frontier, and at each step try to expand one to a random neighboring node.
+Though not used in our evaluation, beam search can speed up generating larger subgraphs in the future.
 
 ## Static and dynamic coverage
 NOTE: while the implementation is maybe best put here, we needed to describe the static coverage metric earlier to explain the search process above.
