@@ -9,21 +9,21 @@ extra.latex = true
 
 
 High performance cryptography algorithm implementation has always been an active
-research topic among crypto communities, because these software needs to be
-deployed widely in different situation where performance can become crucial.
-Recently, a new kind of crypto system based on ideal lattice has attracted a lot
+research topic among crypto communities, because this software needs to be
+deployed widely in different situations where performance can become crucial.
+Recently, a new kind of crypto system based on ideal lattices has attracted a lot
 of attention and can potentially be adopted as the new standard. The primary
 computation for ideal lattice crypto systems are polynomial multiplication. In
 this project, we want to explore how to generate high performance polynomial
-multiplication for this kind of crypto systems. 
+multiplication for these kind of crypto systems. 
 
 ## Motivation
 
 ### Post-Quntum Cryptography
 
 A lot of public-key cryptography systems we used today relying on primitives
-such as RSA and elliptic curve which are vulnerable under the quantum computer
-attacks.  As people now suggest that the threat of the quantum computer might
+such as RSA and elliptic curve cryptography which are vulnerable under the quantum computer
+attacks.  As people now suggest that the threat of quantum computer might
 not be that far in the future, cryptography researchers have been studying
 so-called post-quantum cryptography (PQC), the kind of crypto primitives that we
 believe can withstand the quantum attack.  There are a lot of post-quantum
@@ -39,37 +39,37 @@ a guideline for people who want to migrate to choose among all those
 post-quantum crypto systems proposed in the literature so far.  National
 Institute of Standards and Technology (NIST) started a
 [process](https://csrc.nist.gov/Projects/post-quantum-cryptography) to standardize
-the post-quantum in 2017 and as of today (Dec 2019), there are still 17
-candidates for public-key encryption and 9 candidates for digital signature in
+the post-quantum crypto in 2017 and as of today (Dec 2019), there are still 17
+candidates for public-key encryption and 9 candidates for digital signatures in
 [round 2](https://csrc.nist.gov/Projects/post-quantum-cryptography/round-2-submissions).
-When choosing which systems to become the standard, security is obviously the
-priority. However, the performance the systems is also very important because
+When choosing which systems will become the standard, security is obviously the
+priority. However, the performance of the systems is also very important because
 once chosen as part of the standard, it would very likely to be implemented in
-popular library such as openssl and deployed to millions of devices and servers
+popular libraries such as OpenSSL and deployed to millions of devices and servers
 and have impact on billions of users.
 
 ### High Performance PQC Implementation 
 
-Thus, it is very important to anaylize the performance of these systems, and
-know that how the most opimized version of the code perform on each platforms.
-Yet, turning an algorithm into highly optimizing code is not an easy job. To
+Thus, it is very important to analyze the performance of these systems, and
+know how the most optimized version of the code performs on each platform.
+Yet, turning an algorithm into highly optimized code is not an easy job. To
 make things even harder, now there are many different crypto systems and each of
 them have different level of security parameters to select.  Hand crafting
-optimizing code for every one of them and analyze their performance is a lot of
+optimized code for every one of them and analyze their performance is a lot of
 work and it is also not a fair comparison among different systems if some
-researchers just don't have the resource to invest a lot of time on crafting
-those highly optimized assembly code. Here, we hope to start addressing this
-problem by creating an code generating system where its goal is to create high
+researchers just don't have the resources to invest a lot of time on crafting
+that highly optimized assembly code. Here, we hope to start addressing this
+problem by creating a code generation system whose its goal is to create high
 performance polynomial multiplication code commonly used in a lattice-based
-post-quantum crpyto systems.
+post-quantum crypto systems.
 
 ### High Performance Code Generation
 
-Generating high performance code to run on different hardware have been studied
-for decades. Signal processing community have been studied how to generate high
-performance FFT implementation, like [FFTW](http://www.fftw.org/) and
-[Spiral](https://www.spiral.net/index.html). In recent years, Image
-processing and machine learning communities also propose several framework to
+Generating high performance code to run on different hardware has been studied
+for decades. The signal processing community have been studied how to generate high
+performance FFT implementations, like [FFTW](http://www.fftw.org/) and
+[Spiral](https://www.spiral.net/index.html). In recent years, image
+processing and machine learning communities also propose several frameworks to
 generate high performance code, such as on the
 [Halide](https://github.com/halide/Halide), [Loopy](https://github.com/inducer/loopy) and
 [TVM](https://github.com/apache/incubator-tvm). 
@@ -146,7 +146,7 @@ on $2k-1$ points.
 
 As we are dealing with polynomial with small to medium degree, we do not
 consider the FFT method here. Yet it will be interesting to combine this with
-above methods like the paper here.
+above methods like in this [paper](https://eprint.iacr.org/2018/995).
 
 ## Implementation
 We aim to generate polynomial multiplication over integer. We adapt from the 
