@@ -1,5 +1,5 @@
 +++
-title = "Dynamic Edge Profiling with Optimal Counter Placement"
+title = "Internal Function Memoization"
 [extra]
 bio = """
   [Katy](https://github.com/kavoor) is a Senior interested in Compilers and Systems Programming. She enjoys playing soccer and exploring Ithaca in her free time.
@@ -7,7 +7,6 @@ bio = """
 """
 +++
 
-# Internal Function Memoization
 Transforming a subset of recursive programs into their iterative counterparts. 
 
 ## Motivation
