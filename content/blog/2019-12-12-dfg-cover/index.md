@@ -193,22 +193,14 @@ $$\mathcal S_{\mathcal H}(\mathcal G) := \max_{\mathcal C \in \text{Cov}(\mathca
 
 where:
 
-    - $\text{Cov}(\mathcal G, \mathcal H)$ is the set of all valid (partial)
+- $\text{Cov}(\mathcal G, \mathcal H)$ is the set of all valid (partial)
     coverings of basic blocks with at most one stencil, that is, injective graph
      morphisms $\varphi: (\cup \mathcal G) \to \cup \mathcal H$.
-    - that$\mathcal C_G$ is the component of the covering $\mathcal C$ of the
+- that$\mathcal C_G$ is the component of the covering $\mathcal C$ of the
     total covering on the particular basic block graph $G$.
-    - $w_G$ is independent of $\mathcal H$ and proportional to the expected
+- $w_G$ is independent of $\mathcal H$ and proportional to the expected
     number of times $G$ is executed.
-    - $f_H$ is the expected speedup factor from accelerating the component $H$.
-
-<!-- Of course, supposing that $f_H$ was roughly constant, we could trivially achieve the maximum savings by choosing $\mathcal H := \mathcal G$, there are a few problems with this:
-
-1.  $|\mathcal H|$ is large; there are many of these subgraphs, which makes the search process substantially less efficient.
-2. Each $H_i \in \mathcal H$ is also large, making the specialized component more expensive.
-3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
-
-In fact, only the third issue is really important; the first two are roughly heuristics which help solve it. -->
+- $f_H$ is the expected speedup factor from accelerating the component $H$.
 
 To consider this as a general learning problem, imagine that there's some
 underlying distribution $\mathtt{Programs}$ of programs that people write; we
@@ -273,27 +265,64 @@ This can be done in the form of a beam search: we only keep around the $k$ best 
 Though not used in our evaluation, beam search can speed up generating larger subgraphs in the future.
 
 ## Static and dynamic coverage
-NOTE: while the implementation is maybe best put here, we needed to describe the static coverage metric earlier to explain the search process above.
 
-- Annotations on LLVM
-- Embench benchmark suite
-- Use fast stencils for slow/big applications
+To evaluate this project, we primarily look at what coverage (percent of
+instructions matched by some subgraph over total instructions) we can get on a
+given source program. We consider both static and dynamic coverage. In both
+cases, 100% coverage is impossible because we exclude instructions with
+control-flow implications (`phi`, `branch`, `return`) and those that read and
+write from memory (`load` and `store`).
 
-For each benchmark, we generated all allowable three-node subgraphs and chose the two that statically covered the most instructions in that benchmark's DFG.
+### Instrumentation implementation
+
+To generate dynamic coverage information, we instrument our LLVM pass. The pass
+add annotation to each instruction that is matched specifying which stencil it
+was covered by, along with the node-isomorphism. Because basic blocks execute
+atomically (ignoring exceptions), we generate the count of matched and total
+instructions per-block at compile time. We then link a C profiling module with
+state for these dynamic counters. Our pass adds a call to the end of each basic
+block that calls a function to increment the profiling counters by the
+statically-determined amounts. We add a final function call to LLVM's global
+destructors list to write the final profiling values both to standard out and an
+auxiliary file. For convenience, we also save the static coverage the same way.
+
+### Embench evaluation
+
+We chose to use the [Embench][] embedded programming benchmarking suite because
+it represents a small but fairly diverse set of programs that can be easily
+compiled and executed with LLVM tooling.
+
+For each benchmark, we generated all allowable three-node subgraphs and chose
+the two that statically covered the most instructions in that benchmark's DFG.
 The following graphs show static and dynamic code coverage for each benchmark.
-Note that each benchmark's coverage was calculated with the subgraphs generated from that benchmark.
+Note that each benchmark's coverage was calculated with the subgraphs generated
+from that benchmark.
 
 <img src="embench-profiling_best-stencil-combos-per-benchmark_half-1.png" width=100%/>
 <img src="embench-profiling_best-stencil-combos-per-benchmark_half-2.png" width=100%/>
 
-Digging into `nettle-256sha`, the benchmark with the best coverage, we can see that the following two three-node subgraph stencils were chosen out of 66 possible three-node subgraphs:
+As stated above, a coverage of 100% is elusive because of our restrictions on
+what instructions we consider. An interesting component of this profiling data
+is that as expected, static and dynamic coverage correlate, but which is better
+depends on the particular benchmark. From smaller scale experimentation, the
+coverage also varies based on the compiler flags used to generate the original
+LLVM IR. In particular, running at a more aggressive `-03` optimization level
+(rather than the `-01` used here) changes the coverage metrics as loops are
+statically unrolled, introducing more redundancy.
+
+### Embench case study: `nettle-256sha`
+
+Digging into `nettle-256sha`, the benchmark with the best coverage, we can see
+that the following two three-node subgraph stencils were chosen out of 66
+possible three-node subgraphs:
 
 | Stencil | Number of static matches      |
 |:--------|:-----------------------------:|
 |`lshr` &rarr; `or` &larr; `shl`| 208 |
 |`xor` &rarr; `xor` &rarr; `add`| 80  |
 
-Here are a close-up and a closer-up (marked with a heavy black rectangle) view of the DFG, with vertices matched to a stencil shown in bright red.
+Here are a close-up and a closer-up (marked with a heavy black rectangle) view
+of the DFG, with vertices matched to a stencil shown in bright red.
 The latter shows three matches of the first stencil and one of the second.
 
 <img src="nettle-sha256-cropped.png" width=100%/>
