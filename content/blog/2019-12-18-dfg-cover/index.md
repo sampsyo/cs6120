@@ -224,7 +224,7 @@ work to automate the entire optimization.
 ### Implementation strategy
 We first instrument an LLVM module pass that writes out a JSON representation of
 the DFG. Our Python module then explores candidate subgraphs using a combination
-of our heuristics, and the out-of-the-box graph isomorphism tooling.
+of our heuristics and the out-of-the-box graph isomorphism tooling.
 
 We implemented and compared two separate algorithms for finding the stencils
 from static DFGs generated per-basic-block from LLVM programs.
