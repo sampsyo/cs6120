@@ -175,7 +175,8 @@ fixed size polynomial multiplication. For each fixed size polynomial
 multiplication, the code is completely unroll and the user can specify a set of rules
 at each recursion level. The code generator and generated code can be found 
 in this [repository](https://github.com/xu3kev/polymul_gen).  
-Some benchmark of the cycle count is report as follows.
+Some benchmark of the cycle count is report as follows. The testing machine is
+Intel Xeon Gold 6136 CPU @ 3.00GHz.
 
  n   | cycle count
 -----|----
