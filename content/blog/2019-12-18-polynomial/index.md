@@ -74,15 +74,47 @@ generate high performance code, such as on the
 [Halide](https://github.com/halide/Halide), [Loopy](https://github.com/inducer/loopy) and
 [TVM](https://github.com/apache/incubator-tvm). 
 
-## Method 
+### Spiral: FFT code generator
+Spiral is a state of the art FFT code generator. FFT can be expressed as product of sparse matrices. 
+Spiral's framework includes an DSL called SPL language that can be used to 
+described FFT's algorithm transformation.
+Currently there are around 20 break-down rules in Spiral that can be used to
+break down a transformation into a series of transformations. Using different
+rules to decomposed the matrix, we can get different implementation of the FFT
+algorithm. By trying out different combination of rules, it can find the best
+implementation on the target platform. 
+
+## Efficient Polynomial Multiplication Algorithm
+
+Inspired from Spiral, I thought that we could similarly write down the rules to 
+break down polynomial multiplication, and we can use these rules to break down polynomial
+multiplication into smaller ones. As we can see in this section, there are
+different rules we can use to recursively break down the polynomial.
+
 
 ### Schoolbook Multiplication
+Suppose we want to multiply two polynomials $f(x)$ and $g(x)$, where
+  $$
+  f(x) = a_1(x) t + a_0(x)
+  $$
+  $$
+  g(x) = b_1(x) t + b_0(x)
+  $$
 
-This is the straight forward basic method.
+  Then schoolbook method is to compute 
+  $$
+  f(x)g(x) = c_2(x) t^2 + c_1 t + c_0(x)
+  $$
+  where
+  $$ c_2(x) = a_1(x)b_1(x) $$
+  $$ c_1(x) = a_1(x)b_0(x) + a_0(x)b_1(x)$$
+  $$ c_0(x) = a_0(x)b_0(x) $$.
+  It can break down a large polynomial multiplications into 4 smaller polynomial
+  multiplications.
 
 ### Karatsuba
-We break the polynomial $f(x)$ and $g(x)$ to high and low two part.
-
+We can break the polynomial $f(x)$ and $g(x)$ to higher degree part
+and lower degree part as follows:
 
   $$
   f(x) = a_1(x) t + a_0(x)
@@ -106,7 +138,7 @@ We break the polynomial $f(x)$ and $g(x)$ to high and low two part.
   $$
 
   It uses 3 multiplications while the schoolbook method would use 4.
-  The idea can be further generalize to k-way split, and it is called Toom-k.
+  The idea can be further generalized to a k-way split, and it is called Toom-k.
 
 ### Toom-k
 
@@ -121,35 +153,44 @@ g(x) = b_2(x) t^2 + b_1(x) t + b_0(x)
 $$
 
 where $t = x^{\frac{n}{3}}$. 
+Similarly to Karatsuba method, in this case, the number of
+multiplication can be reduced to 5, instead of 9 in the case of schoolbook
+method and asymptotically better than both Karatsuba method and schoolbook
+method. This method can be generalized to $k$-way split.
 
-
-Now, we substitute t with values: $0$, $1$, $-1$, $2$, and $\inf$.
-and we let $f(x)g(x) = c_4(x)t^4 + c_3(x)t^3 + c_2(x) t^2 + c_1(x) t + c_0(x)$
-We get the following table:
-
-|  $t=$    |                                                      |                          |
-|---------|------------------------------------------------------|------------------------------------------------|
-|$ 0 $  |$a_0(x)b_0(x)$                                        |$=c_0(x)$                                        |
-|$ 1 $  |$(a_2(x)+a_1(x)+a_0(x)) (b_2(x)+b_1(x)+b_0(x))$       |$=c_4(x) +c_3(x)+c_2(x)+c_1(x)+c_0(x)  $         |
-|$ -1$  |$(a_2(x)-a_1(x)+a_0(x)) (b_2(x)-b_1(x)+b_0(x))$       |$=c_4(x) -c_3(x)+c_2(x) -c_1(x)+c_0(x)  $        |
-|$ 2 $  |$(4a_2(x)+2a_1(x)+a_0(x)) (4b_2(x)+2b_1(x)+b_0(x))$   |$=16c_4(x) +8c_3(x)+4c_2(x)+2c_1(x)+c_0(x)  $    |
-|$\inf$ |$a_2(x)b_2(x)$                                        |$=c_4(x)$                                        |
-
-The second column is the 5 multiplications we perform, and then we can see that
-we can solve an linear systems to get $c_4,c_3,c_2,c_1,c_0$ and mainly only use
-addition, subtraction and constant multiplication. In this case, the number of
-multiplication is 5, instead of 9 in the case of schoolbook method. We here
-evaluate at 5 points, but this method can be generalized to $k$-way split evaluate
-on $2k-1$ points.
-
-### FFT
-
-As we are dealing with polynomial with small to medium degree, we do not
-consider the FFT method here. Yet it will be interesting to combine this with
-above methods like in this [paper](https://eprint.iacr.org/2018/995).
+### Unable to decouple the algorithm from the order of computation
+However, I am unable to find a way to decouple the above algorithm from the
+order of computation while still be easy to configure and be useful. As a
+result, it makes this project unsuccessful.
 
 ## Implementation
-We aim to generate polynomial multiplication over integer. We adapt from the 
-NTRU crypto system [repository](https://github.com/joostrijneveld/NTRU-KEM).
-We apply karatsuba and Toom-3 recursively and generate assembly code with AVX2
-instructions.
+
+The goal of this project is to build a system whose input is n, the degree of
+the input polynomial, and output a optimized AVX2 code. To make this happen, we
+need to at least take into account different algorithms and different order of
+computation. Without the ability to specify the order of computation easily, I
+do not accomplish the goal I set out to do. Nevertheless, I still implemented
+different algorithm as the break down rules and generate C++ code with AVX2 for
+fixed size polynomial multiplication. For each fixed size polynomial
+multiplication, the code is completely unroll and the user can specify a set of rules
+at each recursion level. The code generator and generated code can be found 
+in this [repository](https://github.com/xu3kev/polymul_gen).  
+Some benchmark of the cycle count is report as follows.
+
+ n   | cycle count
+-----|----
+ 32  |4930
+ 64  |13810
+128  |36760
+256  |142038
+
+### Conclusion
+
+The goal of this project is to incorporate the idea from other code generators
+like Spiral and Halide, in order to generate high performance code for certain
+fixed size polynomial multiplication. However, this attempt is unsuccessful. Although
+polynomial multiplication is also an very structural computation, it is not like FFT
+which is a linear transform, and thus not easy to directly borrow ideas from
+Spiral framework. Despite the futile attempt, I still think it is an interesting
+and important problem worth thinking about.
+
