@@ -299,6 +299,15 @@ from that benchmark.
 <img src="embench-profiling_best-stencil-combos-per-benchmark_half-1.png" width=100%/>
 <img src="embench-profiling_best-stencil-combos-per-benchmark_half-2.png" width=100%/>
 
+As stated above, a coverage of 100% is elusive because of our restrictions on
+what instructions we consider. An interesting component of this profiling data
+is that as expected, static and dynamic coverage correlate, but which is better
+depends on the particular benchmark. From smaller scale experimentation, the
+coverage also varies based on the compiler flags used to generate the original
+LLVM IR. In particular, running at a more aggressive `-03` optimization level
+(rather than the `-01` used here) changes the coverage metrics as loops are
+statically unrolled, introducing more redundancy.
+
 ### Embench case study: `nettle-256sha`
 
 Digging into `nettle-256sha`, the benchmark with the best coverage, we can see
