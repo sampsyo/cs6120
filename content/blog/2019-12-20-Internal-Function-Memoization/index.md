@@ -76,11 +76,15 @@ For each recursive call that we find, we look at the call argument and assert th
 Once we have the information from the recursive program, we need to find a model such that given this information, can generate a iterative program. To determine what output we wanted, we wrote a iterative fibonacci program. Instead of writing a single transformation function $f$(Input Recursive Program) = Output Iterative Program, we break down the programs according to a layout. 
 
 Consider the layout of recursive and iterative fibonacci programs below.
-![](https://i.imgur.com/tXPAkU2.png)
+
+<img src="fiblay.png" style="max-width: 100%" >
+
 Here, we separate the base cases from the recursive calls in order to know which set of instructions will need to be in a loop, and which set will only need to be called once. It is important to note that in the black box, you can have any set of instructions to combine the recursive calls.
 
 Consider the layout of the iterative version of the same program below.
-![](https://i.imgur.com/LksHz3E.png)
+
+<img src="memo.png" style="max-width: 100%" >
+
 Note: We keep the function header the same in order to more easily swap out invocations to fibonacci outside the function with our generated function.
 
 ### New Code Generation
@@ -89,9 +93,6 @@ To minimize changes to the overall code structure, we delete all blocks and inst
 First we add all the base case conditionals. Next, we declare and initialize all the values we need for iteration and the incrementing iterator. After that, we create the while loop and clone in the instructions dependent on the original recursive calls (e.g., the add instruction in fib(n-1) + fib(n-2)). Lastly, we add the return statementment to which the while loop exits. 
 
 Our code for the LLVM pass is available [here](https://github.com/liuhenry4428/llvm-pass-skeleton/tree/noauto).
-<!-- ## Program Requirements and Extensibility -->
-
-<!-- ![](https://i.imgur.com/uCtIcSt.png) -->
 
 <!-- We start of by 
 #### Fibonacci
@@ -137,23 +138,27 @@ A next step to improve correctness testing would be to utilize randomized testin
 To measure performance, we ran derivations of the fibonacci program. We compare the execution time of the recursive program to the execution time of the iterative program.
 
 Here are the results of running the fibonacci benchmark shown above. We see that the recursive benchmark follows an $O(2^n)$ execution time trendline as expected. We also see the iterative benchmark's trendline is very linear. By the data, the iterative trendline only varies between 3 and 3.5 hundredths of milliseconds between inputs 7 and 55. This is quite small. One reason this may be is that increasing n by 1 in the iterative benchmark, likely only increasing the number of add instructions by 1.
-![](https://i.imgur.com/K50lXjb.png)
+<img src="call.png" style="max-width: 100%" >
 
 
 When interpreting these results, we considered the difference between these two programs. 
 Consider the call tree for recursive fibonacci. As $n \longrightarrow \infty$, the number of calls in the call tree grow by $O(2^n)$.
-![](https://i.imgur.com/xaaXLDV.png)
+
+<img src="fib.png" style="max-width: 100%" >
+
 In addition to the redundant computation, the recursive fibonacci program takes up more space, as it is not tail-recursive, and therefore requires many more stack frames for each computation.
 
 Next consider Katinacci, a derivation of fibonacci with the recurrence: $$k(n) = k(n-1) + k(n-3)$$
-![](https://i.imgur.com/3SlmEA4.png)
+
+<img src="kat.png" style="max-width: 100%" >
 
 Katinacci was designed to test recurrences with offsets that were not adjacent. We noticed that Katinacci does not follow the exponential trendline quite as closely as the rest of the benchmarks. One reason this may be, is that it appraoches a base case much more quickly than the other benchmarks. Therefore, Katinacci may be a little bit lower on the graph than the exponential trendline, as shown.
 
 Finally, Henrinacci is a derivation of fibonacci with the recurrence: $$h(n) = h(n-1) + h(n-2) + h(n-3)$$
-![](https://i.imgur.com/N1HuI75.png)
 
-![](https://i.imgur.com/zIFN6b9.png)
+<img src="rec_henri.png" style="max-width: 100%" >
+
+<img src="it_henri.png" style="max-width: 100%" >
 
 We see the recursive cases of these benchmarks follow the exponential trendline, while the iterative benchmarks look much more linear. While some of the graphs for the iterative benchmarks undulate a little, it's important to remember the time difference is quite small, and some of this could be noise from the moderately precise "time" command in bash.
 
