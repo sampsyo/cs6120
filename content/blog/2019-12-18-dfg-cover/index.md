@@ -104,9 +104,10 @@ single trace throughout the program, where operations are repeated each time
 they are executed. In this case, the data flow graph remains acyclic (with
 values only flowing "down"), and loops in the control flow repeat in the
 subgraph for each time the loop is executed. However, dynamic data flow graphs
-only represent a single execution of the program, and may not even cover the
+only represent a single execution of the program and may not even cover the
 full program behavior. They also may be infeasible to generate ahead of time
-for long-running applications.
+for long-running applications, and they tend in practice to be so large
+as to limit analysis to fragments of the full dynamic DFGs.
 
 In addition, DFGs can target either the _intermediate representation_ level,
 with LLVM-level operations, or at the _machine code_ level, with operations
@@ -117,7 +118,7 @@ is not as general across different targets.
 For this project, we use LLVM to target the static DFG at the intermediate
 representation level of abstraction. LLVM translates the program source to
 [_static single assignment (SSA)_][ssa] form, where every variable name can only
-be assigned to once. Thus, each instruction represents one operation. Because
+be assigned to once. Because
 LLVM's in-memory intermediate representation stores pointers to instructions'
 operands, we can build a program's static data flow graph by inserting edges
 to an instruction and from each of its operands. We narrow the project's scope
@@ -155,7 +156,7 @@ trying to match multiple stencils, our heuristic tries to find the largest
 stencils first. We describe this search process in more detail in our
 implementation section.
 
-We started our testing by hand-picked chains of instructions found in our
+We started our testing by hand-picking chains of instructions found in our
 benchmarking code. From the [Embench][] embedded programming benchmarking suite,
 we used `matmult-int.c` to chose a few common chains of operations:
 
@@ -182,7 +183,7 @@ of finding the common DFG stencils to accelerate.
 ### Formal description of the task
 
 In this context of ignoring control flow and considering data flows within basic
-block, we can look at the problem purely graph-theoretically. For a single trace
+blocks, we can look at the problem purely graph-theoretically. For a single trace
 through the program, the data flow graph $G$ is acyclic, and we would like to
 cover as much of it as possible with subgraphs corresponding to the stencils
 that we accelerate. Statically, we do not know what the final data flow graph
@@ -339,7 +340,7 @@ The latter shows three matches of the first stencil and one of the second.
 We also explored generating stencils from one benchmark and testing how well they generalized to the other benchmarks.
 The three-node stencils generated and chosen from `minver`:
 1. `fcmp` &rarr; `select` &larr; `fsub`
-2. `getelementptr` &larr; `pointer` &rarr; `getelementptr`)
+2. `getelementptr` &larr; `pointer` &rarr; `getelementptr`
 
 were found at least once in all but five of the other Embench benchmarks, producing dynamic coverage ratios between 0 and 7.68% (with an average of 1.45% &plusmn; 2.35).
 
