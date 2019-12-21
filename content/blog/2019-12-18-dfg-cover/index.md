@@ -205,22 +205,32 @@ where:
     number of times $G$ is executed.
 - $f_H$ is the expected speedup factor from accelerating the component $H$.
 
-To consider this as a general learning problem, imagine that there's some
-underlying distribution $\mathtt{Programs}$ of programs that people write; we
-can now cast our work as a solution to the optimization problem of finding:
+
+Now supposing that $f_H$ was roughly constant, we could achieve the maximum savings by trivially choosing $\mathcal H := \mathcal G$. There are a few problems with this:
+1.  $|\mathcal H|$ is large; there are many of these sub-graphs, which makes the search process substantially less efficient.
+2. Each $H_i \in \mathcal H$ is also large, making the specialized component more expensive.
+3. There is now a dependency between $\mathcal H$ and $\mathcal G$, and so we need to know our program in order to build the components we use to accelerate.
+
+The third issue is the most important; to a first approximation, the first two are heuristics which help solve it.
+This intuition suggests an alternative framing as a statistical learning problem: you're given some training data in the form of pieces of program DFGs ($\mathcal G$), and the objective is to find a collection of snippets $\mathcal H$ that not only covers this program, but also can be re-configured to accelerate other programs in the future.
+We might imagine that there's some
+underlying distribution $\mathtt{Programs}$ of programs that people write, in which case
+the work we present here can be seen as a solution to the following optimization problem:
 
 $$ \arg\max_{\mathcal H}\left( \mathop{\mathbb E}\limits_{\mathcal G\sim \texttt{Programs}}~ \mathcal S_{\mathcal H}(\mathcal G) - \text{Cost}(\mathcal H) \right)$$
 
 where $\text{Cost}(\mathcal H)$ is the additional cost incurred by choosing to
 accelerate the subgraph stencil $\mathcal H$, which is higher for larger
-subgraphs. In this learning analogy, finding common DFGs for a particular
-collection of programs is training data.
+subgraphs. Note that in this presentation, we can no longer choose $\mathcal H$ based on $\mathcal G$,
+which resolves issue (3); issues (1) and (2) are partially incorporated into the $\text{Cost}(\mathcal H)$
+term,
+effectively regularizing the search space by artificially imposing a cost for larger or more sub-graphs. Just like $\ell^1$ regularization, we are explicitly adding a preference for short descriptions, to avoid overfitting to a single program (like setting $\mathcal H:= \mathcal G$ as discussed above).
 
-Rather than solve this optimization problem in closed form, we optimize for
-the heuristics of finding candidate subgraphs based on specifying (1) the size
-of each subgraph, and (2) the number of subgraphs we can choose. These two
-heuristics are effectively regularization knobs that could be used in future
-work to automate the entire optimization.
+Rather than solve this optimization problem in closed form, we explicitly look for
+a given number of subgraphs (issue 1) and of a pre-selected size (issue 2). In doing so,
+we are using the regularization knobs to explicitly avoid over-fitting to the program at hand,
+which is necessary because [our held-out evaluation (below)](#stencil-generalization) shows
+that generalizing to unseen programs is considerably more difficult.
 
 ### Implementation strategy
 We first instrument an LLVM module pass that writes out a JSON representation of
