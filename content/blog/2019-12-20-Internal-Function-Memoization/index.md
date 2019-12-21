@@ -105,25 +105,6 @@ Consider the call tree for recursive fibonacci.
 
 How extensible are these ideas? Consider the arbitrary one-dimensional programming problem below. Without specific knowledge of which recursive calls are required and their offsets from $n$, we must conservatively estimate a next call could use any previously computed elements.
 
-<!-- TODO these parts are not done yet -->
-<!-- 
-![](https://i.imgur.com/kereQH9.png)
-Can we do better? Suppose our aribrary problem had recursive calls (n-a) and (n-b) for $a,b \in  \mathbb{N}$. The elements we need to compute 
-
-
-Does the same logic apply for optimizing dynamic programming problems in two dimensions? Consider an aribitray two-dimenional DP problem. The diagram below illustrates the potentially needed information from previous calls. Can we do better?
-
-![](https://i.imgur.com/AeLbQPo.png)
-
-Let's look at the recursive calls. Suppose our aribrary problem had recursive calls (n-a) and (n-b) for $a,b \in  \mathbb{N}$. 
-
-
-For example, fibonacci can be implemented recursively, iteratively, or memoized-ly. Recursive fib takes exponential time while memoized fib takes linear time. 
-
-Our goal is to change recursive programs to dynamically programmed (i.e., iterative) ones if such a conversion is possible
-
-Currently, there is external function memoization which involves saving the return of a function in a hash table indexed by the function arguments. This is not good enough because this involves memory access and hashing. We aim to do better.   -->
-
 ## Evaluation
 ### Correctness
 In order to evaluate correctness, we look at the programs generated for the set of valid benchmarks. During construction, we separate the domain by case into separate functions, each with a different result. These _separate functions_ are the base cases, each with their own code that exeutes and returns within the case. The \{domain $\setminus$ the domain of the base cases\} is input into the loop in the body of our function. Determining program equivalence can be broken down into equivalence of these separate functions.
