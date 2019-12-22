@@ -40,6 +40,9 @@ for Halide functions.
 (Note that Halide has an autoscheduler built-in: see [this paper][autosched2019]
 for more information.)
 
+Our autoscheduler is implemented in Python 2.7 and can be found at
+[this repository](https://github.com/rolph-recto/cs6120-autoscheduler).
+
 [autosched2019]: https://halide-lang.org/papers/autoscheduler2019.html
 
 ## Design Overview
