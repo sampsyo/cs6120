@@ -55,9 +55,9 @@ In order to search for schedule, we represent them as *schedule trees*,
 wherein the ancestry relationships between nodes represent ordering information.
 Schedule trees have the following kinds of nodes:
 
-- *Root nodes* represent the top of the schedule tree.
+- **Root nodes** represent the top of the schedule tree.
 
-- *Loop nodes* represent the traversal of how the function is computed
+- **Loop nodes** represent the traversal of how the function is computed
   along a given dimension.
   Loop nodes are associated with a function and a variable (dimension).
   Since functions are assumed two-dimensional, by default functions have
@@ -65,9 +65,9 @@ Schedule trees have the following kinds of nodes:
   Loop nodes also contain information such as whether the loop is run
   sequentially, run in parallel, or vectorized.
 
-- *Storage nodes* represent storage for intermediate results to be used later.
+- **Storage nodes** represent storage for intermediate results to be used later.
 
-- *Compute nodes* are the leaves of the schedule tree, and they represent
+- **Compute nodes** are the leaves of the schedule tree, and they represent
   computation being performed.
   Compute nodes can have other compute nodes as children to represent
   functions that are inlined instead of loaded from intermediate storage.
@@ -109,27 +109,28 @@ The schedule tree on the left represents the nested loop on the right.
 
 ### Schedule Transformers
 
-We can define transformers over schedule trees.
+We define transformers over schedule trees.
+We use these to traverse the search space of schedules.
 
-**Split** - split a function's variable into two. For example, we can split
+- **Split** - split a function's variable into two. For example, we can split
   a function's `x` variable into `x_inner` and `x_outer`.
   Combined with *reorder*, *split* can represent schedules that *tile*
   computations.
 
-**Change Loop Type** - change how the loop will be traversed; by default the
+- **Change Loop Type** - change how the loop will be traversed; by default the
   loop type is `sequential`, but it could also be `parallel`, `unrolled`,
   or `vectorized`.
   For simplicity our implementation only supports `sequential` and `vectorized`.
 
-**Reorder** - switch loop nodes for the same function.
+- **Reorder** - switch loop nodes for the same function.
 
-**Hoist / lower compute** - change the granularity in which intermediate
+- **Hoist / lower compute** - change the granularity in which intermediate
   results are computed.
 
-**Hoist / lower storage** - change the granularity in which storage for
+- **Hoist / lower storage** - change the granularity in which storage for
   intermediate results is allocated.
 
-**Inline / deinline** - inline functions into callers (don't store their results
+- **Inline / deinline** - inline functions into callers (don't store their results
   in intermediate storage) or deinline function out of callers.
   Intuitively, inlining functions trades off smaller memory usage for
   redundant computations, while de-inlining trades off higher memory usage
@@ -168,7 +169,11 @@ For the output function, we assume that the extent is given by a call to the
 `realize` function.
 For called functions that are not inlined, the extent is the dimensions of
 the function that will be stored as intermediate results.
-Because intermediate storage will be reused 
+Because storage will be reused depending on the granularity
+with which intermediate results are stored, the extent of called functions
+does not necessarily coincide with the total extent over which the function
+will be computed (e.g., the called function might be computed on
+a per-scanline basis).
 
 For example, consider the simple pipeline below that has one producer (`g`)
 and one consumer (`f`):
@@ -212,6 +217,8 @@ The *cost* of the schedule is then a weighted sum of these data points.
 
 By default our implementation groups execution features into the following:
 
+* *mem* - amount of memory allocated
+
 * *loads* - number of intermediate results loaded from storage
 
 * *stores* - number of intermediate results stored
@@ -226,10 +233,8 @@ features with respect to the schedule's cost (see **Evaluation** below).
 
 Now that we can give a notion of cost to schedules, we can search for efficient
 schedules.
-We use an (asexual) genetic algorithm to perform this search, with
-the default schedule as the initial population and the schedule transformers
-described above as mutation operators.
-We perform roulette selection to select population members for reproduction.
+We use beam search as our search algorithm, with the default schedule as
+the starting node.
 We describe the concrete parameters used for search below in **Evaluation**.
 
 
@@ -255,14 +260,97 @@ bx.reorder(y, x);
 
 ## Evaluation
 
+We evaluate the performance of the autoscheduler over three benchmarks.
+We do this by comparing the performance of the autoscheduled run
+(OPT configuration) vs. the run with the default schedule (DEF configuration).
+We measure runtime and memory usage using `gprof`.
 
-We set the weights for execution features as follows:
+For the experiments, we set the weights for execution features as follows:
 
 Group       | Weight 
 ------------|---------------
-loads       | 1.5
-stores      | 1.5
+mem         | 0.1
+loads       | 0.5
+stores      | 0.5
 arith ops   | 1.0
-math ops    | 3.0
+math ops    | 10.0
+
+We run beam search with a depth of 10 and beam width of 300.
+
+For all benchmarks, the output functions are realized across an extent of
+2048x2048.
+The results below are averaged across three runs.
+
+### Benchmark 1
+
+```
+g(x,y) = sqrt(cos(x) + sin(y));
+f(x,y) = g(x + 1,y) + g(x,y) + g(x + 1,y + 1) + g(x,y + 1);
+```
+
+Function     | Runtime (ms) | Peak heap usage (bytes)
+-------------|--------------|------------------------
+f (DEF)      | 87.72        | 0
+f (OPT)      | 13.48        | 0
+g (DEF)      | 0.00         | 0
+g (OPT)      | 172.70       | 32874
+
+
+### Benchmark 2
+
+```
+blur_x(x,y) = input(x - 1,y) + input(x,y) + input(x + 1,y) / 3;
+blur_y(x,y) = blur_x(x - 1,y) + blur_x(x,y) + blur_x(x + 1,y) / 3;
+```
+
+Function     | Runtime (ms) | Peak heap usage (bytes)
+-------------|--------------|------------------------
+blur_y (DEF) | 12.70        | 0
+blur_y (OPT) | 19.02        | 0
+blur_x (DEF) | 0.00         | 0
+blur_x (OPT) | 16.16        | 16400
+
+
+### Benchmark 3
+
+```
+f(x,y) = x + y;
+```
+
+
+Function     | Runtime (ms) | Peak heap usage (bytes)
+-------------|--------------|------------------------
+f (DEF)      | 11.85        | 0
+f (OPT)      | 12.18        | 0
+
+
+### Discussion
+
+Note that for the DEF configuration, only the output functions have runtimes
+associated with them since all called functions are inlined.
+
+The autoscheduler performs rather poorly relative to the default schedule.
+While it successfully makes space-runtime tradeoffs (e.g. `f` in Benchmark 1),
+allowing the computation of a function to run much faster by saving
+intermediate results, it runs more slowly and uses more memory than the
+default schedule across all benchmarks.
+
+We believe the poor performance of the autoscheduler has two main causes:
+
+* **Wrong feature weights.** The feature weights for the cost model
+  are chosen by fiat; if these were learned instead given a set of
+  training data, then more the weights can probably better capture the
+  execution profile of schedules.
+
+* **Missing execution features**. There are some execution features not
+  captured in the current cost model that probably has a significant effect
+  on performance.
+  Most importantly, the cost model does not reason about locality.
+  Because of this, the autoscheduler sometimes generates schedules with
+  loop order that has poor locality
+  (e.g. a function being traversed in column-major order instead
+  of row-major order).
+  It is not clear how to quantify locality in the cost model, but it is an
+  obvious extension to the cost model.
 
 
