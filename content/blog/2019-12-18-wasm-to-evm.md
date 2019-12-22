@@ -1,4 +1,4 @@
-+++ title = "Wasm-to-EVM binary translator" extra.author = "Hongbo Zhang" extra.author_link = "https://www.cs.cornell.edu/~hongbo/" extra.bio = """Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architectures. He is also okay archer shooting recurve bow.""" +++
++++ title = "Wasm-to-EVM binary translator" extra.author = "Hongbo Zhang" extra.author_link = "https://www.cs.cornell.edu/~hongbo/" extra.bio = """Hongbo Zhang is a first-year PhD student in computer science. He is interested in systems and computer architectures. He is also an okay archer shooting recurve bow.""" +++
 
 Ethereum has developed a stack-based architecture for executing their own Turing-complete instruction set called Ethereum Virtual Machine (EVM). The EVM currently used for running decentralized applications on Ethereum blockchain. 
 
