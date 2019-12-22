@@ -10,11 +10,14 @@ name = "Edwin Peguero"
 My current research explores programming abstractions for an experimental, parallel architecture (codenamed HammerBlade).
 The language feature prototyped in this project aims to simplify *SPMD* programming, wherein all nodes apply the same kernel over different pieces of input data.
 
+# Cross-cutting Concerns in SPMD Programming
 The need to distribute inputs over cores in SPMD programs introduces problems that are orthogonal to the kernel, but that nonetheless affect implementation:
-- Data format of inputs/outputs: 
-  Each tensor $A$ must be encoded in a particular **format**, $f$, that maps the **logical index** of each tensor element $A<x><y>$ to **physical index** $f(x,y)$, s.t., $A<x><y> = A'[f(x,y)]$.
-  Low-level languages like C, the target language in the current implementation, require this dimensionality reduction to maximize performance contributors such as data locality and bulk memory allocations/movements.
+- **Data format of inputs/outputs**: 
+  Each tensor $A$ must be encoded in a particular **format**, $f_A$, that maps the **logical index** of each tensor element $A\langle x \rangle \langle y \rangle$ to **physical index** $f_A(x,y)$ into array $A'$, s.t., $A\langle x \rangle \langle y \rangle = A'[f_A(x,y)]$.
+
+  Low-level languages like C, require this dimensionality reduction to maximize performance contributors such as data locality and bulk memory allocations/movements.
   Different formatting choices lead to *different implementations* of the *same kernel*.
+
   We constrain our prototype to use the **row-major order** format, which sequentially lays out rows of $A$ via $f_A(x,y) = x * stride + y$, where $stride$ indicates the number of elements per row of $A'$.
   Our results generalize to similar formats (e.g., *col-major order*), and we leave exploration of more exotic formats to future work.
 
@@ -28,11 +31,12 @@ This project implements a formal separation of **logical indexing** from **data 
 
 # Stencil Algorithm Using Logical Indexing
 The proposed syntax for logical indexing uses angle brackets `A<x><y>` to distinguish from traditional array indexing `A[x][y]`.
-We demonstrate this language feature by means of a 2-D stencil algorithm that computes 2-D tensor $B<x><y>$ from tensor $A$ as the average of $A<x><y>$ and its neighbors. 
-At the boundaries of $B$ (i.e., $B<0><y>$, $B<n-1><y>$, $B<x><0>$, $B<x><m-1>$), the algorithm simply assigns the input directly.
+We demonstrate this language feature by means of a 2-D stencil algorithm that computes 2-D tensor $B\langle x \rangle \langle y \rangle$ from tensor $A$ as the average of $A\langle x \rangle \langle y \rangle$ and its neighbors. 
+
+At the boundaries of $B$ (i.e., $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$), the algorithm simply assigns the input directly.
 In SPMD style, each core transforms a block of data, denoted $A_tile$ into a block of output, denoted $B_tile$.
 The pseudo-code below uses logical indexing to capture this behavior; noting that a more efficient implementation is possible but unnecessary for purposes:
-``
+```python
 for (x : B_tile.row_ix in B_tile.row_range) {
   for(y : B_tile.col_ix in B_tile.col_range)  {
     if(0 < x as B.row_ix < B.max_row-1 &&
@@ -44,16 +48,19 @@ for (x : B_tile.row_ix in B_tile.row_range) {
     }
   }
 }
-``
+```
 Both loops iterate over zero-based logical row and column ranges, `B_tile.row_range` and `B_tile.col_range`, with a branch detecting points at a logical boundary where behavior differs from inner points.
 
-To determine that an index from sub-tensor $B_tile$ resides on the logical boundary of parent tensor $B$, we perform **index casting** from `B_tile.row_ix` to `B.row_ix` and analogously for columns.
+To determine that an index from sub-tensor $B_{tile}$ resides on the logical boundary of parent tensor $B$, we perform **index casting** from `B_tile.row_ix` to `B.row_ix` and analogously for columns.
 
 
 # Specifying the Data Format
 By expressing the stencil algorithm in terms of logical indexing, we disentangle it from implementation details of data formatting and caching.
+
 We can specify these details by decorating inputs and outputs in the kernel signature as follows:
-``stencil_kernel(input[blocked cached, row-major] A : float[n][m], output[non-cached, row-major] B: float[n][m])``
+```
+stencil_kernel(input[blocked cached, row-major] A : float[n][m], output[non-cached, row-major] B: float[n][m])
+```
 This signature specifies that both `A` and `B` are formatted in row-major order, that a block of `A` will be cached by each core, and that cores will write directly to `B` in global memory.
 Such a specification suggests to the compiler particular implementations for data formats $f_A, f_B$.
 
