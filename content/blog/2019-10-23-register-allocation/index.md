@@ -129,7 +129,6 @@ The following tables provide the memory access count in the form of `loads/store
 | alloc1  | 6/5       | 0/0            |
 | alloc2  | 20/17     | 4/3            |
 | alloc3  | 20/16     | 8/4            |
-|---------|-----------|----------------|
 | loop    | 53/24     | 21/2           |
 | matmul  | 2048/1216 | 1008/126       |
 | dotprod | 257/145   | 169/78         |
