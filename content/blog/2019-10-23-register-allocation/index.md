@@ -1,8 +1,9 @@
+> cat index.md                                                Sat Dec 21 17:53:42 2019
 +++
 title = "Register Allocation for Bril"
 extra.author = "Hongbo Zhang, Sachille Atapattu, Wen-Ding Li"
 extra.bio = """
-  Hongbo Zhang is a first PhD student in computer science. He is interested in systems and computer architecture. He is also an okay archer shooting recurve bow.
+  Hongbo Zhang is a first-year Ph.D. student in computer science. He is interested in systems and computer architecture. He is also an okay archer shooting recurve bow.
   [Wen-Ding Li](https://www.cs.cornell.edu/~wdli/) is a Ph.D. student at Cornell interested in high-performance code generation.
   Scachille Atapattu is a Ph.D. student at Cornell University.
 """
@@ -22,7 +23,7 @@ In this project, we implemented register allocation via graph coloring.
 Our project can be found in [this repository](https://github.com/xu3kev/bril/regalloc).
 
 ## Method
-Our approach for the register allocation can be divided into three main parts. 
+Our approach for register allocation can be divided into three main parts. 
 First, we perform a liveness analysis and then build a graph. 
 Second, we solve the approximate k graph coloring problem to obtain a mapping from each variable to the corresponding register. 
 At last, we generate Bril code based on the mapping.
@@ -36,13 +37,13 @@ With the liveness ranges of all local variables,
 we can know which variables are "alive" at the same time. 
 If two variables have overlapped liveness ranges, 
 it means that they cannot be allocated to the same register. 
-Clearly, it is not always possible to find a register allocation for variables.
+It is not always possible to find a register allocation for variables.
 For example, it is not possible to allocate 2 registers to 3 variables with overlapped liveness ranges. 
 Our goal is to have a register assignment so that 
 we can allocate as many variables on registers as possible.
 
 If we create a graph such that each node represents a local variable.
-There is an edge between two nodes if the two variables have overlapped the liveness range. 
+There is an edge between two nodes if the two variables have overlapped the liveness ranges. 
 Now solving register allocation is equivalent to finding the largest $k$-colorable subgraph,
 which does not have a polynomial-time algorithm to solve it.
 
@@ -72,6 +73,25 @@ If any data transferring between registers and stack is needed, it could be done
 ## Evaluation Method
 We evaluate our implementation by counting load and store counts during program execution.
 
+### Counting the Number of Memory Access
+We modified the Bril interpreter `brili` to count the number of implicit memory access operations for those data not in registers. As discussed in the code generation section, we introduce a special rule, that is, variable names prefix with `r` are registers. Read and write operations on those registers do not require memory access. However, read and write on other variables all are counted as memory access. With this rule, we can do register allocation and evaluate on Bril without language breaking changes. For example:
+
+- `a: int = const 2;` has 1 memory access operations (store a)
+- `a: int = id b;` has 2 memory access operations (load b, store a)
+- `c:int = add a b;` has 3 memory access operations (load a, load b, store c)
+- `br given a b;` has 1 memory access operation (load given)
+- `print <N args>;` has N memory access operations, N being the number of arguments (N loads)
+
+As for accessing register values (the case where special variables represented registers will not be counted as a memory access):
+
+- `r1: int = const 2;` has 0 memory access operations
+- `a: int = id r2;` has 1 memory access operations (store a)
+- `c:int = add a r2;` has 2 memory access operations (load a, store c)
+
+We compare the total number of memory access operations for the same program with and without register allocation. 
+
+It was identified during the evaluation that this implementation of counting doesn't support the `ret` instruction. We hope to fix this issue shortly. We have tested this interpreter version with some handwritten register allocated code.
+
 ### Benchmarks
 We wrote some common kernels and some handwritten programs that can be mapped with a specific number of registers to test our register allocation performance. The following table provides a list of these benchmarks.
 
@@ -92,30 +112,7 @@ We wrote some common kernels and some handwritten programs that can be mapped wi
 The last 5 benchmarks are from this [repository](https://github.com/xu3kev/bril/tree/master/benchmark).
 
 ### Baseline
-In order to evaluate our register allocation, we assume that there is no register holding data across different instruction as the baseline so that each instruction loads all operands from the memory and stores the result back to memory after execution. This is a conservative approach and provides an upper bound to the number of loads and stores that can occur.
-
-We also implemented a naïve register allocation technique, which assigns registers in a round-robin manner. This technique doesn't guarantee any efficiencies, but merely provides a mechanism to map to registers. This implementation presently does not support branch operations and therefore is only used for a subset of benchmarks as a sanity check.
-
-To gain more insight, we also manually allocated registers by graph coloring for some tests. This provides a reasonable ceiling to potential performance.
-
-### Counting the Number of Memory Access
-We modified the Bril interpreter `brili` to count the number of implicit memory access operations for those data not in registers. As discussed in the code generation section, we introduce a special rule, that is, variable names prefix with `r` are registers. Read and write operations on those registers do not require memory access. However, read and write on other variables all are counted as memory access. With this rule, we can do register allocation and evaluate on Bril without language breaking changes. For example:
-
-- `a: int = const 2;` has 1 memory access operations (store a)
-- `a: int = id b;` has 2 memory access operations (load b, store a)
-- `c:int = add a b;` has 3 memory access operations (load a, load b, store c)
-- `br given a b;` has 1 memory access operation (load given)
-- `print <N args>;` has N memory access operations, N being the number of arguments (N loads)
-
-As for accessing register values (the case where special variables represented registers will not be counted as a memory access):
-
-- `r1: int = const 2;` has 0 memory access operations
-- `a: int = id r2;` has 1 memory access operations (store a)
-- `c:int = add a r2;` has 2 memory access operations (load a, store c)
-
-We compare the total number of memory access operations for the same program with and without register allocation. 
-
-It was identified during the evaluation that this implementation of counting doesn't support the `ret` instruction. We hope to fix this issue shortly. We have tested this interpreter version with some handwritten register allocated code.
+To evaluate our register allocation, we assume that there is no register holding data across different instruction as the baseline so that each instruction loads all operands from the memory and stores the result back to memory after execution. This is a conservative approach and provides an upper bound to the number of loads and stores that can occur, so register allocation should have less or the same number of load/store operations.
 
 ### Simulated load and store counts
 
@@ -125,30 +122,21 @@ We simulated the baseline and graph coloring implementation using Brili to test 
 
 The following tables provide the memory access count in the form of `loads/stores`. These tests are run assuming for 4 registers.
 
-Baseline and graph coloring tests are an average from multiple simulation runs. This turned out to be useful for the graph coloring technique, as the register assignment can change.
+| Test    | baseline  | graph coloring |
+|---------|-----------|----------------|
+| br      | 3/4       | 0/0            |
+| if      | 14/11     | 1/1            |
+| alloc1  | 6/5       | 0/0            |
+| alloc2  | 20/17     | 4/3            |
+| alloc3  | 20/16     | 8/4            |
+|---------|-----------|----------------|
+| loop    | 53/24     | 21/2           |
+| matmul  | 2048/1216 | 1008/126       |
+| dotprod | 257/145   | 169/78         |
+| fib     | 103/56    | 32/12          |
+| polymul | 929/509   | 869/505        |
 
-| Test   | baseline | naïve | graph coloring | handtune |
-|--------|----------|-------|----------------|----------|
-| br     | 3/4      |       | 0/0            | 0/0      |
-| if     | 14/11    |       | 1/1            | 1/1      |
-| alloc1 | 6/5      | 0/0   | 0/0            | 0/0      |
-| alloc2 | 20/17    | 15/26 | 4/3            | 0/0      |
-| alloc3 | 20/16    | 17/27 | 8/4            | 2/2      |
-
-This first table evaluates several handcrafted tests to test whether the graph coloring implementation can handle all instructions and where does it lie in terms of performance in space from inefficient baseline to optimized manual hand-tuning. As described in the implementation section, the implementation does not achieve optimal coloring but manages to reduce memory accesses compared to other techniques.
-
-| Benchmark| baseline  | naïve     | graph coloring |
-|---------|-----------|-----------|----------------|
-| loop    | 53/24     |           | 21/2           |
-| matmul  | 2048/1216 | 1280/1980 | 1008/126       |
-| dotprod | 257/145   | 128/205   | 169/78         |
-| fib     | 103/56    |           | 32/12          |
-| fact    | 33/14     |           | 3/0.3           |
-| polymul | 929/509   | 711/767   | 869/505        |
-
-These benchmark tests stress test the implementations and provide interesting results. As seen from the tables, the graph coloring technique manages to consistently have comparable or fewer accesses than the other two techniques. It also seems to compromise some load operations to avoid store operations.
-
-The figure illustrates how effective graph coloring is by the percentage reduction in memory accesses. Apart from polymul it shows a significant reduction in loads and stores. A possible reason for poor performance in polymul might be its high register usage. We intend to analyze this further by analyzing how the percentage reduction in accesses increases with more registers.
+The figure illustrates how effective graph coloring is by the percentage reduction in memory accesses. Apart from polymul it shows a significant reduction in loads and stores. A possible reason for poor performance in polymul might be its high variable usage. 
 <br>
 <img src="./reg_red.png" style="width: 80%">
 <br>
@@ -161,6 +149,5 @@ The figure illustrates how effective graph coloring is by the percentage reducti
 | alloc2 | 20/17    | 14/11      | 10/8        | 4/3         | 0/0         |
 | alloc3 | 20/16    | 15/11      | 12/8        | 8/4         | 0/0         |
 
-We have also tested the graph coloring implementation by sweeping the number of registers. As expected. memory accesses go down as the number of registers increase. 
-
+We have also tested the graph coloring implementation by sweeping the number of registers. As expected, memory accesses go down as the number of registers increase. 
 
