@@ -26,7 +26,8 @@ the identity function serves as a proof for that statement because it inhabits t
 we can write proofs and be assured that they are free of mistakes (or at least moreso than hand-written proofs).
 
 The Calculus of Constructions provides a quite simple type system that allows us to write proofs through programming.
-Our goal is to implement CoC and show the ability to write some proofs.
+Our goal is to implement CoC and show the ability to write some proofs. My implementation can be found on
+[GitHub](https://github.com/chrisroman/coc).
 
 ## Design
 Some of the design decisions about how to write CoC programs came from an [existing implementation](https://github.com/lambda-11235/ttyped)
@@ -193,7 +194,7 @@ the examples in Coquand and Huet's paper were very hard to follow, like the `int
 it more difficult to get an intuitive understanding of how CoC worked.
 
 ## Further Work
-With more time, I would have liked to implement a general framework for creating inductive type
+With more time, I would have liked to implement a general framework for creating inductive types
 in Coc explained by [this paper]((https://www.cs.cmu.edu/~fp/papers/mfps89.pdf)). With my implementation,
 it is possible to write the encodings for inductive types like natural numbers and pairs, but we must
 do the encoding by hand. One could also consider giving the language the style of an interactive theorem
