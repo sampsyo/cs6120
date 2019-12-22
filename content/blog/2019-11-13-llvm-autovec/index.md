@@ -188,4 +188,26 @@ to write into memory the next 4 values of `%i.0` at once.
 
 ## Evaluation
 
+We evaluated our autovectorizer across a range of small benchmarks containing
+loops.
+We constructed our benchmarks so that all loops can be vectorized according
+to the rather stringent vectorization conditions, which disallows indexing
+arrays with anything other than the inductive variable or loop-invariant data.
+The results below are measured across three runs.
+Note that DEF is the configuration without any optimizations (`-O0`),
+while OPT is the configuration with only our autovectorizer enabled.
+
+Benchmark   | DEF runtime (ms) | OPT runtime (ms) 
+------------|------------------|------------------
+test1       | 26.00            | 13.00            
+test2       | 25.00            | 22.67            
+test3       | 19.00            | 15.33            
+test4       | 25.33            | 15.00            
+test5       | 10.00            | 11.00
+
+Across the benchmarks, either OPT outperforms DEF handily
+(as in `test1` and `test4`), or it runs about the same time
+as its DEF counterpart.
+This is the behavior we expected.
+
 
