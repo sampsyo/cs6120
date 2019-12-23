@@ -333,7 +333,7 @@ Note that for the DEF configuration, only the output functions have runtimes
 associated with them since all called functions are inlined.
 
 The autoscheduler performs rather poorly relative to the default schedule.
-While it successfully makes space-runtime tradeoffs (e.g. `f` in Benchmark 1),
+While it successfully makes space-runtime tradeoffs (e.g., `f` in Benchmark 1),
 allowing the computation of a function to run much faster by saving
 intermediate results, it runs more slowly and uses more memory than the
 default schedule across all benchmarks.
@@ -351,9 +351,8 @@ We believe the poor performance of the autoscheduler has two main causes:
   Most importantly, the cost model does not reason about locality.
   Because of this, the autoscheduler sometimes generates schedules with
   loop order that has poor locality
-  (e.g. a function being traversed in column-major order instead
+  (e.g., a function being traversed in column-major order instead
   of row-major order).
   It is not clear how to quantify locality in the cost model, but it is an
   obvious extension to the cost model.
-
 
