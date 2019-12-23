@@ -315,7 +315,7 @@ Function     | Runtime (ms) | Peak heap usage (bytes)
 -------------|--------------|------------------------
 f (DEF)      | 87.72        | 0
 f (OPT)      | 13.48        | 0
-g (DEF)      | 0.00         | 0
+g (DEF)      | N/A          | 0
 g (OPT)      | 172.70       | 32874
 
 
@@ -330,7 +330,7 @@ Function     | Runtime (ms) | Peak heap usage (bytes)
 -------------|--------------|------------------------
 blur_y (DEF) | 12.70        | 0
 blur_y (OPT) | 19.02        | 0
-blur_x (DEF) | 0.00         | 0
+blur_x (DEF) | N/A          | 0
 blur_x (OPT) | 16.16        | 16400
 
 
