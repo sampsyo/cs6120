@@ -115,8 +115,25 @@ The schedule tree on the left represents the nested loop on the right.
 We define transformers over schedule trees.
 We use these to traverse the search space of schedules.
 
-- **Split** - split a function's variable into two. For example, we can split
-  a function's `x` variable into `x_inner` and `x_outer`.
+- **Split** - split a function's variable into two.
+  For example, we can split a function's `x` variable into `x_inner`
+  and `x_outer`.
+  This allows *tiered* traversal of a function's extent along one dimension.
+  For example, splitting the `x` variable changes this loop:
+
+  ```
+  for x in [1..16]:
+    a[x] = ...
+  ```
+
+  into:
+
+  ```
+  for x_outer in [1..4]:
+    for x_inner in [1..4]:
+      a[(x_outer*4)+x_inner] = ...
+  ```
+
   Combined with *reorder*, *split* can represent schedules that *tile*
   computations.
 
@@ -194,6 +211,9 @@ rectangular (as opposed to, say, polytopes in the polyhedral model),
 there is a simple method for doing this:
 we only need to check the maximum and minimum points of the caller functions
 and check the arguments to the callee.
+Note that we also assume that function arguments are drawn from a grammar
+of "simple" arithmetic expressions consisting only of `+`, `-`, `*`, `/`,
+variables and constants.
 
 In the example above, the extent of `f` is defined by the box bounded by
 `(1,1)` and `(512, 512)`.
