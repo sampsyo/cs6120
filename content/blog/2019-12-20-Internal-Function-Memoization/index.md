@@ -112,10 +112,10 @@ In order to evaluate correctness, we look at the programs generated for the set 
 However, function equivalence is an undecidable problem, as that would solve the [halting problem](https://en.wikipedia.org/wiki/Halting_problem). Therefore, to approximately validate our generated programs are correct, we test the bases cases, and a few arguments for the iterative case. 
 We randomly generating a few integers between 2 and 35 as 1 is a base case, and 35 is the largest fibonacci number that still fits in a 32-bit integer.
 
-A next step to improve correctness testing would be to utilize randomized testing, but instead, determine the space of valid inputs from the input program itself.
+A next step to improve correctness checking would be to utilize randomized testing, but instead, determine the space of valid inputs from the input program itself.
 
 ### Performance
-To measure performance, we ran derivations of the fibonacci program. We compare the execution time of the recursive program to the execution time of the iterative program.
+To measure performance, we ran derivatives of the fibonacci program. We compare the execution time of the recursive program to the execution time of the iterative program.
 
 Here are the results of running the fibonacci benchmark shown above. We see that the recursive benchmark follows an $O(2^n)$ execution time trendline as expected. We also see the iterative benchmark's trendline is very linear. By the data, the iterative trendline only varies between 3 and 3.5 hundredths of milliseconds between inputs 7 and 55. This is quite small. One reason this may be is that increasing n by 1 in the iterative benchmark, likely only increasing the number of add instructions by 1.
 <img src="call.png" style="max-width: 100%" >
@@ -128,13 +128,13 @@ Consider the call tree for recursive fibonacci. As $n \longrightarrow \infty$, t
 
 In addition to the redundant computation, the recursive fibonacci program takes up more space, as it is not tail-recursive, and therefore requires many more stack frames for each computation.
 
-Next consider Katinacci, a derivation of fibonacci with the recurrence: $$k(n) = k(n-1) + k(n-3)$$
+Next consider Katinacci, a derivative of fibonacci, we created, with the recurrence: $$k(n) = k(n-1) + k(n-3)$$
 
 <img src="kat.png" style="max-width: 100%" >
 
-Katinacci was designed to test recurrences with offsets that were not adjacent. We noticed that Katinacci does not follow the exponential trendline quite as closely as the rest of the benchmarks. One reason this may be, is that it appraoches a base case much more quickly than the other benchmarks. Therefore, Katinacci may be a little bit lower on the graph than the exponential trendline, as shown.
+Katinacci was designed to test recurrences with offsets that were not adjacent. We noticed that Katinacci does not follow the exponential trendline quite as closely as the rest of the benchmarks. One reason this may be, is that it approaches a base case much more quickly than the other benchmarks. Therefore, Katinacci may be a little bit lower on the graph than the exponential trendline, as shown.
 
-Finally, Henrinacci is a derivation of fibonacci with the recurrence: $$h(n) = h(n-1) + h(n-2) + h(n-3)$$
+Finally, Henrinacci, another derivative of fibonacci we created, with the recurrence: $$h(n) = h(n-1) + h(n-2) + h(n-3)$$
 
 <img src="rec_henri.png" style="max-width: 100%" >
 
@@ -150,7 +150,7 @@ Our results show that we have successfully reduced the original functions' time 
 We were not able to satisfy our _V2_ goals as they were too technically challenging. 
 
 ## Next Steps
-From Katinacci, we can see that it is not sufficient to save the same amount of values as the number of recursive calls as there are only 2 recursive calls and we need to save 3 values, thereby invalidating our first hypothesis. We now know that we need to store as many values as the furthest-back recursive call (i.e., the k(n-3) in Katinacci)
+From Katinacci, we can see that it is not sufficient to save the same amount of values as the number of recursive calls as there are only 2 recursive calls and we need to save 3 values, thereby invalidating our first hypothesis. We now know that we need to store as many values as the furthest-back recursive call (i.e., the k(n-3) in Katinacci).
 
 Furthermore, we are currently using an iterator that always increments by 1. This is not optimal when the recursion contains large holes as we do not need _all_ the values from the bases cases until $n$, such as $$f(n) = f(n-13) + f(n-17)$$
 Instead, we need to somehow calculate the minimum number of computations. This can be done by "hopping backwards" from the desired $n$, where the hops are the offsets (in this case, 13 and 17). This then finds the minimum number of values, and also invalidates our second hypothesis that iteration needs to happy by increments of 1.
