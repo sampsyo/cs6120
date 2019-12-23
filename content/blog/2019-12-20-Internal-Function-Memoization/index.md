@@ -35,7 +35,6 @@ Before digging in to any code, we spent time thinking deeply about recursive DP 
 
 We decided to implement this at the LLVM-IR level so that our optimization would be source-language-independent.
 
-It is common knowledge that there are [hard problems](https://en.wikipedia.org/wiki/List_of_unsolved_problems_in_mathematics) in the field of mathematics. Therefore, we avoid mathematics and endeavor on an ad-hoc approach. This also results in a more reader-friendly blogpost. 
 
 We came up with several hypothesis that we then used to develop a model for _V0_.
 
