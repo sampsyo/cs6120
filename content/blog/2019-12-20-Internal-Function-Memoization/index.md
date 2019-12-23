@@ -7,7 +7,7 @@ bio = """
 """
 +++
 
-Transforming a subset of recursive programs into their iterative counterparts. 
+The goal of this project is to transform a subset of recursive programs into their iterative counterparts. 
 
 ## Motivation
 Execution time of a program is important. As a metric, execution time is relevant not just for saving loads of money from unnecessary compute, but is also relevant in terms of functionality. At the limit, writing faster programs can enable us to solve larger problems that require massive computational work in a tangible amount of time.
@@ -22,7 +22,7 @@ In order to scope our project to tangible action items, we separated our idea in
 
 *V0.* Transform a recursive fibonacci program into an iterative program
 
-*V1.* Transform a recursive program with an arbitrary combination of elements on return (ie fibonacci was f(n-1) + f(n-2))
+*V1.* Transform a recursive program with an arbitrary combination of elements on return (e.g., fibonacci was f(n-1) + f(n-2))
 
 *V2.* Expand scope of input set of valid programs to two-dimensional DP programs
 
@@ -72,7 +72,7 @@ We keep a running list of all recursive call instructions. For all instructions 
 For each recursive call that we find, we look at the call argument and assert that it is a constant offset from the original function argument---i.e., of the form $(n-c)$ where $n$ is the original function argument and $c$ is a constant. We remember that $c$. 
 
 ### Creating a Model for Iterative Programs to use Collected Information
-Once we have the information from the recursive program, we need to find a model such that given this information, can generate a iterative program. To determine what output we wanted, we wrote a iterative fibonacci program. Instead of writing a single transformation function $f$(Input Recursive Program) = Output Iterative Program, we break down the programs according to a layout. 
+Once we have the information from the recursive program, we need to find a model such that given this information, can generate an iterative program. To determine what output we wanted, we wrote an iterative fibonacci program. Instead of writing a single transformation function $f$(Input Recursive Program) = Output Iterative Program, we break down the programs according to a layout. 
 
 Consider the layout of recursive and iterative fibonacci programs below.
 
