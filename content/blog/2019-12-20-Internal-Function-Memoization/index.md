@@ -22,9 +22,9 @@ Computing the _n_th Fibonacci number can be done in an recursive fashion with an
 ## Approach
 In order to scope our project to tangible action items, we separated our idea into smaller milestones.
 
-*V0.* Transform a recursive fibonacci program into an iterative program
+*V0.* Transform a recursive Fibonacci program into an iterative program
 
-*V1.* Transform a recursive program with an arbitrary combination of elements on return (e.g., fibonacci was f(n-1) + f(n-2))
+*V1.* Transform a recursive program with an arbitrary combination of elements on return (e.g., Fibonacci was f(n-1) + f(n-2))
 
 *V2.* Expand scope of input set of valid programs to two-dimensional DP programs
 
@@ -43,7 +43,7 @@ When considering iterative Fibonacci, there are two main parts: the base cases a
 Given a recursive function, we found that this set of information was sufficient for generating a iterative version of that function.
 - Base Cases
 - Loop induction variable and its bounds
-- How these recursive calls are combined (i.e., fibonacci adds the results from the f(n-1) and f(n-2) together)
+- How these recursive calls are combined (i.e., Fibonacci adds the results from the f(n-1) and f(n-2) together)
 - The offset from the induction variable in the recursive calls (i.e., (n-1), (n-3), etc.)
 
 In the case of Fibonacci, we demonstrate how an iterative versin of the program can be created using only the information above. We use C code here for better readability, but our implementation generates this in LLVM IR.
@@ -55,8 +55,8 @@ int fibbonacci(int n) {
   if(n==1) return 1;
 
   // i1 and i2 store offset results
-  // i1 is fibonacci(i-1), an offset of 1
-  // i2 is fibonacci(i-2), an offset of 2
+  // i1 is Fibonacci(i-1), an offset of 1
+  // i2 is Fibonacci(i-2), an offset of 2
   int i1 = 0;
   int i2 = 1;
 
@@ -98,7 +98,7 @@ For each recursive call that we find, we look at the call argument and assert th
 ### Creating a Model for Iterative Programs to use Collected Information
 Once we have the information from the recursive program, we need to find a model such that given this information, can generate an iterative program. Instead of writing a single transformation function $LLVM_Pass$(Input Recursive Program) = Output Iterative Program, we break down the programs according to a layout. 
 
-Consider the layout of recursive and iterative fibonacci programs below.
+Consider the layout of recursive and iterative Fibonacci programs below.
 
 <img src="fiblay.png" style="max-width: 100%" >
 
@@ -108,7 +108,7 @@ Consider the layout of the iterative version of the same program below.
 
 <img src="memo.png" style="max-width: 100%" >
 
-Note: We keep the function header the same in order to more easily swap out invocations to fibonacci outside the function with our generated function.
+Note: We keep the function header the same in order to more easily swap out invocations to Fibonacci outside the function with our generated function.
 
 ### New Code Generation
 To minimize changes to the overall code structure, we delete all blocks and instructions inside the original recursive function and insert our new instructions.
@@ -119,34 +119,35 @@ Our code for the LLVM pass is available [here](https://github.com/liuhenry4428/l
 
 ## Evaluation
 ### Correctness
-In order to evaluate correctness, we look at the programs generated for the set of valid benchmarks. During construction, we separate the domain by case into separate functions, each with a different result. These _separate functions_ are the base cases, each with their own code that executes and returns within the case. The \{domain $\setminus$ the domain of the base cases\} is input into the loop in the body of our function. Determining program equivalence can be broken down into equivalence of these separate functions.
+In order to evaluate correctness, we look at the programs generated for a set of benchmarks that we created to test the generalizability of our pass.
 
-However, function equivalence is an undecidable problem, as that would solve the [halting problem](https://en.wikipedia.org/wiki/Halting_problem). Therefore, to approximately validate our generated programs are correct, we test the bases cases, and a few arguments for the iterative case. 
-We randomly generating a few integers between 2 and 35 as 1 is a base case, and 35 is the largest fibonacci number that still fits in a 32-bit integer.
+Function equivalence is an undecidable problem, as that would solve the [halting problem](https://en.wikipedia.org/wiki/Halting_problem). Therefore, to approximately validate our generated programs are correct, we test the bases cases, and a few arguments for the iterative case. 
+
+We randomly generating a few integers between 2 and 47 , and 47 is the largest Fibonacci number that still fits in a 32-bit integer.
 
 A next step to improve correctness checking would be to utilize randomized testing, but instead, determine the space of valid inputs from the input program itself.
 
 ### Performance
-To measure performance, we ran derivatives of the fibonacci program. We compare the execution time of the recursive program to the execution time of the iterative program.
+To measure performance, we ran derivatives of the Fibonacci program. We compare the execution time of the recursive program to the execution time of the iterative program.
 
-Here are the results of running the fibonacci benchmark shown above. We see that the recursive benchmark follows an $O(2^n)$ execution time trendline as expected. We also see the iterative benchmark's trendline is very linear. By the data, the iterative trendline only varies between 3 and 3.5 hundredths of milliseconds between inputs 7 and 55. This is quite small. One reason this may be is that increasing n by 1 in the iterative benchmark, likely only increasing the number of add instructions by 1.
+Here are the results of running the Fibonacci benchmark shown above. We see that the recursive benchmark follows an $O(2^n)$ execution time trendline as expected. We also see the iterative benchmark's trendline is very linear. By the data, the iterative trendline only varies between 3 and 3.5 hundredths of milliseconds between inputs 7 and 55. This is quite small. One reason this may be is that increasing n by 1 in the iterative benchmark, likely only increasing the number of add instructions by 1.
 <img src="call.png" style="max-width: 100%" >
 
 
 When interpreting these results, we considered the difference between these two programs. 
-Consider the call tree for recursive fibonacci. As $n \longrightarrow \infty$, the number of calls in the call tree grow by $O(2^n)$.
+Consider the call tree for recursive Fibonacci. As $n \longrightarrow \infty$, the number of calls in the call tree grow by $O(2^n)$.
 
 <img src="fib.png" style="max-width: 100%" >
 
-In addition to the redundant computation, the recursive fibonacci program takes up more space, as it is not tail-recursive, and therefore requires many more stack frames for each computation.
+In addition to the redundant computation, the recursive Fibonacci program takes up more space, as it is not tail-recursive, and therefore requires many more stack frames for each computation.
 
-Next consider Katinacci, a derivative of fibonacci, we created, with the recurrence: $$k(n) = k(n-1) + k(n-3)$$
+Next consider Katinacci, a derivative of Fibonacci, we created, with the recurrence: $$k(n) = k(n-1) + k(n-3)$$
 
 <img src="kat.png" style="max-width: 100%" >
 
 Katinacci was designed to test recurrences with offsets that were not adjacent. We noticed that Katinacci does not follow the exponential trendline quite as closely as the rest of the benchmarks. One reason this may be, is that it approaches a base case much more quickly than the other benchmarks. Therefore, Katinacci may be a little bit lower on the graph than the exponential trendline, as shown.
 
-Finally, Henrinacci, another derivative of fibonacci we created, with the recurrence: $$h(n) = h(n-1) + h(n-2) + h(n-3)$$
+Finally, Henrinacci, another derivative of Fibonacci we created, with the recurrence: $$h(n) = h(n-1) + h(n-2) + h(n-3)$$
 
 <img src="rec_henri.png" style="max-width: 100%" >
 
@@ -155,17 +156,17 @@ Finally, Henrinacci, another derivative of fibonacci we created, with the recurr
 We see the recursive cases of these benchmarks follow the exponential trendline, while the iterative benchmarks look much more linear. While some of the graphs for the iterative benchmarks undulate a little, it's important to remember the time difference is quite small, and some of this could be noise from the moderately precise "time" command in bash.
 
 ### Discussion
-We have hit our _V0_ goal of generating an iterative fibonacci from a recursive one. We have also satisfied our _V1_ goal of generalizing our implementation to recursive functions with any number of recursive calls with arbitrary constant offsets. 
+We have hit our _V0_ goal of generating an iterative Fibonacci from a recursive one. We have also satisfied our _V1_ goal of generalizing our implementation to recursive functions with any number of recursive calls with arbitrary constant offsets. 
 
 Our results show that we have successfully reduced the original functions' time complexities from exponential to linear.
 
-We were not able to satisfy our _V2_ goals as they were too technically challenging. 
+We were not able to satisfy our _V2_ goals as they were too technically challenging. They would require analyzing a program and then procedurally generating a multidimentional array structure to iterate through, which we found difficult to do in LLVM IR. 
 
 ## Next Steps
 We are currently using an iterator that always increments by 1. This is not optimal when the recursion contains large holes as we do not need _all_ the values from the bases cases until $n$, such as $$f(n) = f(n-13) + f(n-17)$$
 Instead, we need to somehow calculate the minimum number of computations. This can be done by "hopping backwards" from the desired $n$, where the hops are the offsets (in this case, 13 and 17). This then finds the minimum number of values, and also means that the induction variable needs to increase by values other than 1.
 
-We have also only been considering functions with only 1 argument. The same principles should apply when extrapolating this algorithm to functions with multiple arguments. We found this much too technically challenging to implement. 
+We have also only been considering functions with only 1 argument. The same principles should apply when extrapolating this algorithm to functions with multiple arguments. 
 
 There is also no reason this pass needs to work only with integers. However, implementing this pass for functions with something like string arguments becomes difficult as strings require memory accesses which introduces pointer analysis and much complexity.
 
