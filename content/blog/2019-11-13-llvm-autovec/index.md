@@ -29,6 +29,8 @@ LLVM natively supports vector instructions already, so the pass was implemented
 with relatively few lines of code by taking advantage of LLVM's existing
 infrastructure.
 
+The repository can be found [here](https://github.com/rolph-recto/cs6120-autovec).
+
 
 ## Design Overview
 
@@ -56,9 +58,9 @@ We deem a loop vectorizable if it satisfies the following criteria:
   Vectorization assumes that adjacent loop iterations can be parallelized,
   which is not true if the iterations have dependencies on each other.
   To check that cross-iteration dependencies do not exist, 
-  our vectorizer checks that all array access are indexed either by the
+  our vectorizer checks that all array accesses are indexed either by the
   inductive variable or loop-invariant data.
-  It also checks that operands for all operations in the loop, either are
+  It also checks that operands for all operations in the loop either are
   (1) vectorizable, (2) loop-invariant, or (3) the induction variable.
   Branches in the loop are checked to see if their condition, if they have one,
   is loop-invariant.
@@ -70,7 +72,7 @@ the types of instructions into their vectorized counterparts.
 This is possible because vector types in LLVM are first-class and are treated
 like other types like `int`.
 
-For `store`s, `load`s, and operation instructions (e.g. `add`, `mul`, `icmp`),
+For `store`s, `load`s, and operation instructions (e.g., `add`, `mul`, `icmp`),
 we replace the operands with their vectorized counterparts.
 For constant operands, these are vectorized in place; otherwise, we create
 a vectorized version of the operand immediately after its definition site
@@ -101,7 +103,7 @@ and not just a single datum.
 
 Finally, once all instructions are vectorized, we find the unique instruction
 that increments the inductive variable and change its stride to match the
-vector size
+vector size.
 (Given our vectorization check, we can assume the inductive variable is a
 `PHINode` with two incoming definitions: a constant `0` and an addition
 instruction that increments the inductive variable.
