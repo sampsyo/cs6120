@@ -29,21 +29,21 @@ Experimentally, path profiling is shown to only have a 31% profiling overhead co
 ## The Algorithm for DAGs
 
 We start by assuming profiling over a directed acyclic graph (DAG), but will later explore extending to loops.
-Any DAG will have at least node with no incoming edges, called entry nodes, and at least node with no outgoing edges, called exit nodes.
+Any DAG will have at least one node with no incoming edges, called entry nodes, and at least one node with no outgoing edges, called exit nodes.
 We extend any CFG with a single entry and single exit node, thus making each unique.
 The steps of the path profiling algorithm are as follows:
-1. Assign a minimal number of integer values to edges such that any calculated edge sum is unique.
+1. Assign a minimal number of integer values to edges such that the sum of integers along any path is unique.
 2. Using a spanning tree, create and select instrumentation for computing the increment for each edge.
-3. Collect the dynamic runtime profile
+3. Collect the dynamic runtime profile.
 4. Derive the executed paths based on the results and selected instrumentation.
 
 ### Assigning Edge Integer Values
 
-The first step to path profiling is to assign edge integers such that any taken path in the DAG results in a unique integer value.
+The first step to path profiling is to assign edge integers such that the sum of edge integers along any path in the DAG results in a unique integer value.
 There are many such assignments, but the minimal positive set can be given by reasoning about the number of paths each edge can take to reach the exit node.
 Intuitively, calculating a unique integer based on paths works since each split creates a new path from the unique entry node and results in a distinct integer.
 Formally, the value for each edge from _v_ to _w_ is constructed to be the sum of the number of paths from all previously examined nodes extending from _v_.
-This result, for example, in the integer values for our sample CFG:
+This result, for example, is the integer values for our sample CFG:
 
 <img src="integers.png" alt="drawing" width="300"/>
 
@@ -53,11 +53,11 @@ The unique paths given by these integers is not yet efficient counting instrumen
 Counting instrumentation is based on incrementing a specific register whenever a given edge is passed; such writes can be expensive, so we select edges to minimize the number of writes while still producing correct results.
 To construct counting efficiently, we must first identify the most taken edges (based on the edge weights computed earlier) and avoid incrementing when using those edges.
 Specifically, we compute the maximum spanning tree with respect to edge weights.
-All updates then only reason about those edges in the _chord_, the set of edges not in the maximum spanning tree.
+All updates then only reason about those edges in the set of _chords_, the edges not in the maximum spanning tree.
 
-Instrumentation for the graph (choosing which register each path updates) is then added for each edge in the chord based on the integers computed earlier.
+Instrumentation for the graph (the code for updating register associated with the path) is then added for each edge in the chord based on the integers computed earlier.
 Since each path of integers must be unique, the register selected by a given chord edge is simply given as the minimum integer increment since the last chord edge for any path.
-This algorithm gives the instrumentation for the integers calculated on our sample CFG as follows, where edges with squares are part of the chord:
+This algorithm gives the instrumentation for the integers calculated on our sample CFG as follows, where edges with squares are chords:
 
 <img src="instrumentation.png" alt="drawing" width="300"/>
 
@@ -81,7 +81,7 @@ This process can be summarized visually with this excellent diagram:
 
 ## Evaluation
 
-To evaluate how realistic this approach can be, the authors built the PP tool and compared it with an existing path profiling tool (QPT2).
+To evaluate how realistic this approach can be, the authors built the PP tool and compared it with an existing edge profiling tool (QPT2).
 Several optimizations were applied to PP to promote a realistic comparison, such as mapping local registers through the Executable Editing Library (EEL) and implementing hash tables to handle a large number of paths.
 All experiments were run on the SPEC95 benchmark, which consists of a standard set of C and Fortran programs.
 
