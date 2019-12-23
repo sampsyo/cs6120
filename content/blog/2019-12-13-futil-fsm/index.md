@@ -61,9 +61,9 @@ A typical Futil program is shown below:
 ```
 
 The first arrow is pointing to the structure and the second arrow is pointing to the control.
-The structure is an unordered list of two kinds of simple statements: `(new-std b0 (std_reg 32 0))` stands for instantiation of the library component `b0` with bitwidth parameter `32` and value parameter of `0`, and `(-> (@ a0 out) (@ gt0 left))` represents wiring the `out` port of component `a0` with the `left` port of component `gt0`. The control part specifies which components are *active* with `enable` keyword, and the execution logic with `par`, `seq`,`if` and`while` keywords. Think of activating a component like a function call. When a component is *active* it is allowed to *run* and produce valid outputs.
+The structure is an unordered list of two kinds of simple statements: `(new-std b0 (std_reg 32 0))` stands for instantiation of the library component `b0` with bitwidth parameter `32` and value parameter of `0`, and `(-> (@ a0 out) (@ gt0 left))` represents wiring the `out` port of component `a0` with the `left` port of component `gt0`. The control part specifies which components are *active* with `enable` keyword, and the execution logic with `par`, `seq`,`if`, and `while` keywords. Think of activating a component like a function call. When a component is *active* it is allowed to *run* and produce valid outputs.
 
-In this project, we are interested in changing all the control logic to finite state machines (FSMs) and then generate simulatable Verilog program based on both FSMs and the structures.
+In this project, we are interested in changing all the control logic to finite state machines (FSMs) and then generating simulatable Verilog program based on both FSMs and the structures.
 
 
 
@@ -81,44 +81,48 @@ Futil is the backend for Dahlia. The Futil semantics are designed to allow for e
 
 In Futil semantics, `enable` keyword is used to determine whether a component is active. It is the easiest way of translating a program into hardware. However, this implicitly assumes that the signal on a wire is not valid or readable until we `enable` a component. We therefore require any *data* wire to have one extra bit to specify whether the signal is readable.
 
+Another way to think about this is that the type of a data wire is `Option<T>`; the wire is either `Some(t)` or `None`, depending on whether the module is enabled.
+In order to encode this in Verilog, we add an extra bit to every data wire to encode the tag of the variant.
+
 ### *MUX*
 
-A component can be used more than once in Futil. For instance, if we reuse variable `a0`, then the register need to choose the input from const0 and const2. This introduces a multiplexer (MUX).
+A component can be used more than once in Futil. For instance, in the above example,
+`const0` and `const2` are both connected to the input of `a0`. In Futil, we deal with this by only enabling
+`a0` and `const0`, or `a0` and `const2` at the same time (as seen in the example below).
+However, in Verilog the register needs to choose the input from `const0` and `const2`.
+This introduces a multiplexer (MUX).
 
 ```futil
 (enable a0 const0)
 (enable a0 const2)
 ```
 
-At different time step, read signals tells which wire to the MUX is readable. Therefore, read wires serve as **sel** signals for MUX.
+At different time steps, read signals tells which wire to the MUX is readable. Therefore, we can use the read wires (the variant tag bit), to serve as **sel** signals for MUX.
+In other words, this MUX can be thought of as a function `List<Option<T>> -> T` that chooses a `Some(t)` from a list of options. We assume that only wire feeding into a MUX will be valid at a time.
 
 ### *FSM*
 
-In Futil, there are control logics like `if`, `while` and etc. This can be translated into FSM in Verilog implementation, which is the main goal of this project. However, before getting to that, we created intermediate FSM expressions in Futil. An FSM component has:
+In Futil, there are control constructs like `if`, `while` etc. These can be translated into FSM in Verilog implementation, which is the main goal of this project. However, before getting to that, we created intermediate FSM expressions in Futil. An FSM component has:
 
 - input and output ports,
-- connection of wires between its own ports and other components's port,
-- internal control logic that determine the output signals.
+- connection of wires between its own ports and other components' port,
+- internal control logic that determines the output signals.
 
-The internal control logic of a FSM component can be divided into several states that determines the output signals. A state transfers to another according to some input signals. In general, all FSM components are composed of one **Start** state, some **Intermediate** states and **End** state.
+The internal control logic of a FSM component can be divided into several states that determine the output signals. A state transfers to another according to some input signals. In general, all FSM components are composed of one **Start** state, some **Intermediate** states and one **End** state.
 
-Consider the syntax `(enable A B)` . The **Start** state transfers to the **Intermediate** when the *valid* signal is high. At the **Intermediate** state, the FSM sends out valid signals to subcomponents `A` and `B`, and waits for *ready* signals from them to be high. Once both of the *ready* signals are high, the FSM transfers to **End** state and outputs *ready* signals to notify upper components. It transfers back to **Start** state when *valid* signal is low, indicating the upper components have received the *ready* signal and finished execution so it is safe for the FSM to go back to the **Start** state. The same design logic applies to all FSMs. The only difference happens in intermediate state(s): `seq` FSM has one or more intermediate states and one intermediate only transfers to next state when receiving high *ready* signal from the previous state; `if` FSM send *valid* to the module that execute the comparison and receive both *ready* and *condition* signals and determine which state it should transfer to with the *condition* signal; `while` FSM transfers to loop **Body** state when *condition* signal is high and goes to **End** State when condition is low.
+Consider the syntax `(enable A B)`. The **Start** state transfers to the **Intermediate** state when the *valid* signal is high. At the **Intermediate** state, the FSM sends out valid signals to subcomponents `A` and `B`, and waits for *ready* signals from them to be high. Once both of the *ready* signals are high, the FSM transfers to **End** state and outputs *ready* signals to notify any components waiting for this component to finish. It transfers back to **Start** state when the *valid* signal is low, indicating the upper components have received the *ready* signal and finished execution so it is safe for the FSM to go back to the **Start** state. The same design logic applies to all FSMs. The only difference happens in intermediate state(s): the `seq` FSM has one or more intermediate states and one intermediate state only transfers to next state when receiving a high *ready* signal from the previous state; the `if` FSM sends *valid* to the module that executes the comparison and receives both *ready* and *condition* signals which determine the state it should transfer to; the `while` FSM transfers to loop **Body** state when the *condition* signal is high and goes to **End** State when the condition is low.
 
 <img src="fsm.png" style="width: 100%">
-
-
-
-
 
 ## Implementation
 
 <img src="flow.png" style="width: 100%">
 
-At implementation, to realize what we describe in design overview, we gradually added intermediate passes.
+To realize what we describe in design overview, we gradually added intermediate passes.
 
 ### First Intermediate Pass
 
-There is a *Visitor* trait in this pass, which performs a recursive walk of abstract syntax tree (AST), so each individual pass can perform modification to the AST with function calls including `add_structure`, `add_input_port`, `remove_structure`, and etc provided in struct `Changes`.
+There is a *Visitor* trait in this pass, which performs a recursive walk of abstract syntax tree (AST), so each individual pass can perform modification to the AST with function calls including `add_structure`, `add_input_port`, `remove_structure`, etc.
 
 #### Read Wires
 
@@ -140,11 +144,11 @@ Based on the design logic of FSMs, we can specify the inputs and outputs of each
 
 ### Interfacing
 
-This pass creates input port *clock* for all components and *valid* for the top level component. Notice in Futil we actually does not have the notion of logical time step. However, to make things easier for RTL translation, we created these ports.
+This pass creates input port *clock* for all components and *valid* for the top level component. Notice in Futil, we do not have an explicit notion of time steps. However, to make things easier for RTL translation, we created these ports.
 
 #### MUX Signatures
 
-Similar to creating FSM signatures, we need to specify the inputs and outputs of each MUX component and the wires connecting each ports to its subcomponents. To do this, we create a Hashmap indexing with destination ports and store a vector of source ports according to the wiring of the component. For each destination port, if there are more than one source port connecting to it, we create an MUX.
+Similar to creating FSM signatures, we need to specify the inputs and outputs of each MUX component and the wires connecting each ports to its subcomponents. To do this, we create a Hashmap indexing with destination ports and store a vector of source ports according to the wiring of the component. For each destination port, if there is more than one source port connecting to it, we create a MUX.
 
 Notice there is a difference between control signal and data signals though. Control signals do not have corresponding *read* wires and no matter which control signal is high, the output is high. On the other hand, data signals always have corresponding *read* wires to explicitly specify if the data on the *data* wire is readable. The data signal should be chosen according to its *read* wires. Therefore at implementation, we go through wires twice. The first time we go through it we record *read* wires going to the same destination components. The second time we go through it we actually create the large MUX with both *data* and corresponding *read* wires.
 
@@ -154,15 +158,13 @@ The last step is removing old wires connecting the same destination port with mo
 
 #### FSM Implementation
 
-This pass creates true FSM representation in Futil AST.  Each `FSM` has a *name* field, a *states* Hashmap storing states and indexing of the state, a *start index* corresponding to the first state being created and a *last index* pointing to the last state being created. Each `State` is composed of a vector of *outputs*, where each *output* is specified with output *value* and *port name* and a vector for *transitions*, where each transition is a tuple of *next state index* and *inputs* of *value* and *port name*, so that the transition happens when the input has certain *value*. Finally, there is a default state for each state that is an optional field, telling which state it should transit to when no *transition* condition is met.
+This pass creates true FSM representations in Futil AST.  Each `FSM` has a *name* field, a *states* Hashmap storing states and indexing of the state, a *start index* corresponding to the first state being created and a *last index* pointing to the last state being created. Each `State` is composed of a vector of *outputs*, where each *output* is specified with output *value* and *port name* and a vector for *transitions*, where each transition is a tuple of *next state index* and *inputs* of *value* and *port name*, so that the transition happens when the input has certain *value*. Finally, there is a default state for each state that is an optional field, telling which state it should transition to when no *transition* condition is met.
 
 We provide abstract methods `new(name: &str) -> StateIndex`, `new_state() -> StateIndex`, `get_state(idx: StateIndex) -> &mut State` for `FSM` and `push_output(output: ValuedPort)`and `add_transition(transition: Edge) ` for `State` to generate actual FSM inner logic according to the graph we made in design review.
 
-
-
 ###  FSM to RTL generation
 
-After generating an FSM, we need to translate the entire structure of inputs, outputs and states to synthesizable hardware using Verilog. This is done by breaking down a verilog file into distinct components.
+After generating an FSM, we need to translate the entire structure of inputs, outputs and states to synthesizable hardware using Verilog. This is done by breaking down a Verilog file into distinct components.
 
 1. Module Declaration: Here we define the name of the module along with the inputs and outputs for it.
 2. Wire/reg definitions: These are internal signals that are used within the module.
@@ -170,19 +172,17 @@ After generating an FSM, we need to translate the entire structure of inputs, ou
 
 To expand on how all the 3 `always` blocks are generated we discuss them below:
 
-1. State transition: This is pretty standard. It actually changes the state at a clock edge. Since this is a generic block it can be create without any inputs.
+1. State transition: This is pretty standard. It actually changes the state at a clock edge. Since this is a generic block it can be created without any inputs.
 2. Next state logic: This block has a bunch of cases for all the states. For each state in the FSM struct, based on the input transitions to it, we have `if else`  statements for next state logic.
-3. Output logic: This block contains output signals for each state represented by cases, similar to the previous block. In addition to having verilog statements for all the relevant outputs in the state, we also assign the rest of the outputs of the FSM to be zero for now. This is done to avoid inferred latches, which can occur if all outputs are not assigned in each state even though they don't change.
+3. Output logic: This block contains output signals for each state represented by cases, similar to the previous block. In addition to having Verilog statements for all the relevant outputs in the state, we also assign the rest of the outputs of the FSM to be zero for now. This is done to avoid inferred latches, which can occur if all outputs are not assigned in each state even though they don't change.
 
-We used `RcDoc` for formatting the Verilog files.
-
-
+We used a [Wadler-style](http://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf) printing api provided by the [pretty](https://docs.rs/pretty/0.7.1/pretty/) rust crate to format the Verilog files.
 
 ## Hardest Parts
 
 1. Futil is implemented with [Rust](<https://www.rust-lang.org/>), so we spent some time to get familiar with the language.
-2. The design of FSM representation changes multiple times. Because the state should be store as pointer and then modified when we add transition and outputs to it. Rust will force the user use reference counter, which we did not realize at first. Also, even with reference counting, our implementation will result in endless loop when printed out. We therefore rely on Hashmap in the end.
-3. Futil *read* signals are not common in Verilog coding convention. We had two models in our minds, the Verilog valid/response model and our Futil valid/read model. We messed things up because of the existing of the two models and spent huge amount of time discussing which one should be the most ideal design.
+2. The design of the FSM representation changed multiple times. Because the state should be stored as pointer and then modified when we add transitions and outputs to it. Rust will force the user to use reference counting, which we did not realize at first. Also, even with reference counting, we would have to create reference cycles which would prevent the FSMs from being freed. We therefore used on HashMaps in the end.
+3. Futil *read* signals are not common in Verilog coding convention. We had two models in our minds: the Verilog valid/response model and our Futil valid/read model. We messed things up because of the existence of the two models and spent a huge amount of time discussing which one should be the most ideal design.
 
 ## Evaluation
 We evaluated our compiler by simulating the generated Verilog. We generated Futil programs with a simple backend we wrote for the Dahlia compiler. The Verilog simulation was donew with an open source tool called [Verilator](https://www.veripool.org/projects/verilator/wiki/Intro) which turns Verilog into a `C++` object that you can link to, manipulate
@@ -233,7 +233,7 @@ Below is an almost equivalent Futil program. We've drawn an arrow to the differe
          (enable z0 const4)))))
 ```
 
-This simple program results in a whopping 969 lines of verilog code (which I will not paste here).
+This simple program results in a whopping 969 lines of Verilog code (which I will not paste here).
 We simulated the code in our simple test bench and were able to generate the following signal diagram:
 
 <img src="if_trace.png" width="200%" height="400%">
@@ -282,7 +282,7 @@ and the equivalent Futil code:
        (enable i0 add0 const2)))))
 ```
 
-Running the resulting 509 lines of verilog code gives us the following trace:
+Running the resulting 509 lines of Verilog code gives us the following trace:
 
 <img src="while_trace.png" width="200%">
 
