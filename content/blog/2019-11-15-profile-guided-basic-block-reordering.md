@@ -65,7 +65,7 @@ In this project, we used the [built-in profile generation via the instrumentatio
 
 ## Block Reordering Algorithm
 
-We implemented one variant of algo2 in Profile Guided Code Positioning as one LLVM pass. The frequencies of each branch in conditional jump and switch instrucitons are used as edges weight. We also experimented with marking the weight of unconditional branches to be infinity.
+We implemented one variant of algo2 in Profile Guided Code Positioning as one LLVM pass. The frequencies of each branch in conditional jump and switch instructions are used as edge weights. We also experimented with marking the weight of unconditional branches to be infinity.
 
 The algorithm first identifies frequently executed "chains", i.e., paths of basic blocks. It starts by setting all basic blocks as individual chains. Then the edges are iterated from highest weight to lowest. For each edge, if it is connecting tail and head of two chains, the chains will be merged. We implemented this by maintaining the start of chains and the next block relationships in hashmaps. Then we iterate through all the block terminators to collect edges with weights and rank them by weights. Finally we merge the chains if and only if the edge is jumping from the end of a chain to the start of a chain.
 
@@ -75,7 +75,7 @@ After the chains are identified, they are arranged sequentially based on weights
 ## Evaluation
 
 ### Initial Testing
-Initially we tested our pass on simple programs with only one conditional branch, where one branch is more frequently executed than the other. Our pass successfully rearranged the more used pass to directly after the block before branching. We also tested on more complicated branching scenarios.
+Initially we tested our pass on simple programs with only one conditional branch, where one branch is more frequently executed than the other. Our pass successfully rearranged the more used path to directly after the branch instruction. We also tested on more complicated branching scenarios.
 
 ### Benchmark Testing
 
@@ -83,11 +83,11 @@ We also evaluated the pass on [PARSEC](https://parsec.cs.princeton.edu/). Due to
 
 | Benchmark                              |No optimizations     | Our pass            |
 |----------------------------------------|---------------------|---------------------|
-| Streamcluster (branch-misses 10ks)     | 3326.58094 +/- 35.9 | 3312.82899 +/- 1.45 |
+| Streamcluster (branch-misprediction 10ks)     | 3326.58094 +/- 35.9 | 3312.82899 +/- 1.45 |
 | Streamcluster (runtime)                | 15.389 +/- 1.414    | 15.316 +/- 1.704    |
 
 
-We think this is because the profiling information we collected is not enough to reflect the actual workload, since we are only using small simulated input for profiling. Clang profiling also does not provide unconditional branch frequency. In addition, the branch miss rate is already pretty low even without any optimizations. Even without any compiler optimizations, there are plenty of other optimizations in lower layers that likely allow for low branch-misses.
+We think this is because the profiling information we collected is not enough to reflect the actual workload, since we are only using the "simsmall" input for profiling. Clang profiling also does not provide unconditional branch frequency. In addition, the branch miss rate is already pretty low even without any optimizations. Even without any compiler optimizations, there are plenty of other optimizations in lower layers that likely allow for low branch-misses.
 
 ### Extensions and Improvement
 
