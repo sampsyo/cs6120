@@ -8,7 +8,7 @@ Horace He is a senior undergraduate studying CS and Mathematics.
 """
 +++
 
-In this project, we continued to experiment with ML based phase ordering as in [project 2](../2019-11-19-Bril-phase-selection-and-ordering/index.md), but using C++ programs and LLVM instead. Compared with project 2 using Bril, there are a lot more infrastructure support for this project: more available optimization passes, actual hardware performance counters and benchmark programs. These allowed us to explore this topic more.
+In this project, we continued to experiment with ML based phase ordering as in [project 2](../2019-11-19-Bril-phase-selection-and-ordering/index.md), but using C++ programs and LLVM instead. Compared with project 2 using Bril, there are a lot more infrastructure support for this project: more available optimization passes, actual hardware performance counters and benchmark programs. These allowed us to explore this topic more. Our code is available [here](https://github.com/q-hwang/llvm-pass-skeleton/tree/noauto).
 
 # Design Overview
 

@@ -1,0 +1,19 @@
+-loop-distribute -basicaa -instsimplify -aa -lazy-block-freq -domtree -loops -simplifycfg -block-freq -called-value-propagation
+
+-lazy-branch-prob -opt-remark-emitter -basicaa -loop-rotate -correlated-propagation -basicaa -instcombine -simplifycfg -aa -scalar-evolution
+
+-basicaa -simplifycfg -lazy-value-info -aa -transform-warning -basicaa -domtree -aa -basicaa -jump-threading
+
+-loop-accesses -loops -lcssa-verification -domtree -loop-distribute -lazy-block-freq -speculative-execution -instcombine -loops -block-freq
+
+-early-cse -loops -lazy-branch-prob -loop-simplify -domtree -prune-eh -loop-rotate -lcssa-verification -tti -lazy-block-freq
+
+-globalopt -loops -lazy-branch-prob -prune-eh -lcssa -targetlibinfo -aa -loops -mem2reg -constmerge
+
+-basicaa -aa -loop-simplify -loop-unswitch -loop-unroll -basicaa -basicaa -block-freq -tbaa -lazy-branch-prob
+
+-block-freq -lazy-block-freq -basicaa -basicaa -tti -basicaa -basicaa -lazy-branch-prob -loops -opt-remark-emitter
+
+-functionattrs -simplifycfg -loop-simplify -lazy-branch-prob -lazy-block-freq -block-freq -aa -branch-prob -lazy-branch-prob -transform-warning
+
+-aa -domtree -branch-prob -basiccg -scalar-evolution -gvn -lazy-block-freq -basicaa -opt-remark-emitter -loop-accesses
