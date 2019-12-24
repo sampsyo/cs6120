@@ -177,8 +177,8 @@ However, there is no reliable method to identify an invalid pointer that points 
 ```c++
 void invalidDereference(int *p) {
     int a = 10;
-    if (p != NULL) {
-    	*p = &a; 
+    if( p != NULL){
+    	*p = a; 
     }
 }
 // outside this function, we cannot dereference or compare p with other pointer 
