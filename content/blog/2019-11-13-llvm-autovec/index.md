@@ -2,7 +2,7 @@
 title = "LLVM Loop Autovectorization"
 [extra]
 bio = """
-  Gabriela should have their own bio here!
+  Gabriela is a graduate student researching computational imaging at the small scale.
   Ryan is a PhD student at Cornell. He studies programming languages
   and verification.
   Rolph is a third-year graduate student studying the intersection of
