@@ -192,9 +192,12 @@ to write into memory the next 4 values of `%i.0` at once.
 
 We evaluated our autovectorizer across a range of small benchmarks containing
 loops.
+We ran experiments on a ThinkPad T410 with an Intel Core i7-620M processor and
+8GB of RAM.
 We constructed our benchmarks so that all loops can be vectorized according
 to the rather stringent vectorization conditions, which disallows indexing
 arrays with anything other than the inductive variable or loop-invariant data.
+
 The results below are measured across three runs.
 Note that DEF is the configuration without any optimizations (`-O0`),
 while OPT is the configuration with only our autovectorizer enabled.
@@ -212,4 +215,13 @@ Across the benchmarks, either OPT outperforms DEF handily
 as its DEF counterpart.
 This is the behavior we expected.
 
+It is not immediately clear what makes `test1` and `test4` different from the
+other testcases.
+They are the only testcases with both of the following features:
+division expressions and a single, non-nested loop.
+The rest of the testcases either have multiple loops, nested loops, or no
+division expressions.
+More investigation is needed to determine the exact reason why the other
+vectorized testcases do not run noticeable faster than their
+non-vectorized counterparts.
 
