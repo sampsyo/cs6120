@@ -90,7 +90,7 @@ main {
 loop:  
   c: int = add c one;
   b: bool = le c max;
-  br b loop end
+  br b loop end;
 end:
   # Rest of program
 }
@@ -200,7 +200,7 @@ The most difficult part of code generation was implementing function calls (as
 defined in the Bril() language extension). Because this is a just-in-time
 compiler, a function being called may or may not already be compiled. As such,
 we cannot simply call the other function using standard calling conventions.
-Instead, we created another Rust function, `handle_call` for the assembly to
+Instead, we created another Rust function, `handle_call`, for the assembly to
 call when encountering a Bril `call` instruction. To this function, the assembly
 passes an integer identifying the Bril function that it wants to call.
 
@@ -244,7 +244,7 @@ that counter reaches a fixed value, the program will then compile the function
 instead of interpreting it. After that, every time the function is called, the
 compiled version can be simply run.
 
-### On-stack replacement
+### On-Stack Replacement
 
 To implement on-stack replacement, we extend the profiling information from the
 previous section to keep track of the number of times each basic block in a
@@ -304,7 +304,7 @@ composed an ablation study.
 
 The three benchmarks we used to evaluate against are as follows:
 
-1. **FibFunc with `n` = 100, `n` = 500**:`n` functions each iteratively compute
+1. **FibFunc with `n` = 100, `n` = 500**: `n` functions each iteratively compute
 a random, long-running fibonacci sequence, and returns to main.
 2. **KNN with `n` = 100, `n` = 500**: implementation of K=1 Nearest Neighbors in
 Bril, with `n` training and testing points.
@@ -312,7 +312,7 @@ Bril, with `n` training and testing points.
 
 Each benchmark was run against each of the following configurations at least 10
 times, and the averages/deviations were computed with
-[hyperfine](https://github.com/sharkdp/hyperfine) (Shoutout to Wil and Daniel
+[hyperfine](https://github.com/sharkdp/hyperfine) (shoutout to Wil and Daniel
 Glus for the
 [inspiration](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/faster-interpreter/)).
 
@@ -359,7 +359,7 @@ apparent.
 ## Future Work
 
 Bril-OSR succesfully implements examples of both just-in-time compilation and
-un-stack replacement, but more importantly, it provides a framework to build
+on-stack replacement, but more importantly, it provides a framework to build
 upon with more interesting heuristics and utilization.
 
 First, we would love to incorporate more evaluators to the framework. We could
