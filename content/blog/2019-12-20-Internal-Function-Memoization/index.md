@@ -153,7 +153,8 @@ Finally, Henrinacci, another derivative of Fibonacci we created, with the recurr
 
 <img src="it_henri.png" style="max-width: 100%" >
 
-We see the recursive cases of these benchmarks follow the exponential trendline, while the iterative benchmarks look much more linear. While some of the graphs for the iterative benchmarks undulate a little, it's important to remember the time difference is quite small, and some of this could be noise from the moderately precise "time" command in bash.
+We see the recursive cases of these benchmarks follow the exponential trendline, while the iterative benchmarks look much more linear. The data from the iterative benchmarks cover smaller amounts of time, and therefore, appear to be more influenced by noise.
+We run another set of benchmarks on the iterative versions of each of our benchmarks, 3 times per input argument, and plot the results below.
 
 ### Discussion
 We have hit our _V0_ goal of generating an iterative Fibonacci from a recursive one. We have also satisfied our _V1_ goal of generalizing our implementation to recursive functions with any number of recursive calls with arbitrary constant offsets. 
