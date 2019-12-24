@@ -15,7 +15,7 @@ The need to distribute inputs over cores in SPMD programs introduces problems th
 - **Data format of inputs/outputs**: 
   Each tensor $A$ must be encoded in a particular **format**, $f_A$, that maps the **logical index** of each tensor element $A\langle x \rangle \langle y \rangle$ to **physical index** $f_A(x,y)$ into array $A'$, s.t., $A\langle x \rangle \langle y \rangle = A'[f_A(x,y)]$.
 
-  Low-level languages like C, require this dimensionality reduction to maximize performance contributors such as data locality and bulk memory allocations/movements.
+  Low-level languages like C require this dimensionality reduction to maximize performance contributors such as data locality and bulk memory allocations/movements.
   Different formatting choices lead to *different implementations* of the *same kernel*.
 
   We constrain our prototype to use the **row-major order** format, which sequentially lays out rows of $A$ via $f_A(x,y) = x * stride + y$, where $stride$ indicates the number of elements per row of $A'$.
