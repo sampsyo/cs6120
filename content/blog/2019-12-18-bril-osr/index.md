@@ -27,7 +27,7 @@ heavily on interpreters. Some representation of the source code is passed to the
 interpreter, where the instructions are evaluated immediately.
 
 Since interpreters do not translate source programs to machine code and they
-only consider the subset of instructions that are actually evaluated at runtime,
+only consider the subset of instructions that are actually evaluated at run time,
 startup cost for a program is minimized. This is huge for developers who may
 update and run programs hundreds of times over. So interpreters are fast for
 source translation but overall have slow performance because they are not
@@ -41,14 +41,14 @@ in doing so, we lose the startup time benefit of an interpreter.
 
 A just-in-time (JIT) compiler attemps to find the best of both worlds. Instead
 of compiling source code ahead of time, a JIT compiler aims to compile code at
-runtime. There are three advantages to highlight with this approach:
+run time. There are three advantages to highlight with this approach:
 
-1. Only the functions that the program executes at runtime are compiled to
+1. Only the functions that the program executes at run time are compiled to
 machine code. In addition, every compilation is much smaller in scope, so this
 overhead is spread throughout the execution.
 2. Run-time profiling information can be utilized for more advanced
 optimizations that ahead-of-time (AOT) compilers cannot take advantage of.
-3. By compiling at runtime, users only need to install one version of a program,
+3. By compiling at run time, users only need to install one version of a program,
 as the JIT can dynamically resolve the architecture it needs to compile source
 code to. For example, Java code is compiled to platform-independent Java
 bytecode, which can then be executed by a platform-aware Java Virtual Machine
@@ -61,7 +61,7 @@ While a basic JIT compiler will always compile a code fragment when it is
 reached in the execution, more sophisticated versions can incorporate an
 interpreter. The JIT will then decide to interpret a section of code if it seems
 like the upfront time cost of compilation would not be made up for by the speed
-gains of native execution over interpretation. This allow us to combine the
+gains of native execution over interpretation. This allows us to combine the
 start-up benefits of an interpreter with the speed of a JIT.
 
 One problem with traditional JITs is that they often compile code in fairly
@@ -121,18 +121,18 @@ In order to explore the use cases for JITs and on-stack replacement, we built
 
 At Bril-OSR's core is an efficient interpreter, with a series of arguments to
 toggle its various features on and off. With the `-jit` flag turned on, the
-interpreter will compile functions to x86-64 machine code at runtime, and
+interpreter will compile functions to x86-64 machine code at run time, and
 execute them. The threshold at which the interpreter compiles functions can be
 tuned by the programmer, representing the number of times a function must be
 called before it is compiled. The `-osr` flag is similar, although it operates
 at a basic block level. If a block is executed *n* times by the program at
-runtime, the function housing it will be compiled to machine code, and
+run time, the function housing it will be compiled to machine code, and
 evaluation will resume where the interpreter left off. The value of *n* is also
 configurable as an argument to Bril-OSR.
 
 **Note**: We decided to write Bril-OSR in Rust for two main reasons:
 1. A compiled systems language, when used well, should give some exciting
-performance boosts (especially when compared to the baseline typescript
+performance boosts (especially when compared to the baseline TypeScript
 interpreter, Brili).
 2. The `dynasm-rs` crate is an awesome tool for code generation, and is built
 with just-in-time compilers in mind!
@@ -250,7 +250,7 @@ To implement on-stack replacement, we extend the profiling information from the
 previous section to keep track of the number of times each basic block in a
 function is executed. If a function is being interpreted and one of these
 counters reaches a certain fixed value, OSR will be initiated immediately. Code
-generation will then procede as before, but with a few OSR-specific additions.
+generation will then proceed as before, but with a few OSR-specific additions.
 The basic structure of a function compiled via OSR is as follows:
 
 ```
@@ -287,7 +287,7 @@ and using Ubuntu on WSL.
 First, we generated multiple programs that covered the breadth of Bril opcodes
 from a configurable Python script. We ran the correctness suite on both the
 interpreter and just-in-time code generation engine, and ensured that the
-runtime effects matched those of Brili.
+run-time effects matched those of Brili.
 
 **Note**: Inspired by Alexa and Gregory's foray into
 [Hypothesis](https://hypothesis.works/), we attempted to write property-based
@@ -297,7 +297,7 @@ generating structures representing Bril programs was difficult, so we abandoned
 this project. Still, this would be a cool extension to Bril-OSR's correctness
 test suite.
 
-## Performance Tests (Ablation Study)
+## Performance Tests (Sensitivity Study)
 
 In order to compare the performance of the various components of Bril-OSR, we
 composed an ablation study.
@@ -305,10 +305,10 @@ composed an ablation study.
 The three benchmarks we used to evaluate against are as follows:
 
 1. **FibFunc with `n` = 100, `n` = 500**: `n` functions each iteratively compute
-a random, long-running fibonacci sequence, and returns to main.
+a random, long-running Fibonacci sequence, and returns to main.
 2. **KNN with `n` = 100, `n` = 500**: implementation of K=1 Nearest Neighbors in
 Bril, with `n` training and testing points.
-3. **Ackermann with `n` = 2, `m` = 3**: implementation of the ackermann function.
+3. **Ackermann with `n` = 2, `m` = 3**: implementation of the Ackermann function.
 
 Each benchmark was run against each of the following configurations at least 10
 times, and the averages/deviations were computed with
@@ -331,7 +331,7 @@ compiled. All times are listed in milliseconds.
 ![](ackermann.png)
 
 Bril-OSR's interpreter is typically at least 10x slower than any of the other
-configurations, except interestingly with the ackermann benchmark. This is most
+configurations, except interestingly with the Ackermann benchmark. This is most
 likely because it's a smaller benchmark, and the compilation overhead offsets
 any performance gains from machine code.
 
@@ -369,5 +369,5 @@ a more in depth ablation study.
 
 On the other hand, it would be awesome to design more interesting heuristics for
 both OSR and JIT. We currently use simple counts as our heuristics, but there's
-room to use strategies like runtime profiling to make these heuristics more
+room to use strategies like run-time profiling to make these heuristics more
 accurate.
