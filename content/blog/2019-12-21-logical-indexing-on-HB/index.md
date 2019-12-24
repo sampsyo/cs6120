@@ -19,7 +19,7 @@ The need to distribute inputs over cores in SPMD programs introduces problems th
   Different formatting choices lead to *different implementations* of the *same kernel*.
 
   We constrain our prototype to use the **row-major order** format, which sequentially lays out rows of $A$ via $f_A(x,y) = x * stride + y$, where $stride$ indicates the number of elements per row of $A'$.
-  Our results generalize to similar formats (e.g., *col-major order*), and we leave exploration of more exotic formats to future work.
+  Our results generalize to similar formats (e.g., *column-major order*), and we leave exploration of more exotic formats to future work.
 
 - Caching:
   Preemptive promotion of required inputs in the memory hierarchy, another form of data locality, often leads to significant performance gains.
@@ -33,9 +33,9 @@ This project implements a formal separation of **logical indexing** from **data 
 The proposed syntax for logical indexing uses angle brackets `A<x><y>` to distinguish from traditional array indexing `A[x][y]`.
 We demonstrate this language feature by means of a 2-D stencil algorithm that computes 2-D tensor $B\langle x \rangle \langle y \rangle$ from tensor $A$ as the average of $A\langle x \rangle \langle y \rangle$ and its neighbors. 
 
-At the boundaries of $B$ (i.e., $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$, $B\langle x \rangle \langle y \rangle$), the algorithm simply assigns the input directly.
-In SPMD style, each core transforms a block of data, denoted $A_tile$ into a block of output, denoted $B_tile$.
-The pseudo-code below uses logical indexing to capture this behavior; noting that a more efficient implementation is possible but unnecessary for purposes:
+At the boundaries of $B$ (i.e., $\forall x, y, B\langle 0 \rangle \langle y \rangle$, $B\langle n \rangle \langle y \rangle$, $B\langle x \rangle \langle 0 \rangle$, $B\langle x \rangle \langle m \rangle$), the algorithm simply assigns the input directly.
+In SPMD style, each core transforms a block of data, denoted $A_{\text{tile}}$ into a block of output, denoted $B_{\text{tile}}$.
+The pseudo-code below uses logical indexing to capture this behavior; noting that a more efficient implementation is possible but unnecessary for our purposes:
 ```python
 for (x : B_tile.row_ix in B_tile.row_range) {
   for(y : B_tile.col_ix in B_tile.col_range)  {
@@ -51,7 +51,7 @@ for (x : B_tile.row_ix in B_tile.row_range) {
 ```
 Both loops iterate over zero-based logical row and column ranges, `B_tile.row_range` and `B_tile.col_range`, with a branch detecting points at a logical boundary where behavior differs from inner points.
 
-To determine that an index from sub-tensor $B_{tile}$ resides on the logical boundary of parent tensor $B$, we perform **index casting** from `B_tile.row_ix` to `B.row_ix` and analogously for columns.
+To determine that an index from sub-tensor $B_{\text{tile}}$ resides on the logical boundary of parent tensor $B$, we perform **index casting** from `B_tile.row_ix` to `B.row_ix` and analogously for columns.
 
 
 # Specifying the Data Format
@@ -137,6 +137,9 @@ tensor* top_level_tensor(tensor *A) {
 Unfortunately, index casting is not actually implemented yet.
 Instead, the above implementation cheats by using the `log_to_phys` functions: rather than perform logical boundary-checking it performs physical boundary checking.
 This works for our purposes, since the logical and physical boundaries are equivalent for the row-major order data format.
+
+Note that these recursive functions for looking up tensor information are expensive: an actual compiler for logical indexing will do this lookup up-front to generate code with inlined values.
+
 
 # Cached vs Non-cached Implementations
 
