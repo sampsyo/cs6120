@@ -2,7 +2,7 @@
 title = "An Autoscheduler for Halide"
 [extra]
 bio = """
-  Ela is a fourth-year graduate student. They should fill their bio here!
+  Ela is a fourth-year graduate student. They study new ways to take pictures of atoms. 
   Ryan is a PhD student at Cornell. He studies programming languages
   and verification.
   Rolph is a third-year graduate student studying the intersection of
