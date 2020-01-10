@@ -1,4 +1,3 @@
-> cat index.md                                                Sat Dec 21 17:53:42 2019
 +++
 title = "Register Allocation for Bril"
 extra.author = "Hongbo Zhang, Sachille Atapattu, Wen-Ding Li"
