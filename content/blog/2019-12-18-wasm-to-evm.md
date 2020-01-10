@@ -1,10 +1,15 @@
-+++ title = "Wasm-to-EVM binary translator" extra.author = "Hongbo Zhang" extra.author_link = "https://www.cs.cornell.edu/~hongbo/" extra.bio = """Hongbo Zhang is a first-year PhD student in computer science. He is interested in systems and computer architectures. He is also an okay archer shooting recurve bow.""" +++
++++ 
+title = "Wasm-to-EVM binary translator" 
+extra.author = "Hongbo Zhang" 
+extra.author_link = "https://www.cs.cornell.edu/~hongbo/" 
+extra.bio = """Hongbo Zhang is a first-year PhD student in computer science. He is interested in systems and computer architectures. He is also an okay archer shooting recurve bow.""" 
++++
 
-Ethereum has developed a stack-based architecture for executing their own Turing-complete instruction set called Ethereum Virtual Machine (EVM). The EVM currently used for running decentralized applications on Ethereum blockchain. 
+Ethereum has developed a stack-based architecture for executing their own Turing-complete instruction set called Ethereum Virtual Machine (EVM). The EVM is currently used for running decentralized applications on Ethereum blockchain. 
 
 The smart contract code is usually written in higher-level languages, such as Solidity. The code must be compiled into bytecode before it can be run on EVM. 
 
-EVM has 256-bit words, which are suitable for various cryptograph-related operations in smart contract applications. On the other hand, it makes it more difficult to translate EVM bytecode to hardware instructions and run the EVM program natively. 
+EVM has 256-bit words, which are suitable for various cryptography-related operations in smart contract applications. On the other hand, it makes it more difficult to translate EVM bytecode to hardware instructions and run the EVM program natively. 
 
 To improve the performance of smart contract applications, Ethereum Web Assembly (Ewasm) was proposed to substitute the EVM in future Ethereum. Ewasm is a modified version of Web Assembly with some Ethereum related functions. 
 
@@ -59,7 +64,7 @@ Unfortunately, the gas price for Ewasm instructions is not out yet, we cannot co
 
 In Wasm, function parameters are passed by local variables. They are accessed by `get_local` instruction followed by an index number. Similarly, function parameters are stored in memory, which can be accessed by memory load operation `MLOAD` with an offset. For example, in the above function with two uint256 parameters, the first parameter is at 0x04, the second parameter is at 0x24. 
 
-Wasm compiler tends to use the local variable like registers, the compiled bytecode will load data by `get_local` whenever it needs it. However, this approach is not optimal for EVM, especially when the program needs to load a parameter multiple times in a short period. 
+The Wasm compiler tends to use the local variable like registers. The compiled bytecode will load data by `get_local` whenever it needs it. However, this approach is not optimal for EVM, especially when the program needs to load a parameter multiple times in a short period. 
 
 For example, `if (a > b) return a - b` needs to load both "a" and "b" twice, 
 one for `a > b`, and one for `a - b`. In EVM, it can load both parameters for the first time, so both parameters are currently first and second elements on the stack. It duplicates both parameters by calling `DUP2` twice, comparing to loading the data from memory, this approach has a lower cost. 
@@ -70,7 +75,7 @@ one for `a > b`, and one for `a - b`. In EVM, it can load both parameters for th
 |a|         |a|         |a|
 |b|         |b|         |b|
 ```
-EVM provides a set of `DUP` instructions, it can duplicate one of 1~16th stack item and push it on the top of the stack. 
+EVM provides a set of `DUP` instructions. They can duplicate one of 1st through 16th stack item and push it on the top of the stack. 
 
 Currently, the binary translator can translate simple Wasm functions to EVM bytecode. 
 
