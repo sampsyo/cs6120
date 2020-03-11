@@ -23,7 +23,7 @@ In this article, I don't expect to talk much about the language (or binary code 
 itself, but implications of its compilation which makes 
 things like Google Earth on a browser possible.
 
-<img src="sys-diagram.png" width="700" >
+<img src="google-earth.png" width="700" >
 
 ## What is WebAssembly
 WebAssembly is a binary code format to transfer web applications from the 
@@ -72,7 +72,11 @@ bail out and reoptimize as such errors never occur.
 Finally, WebAssembly also allow you to manage memory manually (it only 
 suports manual memory management as of now, but automation is to be added
  as an option) which allows you to avoid expensive garbage collection 
-during interpretation. 
+during interpretation.
+
+## Implementing WebAssembly compilers
+
+## Improving compile time
 
 ## Evaluation
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
@@ -87,6 +91,9 @@ WebAssembly can be much more performant.
 
 (Add numbers from the paper)
 
+<img src="figure-5.png" width="700" >
+
+<img src="figure-6.png" width="700" >
 
 ## What this means
 
