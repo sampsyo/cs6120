@@ -12,11 +12,11 @@ extra.bio = """
 +++
 
 If you're a geography buff like me (you're probably not, but one can hope), 
-You might remember the time when you downloaded an app to get the exhilrating
-feeling of zooming on top of a volcano, or to an island in the middle of the 
-Pacific, or to the top of the Eiffel. Then do you remember when you 
-downloaded Chrome just you can do the same from the convenience of the browser? Well, 
-then you might have just heard about how you can do it in any browser out there now. 
+You might remember the time when you downloaded an app to get the exhilarating
+experience of zooming on top of a volcano, or on to an island in the middle of the 
+Pacific, or on to the top of the Eiffel. Then do you remember when you 
+could do these feats from the convenience of the Chrome browser? Well, 
+then you might have just heard that now you can do it in (almost) any browser out there. 
 For me, that's what WebAssembly brings.
 
 In this article, I don't expect to talk much about the language (or binary code format) 
@@ -25,7 +25,7 @@ things like Google Earth on a browser possible.
 
 <img src="google-earth.png" width="700" >
 
-## What is WebAssembly
+## What is WebAssembly?
 WebAssembly is a binary code format to transfer web applications from the 
 server to the browser. It is incorporated in modern browsers to be used in 
 tandem with existing JavaScript applications, and uses existing JavaScript 
@@ -41,9 +41,22 @@ performance in general than a JavaScript program, which has type
 classification overheads, performance implications based on which browser 
 you target and how performant is your interpreter.
 
-(Why can't you run C in the first place?)
+## Is WebAssembly just C on browsers?
+WebAssembly does brings the performance of pre-compiled languages to web browsers. 
+But it does so side-by-side with traditional javascript running on the same engines.
+This allows browsers to have best of both worlds, drive the Ferrari on the race track- 
+run performant WebAssembly when it needs performance, or drive the Prius to the 
+grocery store- quickly getting a simple web application up and running.
 
-## Compilers for WebAssembly
+With WebAssembly, you could use JavaScript for fast development, but also 
+use C where you need performance. You could use C where static typing is
+useful, but JavaScript where dynamic typing is a necessacity for productivity.
+And you could combine these modules, to balance productivity and performance,
+as both these styles can now be executed in the same compiler flow.
+So WebAssembly is more than just C on browsers, it's a carefully coordinated, 
+well-designed, massive engineering effort to reconcile two worlds at odds.
+
+## Compiling for WebAssembly
 Major component of speed up from WebAssembly comes from the compilation.
 Using JavaScript, your JavaScript engine would go through the phases of 
 parsing, baseline compilation, optimizing compiler, re-optimizing and 
@@ -70,15 +83,29 @@ object is) during interpretting, the JavaScript engine doesn't  need to
 bail out and reoptimize as such errors never occur. 
 
 Finally, WebAssembly also allow you to manage memory manually (it only 
-suports manual memory management as of now, but automation is to be added
+supports manual memory management as of now, but automation is to be added
  as an option) which allows you to avoid expensive garbage collection 
 during interpretation.
 
 ## Implementing WebAssembly compilers
+WebAssembly is walking a tight rope between high performance (C world), and 
+safety and portability(JS world). It is hard to theorize how to optimize for
+it, so the WebAssembly team implemented extensions in different browsers to
+validate that it is indeed possible to achieve the said goal.
 
-## Improving compile time
+V8 (from Chrome) and SpiderMonkey (from Firefox), reuse their optimizing JIT 
+compilers to compile ahead-of-time. This provides them predictable high 
+performance, as opposed to the unpredictable warmup times with JavaScript.
+Chakra (from Edge) uses lazy translation and optimizes only hot code. This 
+achieves faster startup time.
 
-## Evaluation
+To permit efficient use of baseline JIT compilers, WebAssembly is desiged to
+do fast validation and ability to track registers for allocation without IR
+generation. To integrate well with optimizing JIT compilers, WebAssembly is 
+designed to do direct-to-SSA translation. Moreover, structured control flow 
+makes decoding simpler.
+
+## How good is it?
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
 JavaScript can be in theory, more performant in execution (at least for now, 
 where WebAssembly is interpretted using JavaScript enging). But this 
@@ -89,13 +116,32 @@ the general case and each interpreter can leverage it's generality to do
 additional optimizations better than on generic JavaScript. So in practice
 WebAssembly can be much more performant.
 
-(Add numbers from the paper)
+The following bar graph demonstrates how WebAssembly performs comparative to
+native code (running a C application). Most benchmarks are within 10\% of 
+native performance. 
 
 <img src="figure-5.png" width="700" >
 
+An [article][spec] from some designers of WebAssembly suggests that WebAssembly 
+can run at about 80\% performance of native applications. The paper also 
+reports that performance compared to the state-of-the-art mechanism to 
+execute native programs in a browser, asm.js, is about 33.7\% better.
+
 <img src="figure-6.png" width="700" >
 
-## What this means
+This scatter plot illustrates WebAssembly benefits in terms of code size. They
+are on average 37.5\% smaller than asm.js code and 14.7\% smaller than native code.
+
+## What does this mean?
+Well, as I said, Google Earth on any browser. Just in case that's not enough,
+playing a game on a browser is going to be very similar to downloading an app
+and running it natively, you can share your CAD design to someone over the web
+and have them take a look at it without downloading the files or even having the
+necessary tools installed, you'll see a lot more sophisticated features in 
+websites such as social media, all you need is a device with a browser to 
+experience almost any service, downloading an app is not going to be the same- 
+why would you? when you get similar (in human perception) performance by running
+them on a broswer without the overhead of installing.
 
 ## What's next?
 WebAssembly has already achieved a lot in a short span of time (3 years 
@@ -113,4 +159,13 @@ More exciting and enabling future options to WebAssembly may include
 - shared memory concurrency: reduce synchronization by handling it 
 efficiently on shared memory and 
 - SIMD: to parallelize execution by sharing instructions among data. 
+
+## How to learn more..
+- [WebAssembly paper][paper]
+- [A cartoon intro to WebAssembly][cart]
+- [WebAssembly will finally let you run high performance applications in your browser][spec]
+
+[paper]: https://people.mpi-sws.org/~rossberg/papers/Haas,%20Rossberg,%20Schuff,%20Titzer,%20Gohman,%20Wagner,%20Zakai,%20Bastien,%20Holman%20-%20Bringing%20the%20Web%20up%20to%20Speed%20with%20WebAssembly.pdf
+[cart]: https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/
+[spec]: https://spectrum.ieee.org/computing/software/webassembly-will-finally-let-you-run-highperformance-applications-in-your-browser
 
