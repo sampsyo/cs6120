@@ -12,18 +12,20 @@ extra.bio = """
 +++
 
 If you're a geography buff like me (you're probably not, but one can hope), 
-You might remember the time when you downloaded an app to get the exhilarating
-experience of zooming on top of a volcano, or on to an island in the middle of the 
-Pacific, or on to the top of the Eiffel. Then do you remember when you 
+you might remember the time when you downloaded an app to get the exhilarating
+experience of zooming on top of a volcano, or onto an island in the middle of the 
+Pacific, or onto the top of the Eiffel. Then do you remember when you 
 could do these feats from the convenience of the Chrome browser? Well, 
 then you might have just heard that now you can do it in (almost) any browser out there. 
 For me, that's what WebAssembly brings.
 
 In this article, I don't expect to talk much about the language (or binary code format) 
 itself, but implications of its compilation which makes 
-things like Google Earth on a browser possible.
+things like [Google Earth][earth] on a browser possible.
 
 <img src="google-earth.png" width="700" >
+
+[earth]: https://www.google.com/earth/
 
 ## What is WebAssembly?
 WebAssembly is a binary code format to transfer web applications from the 
@@ -146,19 +148,22 @@ them on a broswer without the overhead of installing.
 ## What's next?
 WebAssembly has already achieved a lot in a short span of time (3 years 
 since introduced in 2017). It is already supported in all major browsers 
-and popular development kit Emscripten offers compiling C down to `.wasm`
+and popular development kit [Emscripten][emscripten] offers compiling C down to `.wasm`
 via `asm.js`. Personally, it has already enabled running Google Earth on 
 any browser (what more do you need!!).
 
-Yet, WebAssembly is at its infancy. The popular compiler toolchain, 
-LLVM project is adding a backend for it and developers are adding debug tools
-to improve WebAssembly eco-system.
+Yet, WebAssembly is in its infancy. The popular compiler toolchain, 
+[the LLVM project][llvm], is adding a backend for it and developers are adding debug tools
+to improve the WebAssembly eco-system.
 
 More exciting and enabling future options to WebAssembly may include 
-- stream compilation: start compiling as the byte code is being downloaded, 
+- stream compilation: start compiling as the bytecode is being downloaded, 
 - shared memory concurrency: reduce synchronization by handling it 
 efficiently on shared memory and 
 - SIMD: to parallelize execution by sharing instructions among data. 
+
+[emscripten]: https://emscripten.org
+[llvm]: https://llvm.org
 
 ## How to learn more..
 - [WebAssembly paper][paper]
