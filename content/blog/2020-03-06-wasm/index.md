@@ -30,8 +30,9 @@ things like [Google Earth][earth] on a browser possible.
 ## What is WebAssembly?
 WebAssembly is a binary code format to transfer web applications from the 
 server to the browser. It is incorporated in modern browsers to be used in 
-tandem with existing JavaScript applications, and uses existing JavaScript 
-engines to interpret and execute. It has taken the world wide web by storm a
+tandem with existing JavaScript applications, and uses components from 
+existing JavaScript engines to interpret and execute. It has taken the world 
+wide web by storm as
 - it is rolled out by four major browsers (Chrome, Edge, Mozilla and Safari)
 i.e. platform independent
 - it is programming model independent
@@ -45,7 +46,7 @@ you target and how performant is your interpreter.
 
 ## Is WebAssembly just C on browsers?
 WebAssembly does brings the performance of pre-compiled languages to web browsers. 
-But it does so side-by-side with traditional javascript running on the same engines.
+But it does so side-by-side with traditional Javascript running on the same engines.
 This allows browsers to have best of both worlds, drive the Ferrari on the race track- 
 run performant WebAssembly when it needs performance, or drive the Prius to the 
 grocery store- quickly getting a simple web application up and running.
@@ -57,6 +58,22 @@ And you could combine these modules, to balance productivity and performance,
 as both these styles can now be executed in the same compiler flow.
 So WebAssembly is more than just C on browsers, it's a carefully coordinated, 
 well-designed, massive engineering effort to reconcile two worlds at odds.
+
+## How does it differ from existing tools?
+So WebAssembly is portable, but doesn't JVM(Java virtual machine) already 
+offer portability? Even though the overall goal has some similarities, Java 
+cannot be run on a browser without plugins and has doesn't have the language
+flexibilty WebAssembly provides. Moreover, validation and memory safety makes 
+WebAssembly more secure from vulnerabilities. Structured control flow and 
+single pass compilation and validation places WebAssembly as a mature option 
+compared to existing bytecode formats such as JVM and CIL (Common Intermediate Language).
+
+WebAssembly also performs better compared to recent technologies with a similar
+goal. Firstly, it can outperform asm.js from optimizations that cannot be done with 
+JavaScript, WebAssembly has faster download with smaller code size, it does not require
+parsing as it's already in a binary format. Moreover, WebAssembly also allows
+certain optimizations to be done statically and to use CPU features not 
+expressible in asm.js. 
 
 ## Compiling for WebAssembly
 Major component of speed up from WebAssembly comes from the compilation.
@@ -74,7 +91,7 @@ much faster than parsing JavaScript code to an IR.
 Then benefits of WebAssembly from actual compilation kick in. 
 JavaScript needs to be compiled to multiple versions based on what types 
 are in use(similar to any other dynamically typed language). WebAssembly 
-code has its types encoded during offline compilation on to WebAssembly.
+code is statically typed and has its types encoded during offline compilation on to WebAssembly.
 Therefore, it doesn't need monitoring (in the interpreter) to figure out 
 the types, and maintain multiple versions. The JavaScript engine also 
 doesn't need to do most optimizations, except for platform and hardware 
@@ -88,6 +105,10 @@ Finally, WebAssembly also allow you to manage memory manually (it only
 supports manual memory management as of now, but automation is to be added
  as an option) which allows you to avoid expensive garbage collection 
 during interpretation.
+
+Therefore, WebAssembly only requires compiler backend, module loading frontend, 
+security sandboxing and supporting VM components in the existing Javascript engine,
+and skips parsing, most compiler optimizations, bail out and garbage collection.
 
 ## Implementing WebAssembly compilers
 WebAssembly is walking a tight rope between high performance (C world), and 
@@ -107,6 +128,14 @@ generation. To integrate well with optimizing JIT compilers, WebAssembly is
 designed to do direct-to-SSA translation. Moreover, structured control flow 
 makes decoding simpler.
 
+Another key aspect in running native code in a browser is security. Sandboxing
+for C/C++ has required extensive code rewriting. However, WebAssembly is executed
+in a sandboxed environment clearly separated from the host, making it possible
+to provide some security guarantees. WebAssembly avoids performance overheads 
+through sandboxing to run at near native speed with the model created by [Native Client][nacl]
+which employs static validation of x86 machine code by mandating code generators 
+to follow certain patterns.
+
 ## How good is it?
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
 JavaScript can be in theory, more performant in execution (at least for now, 
@@ -120,7 +149,7 @@ WebAssembly can be much more performant.
 
 The following bar graph demonstrates how WebAssembly performs comparative to
 native code (running a C application). Most benchmarks are within 10\% of 
-native performance. 
+native performance.
 
 <img src="figure-5.png" width="700" >
 
@@ -173,4 +202,6 @@ efficiently on shared memory and
 [paper]: https://people.mpi-sws.org/~rossberg/papers/Haas,%20Rossberg,%20Schuff,%20Titzer,%20Gohman,%20Wagner,%20Zakai,%20Bastien,%20Holman%20-%20Bringing%20the%20Web%20up%20to%20Speed%20with%20WebAssembly.pdf
 [cart]: https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/
 [spec]: https://spectrum.ieee.org/computing/software/webassembly-will-finally-let-you-run-highperformance-applications-in-your-browser
-
+[asmjs]: https://hacks.mozilla.org/2017/03/why-webassembly-is-faster-than-asm-js/
+[sand]: https://webassembly.org/docs/security/
+[nacl]: https://developer.chrome.com/native-client
