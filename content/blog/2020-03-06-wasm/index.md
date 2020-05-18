@@ -182,7 +182,7 @@ via `asm.js`. Personally, it has already enabled running Google Earth on
 any browser (what more do you need!!).
 
 Yet, WebAssembly is in its infancy. The popular compiler toolchain, 
-[the LLVM project][llvm], is adding a backend for it and developers are adding debug tools
+[the LLVM project][llvm], has already added a backend for it and developers are adding debug tools
 to improve the WebAssembly eco-system.
 
 More exciting and enabling future options to WebAssembly may include 
