@@ -8,7 +8,6 @@ Here’s what you do for each one:
 
 * Propose a project and submit a short description of your plan.
 * Implement something, according to the project description.
-* Release your code as open-source software.
 * Measure your implementation empirically and draw rigorous conclusions. (Negative results are OK! But flimsy evaluation is not.)
 * Write a report as a post on our [course blog][blog].
 * Do an in-class design review to collect feedback from your peers.
@@ -58,9 +57,10 @@ The instructor may have feedback for your or just tacitly approve your idea.
 The main phase, of course, is implementing the thing you said you would implement.
 I recommend you keep a “lab notebook” to log your thoughts, attempts, and frustrations—this will come in handy for the report you'll write about the project.
 
-All 6120 projects must be open source.
+I strongly recommend that you develop your code as an open-source project.
 Use a publicly-visible version control repository on a host like GitHub, and include an [open source license][osi].
 When you create your repository, comment on your proposal GitHub issue with a link.
+(If you have a specific objection to open-sourcing your code, that's OK—include a description of how you'll share your code privately with me.)
 
 You can build on previous projects (by yourself or others in the course) and other existing implementations to do your project—unless
 you’re doing something very similar to someone else in the course, in which case you can’t use their code.
