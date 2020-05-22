@@ -60,7 +60,7 @@ So WebAssembly is more than just C on browsers, it's a carefully coordinated,
 well-designed, massive engineering effort to reconcile two worlds at odds.
 
 ## How does it differ from existing tools?
-So WebAssembly is portable, but doesn't JVM(Java virtual machine) already 
+So WebAssembly is portable, but doesn't JVM (Java virtual machine) already 
 offer portability? Even though the overall goal has some similarities, Java 
 cannot be run on a browser without plugins and has doesn't have the language
 flexibilty WebAssembly provides. Moreover, validation and memory safety makes 
@@ -107,7 +107,7 @@ supports manual memory management as of now, but automation is to be added
 during interpretation.
 
 Therefore, WebAssembly only requires compiler backend, module loading frontend, 
-security sandboxing and supporting VM components in the existing Javascript engine,
+security sandboxing and supporting VM components in the existing JavaScript engine,
 and skips parsing, most compiler optimizations, bail out and garbage collection.
 
 ## Implementing WebAssembly compilers
