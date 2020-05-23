@@ -84,8 +84,9 @@ natively on a browser.
 WebAssembly also performs better compared to recent technologies with a similar
 goal. Firstly, it can outperform [asm.js][asmjs] from optimizations beyond what can be done with 
 JavaScript, WebAssembly has faster download with smaller code size, it does not require
-parsing as it's already in a binary format. Moreover, WebAssembly being statically typed 
-also allows certain optimizations to be done during compilation. It's designed 
+parsing as it's already in a binary format. Even though asm.js compilation is different from regular JavaScript
+interpretation, and is statically typed as WebAssembly, it is still limited by 
+JavaScript for expressivity and transporting format. Moreover, it's designed 
 to use CPU features that are not expressible in asm.js, such as 64-bit integers.
 Secondly, it replaces [NaCL][nacl] as a goto tool to run C programs in a browser,
 as WebAssembly is well integrated to the JavaScript ecosystem. Meanwhile, NaCL used
