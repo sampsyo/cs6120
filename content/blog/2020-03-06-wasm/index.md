@@ -63,17 +63,33 @@ well-designed, massive engineering effort to reconcile two worlds at odds.
 So WebAssembly is portable, but doesn't JVM (Java virtual machine) already 
 offer portability? Even though the overall goal has some similarities, Java 
 cannot be run on a browser without plugins and has doesn't have the language
-flexibilty WebAssembly provides. Moreover, validation and memory safety makes 
-WebAssembly more secure from vulnerabilities. Structured control flow and 
-single pass compilation and validation places WebAssembly as a mature option 
-compared to existing bytecode formats such as JVM and CIL (Common Intermediate Language).
+flexibilty WebAssembly provides. This is due to Java's portability coming 
+from the ability to run Java programs in different platforms, and therefore not
+designed to run multiple programs in a browser. Java also doesn't solve the issues
+JavaScript poses through interpreter based execution, dynamic typing and
+garbage collection. Moreover, validation and memory safety makes 
+WebAssembly more secure from vulnerabilities. Java was not designed with 
+formalization in mind, and therefore is complex to validate. Java applets
+have strict security restrictions as a work around for many implementation bugs.
+Structured control flow and single pass compilation and validation places WebAssembly as a 
+mature option compared to existing bytecode formats such as JVM and CIL 
+(Common Intermediate Language) which contain irreducible loops and unbalanced locking 
+features that are hard to be handled with JIT compilers and are relegated to 
+the interpreter. And these design decisions has made WebAssembly a better 
+candidate to implement performant and portable to run different languages 
+natively on a browser.
 
 WebAssembly also performs better compared to recent technologies with a similar
-goal. Firstly, it can outperform asm.js from optimizations that cannot be done with 
+goal. Firstly, it can outperform [asm.js][asmjs] from optimizations beyond what can be done with 
 JavaScript, WebAssembly has faster download with smaller code size, it does not require
-parsing as it's already in a binary format. Moreover, WebAssembly also allows
-certain optimizations to be done statically and to use CPU features not 
-expressible in asm.js. 
+parsing as it's already in a binary format. Moreover, WebAssembly being statically typed 
+also allows certain optimizations to be done during compilation. It's designed 
+to use CPU features that are not expressible in asm.js, such as 64-bit integers.
+Secondly, it replaces [NaCL][nacl] as a goto tool to run C programs in a browser,
+as WebAssembly is well integrated to the JavaScript ecosystem. Meanwhile, NaCL used
+sandboxing within applications to integrate. In fact, the two optimization
+fronts offered from these two tools gave the incentive to merge them 
+as WebAssembly.
 
 ## Compiling for WebAssembly
 Major component of speed up from WebAssembly comes from the compilation.
