@@ -20,7 +20,7 @@ surprisingly tricky as implementing hardware is hard, some (most?) heterogeneous
 architectures have their own custom and close-sourced programming models and existing 
 popular simulators also require limiting to conventional programming models. So, to try
 out a new architecture idea, either you have to limit yourself to existing toolflow ([Dahlia][dahlia]),
-or extend simulators with the programming models they support ([ParallelXL][[parallelxl]). 
+or extend simulators with the programming models they support ([ParallelXL][parallelxl]). 
 Me being a hardware programmer( and a newbie to the software end of the stack), 
 I also have aversion to start implementing a full-stack solution without sufficient 
 insight to justify I'm doing something sane.
@@ -28,7 +28,7 @@ insight to justify I'm doing something sane.
 An easy hack I came across is using runtime functions to do my simulations.
 This way, I don't have to put my abstraction level in concrete, as it's merely 
 creating a new llvm pass at a different level with the accompanying python simulator, 
-(which though non trivial, is still better than creating an extension for GemmV.)
+(which though non trivial, is still better than creating an extension for [gem5][gem5].)
 
 In summary this report is to say, this is a great hack to gain intuition, however 
 to make a truly general simulator framework may need a lot more engineering. And of 
@@ -36,6 +36,7 @@ course, running python functions is super slow.
 
 [dahlia]: https://drive.google.com/file/d/13zJDMHOkymitZc6Zu4U7QXkRFSr99Lk_/view?usp=sharing 
 [parallelxl]: https://www.csl.cornell.edu/~tchen/files/parallelxl-micro18.pdf
+[gem5]: https://www.gem5.org
 
 ## Where to begin
 [llvm for grad students][grad] provides a basic skeleton to use runtime functions through llvm.
@@ -302,34 +303,63 @@ The program, nor llvm provide any support. We have to create the interfaces and 
 with lower level tools such as basic blocks or instructions. 
 
 ## Evaluation
-I evaluated this framework by implementing passes for [MachSuite][mach]. 
+I evaluated this framework by implementing passes for [MachSuite][mach]. I use a mix of unoptimizes and `-O1`
+for the kernel code. I use `clang version 11.0.0` for llvm compilation and `python3.7` for Python execution. 
+I used a timing details logging to make the tests more robust. However, for certain tests this proved
+too tedious as the tests took a long time to complete.
+
 For instructions, I replaced floating point instructions with a python simulator of
 a floating point accelerator. At this flexible granularity it was fairly straight-forward to cover 
 the entire benchmark. 
+
 For functions, I created a vvadd function to test replacement for a vvadd benchmark. I also created 
 a preprocessed results reading function for functions with 2 input arguments and an output argument of 
 the same size. This function can only cover 3 microbenchmarks I wrote and 2 MachSuite benchmarks as 
 the function signature doesn't match rest of the suite. Extending the runtime library is fairly trivial,
 but incomplete.
+
 For basic blocks, I'm not maintaining functional correctness of the benchmarks. I'm replacing a basic block 
 with a floating point operator with a runtime function call. I'm collecting results to how much coverage
 this version has.
+
 For sub blocks, I tested the pass on a specific microbenchmark I wrote (`diamond`). However, this pattern
 does not appear elsewhere in MachSuite. 
 
 [mach]: https://breagen.github.io/MachSuite/
 
 ## Performance
-I'm currently collecting results for some benchmarks. 
-<img src="figure-6.png" width="700" >
+First image illustrates performance at different abstraction levels for the `diamond` microbenchmark.
+<img src="diamond.png" width="700" >
 
-The current results show instruction replacement has several orders of magnitude performance overhead.
-(C program takes micro seconds while python function calls minutes for a small benchmark). Function replacement 
+Results show instruction replacement has several orders of magnitude performance overhead.
+(C program takes micro seconds while python function calls consume minutes for a small benchmark). Function replacement 
 overhead is low, but still significant. (In the order of milliseconds). Instruction block replacement lies in
-betweent these two extremes.
+betweent these two extremes. Runtime library in C is however more performant than the original program. I
+suspect this is due to the library compilation at a higher optimization than the original program, which is
+compiled in `-O1`.
+
+Following graph shows all the benchmarks the current function replacement functionally works. 
+
+<img src="func.png" width="700" >
+
+It is evident from this graph that for a benchmark suite as MachSuite, instruction level replacement is intractable.
+
+## Conclusions
+I think the initial goal of this exploration is successful, these templates do provide a basis to create passes
+with runtime function insertion. However, it also provides two unsurprising insights,
+- Python function calls are super slow compared to C, therefore such a simulation framework can only go so far.
+- Even though function calls can be inserted at each of these levels with the framework templates,
+it can be quite hard to come up with a selection algorithm to get somethign useful done.
+
+Some other learnings from the project are,
+- which version in Python to use for embedding in C turned out to be surprisingly hard.
+- extending MachSuite to test kernel functions multiple times should have been trivial,
+however I kept running into segmentation faults. This is yet to be debugged.
+- which optimization level to use in llvm has an impact on the llvm passes. Some passes 
+need to be completely reworked or substantially extended to cover multiple optimizations.
 
 ## References
-- [Predictable Accelerator Design with Time-Sensitive Affine Types][dahlia]
-- [An Architectural Framework for Accelerating Dynamic Parallel Algorithms on Reconfigurable Hardware][parallelxl]
+- [skeleton][skeleton]
+- [runtime templates][leech]
 
  
