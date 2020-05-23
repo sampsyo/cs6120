@@ -109,7 +109,7 @@ much faster than parsing JavaScript code to an IR.
 Then benefits of WebAssembly from actual compilation kick in. 
 JavaScript needs to be compiled to multiple versions based on what types 
 are in use (similar to any other dynamically typed language). WebAssembly 
-code is statically typed and has its types encoded during offline compilation on to WebAssembly.
+is a sound, statically typed language, which has its types encoded during offline compilation on to WebAssembly.
 Therefore, it doesn't need monitoring (in the interpreter) to figure out 
 the types, and maintain multiple versions. The JavaScript engine also 
 doesn't need to do most optimizations, except for platform and hardware 
@@ -135,7 +135,7 @@ it, so the WebAssembly team implemented extensions in different browsers to
 validate that it is indeed possible to achieve the said goal.
 
 V8 (from Chrome) and SpiderMonkey (from Firefox) reuse their optimizing JIT 
-compilers to compile ahead-of-time. This provides them predictable high 
+compilers to compile ahead of time. This provides them predictable high 
 performance, as opposed to the unpredictable warmup times with JavaScript.
 Chakra (from Edge) uses lazy translation and optimizes only hot code. This 
 achieves faster startup time.
@@ -156,12 +156,12 @@ to follow certain patterns.
 
 ## How good is it?
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
-JavaScript can be in theory, more performant in execution (at least for now, 
-where WebAssembly is interpretted using JavaScript enging). But this 
+JavaScript can be, in theory more performant in execution (at least for now, 
+where WebAssembly is interpreted by building into existing JavaScript engines). But this 
 requires the programmer to know JIT compilation internals and constrain to 
 one browser as each has different interpreters. WebAssembly is
 already optimized statically (more time for the compiler to optimize) for 
-the general case and each interpreter can leverage it's generality to do 
+the general case and each interpreter can leverage its generality to do 
 additional optimizations better than on generic JavaScript. So in practice
 WebAssembly can be much more performant.
 
@@ -178,7 +178,7 @@ execute native programs in a browser, asm.js, is about 33.7\% better.
 
 <img src="figure-6.png" width="700" >
 
-This scatter plot illustrates WebAssembly benefits in terms of code size. They
+This scatter plot illustrates WebAssembly's benefits in terms of code size. They
 are on average 37.5\% smaller than asm.js code and 14.7\% smaller than native code.
 
 ## What does this mean?
@@ -188,9 +188,9 @@ and running it natively, you can share your CAD design to someone over the web
 and have them take a look at it without downloading the files or even having the
 necessary tools installed, you'll see a lot more sophisticated features in 
 websites such as social media, all you need is a device with a browser to 
-experience almost any service, downloading an app is not going to be the same- 
-why would you? when you get similar (in human perception) performance by running
-them on a broswer without the overhead of installing.
+experience almost any service, downloading an app is not going to be the same--- 
+why would you, when you get similar (in human perception) performance by running
+them on a broswer without the overhead of installing?
 
 ## What's next?
 WebAssembly has already achieved a lot in a short span of time (3 years 
