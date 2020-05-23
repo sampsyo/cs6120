@@ -32,28 +32,30 @@ WebAssembly is a binary code format to transfer web applications from the
 server to the browser. It is incorporated in modern browsers to be used in 
 tandem with existing JavaScript applications, and uses components from 
 existing JavaScript engines to interpret and execute. It has taken the world 
-wide web by storm as
+wide web by storm as,
 - it is rolled out by four major browsers (Chrome, Edge, Mozilla and Safari)
-i.e. platform independent
+i.e., platform independent
 - it is programming model independent
 - it is hardware independent
 
 What this means is you could write a web application in C, compile it to 
 WebAssembly and use it on any browser on any hardware. This gives much more 
 performance in general than a JavaScript program, which has type 
-classification overheads, performance implications based on which browser 
-you target and how performant is your interpreter.
+classification overheads and overheads at parsing and verification.
+Existing technologies also has performance implications based on which browser 
+you target (different browsers used different techniques to optimize applications on
+browsers).
 
 ## Is WebAssembly just C on browsers?
 WebAssembly does brings the performance of pre-compiled languages to web browsers. 
-But it does so side-by-side with traditional Javascript running on the same engines.
-This allows browsers to have best of both worlds, drive the Ferrari on the race track- 
-run performant WebAssembly when it needs performance, or drive the Prius to the 
-grocery store- quickly getting a simple web application up and running.
+But it does so side-by-side with traditional JavaScript running on the same engines.
+This allows browsers to have best of both worlds, drive the Ferrari on the race track--- 
+run performant WebAssembly when it needs performance--- or drive the Prius to the 
+grocery store--- quickly getting a simple web application up and running.
 
 With WebAssembly, you could use JavaScript for fast development, but also 
 use C where you need performance. You could use C where static typing is
-useful, but JavaScript where dynamic typing is a necessacity for productivity.
+useful, but JavaScript where dynamic typing is a necessity for productivity.
 And you could combine these modules, to balance productivity and performance,
 as both these styles can now be executed in the same compiler flow.
 So WebAssembly is more than just C on browsers, it's a carefully coordinated, 
@@ -92,7 +94,7 @@ fronts offered from these two tools gave the incentive to merge them
 as WebAssembly.
 
 ## Compiling for WebAssembly
-Major component of speed up from WebAssembly comes from the compilation.
+A Major component of speedup from WebAssembly comes from the compilation.
 Using JavaScript, your JavaScript engine would go through the phases of 
 parsing, baseline compilation, optimizing compiler, re-optimizing and 
 bail out, execute and garbage collection to run an application. 
@@ -100,13 +102,13 @@ WebAssembly affects each of these stages to be more performant.
 
 To begin with, WebAssembly is more compact than JavaScript source code, 
 making it faster to fetch from the server. Then WebAssembly doesn't need 
-parsing, it's already compiled down to virtual instructions which only 
+parsing; it's already compiled down to virtual instructions which only 
 need decoding like in actual hardware. The engine can do this decode 
 much faster than parsing JavaScript code to an IR.
 
 Then benefits of WebAssembly from actual compilation kick in. 
 JavaScript needs to be compiled to multiple versions based on what types 
-are in use(similar to any other dynamically typed language). WebAssembly 
+are in use (similar to any other dynamically typed language). WebAssembly 
 code is statically typed and has its types encoded during offline compilation on to WebAssembly.
 Therefore, it doesn't need monitoring (in the interpreter) to figure out 
 the types, and maintain multiple versions. The JavaScript engine also 
@@ -117,7 +119,7 @@ Since WebAssembly doesn't need assumptions (such as which type certain
 object is) during interpretting, the JavaScript engine doesn't  need to 
 bail out and reoptimize as such errors never occur. 
 
-Finally, WebAssembly also allow you to manage memory manually (it only 
+Finally, WebAssembly also allows you to manage memory manually (it only 
 supports manual memory management as of now, but automation is to be added
  as an option) which allows you to avoid expensive garbage collection 
 during interpretation.
@@ -128,11 +130,11 @@ and skips parsing, most compiler optimizations, bail out and garbage collection.
 
 ## Implementing WebAssembly compilers
 WebAssembly is walking a tight rope between high performance (C world), and 
-safety and portability(JS world). It is hard to theorize how to optimize for
+safety and portability (JS world). It is hard to theorize how to optimize for
 it, so the WebAssembly team implemented extensions in different browsers to
 validate that it is indeed possible to achieve the said goal.
 
-V8 (from Chrome) and SpiderMonkey (from Firefox), reuse their optimizing JIT 
+V8 (from Chrome) and SpiderMonkey (from Firefox) reuse their optimizing JIT 
 compilers to compile ahead-of-time. This provides them predictable high 
 performance, as opposed to the unpredictable warmup times with JavaScript.
 Chakra (from Edge) uses lazy translation and optimizes only hot code. This 
