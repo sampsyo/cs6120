@@ -54,9 +54,9 @@ run performant WebAssembly when it needs performance--- or drive the Prius to th
 grocery store--- quickly getting a simple web application up and running.
 
 With WebAssembly, you could use JavaScript for fast development, but also 
-use C where you need performance. You could use C where static typing is
+use C where you need performance. You could use C (theoretically supports other languages too) where static typing is
 useful, but JavaScript where dynamic typing is a necessity for productivity.
-And you could combine these modules, to balance productivity and performance,
+And you could combine these modules, leveraging interoperability to balance productivity and performance,
 as both these styles can now be executed in the same compiler flow.
 So WebAssembly is more than just C on browsers, it's a carefully coordinated, 
 well-designed, massive engineering effort to reconcile two worlds at odds.
@@ -98,7 +98,8 @@ A Major component of speedup from WebAssembly comes from the compilation.
 Using JavaScript, your JavaScript engine would go through the phases of 
 parsing, baseline compilation, optimizing compiler, re-optimizing and 
 bail out, execute and garbage collection to run an application. 
-WebAssembly affects each of these stages to be more performant.
+WebAssembly affects each of these stages to be more performant, and even completely
+obviating the need of some.
 
 To begin with, WebAssembly is more compact than JavaScript source code, 
 making it faster to fetch from the server. Then WebAssembly doesn't need 
@@ -140,10 +141,12 @@ performance, as opposed to the unpredictable warmup times with JavaScript.
 Chakra (from Edge) uses lazy translation and optimizes only hot code. This 
 achieves faster startup time.
 
-To permit efficient use of baseline JIT compilers, WebAssembly is desiged to
+To permit efficient use of baseline JIT compilers, WebAssembly is designed to
 do fast validation and ability to track registers for allocation without IR
-generation. To integrate well with optimizing JIT compilers, WebAssembly is 
-designed to do direct-to-SSA translation. Moreover, structured control flow 
+generation. This is done by careful design of WebAssembly instructions, which 
+the pass can use to extract register information.To integrate well with optimizing JIT compilers, WebAssembly is 
+designed to do direct-to-SSA translation (WebAssembly is not in SSA form, but offers some tools
+to derive an SSA form). Moreover, structured control flow 
 makes decoding simpler.
 
 Another key aspect in running native code in a browser is security. Sandboxing
@@ -156,12 +159,12 @@ to follow certain patterns.
 
 ## How good is it?
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
-JavaScript can be, in theory more performant in execution (at least for now, 
-where WebAssembly is interpreted by building into existing JavaScript engines). But this 
-requires the programmer to know JIT compilation internals and constrain to 
+JavaScript can be more performant in execution (at least for now, 
+where WebAssembly is interpreted by building into existing JavaScript engines). But 
+sometimes this requires the programmer to know JIT compilation internals and constrain to 
 one browser as each has different interpreters. WebAssembly is
-already optimized statically (more time for the compiler to optimize) for 
-the general case and each interpreter can leverage its generality to do 
+already optimized statically (more time for the compiler to optimize) by trading off 
+flexibility for an optimized general case and each interpreter can leverage its generality to do 
 additional optimizations better than on generic JavaScript. So in practice
 WebAssembly can be much more performant.
 
