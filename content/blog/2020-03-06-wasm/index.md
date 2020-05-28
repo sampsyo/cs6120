@@ -54,7 +54,7 @@ run performant WebAssembly when it needs performance--- or drive the Prius to th
 grocery store--- quickly getting a simple web application up and running.
 
 With WebAssembly, you could use JavaScript for fast development, but also 
-use C where you need performance. You could use C (theoretically supports other languages too) where static typing is
+use C where you need performance. You could use C (and many other languages) where static typing is
 useful, but JavaScript where dynamic typing is a necessity for productivity.
 And you could combine these modules, leveraging interoperability to balance productivity and performance,
 as both these styles can now be executed in the same compiler flow.
@@ -95,7 +95,7 @@ fronts offered from these two tools gave the incentive to merge them
 as WebAssembly.
 
 ## Compiling for WebAssembly
-A Major component of speedup from WebAssembly comes from the compilation.
+A major component of speedup from WebAssembly comes from the compilation.
 Using JavaScript, your JavaScript engine would go through the phases of 
 parsing, baseline compilation, optimizing compiler, re-optimizing and 
 bail out, execute and garbage collection to run an application. 
@@ -145,7 +145,7 @@ achieves faster startup time.
 To permit efficient use of baseline JIT compilers, WebAssembly is designed to
 do fast validation and ability to track registers for allocation without IR
 generation. This is done by careful design of WebAssembly instructions, which 
-the pass can use to extract register information.To integrate well with optimizing JIT compilers, WebAssembly is 
+the pass can use to extract register information. To integrate well with optimizing JIT compilers, WebAssembly is 
 designed to do direct-to-SSA translation (WebAssembly is not in SSA form, but offers some tools
 to derive an SSA form). Moreover, structured control flow 
 makes decoding simpler.
@@ -216,7 +216,7 @@ efficiently on shared memory and
 [emscripten]: https://emscripten.org
 [llvm]: https://llvm.org
 
-## How to learn more..
+## How to learn more...
 - [WebAssembly paper][paper]
 - [A cartoon intro to WebAssembly][cart]
 - [WebAssembly will finally let you run high performance applications in your browser][spec]
