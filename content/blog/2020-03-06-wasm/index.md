@@ -88,7 +88,7 @@ parsing as it's already in a binary format. Even though asm.js compilation is di
 interpretation, and is statically typed as WebAssembly, it is still limited by 
 JavaScript for expressivity and transporting format. Moreover, it's designed 
 to use CPU features that are not expressible in asm.js, such as 64-bit integers.
-Secondly, it replaces [NaCL][nacl] as a goto tool to run C programs in a browser,
+Secondly, it replaces [NaCL][nacl] as a go-to tool to run C programs in a browser,
 as WebAssembly is well integrated to the JavaScript ecosystem. Meanwhile, NaCL used
 sandboxing within applications to integrate. In fact, the two optimization
 fronts offered from these two tools gave the incentive to merge them 
