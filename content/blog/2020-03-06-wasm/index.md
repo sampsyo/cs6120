@@ -62,7 +62,7 @@ So WebAssembly is more than just C on browsers, it's a carefully coordinated,
 well-designed, massive engineering effort to reconcile two worlds at odds.
 
 ## How does it differ from existing tools?
-So WebAssembly is portable, but doesn't JVM (Java virtual machine) already 
+So WebAssembly is portable, but doesn't the Java Virtual Machine (JVM) already 
 offer portability? Even though the overall goal has some similarities, Java 
 cannot be run on a browser without plugins and has doesn't have the language
 flexibilty WebAssembly provides. This is due to Java's portability coming 
@@ -88,7 +88,7 @@ parsing as it's already in a binary format. Even though asm.js compilation is di
 interpretation, and is statically typed as WebAssembly, it is still limited by 
 JavaScript for expressivity and transporting format. Moreover, it's designed 
 to use CPU features that are not expressible in asm.js, such as 64-bit integers.
-Secondly, it replaces [NaCL][nacl] as a goto tool to run C programs in a browser,
+Secondly, it replaces [NaCL][nacl] as a go-to tool to run C programs in a browser,
 as WebAssembly is well integrated to the JavaScript ecosystem. Meanwhile, NaCL used
 sandboxing within applications to integrate. In fact, the two optimization
 fronts offered from these two tools gave the incentive to merge them 
