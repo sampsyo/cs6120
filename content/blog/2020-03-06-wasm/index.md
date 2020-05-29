@@ -67,12 +67,10 @@ offer portability? Even though the overall goal has some similarities, Java
 cannot be run on a browser without plugins and has doesn't have the language
 flexibilty WebAssembly provides. This is due to Java's portability coming 
 from the ability to run Java programs in different platforms, and therefore not
-designed to run multiple programs in a browser. Java also doesn't solve the issues
-JavaScript poses through interpreter based execution, dynamic typing and
-garbage collection. Moreover, validation and memory safety makes 
-WebAssembly more secure from vulnerabilities. Java was not designed with 
-formalization in mind, and therefore is complex to validate. Java applets
-have strict security restrictions as a work around for many implementation bugs.
+designed to run programs written in multiple languages in a browser. Java also doesn't solve the issues
+JavaScript poses through interpreter based execution and
+garbage collection. Moreover, WebAssembly is designed to make validation easier. 
+Java was not designed with formalization in mind, and therefore is complex to validate.
 Structured control flow and single pass compilation and validation places WebAssembly as a 
 mature option compared to existing bytecode formats such as JVM and CIL 
 (Common Intermediate Language) which contain irreducible loops and unbalanced locking 
@@ -84,10 +82,10 @@ natively on a browser.
 WebAssembly also performs better compared to recent technologies with a similar
 goal. Firstly, it can outperform [asm.js][asmjs] from optimizations beyond what can be done with 
 JavaScript, WebAssembly has faster download with smaller code size, it does not require
-parsing as it's already in a binary format. Even though asm.js compilation is different from regular JavaScript
-interpretation, and is statically typed as WebAssembly, it is still limited by 
-JavaScript for expressivity and transporting format. Moreover, it's designed 
-to use CPU features that are not expressible in asm.js, such as 64-bit integers.
+parsing as it's already in a binary format. Even though asm.js compilation is different 
+from regular JavaScript interpretation, and is statically typed as WebAssembly, 
+it is still limited by JavaScript. It is not as compact as WebAssembly as a transporting format. 
+Moreover, WebAssembly is designed to use CPU features that are not expressible in JavaScript, such as 64-bit integers.
 Secondly, it replaces [NaCL][nacl] as a go-to tool to run C programs in a browser,
 as WebAssembly is well integrated to the JavaScript ecosystem. Meanwhile, NaCL used
 sandboxing within applications to integrate. In fact, the two optimization
@@ -113,26 +111,23 @@ obviating the need of some.
 To begin with, WebAssembly is more compact than JavaScript source code, 
 making it faster to fetch from the server. Then WebAssembly doesn't need 
 parsing; it's already compiled down to virtual instructions which only 
-need decoding like in actual hardware. The engine can do this decode 
-much faster than parsing JavaScript code to an IR.
+need decoding like in actual hardware. The WebAssembly compiler can do this decode 
+much faster than the JavaScript engine parsing JavaScript code to an IR.
 
 Then benefits of WebAssembly from actual compilation kick in. 
 JavaScript needs to be compiled to multiple versions based on what types 
 are in use (similar to any other dynamically typed language). WebAssembly 
 is a sound, statically typed language, which has its types encoded during offline compilation on to WebAssembly.
-Therefore, it doesn't need monitoring (in the interpreter) to figure out 
-the types, and maintain multiple versions. The JavaScript engine also 
-doesn't need to do most optimizations, except for platform and hardware 
+Therefore, it doesn't need monitoring to figure out 
+the types, and maintain multiple versions. Unlike in the JavaScript engine, 
+WebAssembly also doesn't need to do most optimizations, except for platform and hardware 
 dependent ones, as everything else is already done in static compile time.
 
 Since WebAssembly doesn't need assumptions (such as which type certain 
-object is) during interpretting, the JavaScript engine doesn't  need to 
-bail out and reoptimize as such errors never occur. 
-
-Finally, WebAssembly also allows you to manage memory manually (it only 
+object is) during interpretting, the compiler doesn't  need to 
+bail out and reoptimize as such errors never occur. Finally, WebAssembly also allows you to manage memory manually (it only 
 supports manual memory management as of now, but automation is to be added
- as an option) which allows you to avoid expensive garbage collection 
-during interpretation.
+ as an option) which allows you to avoid expensive garbage collection.
 
 Therefore, WebAssembly only requires compiler backend, module loading frontend, 
 security sandboxing and supporting VM components in the existing JavaScript engine,
@@ -168,12 +163,9 @@ to follow certain patterns.
 
 ## How good is it?
 Writing code in WebAssembly doesn't mean it'll be automatically faster. 
-JavaScript can be more performant in execution (at least for now, 
-where WebAssembly is interpreted by building into existing JavaScript engines). But 
-sometimes this requires the programmer to know JIT compilation internals and constrain to 
-one browser as each has different interpreters. WebAssembly is
-already optimized statically (more time for the compiler to optimize) by trading off 
-flexibility for an optimized general case and each interpreter can leverage its generality to do 
+However, programs are already optimized during compilation to WebAssembly 
+(more time for the compiler to optimize) by trading off flexibility for an 
+optimized general case and WebAssembly compiler can leverage its generality to do 
 additional optimizations better than on generic JavaScript. So in practice
 WebAssembly can be much more performant.
 
