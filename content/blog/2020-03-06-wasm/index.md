@@ -95,6 +95,14 @@ fronts offered from these two tools gave the incentive to merge them
 as WebAssembly.
 
 ## Compiling for WebAssembly
+The overall execution flow of WebAssembly has two phases. The frontend  
+compiles and optimizes C (and other) programs to WebAssembly. The WebAssembly
+bytecode is downloaded to the browser, where the time-critical compilation 
+to machine code occurs. This phase is compared to the conventional JavaScript
+execution.
+
+<img src="wasm.png" width="700" >
+
 A major component of speedup from WebAssembly comes from the compilation.
 Using JavaScript, your JavaScript engine would go through the phases of 
 parsing, baseline compilation, optimizing compiler, re-optimizing and 
