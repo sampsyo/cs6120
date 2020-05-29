@@ -3,7 +3,7 @@ title = "Framework to Include Runtime Functions to Your LLVM Pass"
 extra.author = "Sachille Atapattu"
 extra.author_link = "https://www.csl.cornell.edu/~sachille/"
 extra.bio = """
-  [Sachille][] is a third-year graduate student working across the stack to 
+  [Sachille][sachille] is a third-year graduate student working across the stack to 
   make heterogeneous computing easier. Sachille also likes books (currently reading 
   Endure by Alex Hutchinson) and philosophizing with friends.
 
@@ -245,15 +245,16 @@ However, this also conflates challenges from both prior levels of abstraction.
 Unlike a single instruction, it's highly program dependent how a basic block interacts with
 rest of the program. Unlike a function, it is not clear what those program specific interfaces
 are. And these interfaces have to be created at an intermediate-representation level. To make matters worse,
-these interfaces are intermediate-repesentation specific. If you target a specific optimization
-(say -O1), your pass will probably need updating for a different optimization.
+these interfaces are intermediate-repesentation specific. There can be many intermediate-representations
+with different instruction patterns of the same source code, and your pass will need to take this into account.
 This is all great, if you're focusing on the compiler optimizations. But for a hardware 
-accelerator simulation nothing can be worse; now you are entangled in the compiler optimization
-with the simulator for performance.
+accelerator simulation nothing can be worse; now you need to be aware of coverage
+at the intermediate-representation level for simulator performance.
 
 ## Replacing chains of instructions
-One way to strike the middle ground provided by basic blocks, without the baggage from a
-particular compiler optimization, is to critically select a set of instructions to 
+One way to strike the middle ground provided by basic blocks, without 
+having to create optimizations applicable for different code patterns
+of the same design, is to critically select a set of instructions to 
 replace that gives you sufficient coarseness in granularity but also decouples from the 
 intermediate representation.
 
@@ -303,7 +304,7 @@ The program, nor LLVM provide any support. We have to create the interfaces and 
 with lower level tools such as basic blocks or instructions. 
 
 ## Evaluation
-I evaluated this framework by implementing passes for [MachSuite][mach]. I use a mix of unoptimizes and -O1
+I evaluated this framework by implementing passes for [MachSuite][mach]. I test using a mix of unoptimized and -O1
 for the kernel code. I use clang version 11.0.0 for LLVM compilation and python3.7 for Python execution. 
 I averaged results from multiple executions to make the tests more robust. However, for certain tests this proved
 too tedious as the tests took a long time to complete.
@@ -356,8 +357,9 @@ Some other learnings from the project are:
 - which version in Python to use for embedding in C turned out to be surprisingly hard.
 - extending MachSuite to test kernel functions multiple times should have been trivial.
 However I kept running into segmentation faults. This is yet to be debugged.
-- which optimization level to use in LLVM has an impact on the LLVM passes. Some passes 
-need to be completely reworked or substantially extended to cover multiple optimizations.
+- creating a generic optimization pass that doesn't depend on the generated instruction pattern in LLVM turned out to be tricky. 
+Some passes need to be completely reworked or substantially extended to achieve the same objective in different optimization levels
+which created different patterns.
 
 ## References
 - [skeleton][skeleton]
