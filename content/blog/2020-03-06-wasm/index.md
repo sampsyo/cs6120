@@ -1,5 +1,5 @@
 +++
-title = "Bringing you up to speed on how compiling WebAssembly is faster"
+title = "Bringing You Up to Speed on How Compiling WebAssembly is Faster"
 extra.author = "Sachille Atapattu"
 extra.author_link = "https://www.csl.cornell.edu/~sachille/"
 extra.bio = """
