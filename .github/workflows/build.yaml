@@ -1,10 +1,10 @@
 on:
     push:
         branches:
-           - master
+            - 2020fa
     pull_request:
         branches:
-            - master
+            - 2020fa
 
 jobs:
     build:
