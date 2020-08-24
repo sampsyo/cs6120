@@ -1,12 +1,12 @@
 +++
-title = "Advanced Compilers β"
+title = "Advanced Compilers γ"
 template = "home.html"
 +++
-# CS 6120: Advanced Compilers β
+# CS 6120: Advanced Compilers γ
 
 **Instructor:** [Adrian Sampson][adrian]  
-**When:** Monday, Wednesday, and Friday, 9:05am–9:55am  
-**Where:** [Ives][] 115  
+**When:** Monday and Wednesday, 9:55am–10:05am  
+**Where:** TK  
 **Office hours:** By appointment ([Slack][] Adrian to find a time)
 
 Read & [subscribe][rss] to our [course blog][blog]!
