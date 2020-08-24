@@ -1,4 +1,4 @@
-base_url = "https://www.cs.cornell.edu/courses/cs6120/2019fa"
+base_url = "https://www.cs.cornell.edu/courses/cs6120/2020fa"
 compile_sass = true
 build_search_index = false
 generate_rss = true
@@ -11,10 +11,6 @@ title = "CS 6120"
 [extra]
 favicon = "/img/favicon.ico"
 bigicon = "/img/favicon152.png"
-
-[[extra.links]]
-name = "Slack"
-url = "https://cs6120-2019fa.slack.com/"
 
 [[extra.links]]
 name = "GitHub"
