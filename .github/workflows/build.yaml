@@ -11,7 +11,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+            - name: 'Install Zola'
+              run: sudo snap install --edge zola
             - name: 'Build Zola site'
-              uses: shalzz/zola-deploy-action@master
-              env:
-                  BUILD_ONLY: true
+              run: zola build
