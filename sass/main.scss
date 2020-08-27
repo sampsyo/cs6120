@@ -226,6 +226,9 @@ a.icon:before {
   margin-right: 0.3em;
   background-repeat: no-repeat;
   background-size: 0.9em 0.9em;
+  background-position-y: 2px;
+  filter: invert(17%) sepia(66%) saturate(4981%) hue-rotate(355deg)
+    brightness(77%) contrast(85%);
 }
 
 a.discussion:before {
