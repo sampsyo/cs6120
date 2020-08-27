@@ -1,16 +1,4 @@
 {% extends "base.html" %}
 {% block main %}
 {{ section.content | safe }}
-{% for lesson in section.pages %}
-<article>
-  <h1>
-    <a href="{{ lesson.permalink }}">Lesson {{ lesson.slug }}:</a>
-    {{ lesson.title }}
-  </h1>
-  <p class="details">
-    <a href="https://cs6120.zulipchat.com/#narrow/stream/254742-lessons/topic/{{lesson.slug}}">discussion</a>
-    TK details.
-  </p>
-</article>
-{% endfor %}
 {% endblock main %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>
+  Lesson {{ page.slug }}:
+  {{ page.title }}
+</h1>
+{{ page.content | safe }}
+{% endblock main %}
