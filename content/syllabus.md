@@ -7,55 +7,12 @@ This is a research-oriented PhD course about programming language implementation
 The class focuses on reading and [discussing][discussion] research papers and independent hacking on [open-source projects][project].
 
 
-## This Course is in Beta
-
-<p class="ornament">
-  <img src="../img/construction.gif" style="width: 5rem; height: 5rem;"><br>
-  CS 6120 is a brand new, experimental course.
-  Everything might change.
-  Nothing is certain.
-</p>
-
-
 ## Zulip
 
 [Sign up for the course Zulip.][zulip]
-All course communication will happen there.
-I’m absolutely serious about this; there won’t be email about this course.
-You *have* to pay attention to Zulip.
+All course communication will happen there (not on email).
 
 [zulip]: https://cs6120.zulipchat.com
-
-
-## Preliminaries
-
-These are things we’ll do in the first week of classes.
-The deadline for both is Friday, September 6.
-
-**Introductions.**
-Post an introductory message on Zulip.
-Give the name you like people to refer to you with
-and mention one thing you’re interested in learning about in CS 6120.
-This suggestion can be as general as an entire topic or as specific as a particular paper.
-(There are no guarantees that we’ll actually cover your idea.)
-
-**Non-PhD students.**
-CS 6120 is for PhD students at Cornell.
-If that doesn’t describe you, you need to apply to take the course.
-Write answers to these two questions:
-(1) What is CS 6120 about?
-(2) Why do you want to take the course?
-Submit your responses as a one-page PDF to Adrian via Zulip.
-
-
-## Discussion & the Time
-
-This is a discussion-focused course.
-To get the value out of the course, you need to show up and participate.
-Everyone needs to do the reading ahead of time—you are not allowed to just pick it up on the fly in class.
-
-I know that the 9am start time might be hard for some people—I encourage you to see it as an opportunity to become a morning person.
-If 9am repeatedly doesn’t work for you, I will ask you to drop the course.
 
 
 ## Paper Reading, Perspectives, and Presentations
