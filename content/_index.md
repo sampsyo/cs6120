@@ -6,14 +6,21 @@ template = "home.html"
 
 **Instructor:** [Adrian Sampson][adrian]  
 **When:** Monday and Wednesday, 9:55am–10:05am  
-**Where:** TK  
-**Office hours:** By appointment (DM Adrian on [Zulip][] to find a time)
+**Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)
 
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
+While you're at it, check out the [old blog from 2019][oldblog].
 
-If you're enrolled in 6120, I implore you to read the [syllabus][syllabus] and
-the guides to [discussion leading][discussion] and [implementation projects][project] for the course.
+## Apocalypse Logistics
+
+This fall, CS 6120 is an **async-first, online-first, flipped-classroom, hybrid smorgasbord of instructional experiences**.
+The actual content comes in the form of videos, notes, and [Zulip][] chat.
+We will use the synchronous class time mostly for hacking and asking questions, whether you're in person or participating virtually.
+Synchronous attendance is recommended but optional; in-person attendance is possible; asynchronous participation and discussion is required.
+There are no exams in this course, in-person or otherwise.
+
+Please read the [syllabus][] for more details on how everything works.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [zulip]: https://cs6120.zulipchat.com
@@ -23,3 +30,4 @@ the guides to [discussion leading][discussion] and [implementation projects][pro
 [discussion]: @/discussion.md
 [project]: @/project/_index.md
 [syllabus]: @/syllabus.md
+[oldblog]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
