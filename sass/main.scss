@@ -220,7 +220,7 @@ img.rss {
   height: 0.8em;
 }
 
-a.discussion:before, a.video:before {
+a.icon:before {
   content: "";
   padding-right: 1em;
   margin-right: 0.3em;
@@ -236,9 +236,19 @@ a.video:before {
   background-image: url(img/video.svg);
 }
 
+a.reading:before {
+  background-image: url(img/book.svg);
+}
+
 ul.links {
   list-style: none;
-  padding-left: 0;
+  padding-left: 1.5em;
+  li {
+    margin: 1ex 0;
+  }
+  a.icon:before {
+    margin-left: -1.3em;
+  }
 }
 
 ul.compact {
