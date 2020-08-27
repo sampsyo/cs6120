@@ -4,5 +4,10 @@
   Lesson {{ page.slug }}:
   {{ page.title }}
 </h1>
+<ul class="links">
+  <li>
+    <a href="https://cs6120.zulipchat.com/#narrow/stream/254742-lessons/topic/{{page.slug}}" class="discussion">discussion</a>
+  </li>
+</ul>
 {{ page.content | safe }}
 {% endblock main %}

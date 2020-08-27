@@ -220,6 +220,20 @@ img.rss {
   height: 0.8em;
 }
 
+a.discussion:before {
+  content: "";
+  padding-right: 1em;
+  margin-right: 0.3em;
+  background-image: url(../img/discussion.svg);
+  background-repeat: no-repeat;
+  background-size: 0.9em 0.9em;
+}
+
+ul.links {
+  list-style: none;
+  padding-left: 0;
+}
+
 .ornament {
   max-width: 15rem;
   margin: 0 auto;
