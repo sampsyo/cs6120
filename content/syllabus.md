@@ -87,7 +87,7 @@ and the rigor of your empirical evaluation---but not on the success of your idea
 
 Read more details on [how projects work][project].
 
-[project]: @/project/_index.md
+[project]: TK
 [blog]: @/blog/_index.md
 
 ## Ad Hoc Implementation Homework

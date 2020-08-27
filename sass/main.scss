@@ -220,18 +220,35 @@ img.rss {
   height: 0.8em;
 }
 
-a.discussion:before {
+a.discussion:before, a.video:before {
   content: "";
   padding-right: 1em;
   margin-right: 0.3em;
-  background-image: url(../img/discussion.svg);
   background-repeat: no-repeat;
   background-size: 0.9em 0.9em;
+}
+
+a.discussion:before {
+  background-image: url(../img/discussion.svg);
+}
+
+a.video:before {
+  background-image: url(../img/video.svg);
 }
 
 ul.links {
   list-style: none;
   padding-left: 0;
+}
+
+ul.compact {
+  margin: 0;
+  list-style: none;
+  padding-left: 0;
+  li {
+    display: inline-block;
+    margin-right: 1em;
+  }
 }
 
 .ornament {

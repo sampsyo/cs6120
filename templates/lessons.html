@@ -1,15 +1,22 @@
 {% extends "base.html" %}
 {% block main %}
 {{ section.content | safe }}
-{% for lesson in section.pages %}
+{% for page in section.pages %}
 <article>
   <h1>
-    <a href="{{ lesson.permalink }}">Lesson {{ lesson.slug }}:</a>
-    {{ lesson.title }}
+    <a href="{{ page.permalink }}">Lesson {{ page.slug }}:</a>
+    {{ page.title }}
   </h1>
-  <p class="details">
-    <a href="https://cs6120.zulipchat.com/#narrow/stream/254742-lessons/topic/{{lesson.slug}}" class="discussion">discussion</a>
-  </p>
+  <ul class="compact">
+    <li>
+      <a href="https://cs6120.zulipchat.com/#narrow/stream/254742-lessons/topic/{{page.slug}}" class="discussion">discussion</a>
+    </li>
+    {% for video in page.extra.videos %}
+    <li>
+      <a href="{{video.url}}" class="video">{{video.name}}</a>
+    </li>
+    {% endfor %}
+  </ul>
 </article>
 {% endfor %}
 {% endblock main %}
