@@ -2,6 +2,7 @@
 {% block main %}
 {{ section.content | safe }}
 {% for page in section.pages %}
+{% if not page.draft %}
 <article>
   <h1>
     <a href="{{ page.permalink }}">Lesson {{ page.slug }}:</a>
@@ -18,5 +19,6 @@
     {% endfor %}
   </ul>
 </article>
+{% endif %}
 {% endfor %}
 {% endblock main %}
