@@ -17,12 +17,14 @@ The class focuses on reading and [discussing][discussion] research papers and in
 </p>
 
 
-## Slack
+## Zulip
 
-[Sign up for the course Slack.](https://cs6120-2019fa.slack.com/signup)
+[Sign up for the course Zulip.][zulip]
 All course communication will happen there.
 I’m absolutely serious about this; there won’t be email about this course.
-You *have* to pay attention to Slack.
+You *have* to pay attention to Zulip.
+
+[zulip]: https://cs6120.zulipchat.com
 
 
 ## Preliminaries
@@ -31,7 +33,7 @@ These are things we’ll do in the first week of classes.
 The deadline for both is Friday, September 6.
 
 **Introductions.**
-Post an introductory message on Slack.
+Post an introductory message on Zulip.
 Give the name you like people to refer to you with
 and mention one thing you’re interested in learning about in CS 6120.
 This suggestion can be as general as an entire topic or as specific as a particular paper.
@@ -43,7 +45,7 @@ If that doesn’t describe you, you need to apply to take the course.
 Write answers to these two questions:
 (1) What is CS 6120 about?
 (2) Why do you want to take the course?
-Submit your responses as a one-page PDF to Adrian via Slack.
+Submit your responses as a one-page PDF to Adrian via Zulip.
 
 
 ## Discussion & the Time

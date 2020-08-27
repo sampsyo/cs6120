@@ -31,11 +31,11 @@ Their quality will not only shape the discussions we have in class but will also
 
 Add new blog posts to the [course GitHub repository][gh].
 The repository README has instructions.
-When you finish the first draft of your perspective post, announce it on [Slack][].
+When you finish the first draft of your perspective post, announce it on [Zulip][].
 The instructor will provide feedback on your blog posts to help you improve them, and other students are invited to do so too.
 
 [gh]: https://github.com/sampsyo/cs6120
-[slack]: https://cs6120-2019fa.slack.com/
+[zulip]: https://cs6120.zulipchat.com
 [tmp]: https://blog.acolyer.org
 
 
