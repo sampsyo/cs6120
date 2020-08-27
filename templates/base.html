@@ -27,16 +27,16 @@
       </a></p>
       {% endif %}
       {% endfor %}
+      {% set lessons = get_section(path="lesson/_index.md") %}
+      <p><a href="{{ lessons.permalink }}">
+        Lessons
+      </a></p>
       {% for link in config.extra.links %}
       <p><a href="{{link.url | safe}}">{{link.name}}</a></p>
       {% endfor %}
       {% set blog = get_section(path="blog/_index.md") %}
       <p><a href="{{ blog.permalink }}">
         Blog
-      </a></p>
-      {% set projects = get_section(path="project/_index.md") %}
-      <p><a href="{{ projects.permalink }}">
-        Projects
       </a></p>
     </nav>
   </header>

@@ -1,4 +1,15 @@
 {% extends "base.html" %}
 {% block main %}
 {{ section.content | safe }}
+{% for lesson in section.pages %}
+<article>
+  <h1>
+    <a href="{{ lesson.permalink }}">Lesson {{ lesson.slug }}:</a>
+    {{ lesson.title }}
+  </h1>
+  <p class="details">
+    TK details.
+  </p>
+</article>
+{% endfor %}
 {% endblock main %}
