@@ -1,17 +1,41 @@
 on:
-    push:
-        branches:
-            - 2020fa
-    pull_request:
-        branches:
-            - 2020fa
+  push:
+    branches:
+      - 2020fa
+  pull_request:
+    branches:
+      - 2020fa
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - name: 'Install Zola'
-              run: sudo snap install --edge zola
-            - name: 'Build Zola site'
-              run: zola build
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Install Zola'
+        run: sudo snap install --edge zola
+      - name: 'Build Zola site'
+        run: zola build
+      - name: rsync
+        if: ${{github.event_name=='push' && github.ref=='refs/heads/2020fa'}}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SRC: ./public/
+          DEPLOY_DEST: sync/cs6120-2020fa
+          DEPLOY_2_HOST: cslinux
+          DEPLOY_2_DEST: /courses/cs6120/2020fa/site
+        run: |
+          echo "$DEPLOY_KEY" > pk
+          echo "$DEPLOY_KNOWN_HOSTS" > kh
+          chmod 600 pk
+          rsync --compress --recursive --checksum --itemize-changes --delete \
+            -e "ssh -p \"$DEPLOY_PORT\" -i pk -o 'UserKnownHostsFile kh'" \
+            $DEPLOY_SRC $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DEST
+          ssh -p $DEPLOY_PORT -i pk -o 'UserKnownHostsFile kh' \
+            $DEPLOY_USER@$DEPLOY_HOST \
+            rsync --compress --recursive --checksum --itemize-changes \
+            --delete -e ssh --perms --chmod=Du=rwx,Dgo=rx,Fu=rw,Fog=r \
+            $DEPLOY_DEST/ $DEPLOY_2_HOST:$DEPLOY_2_DEST
