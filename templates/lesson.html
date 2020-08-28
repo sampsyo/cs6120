@@ -11,7 +11,7 @@
   </li>
   {% for video in page.extra.videos | default(value=[]) %}
   <li>
-    <a href="{{video.url}}" class="icon video">{{ video.name | default(value="video") }}</a>
+    <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
   </li>
   {% endfor %}
   {% for reading in page.extra.readings | default(value=[]) %}
