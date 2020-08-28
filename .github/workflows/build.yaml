@@ -14,7 +14,7 @@ jobs:
       - name: 'Install Zola'
         run: sudo snap install --edge zola
       - name: 'Build Zola site'
-        run: zola build
+        run: zola build --drafts
       - name: rsync
         if: ${{github.event_name=='push' && github.ref=='refs/heads/2020fa'}}
         env:

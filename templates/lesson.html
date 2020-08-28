@@ -3,6 +3,7 @@
 <h1>
   Lesson {{ page.slug }}:
   {{ page.title }}
+  {% if page.draft %}(Draft){% endif %}
 </h1>
 <ul class="links">
   <li>

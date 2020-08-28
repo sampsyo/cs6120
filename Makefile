@@ -3,7 +3,7 @@
 # Clean build.
 site:
 	rm -rf public
-	zola build
+	zola build --drafts
 
 serve:
 	zola serve
