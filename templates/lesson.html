@@ -23,5 +23,16 @@
   </li>
   {% endfor %}
 </ul>
+{% if page.extra.videos %}
+<div class="videos">
+{% for video in page.extra.videos %}
+{% if video.id %}
+  <div class="video">
+    <iframe src="https://cdnapisec.kaltura.com/p/520801/sp/52080100/embedIframeJs/uiconf_id/31230141/partner_id/520801?iframeembed=true&entry_id={{video.id}}" allowfullscreen></iframe>
+  </div>
+{% endif %}
+{% endfor %}
+</div>
+{% endif %}
 {{ page.content | safe }}
 {% endblock main %}
