@@ -1,53 +1,38 @@
 +++
 title = "Syllabus"
 +++
-# CS 6120: Advanced Compilers β Syllabus
+# CS 6120: Advanced Compilers γ Syllabus
 
 This is a research-oriented PhD course about programming language implementation.
-The class focuses on reading and [discussing][discussion] research papers and independent hacking on [open-source projects][project].
+The class focuses on hacking, reading papers, and writing [blog][] posts.
 
 
-## Zulip
+## Communication
 
-[Sign up for the course Zulip.][zulip]
+Please [sign up][zulip-signup] for the [course Zulip][zulip].
 All course communication will happen there (not on email).
 
 [zulip]: https://cs6120.zulipchat.com
+[zulip-signup]: https://www.cs.cornell.edu/courses/cs6120/2020fa/private/zulip.html
 
 
-## Paper Reading, Perspectives, and Presentations
+## The Work
 
-One part of the “work” in CS 6120 is about reading and understanding research papers.
-For some small subset of the classes, you will be the [discussion leader][discussion].
-The discussion leader has two main responsibilities: writing a blog post and facilitating the in-class discussion.
+There are four kinds of things that make up the coursework for CS 6120.
 
-I will grade both your blog post and your in-class discussion facilitation.
-Each one will use a [Michelin star][michelin] system:
-you should shoot for one star, indicating a remarkably insightful exploration of the research.
-A merely acceptable blog post or discussion will receive no stars, and extraordinary work can receive multiple stars.
+* *Implementation tasks:*
+  Discrete bits of compiler implementation work to deepen your understanding of the topics in the [lessons][].
+* *Paper reading:*
+  We'll read research papers, and everybody will participate in online discussion.
+* *Leading paper discussions:*
+  For a subset of the aforementioned research papers, you'll be responsible for writing a [blog][] post and leading the online discussion.
+* *Course project:*
+  There is an open-ended course implementation project that culminates in a blog post.
 
-Read more about [leading discussions][discussion].
-
-[michelin]: https://en.wikipedia.org/wiki/Michelin_Guide
-[discussion]: @/discussion.md
-
-## Implementation Projects and Design Reviews
-
-The big part of the course “work” consists of [language implementation projects][project].
-These are all open-ended (to varying degrees) and open-source projects—even when you implement a well-known technique, *how* you approach the design and implementation are up to you and will inevitably end up being unique.
-Each project culminates in an experience report on the [course blog][blog] and an in-class design review.
-
-I will grade your blog post and design review using the same [Michelin star][michelin] system as for paper discussion leading.
-Your grade will depend on the ambition of the project,
-the clarity of your report and design review,
-and the rigor of your empirical evaluation---but not on the success of your idea (negative results are OK).
-
-Read more details on [how projects work][project].
-
-[project]: TK
+[lessons]: @/lesson/_index.md
 [blog]: @/blog/_index.md
 
-## Ad Hoc Implementation Homework
+### Implementation Tasks
 
 Especially during the first part of the course, another part of course “work” will be implementing compiler algorithms that we learn about in class.
 In a given class, you'll come up with the pseudocode for an algorithm.
@@ -57,6 +42,31 @@ You won’t turn this code in, but you really should do it without looking at th
 Struggling to derive pseudocode before you see the answer is the best way to solidify the big concepts in this course.
 Struggling to get an *actually correct* implementation is the best way to confront the nitty-gritty details that are intrinsic to compiler implementation.
 Avoid the temptation to stop when you’ve got it most of the way—the idea is to go all the way to a complete, tested implementation to get the most out of the assignment.
+
+### Paper Reading & Discussion
+
+One part of the “work” in CS 6120 is about reading and understanding research papers.
+For some small subset of the classes, you will be the [discussion leader][discussion].
+The discussion leader has two main responsibilities: writing a blog post and facilitating the in-class discussion.
+
+### Course Project
+
+At the end of the course, you'll do a language implementation research project.
+This is an open-ended and open-source project that can be on any topic that you can construe as being about compiler hacking.
+The final product is an experience report on the [course blog][blog] where you rigorously evaluate the success of your implementation.
+
+## Grading
+
+I will grade the four categories of coursework based on a [Michelin star][michelin] system:
+you should shoot for one star, indicating excellent implementation work, insightful participation, a thoughtful blog post, or a spectacularly successful project.
+Merely acceptable work will receive no stars, and extraordinary work can receive multiple stars.
+On [CMS][], all assignments are out of one point, indicating the number of stars.
+
+Consistently earning a Michelin star will get you an A for the course.
+Occasional multi-star work yields an A+, and missing stars leads to incrementally lower grades.
+
+[michelin]: https://en.wikipedia.org/wiki/Michelin_Guide
+[cms]: https://cmsx.cs.cornell.edu/
 
 
 ## Policies
