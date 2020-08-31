@@ -33,6 +33,14 @@ lesson = 4
 lesson = 5
 
 [[classes]]
+title = "Profiling"
+leader = "TK"
+[[classes.readings]]
+name = "Efficient path profiling"
+link = "https://dl.acm.org/citation.cfm?id=243857"
+details = "Thomas Ball and James R. Larus. MICRO 1996."
+
+[[classes]]
 lesson = 5
 
 [[classes]]
@@ -48,3 +56,78 @@ leader = "TK"
 name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
 details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
+
+[[classes]]
+title = "Loop Optimization"
+leader = "TK"
+[[classes.readings]]
+name = "Compiler optimizations for improving data locality"
+link = "https://dl.acm.org/citation.cfm?id=195557"
+details = "Steve Carr, Kathryn S. McKinley, and Chau-Wen Tseng. ASPLOS 1994."
+
+[[classes]]
+lesson = 7
+
+[[classes]]
+lesson = 8
+
+[[classes]]
+title = "Memory Allocation"
+leader = "Oliver"
+[[classes.readings]]
+name = "Reconsidering custom memory allocation"
+link = "https://dl.acm.org/citation.cfm?id=582421"
+details = "Emery D. Berger, Benjamin G. Zorn, and Kathryn S. McKinley. OOPSLA 2002."
+
+[[classes]]
+title = "GC & Reference Counting"
+leader = "TK"
+[[classes.readings]]
+name = "A Unified Theory of Garbage Collection"
+link = "https://dl.acm.org/citation.cfm?id=1028982"
+details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
+
+[[classes]]
+lesson = 9
+
+[[classes]]
+title = "Memory Consistency"
+leader = "Adrian"
+[[classes.readings]]
+name = "Threads cannot be implemented as a library"
+link = "https://dl.acm.org/citation.cfm?id=1065042"
+details = "Hans-J. Boehm. PLDI 2005."
+
+[[classes]]
+title = "Thread-Level Speculation"
+leader = "TK"
+[[classes.readings]]
+name = "POSH: a TLS compiler that exploits program structure"
+link = "https://dl.acm.org/citation.cfm?id=1122997"
+details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
+
+# Dynamic languages.
+
+[[classes]]
+title = "Dynamic Languages"
+leader = "TK"
+[[classes.readings]]
+name = "An efficient implementation of SELF, a dynamically-typed object-oriented language based on prototypes"
+link = "http://portal.acm.org/citation.cfm?id=74884"
+details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
+
+[[classes]]
+title = "Tracing"
+leader = "TK"
+[[classes.readings]]
+name = "Trace-based just-in-time type specialization for dynamic languages"
+details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
+link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
+
+[[classes]]
+title = "Meta-JITs"
+leader = "TK"
+[[classes.readings]]
+name = "One VM to rule them all"
+link = "https://dl.acm.org/citation.cfm?id=2509581"
+details = "Thomas Würthinger, Christian Wimmer, Andreas Wöß, Lukas Stadler, Gilles Duboscq, Christian Humer, Gregor Richards, Doug Simon, and Mario Wolczko. Onward! 2013."
