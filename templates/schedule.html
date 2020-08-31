@@ -25,13 +25,7 @@
         <a href="../lesson/{{class.lesson}}/">Lesson {{class.lesson}}</a>:
         {% endif %}
         {{ class.title }}
-        {% if day.notes %}
-        <ul>
-        {% for note in day.notes %}
-          <li>{{ note | markdown(inline=true) | safe }}</li>
-        {% endfor %}
-        </ul>
-        {% endif %}
+        {% if class.leader %}({{class.leader}}){% endif %}
         {% if class.readings %}
         <ul>
         {% for reading in class.readings %}
