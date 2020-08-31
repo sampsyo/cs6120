@@ -64,6 +64,7 @@ mon = true
 
 [[days]]
 date = "November 4"
+notes = ["Due: [Project](../syllabus/#project) proposal."]
 
 [[days]]
 date = "November 9"

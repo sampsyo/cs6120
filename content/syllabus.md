@@ -76,7 +76,7 @@ For those, here is what you need to do—all due one week before the designated 
 [blog2019]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
 [gh]: https://github.com/sampsyo/cs6120
 
-### Course Project
+### Project
 
 At the end of the course, you'll do a language implementation research project.
 This is an open-ended and open-source project that can be on any topic that you can construe as being about compiler hacking.
