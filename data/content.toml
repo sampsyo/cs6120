@@ -153,3 +153,44 @@ leader = "TK"
 name = "POSH: a TLS compiler that exploits program structure"
 link = "https://dl.acm.org/citation.cfm?id=1122997"
 details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
+
+
+# Synthesis.
+
+[[classes]]
+lesson = 11
+
+[[classes]]
+title = "Superoptimization"
+leader = "TK"
+[[classes.readings]]
+name = "Superoptimizer: A Look at the Smallest Program"
+details = "Alexia Massalin. ASPLOS 1987."
+link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pdf"
+
+[[classes]]
+title = "Synthesis-Aided Compilers"
+leader = "TK"
+[[classes.readings]]
+name = "Chlorophyll: synthesis-aided compiler for low-power spatial architectures"
+link = "https://dl.acm.org/citation.cfm?id=2594339"
+details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+
+
+# Correctness.
+
+[[classes]]
+title = "Automatic Verification"
+leader = "TK"
+[[classes.readings]]
+name = "Provably correct peephole optimizations with Alive"
+link = "https://dl.acm.org/citation.cfm?id=2737965"
+details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
+
+[[classes]]
+title = "Interactive Verification"
+leader = "TK"
+[[classes.readings]]
+name = "Formal verification of a realistic compiler."
+link = "https://dl.acm.org/citation.cfm?id=1538814"
+details = "Xavier Leroy. CACM in 2009."
