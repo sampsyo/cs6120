@@ -57,11 +57,11 @@ For those, here is what you need to do—all due one week before the designated 
 * Write a post about the paper for our [course blog][blog].
   The post should contain:
 
-      * Any background that you think the audience needs to understand the paper.
-      * A detailed summary of the main contributions in the work.
-      * Critical thinking about the merits and shortcomings of the work.
-      * Discussion of the work's role in history and its connections to the current computing landscape.
-      * A bulleted list of questions you have about the work to start the discussion.
+     * Any background that you think the audience needs to understand the paper.
+     * A detailed summary of the main contributions in the work.
+     * Critical thinking about the merits and shortcomings of the work.
+     * Discussion of the work's role in history and its connections to the current computing landscape.
+     * A bulleted list of questions you have about the work to start the discussion.
 
     If you need inspiration for the style of post to write, check out [last year's blog][blog2019]. But probably avoid reading posts about your paper, if they exist!
 * Optionally, you can record a video to go along with your blog post that people should watch to get the discussion started.
