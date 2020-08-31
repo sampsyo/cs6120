@@ -243,6 +243,10 @@ a.reading:before {
   background-image: url(img/book.svg);
 }
 
+a.due:before {
+  background-image: url(img/calendar.svg);
+}
+
 ul.links {
   list-style: none;
   padding-left: 1.5em;
