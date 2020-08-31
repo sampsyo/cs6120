@@ -46,14 +46,19 @@ details = "Thomas Ball and James R. Larus. MICRO 1996."
 [[classes]]
 lesson = 5
 
-[[classes]]
-lesson = 5
-
 
 # LLVM.
 
 [[classes]]
 lesson = 6
+
+[[classes]]
+title = "Automatic Verification"
+leader = "TK"
+[[classes.readings]]
+name = "Provably correct peephole optimizations with Alive"
+link = "https://dl.acm.org/citation.cfm?id=2737965"
+details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
 
 [[classes]]
 lesson = 6
@@ -79,20 +84,20 @@ details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
 lesson = 8
 
 [[classes]]
-title = "Memory Allocation"
-leader = "Oliver"
-[[classes.readings]]
-name = "Reconsidering custom memory allocation"
-link = "https://dl.acm.org/citation.cfm?id=582421"
-details = "Emery D. Berger, Benjamin G. Zorn, and Kathryn S. McKinley. OOPSLA 2002."
-
-[[classes]]
 title = "GC & Reference Counting"
 leader = "TK"
 [[classes.readings]]
 name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
 details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
+
+[[classes]]
+title = "Modern GC"
+leader = "TK"
+[[classes.readings]]
+name = "Fast Conservative Garbage Collection"
+link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
+details = "Rifat Shahriyar, Stephen M. Blackburn, and Kathryn S. McKinley. OOPSLA 2014."
 
 
 # Dynamic languages.
@@ -145,23 +150,23 @@ details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant T
 lesson = 11
 
 [[classes]]
-title = "Thread-Level Speculation"
+title = "Vectorization"
 leader = "TK"
 [[classes.readings]]
-name = "POSH: a TLS compiler that exploits program structure"
-link = "https://dl.acm.org/citation.cfm?id=1122997"
-details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
-
-
-# Correctness.
+name = "Exploiting superword level parallelism with multimedia instruction sets"
+link = "https://dl.acm.org/doi/10.1145/358438.349320"
+details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 
 [[classes]]
-title = "Automatic Verification"
+title = "Safe Parallelism"
 leader = "TK"
 [[classes.readings]]
-name = "Provably correct peephole optimizations with Alive"
-link = "https://dl.acm.org/citation.cfm?id=2737965"
-details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
+name = "A type and effect system for deterministic parallel Java"
+link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
+details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephen Heumann, Rakesh Komuravelli, Jeffrey Overbey, Patrick Simmons, Hyojin Sung, and Mohsen Vakilian. OOPSLA 2009."
+
+
+# Potpourri.
 
 [[classes]]
 title = "Interactive Verification"
