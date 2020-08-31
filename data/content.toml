@@ -39,7 +39,7 @@ lesson = 5
 title = "Profiling"
 leader = "TK"
 [[classes.readings]]
-name = "Efficient path profiling"
+name = "Efficient Path Profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
 details = "Thomas Ball and James R. Larus. MICRO 1996."
 
@@ -56,7 +56,7 @@ lesson = 6
 title = "Automatic Verification"
 leader = "TK"
 [[classes.readings]]
-name = "Provably correct peephole optimizations with Alive"
+name = "Provably Correct Peephole Optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
 details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
 
@@ -115,7 +115,7 @@ lesson = 11
 title = "Dynamic Languages"
 leader = "TK"
 [[classes.readings]]
-name = "An efficient implementation of SELF, a dynamically-typed object-oriented language based on prototypes"
+name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
 details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
@@ -123,7 +123,7 @@ details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 title = "Tracing"
 leader = "TK"
 [[classes.readings]]
-name = "Trace-based just-in-time type specialization for dynamic languages"
+name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
 details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
 link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 
@@ -145,7 +145,7 @@ link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pd
 title = "Synthesis-Aided Compilers"
 leader = "TK"
 [[classes.readings]]
-name = "Chlorophyll: synthesis-aided compiler for low-power spatial architectures"
+name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
 link = "https://dl.acm.org/citation.cfm?id=2594339"
 details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
 
@@ -159,7 +159,7 @@ lesson = 13
 title = "Vectorization"
 leader = "TK"
 [[classes.readings]]
-name = "Exploiting superword level parallelism with multimedia instruction sets"
+name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
 link = "https://dl.acm.org/doi/10.1145/358438.349320"
 details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 
@@ -167,7 +167,7 @@ details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 title = "Safe Parallelism"
 leader = "TK"
 [[classes.readings]]
-name = "A type and effect system for deterministic parallel Java"
+name = "A Type and Effect System for Deterministic Parallel Java"
 link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
 details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephen Heumann, Rakesh Komuravelli, Jeffrey Overbey, Patrick Simmons, Hyojin Sung, and Mohsen Vakilian. OOPSLA 2009."
 
@@ -178,6 +178,6 @@ details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephe
 title = "Interactive Verification"
 leader = "TK"
 [[classes.readings]]
-name = "Formal verification of a realistic compiler."
+name = "Formal Verification of a Realistic Compiler"
 link = "https://dl.acm.org/citation.cfm?id=1538814"
 details = "Xavier Leroy. CACM in 2009."
