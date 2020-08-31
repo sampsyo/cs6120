@@ -1,9 +1,17 @@
 {% macro lesson_link(id, title=false) %}
-{% set lesson = get_page(path="lesson/" ~ id ~ ".md") %}
-{% if lesson %}
-{% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson
-  {{id}}{% if not lesson.draft %}</a>{% endif %}{% if title %}:
-{{ lesson.title }}
+
+{% set lesson = false %}
+{% set lessons = get_section(path="lesson/_index.md") %}
+{% for cand in lessons.pages %}
+{% if cand.slug == id | as_str %}
+{% set_global lesson = cand %}
+{% break %}
 {% endif %}
+{% endfor %}
+
+{% if lesson %}
+{% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson {{id}}{% if not lesson.draft %}</a>{% endif %}{% if title %}: {{ lesson.title }}{% endif %}
+{% else %}
+Lesson {{id}}
 {% endif %}
 {% endmacro lesson_link %}
