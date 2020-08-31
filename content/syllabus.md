@@ -12,8 +12,11 @@ The class focuses on hacking, reading papers, and writing [blog][] posts.
 Please [sign up][zulip-signup] for the [course Zulip][zulip].
 All course communication will happen there (not on email).
 
+(Zulip is an open-source Slack-like chat tool with a few unique features that make it a good fit for class discussion. Thanks to [the Zulip folks][zulip-co] for donating a plan for 6120!)
+
 [zulip]: https://cs6120.zulipchat.com
 [zulip-signup]: https://www.cs.cornell.edu/courses/cs6120/2020fa/private/zulip.html
+[zulip-co]: https://zulipchat.com
 
 
 ## Class Sessions
@@ -23,6 +26,7 @@ Check the [schedule][] for each day of class—it will fall into one of two cate
 
 * *"Lesson" days:*
   Before class, watch the (required) video and, if you like, do the optional associated reading.
+  While or after watching the video, ask questions in the associated Zulip thread.
   The class will be a quiet hacking session and an opportunity to ask questions and work together with the rest of the class on [implementation tasks](#implementation-tasks).
   In-person attendance is optional.
   To participate virtually, hang out on Zulip and ask questions while you work.
