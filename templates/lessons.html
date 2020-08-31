@@ -17,6 +17,11 @@
       <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
     </li>
     {% endfor %}
+    {% if page.extra.due %}
+    <li>
+      <a href="#tasks" class="icon due">tasks</a> due <strong>{{page.extra.due}}</strong>
+    </li>
+    {% endif %}
   </ul>
 </article>
 {% endif %}
