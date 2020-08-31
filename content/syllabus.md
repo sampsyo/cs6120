@@ -115,7 +115,9 @@ The first deadline is the project proposal.
 * How will you empirically measure success?
 
 You should also list the GitHub usernames of everyone in the group.
-The instructor may have feedback for your or just tacitly approve your idea.
+After you send the PR, submit its URL to the "Project Proposal" assignment on [CMS][].
+
+The instructor will have feedback on how to approach your project.
 
 [hc]: https://www.darpa.mil/work-with-us/heilmeier-catechism
 [proposal]: https://github.com/sampsyo/cs6120/issues/new?labels=proposal&template=project-proposal.md&title=Project+%5BNUMBER%5D+Proposal%3A+%5BTITLE%5D
