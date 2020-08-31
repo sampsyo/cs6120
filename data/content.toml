@@ -70,6 +70,12 @@ lesson = 6
 lesson = 7
 
 [[classes]]
+lesson = 8
+
+[[classes]]
+lesson = 9
+
+[[classes]]
 title = "Alias-Based Optimization"
 leader = "TK"
 [[classes.readings]]
@@ -81,7 +87,7 @@ details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
 # Memory management.
 
 [[classes]]
-lesson = 8
+lesson = 10
 
 [[classes]]
 title = "GC & Reference Counting"
@@ -103,7 +109,7 @@ details = "Rifat Shahriyar, Stephen M. Blackburn, and Kathryn S. McKinley. OOPSL
 # Dynamic languages.
 
 [[classes]]
-lesson = 9
+lesson = 11
 
 [[classes]]
 title = "Dynamic Languages"
@@ -125,7 +131,7 @@ link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 # Synthesis.
 
 [[classes]]
-lesson = 10
+lesson = 12
 
 [[classes]]
 title = "Superoptimization"
@@ -147,7 +153,7 @@ details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant T
 # Parallelism.
 
 [[classes]]
-lesson = 11
+lesson = 13
 
 [[classes]]
 title = "Vectorization"
