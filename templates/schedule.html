@@ -8,13 +8,6 @@
 {% set count = schedule.days | length %}
 {% set class_count = content.classes | length %}
 <table class="schedule">
-  <thead>
-    <tr>
-      <th scope="col">Date</th>
-      <th scope="col">Leader</th>
-      <th scope="col">Topic</th>
-    </tr>
-  </thead>
   <tbody>
     {% set_global class_idx = 0 %}
     {% for idx in range(end=count) %}
@@ -27,7 +20,6 @@
       {% if class_idx < class_count %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
-      <td>{% if class.leader %}{{ class.leader }}{% endif %}</td>
       <td>
         {{ class.title }}
         {% if day.notes %}
@@ -58,7 +50,15 @@
         {% endif %}
       </td>
       {% else %}
-      <td class="blank" colspan="2">&nbsp;</td>
+      <td>
+        {% if day.notes %}
+        <ul>
+        {% for note in day.notes %}
+          <li>{{ note | markdown(inline=true) | safe }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+      </td>
       {% endif %}
       {% endif %}
     </tr>

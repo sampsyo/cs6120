@@ -90,7 +90,7 @@ event = "Thanksgiving break"
 [[days]]
 date = "November 30"
 mon = true
-notes = "Classes go all-virtual"
+notes = ["Classes go all-virtual"]
 
 [[days]]
 date = "December 2"
