@@ -1,4 +1,4 @@
-# Introductions
+# Introductions.
 
 [[classes]]
 lesson = 1
@@ -16,6 +16,9 @@ link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
 
 [[classes]]
 lesson = 2
+
+
+# "Classic" optimization.
 
 [[classes]]
 lesson = 3
@@ -46,6 +49,9 @@ lesson = 5
 [[classes]]
 lesson = 5
 
+
+# "Fancy" optimization.
+
 [[classes]]
 lesson = 6
 
@@ -65,8 +71,17 @@ name = "Compiler optimizations for improving data locality"
 link = "https://dl.acm.org/citation.cfm?id=195557"
 details = "Steve Carr, Kathryn S. McKinley, and Chau-Wen Tseng. ASPLOS 1994."
 
+
+# LLVM.
+
 [[classes]]
 lesson = 7
+
+[[classes]]
+lesson = 7
+
+
+# Memory management.
 
 [[classes]]
 lesson = 8
@@ -87,26 +102,11 @@ name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
 details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
 
-[[classes]]
-lesson = 9
-
-[[classes]]
-title = "Memory Consistency"
-leader = "Adrian"
-[[classes.readings]]
-name = "Threads cannot be implemented as a library"
-link = "https://dl.acm.org/citation.cfm?id=1065042"
-details = "Hans-J. Boehm. PLDI 2005."
-
-[[classes]]
-title = "Thread-Level Speculation"
-leader = "TK"
-[[classes.readings]]
-name = "POSH: a TLS compiler that exploits program structure"
-link = "https://dl.acm.org/citation.cfm?id=1122997"
-details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
 
 # Dynamic languages.
+
+[[classes]]
+lesson = 9
 
 [[classes]]
 title = "Dynamic Languages"
@@ -131,3 +131,25 @@ leader = "TK"
 name = "One VM to rule them all"
 link = "https://dl.acm.org/citation.cfm?id=2509581"
 details = "Thomas Würthinger, Christian Wimmer, Andreas Wöß, Lukas Stadler, Gilles Duboscq, Christian Humer, Gregor Richards, Doug Simon, and Mario Wolczko. Onward! 2013."
+
+
+# Parallelism.
+
+[[classes]]
+lesson = 10
+
+[[classes]]
+title = "Memory Consistency"
+leader = "Adrian"
+[[classes.readings]]
+name = "Threads cannot be implemented as a library"
+link = "https://dl.acm.org/citation.cfm?id=1065042"
+details = "Hans-J. Boehm. PLDI 2005."
+
+[[classes]]
+title = "Thread-Level Speculation"
+leader = "TK"
+[[classes.readings]]
+name = "POSH: a TLS compiler that exploits program structure"
+link = "https://dl.acm.org/citation.cfm?id=1122997"
+details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
