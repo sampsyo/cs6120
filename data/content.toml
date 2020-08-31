@@ -17,3 +17,35 @@ link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
 
 [[classes]]
 title = "Representing Programs"
+
+[[classes]]
+title = "Local Analysis & Optimization"
+
+[[classes]]
+title = "Local Analysis & Optimization"
+
+[[classes]]
+title = "Data Flow"
+
+[[classes]]
+title = "Data Flow"
+
+[[classes]]
+title = "Global Analysis & SSA"
+
+[[classes]]
+title = "Global Analysis & SSA"
+
+[[classes]]
+title = "Global Analysis & SSA"
+
+[[classes]]
+title = "Alias Analysis"
+
+[[classes]]
+title = "Alias-Based Optimization"
+leader = "TK"
+[[classes.readings]]
+name = "Type-Based Alias Analysis"
+link = "https://dl.acm.org/citation.cfm?id=277670"
+details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
