@@ -7,6 +7,7 @@ mon = true
 
 [[days]]
 date = "September 9"
+lesson_due = "1"
 
 [[days]]
 date = "September 14"

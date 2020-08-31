@@ -15,23 +15,19 @@
     <tr class="{% if day.canceled %}canceled{% endif %} {% if day.mon %}mon{% endif %}">
       <th scope="row" class="short">{{ day.date }}</th>
       {% if day.event %}
-      <td colspan="2"><strong>{{ day.event }}</strong></td>
+      <td><strong>{{ day.event }}</strong></td>
       {% else %}
+      <td>
       {% if class_idx < class_count %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
-      <td>
+        {% if class.lesson %}
+        <a href="../lesson/{{class.lesson}}/">Lesson {{class.lesson}}</a>:
+        {% endif %}
         {{ class.title }}
         {% if day.notes %}
         <ul>
         {% for note in day.notes %}
-          <li>{{ note | markdown(inline=true) | safe }}</li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-        {% if class.notes %}
-        <ul>
-        {% for note in class.notes %}
           <li>{{ note | markdown(inline=true) | safe }}</li>
         {% endfor %}
         </ul>
@@ -48,18 +44,17 @@
         {% endfor %}
         </ul>
         {% endif %}
-      </td>
-      {% else %}
-      <td>
-        {% if day.notes %}
-        <ul>
-        {% for note in day.notes %}
-          <li>{{ note | markdown(inline=true) | safe }}</li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-      </td>
       {% endif %}
+      <ul>
+      {% for note in day.notes | default(value=[]) %}
+        <li>{{ note | markdown(inline=true) | safe }}</li>
+      {% endfor %}
+      {% if day.lesson_due %}
+        <li>Due: <a href="../lesson/{{day.lesson_due}}/">Lesson
+            {{day.lesson_due}}</a> tasks.</li>
+      {% endif %}
+      </ul>
+      </td>
       {% endif %}
     </tr>
     {% endfor %}
