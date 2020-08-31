@@ -82,6 +82,68 @@ At the end of the course, you'll do a language implementation research project.
 This is an open-ended and open-source project that can be on any topic that you can construe as being about compiler hacking.
 The final product is an experience report on the [course blog][blog] where you rigorously evaluate the success of your implementation.
 
+You can work individually or in groups of 2–3 people.
+
+#### Proposal
+
+The first deadline is the project proposal.
+[Open a GitHub issue][proposal] answering these three questions, which are a sort of abbreviated form of the [Heilmeier catechism][hc]:
+
+* What will you do?
+* How will you do it?
+* How will you empirically measure success?
+
+You should also list the GitHub usernames of everyone in the group.
+The instructor may have feedback for your or just tacitly approve your idea.
+
+[hc]: https://www.darpa.mil/work-with-us/heilmeier-catechism
+[proposal]: https://github.com/sampsyo/cs6120/issues/new?labels=proposal&template=project-proposal.md&title=Project+%5BNUMBER%5D+Proposal%3A+%5BTITLE%5D
+
+#### Implementation
+
+The main phase, of course, is implementing the thing you said you would implement.
+I recommend you keep a “lab notebook” to log your thoughts, attempts, and frustrations—this will come in handy for the report you'll write about the project.
+
+I strongly recommend that you develop your code as an open-source project.
+Use a publicly-visible version control repository on a host like GitHub, and include an [open source license][osi].
+When you create your repository, comment on your proposal GitHub issue with a link.
+(If you have a specific objection to open-sourcing your code, that's OK—include a description of how you'll share your code privately with me.)
+
+[osi]: https://opensource.org/licenses
+
+#### Evaluation
+
+A major part of your project is an empirical evaluation.
+To design your evaluation strategy, you will need to consider at least these things:
+
+* Where will you get the input code you'll use in your evaluation?
+* How will you check the correctness of your implementation?
+  If you've implemented an optimization, for example, “correctness” means that the transformed programs behave the same way as the original programs.
+* How will you measure the benefit (in performance, energy, complexity, etc.) of your implementation?
+* How will you present the data you collect from your empirical evaluation?
+
+Other questions may be relevant depending on the project you choose.
+Consider the [SIGPLAN empirical evaluation guidelines][eeg] when you design your methodology.
+
+[eeg]: https://www.sigplan.org/Resources/EmpiricalEvaluation/
+
+#### Experience Report
+
+For the main project deadline, you will write up the project’s outcomes in the form of a post on the [course blog][blog].
+Your writeup should answer these questions in excruciating, exhaustive detail:
+
+* What was the goal?
+* What did you do? (Include both the design and the implementation.)
+* What were the hardest parts to get right?
+* Were you successful? (Report rigorously on your empirical evaluation.)
+
+To submit your report, open a pull request in [the course’s GitHub repository][gh] to add your post to the blog.
+In your PR description, please include “closes #N” where N is the issue number for your proposal.
+The repository README has instructions.
+
+[gh]: https://github.com/sampsyo/cs6120
+
+
 ## Grading
 
 I will grade the four categories of coursework based on a [Michelin star][michelin] system:
