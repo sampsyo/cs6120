@@ -18,28 +18,28 @@ link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
 lesson = 2
 
 [[classes]]
-title = "Local Analysis & Optimization"
+lesson = 3
 
 [[classes]]
-title = "Local Analysis & Optimization"
+lesson = 3
 
 [[classes]]
-title = "Data Flow"
+lesson = 4
 
 [[classes]]
-title = "Data Flow"
+lesson = 4
 
 [[classes]]
-title = "Global Analysis & SSA"
+lesson = 5
 
 [[classes]]
-title = "Global Analysis & SSA"
+lesson = 5
 
 [[classes]]
-title = "Global Analysis & SSA"
+lesson = 5
 
 [[classes]]
-title = "Alias Analysis"
+lesson = 6
 
 [[classes]]
 title = "Alias-Based Optimization"
