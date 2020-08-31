@@ -3,6 +3,7 @@
 {% block main %}
 {% set schedule = load_data(path="data/schedule.toml") %}
 {% set content = load_data(path="data/content.toml") %}
+{% set lessons = get_section(path="lesson/_index.md") %}
 
 <h1>{{ page.title }}</h1>
 
@@ -44,9 +45,13 @@
       {% for note in day.notes | default(value=[]) %}
         <li>{{ note | markdown(inline=true) | safe }}</li>
       {% endfor %}
-      {% if day.lesson_due %}
-        <li>Due: {{macros::lesson_link(id=day.lesson_due)}} tasks.</li>
+      {% for lesson in lessons.pages %}
+      {% if lesson.extra.due | default(value='') == day.date %}
+        <li>Due:
+        {% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson {{lesson.slug}}{% if not lesson.draft %}</a>{% endif %}
+        tasks.</li>
       {% endif %}
+      {% endfor %}
       </ul>
       </td>
       {% endif %}
