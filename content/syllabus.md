@@ -34,14 +34,16 @@ There are four kinds of things that make up the coursework for CS 6120.
 
 ### Implementation Tasks
 
-Especially during the first part of the course, another part of course “work” will be implementing compiler algorithms that we learn about in class.
-In a given class, you'll come up with the pseudocode for an algorithm.
-Then, you should work outside of class—by yourself or with other students—to implement the algorithm for Bril programs.
+To reinforce the specific compiler techniques we learn about in class, you will work on implementing them on your own.
+The usual pattern is that we will come up with the high-level idea and the pseudocode in lessons; your job is to turn it into real, working code and collect empirical evidence that it's working.
+Going through the complete implementation will teach you about realities that you cannot get by thinking at a high level.
 
-You won’t turn this code in, but you really should do it without looking at the provided implementations.
-Struggling to derive pseudocode before you see the answer is the best way to solidify the big concepts in this course.
-Struggling to get an *actually correct* implementation is the best way to confront the nitty-gritty details that are intrinsic to compiler implementation.
-Avoid the temptation to stop when you’ve got it most of the way—the idea is to go all the way to a complete, tested implementation to get the most out of the assignment.
+You can work individually or in groups of 2–3 students.
+When you finish an implementation, do this:
+
+* I recommend (but do not require) that you put all your code online in an open-source source code repository, e.g., on GitHub.
+* Include a short README (just a paragraph is fine) describing what you did and how you know your implementation works.
+* Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
 
 ### Paper Reading & Discussion
 
