@@ -50,10 +50,19 @@ lesson = 5
 lesson = 5
 
 
-# "Fancy" optimization.
+# LLVM.
 
 [[classes]]
 lesson = 6
+
+[[classes]]
+lesson = 6
+
+
+# "Fancy" optimization.
+
+[[classes]]
+lesson = 7
 
 [[classes]]
 title = "Alias-Based Optimization"
@@ -62,15 +71,6 @@ leader = "TK"
 name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
 details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
-
-
-# LLVM.
-
-[[classes]]
-lesson = 7
-
-[[classes]]
-lesson = 7
 
 
 # Memory management.
@@ -120,7 +120,7 @@ link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 # Synthesis.
 
 [[classes]]
-lesson = 11
+lesson = 10
 
 [[classes]]
 title = "Superoptimization"
@@ -142,7 +142,7 @@ details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant T
 # Parallelism.
 
 [[classes]]
-lesson = 10
+lesson = 11
 
 [[classes]]
 title = "Thread-Level Speculation"
