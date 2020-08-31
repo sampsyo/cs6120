@@ -1,0 +1,9 @@
+{% macro lesson_link(id, title=false) %}
+{% set lesson = get_page(path="lesson/" ~ id ~ ".md") %}
+{% if lesson %}
+{% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson
+  {{id}}{% if not lesson.draft %}</a>{% endif %}{% if title %}:
+{{ lesson.title }}
+{% endif %}
+{% endif %}
+{% endmacro lesson_link %}

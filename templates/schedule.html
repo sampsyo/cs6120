@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros.html" as macros %}
 {% block main %}
 {% set schedule = load_data(path="data/schedule.toml") %}
 {% set content = load_data(path="data/content.toml") %}
@@ -22,11 +23,7 @@
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
         {% if class.lesson %}
-        {% set lesson = get_page(path="lesson/" ~ class.lesson ~ ".md") %}
-        {% if lesson %}
-        {% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson {{class.lesson}}{% if not lesson.draft %}</a>{% endif %}:
-        {{ lesson.title }}
-        {% endif %}
+        {{ macros::lesson_link(id=class.lesson, title=true) }}
         {% endif %}
         {{ class.title | default(value='') }}
         {% if class.leader %}({{class.leader}}){% endif %}
@@ -48,8 +45,7 @@
         <li>{{ note | markdown(inline=true) | safe }}</li>
       {% endfor %}
       {% if day.lesson_due %}
-        <li>Due: <a href="../lesson/{{day.lesson_due}}/">Lesson
-            {{day.lesson_due}}</a> tasks.</li>
+        <li>Due: {{macros::lesson_link(id=day.lesson_due)}} tasks.</li>
       {% endif %}
       </ul>
       </td>
