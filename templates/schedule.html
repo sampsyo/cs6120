@@ -22,9 +22,13 @@
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
         {% if class.lesson %}
-        <a href="../lesson/{{class.lesson}}/">Lesson {{class.lesson}}</a>:
+        {% set lesson = get_page(path="lesson/" ~ class.lesson ~ ".md") %}
+        {% if lesson %}
+        {% if not lesson.draft %}<a href="{{lesson.permalink}}">{% endif %}Lesson {{class.lesson}}{% if not lesson.draft %}</a>{% endif %}:
+        {{ lesson.title }}
         {% endif %}
-        {{ class.title }}
+        {% endif %}
+        {{ class.title | default(value='') }}
         {% if class.leader %}({{class.leader}}){% endif %}
         {% if class.readings %}
         <ul>

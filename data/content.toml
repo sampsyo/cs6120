@@ -1,8 +1,7 @@
 # Introductions
 
 [[classes]]
-lesson = "1"
-title = "Welcome & Overview"
+lesson = 1
 
 [[classes]]
 title = "Performance and Measurement"
@@ -16,7 +15,7 @@ name = "SIGPLAN Empirical Evaluation Guidelines"
 link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
 
 [[classes]]
-title = "Representing Programs"
+lesson = 2
 
 [[classes]]
 title = "Local Analysis & Optimization"

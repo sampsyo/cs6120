@@ -6,7 +6,7 @@ site:
 	zola build --drafts
 
 serve:
-	zola serve
+	zola serve --drafts
 
 # Deployment.
 RSYNCARGS := --compress --recursive --checksum --itemize-changes \
