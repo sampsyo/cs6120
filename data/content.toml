@@ -63,14 +63,6 @@ name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
 details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
 
-[[classes]]
-title = "Loop Optimization"
-leader = "TK"
-[[classes.readings]]
-name = "Compiler optimizations for improving data locality"
-link = "https://dl.acm.org/citation.cfm?id=195557"
-details = "Steve Carr, Kathryn S. McKinley, and Chau-Wen Tseng. ASPLOS 1994."
-
 
 # LLVM.
 
@@ -124,36 +116,6 @@ name = "Trace-based just-in-time type specialization for dynamic languages"
 details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
 link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 
-[[classes]]
-title = "Meta-JITs"
-leader = "TK"
-[[classes.readings]]
-name = "One VM to rule them all"
-link = "https://dl.acm.org/citation.cfm?id=2509581"
-details = "Thomas Würthinger, Christian Wimmer, Andreas Wöß, Lukas Stadler, Gilles Duboscq, Christian Humer, Gregor Richards, Doug Simon, and Mario Wolczko. Onward! 2013."
-
-
-# Parallelism.
-
-[[classes]]
-lesson = 10
-
-[[classes]]
-title = "Memory Consistency"
-leader = "Adrian"
-[[classes.readings]]
-name = "Threads cannot be implemented as a library"
-link = "https://dl.acm.org/citation.cfm?id=1065042"
-details = "Hans-J. Boehm. PLDI 2005."
-
-[[classes]]
-title = "Thread-Level Speculation"
-leader = "TK"
-[[classes.readings]]
-name = "POSH: a TLS compiler that exploits program structure"
-link = "https://dl.acm.org/citation.cfm?id=1122997"
-details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
-
 
 # Synthesis.
 
@@ -175,6 +137,20 @@ leader = "TK"
 name = "Chlorophyll: synthesis-aided compiler for low-power spatial architectures"
 link = "https://dl.acm.org/citation.cfm?id=2594339"
 details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+
+
+# Parallelism.
+
+[[classes]]
+lesson = 10
+
+[[classes]]
+title = "Thread-Level Speculation"
+leader = "TK"
+[[classes.readings]]
+name = "POSH: a TLS compiler that exploits program structure"
+link = "https://dl.acm.org/citation.cfm?id=1122997"
+details = "Wei Liu, James Tuck, Luis Ceze, Wonsun Ahn, Karin Strauss, Jose Renau, and Josep Torrellas. PPoPP 2006."
 
 
 # Correctness.
