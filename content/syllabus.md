@@ -47,9 +47,34 @@ When you finish an implementation, do this:
 
 ### Paper Reading & Discussion
 
-One part of the “work” in CS 6120 is about reading and understanding research papers.
-For some small subset of the classes, you will be the [discussion leader][discussion].
-The discussion leader has two main responsibilities: writing a blog post and facilitating the in-class discussion.
+Another part of 6120 is reading and discussing research papers.
+Every time we read a paper (see the [schedule][]), you need to participate in [Zulip][] and Zoom discussion.
+For every paper, there will be a Zulip topic; post at least one message there with your thoughts on the paper before the class period with the discussion.
+
+For some subset of the papers, you will be the discussion leader!
+For those, here is what you need to do—all due one week before the designated day:
+
+* Write a post about the paper for our [course blog][blog].
+  The post should contain:
+
+      * Any background that you think the audience needs to understand the paper.
+      * A detailed summary of the main contributions in the work.
+      * Critical thinking about the merits and shortcomings of the work.
+      * Discussion of the work's role in history and its connections to the current computing landscape.
+      * A bulleted list of questions you have about the work to start the discussion.
+
+    If you need inspiration for the style of post to write, check out [last year's blog][blog2019]. But probably avoid reading posts about your paper, if they exist!
+* Optionally, you can record a video to go along with your blog post that people should watch to get the discussion started.
+* Publish the post to the [course GitHub repository][gh] by opening a pull request.
+  The repository README has instructions.
+* When your PR is open, announce it on [Zulip][] and invite people to start the discussion.
+  Include the bulleted list of questions from your blog post and help facilitate the discussion by answering follow-ups.
+* Moderate a short discussion on Zoom on the day of the discussion.
+  There is no presentation component to the discussion—just set up enough background to get to the discussion questions and help move the conversation along.
+
+[schedule]: @/schedule.md
+[blog2019]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
+[gh]: https://github.com/sampsyo/cs6120
 
 ### Course Project
 
