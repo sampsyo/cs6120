@@ -185,6 +185,17 @@ Occasional multi-star work yields an A+, and missing stars leads to incrementall
 
 ## Policies
 
+### Non-PhD Enrollment
+
+CS 6120 is for PhD students at Cornell.
+If that doesn’t describe you, you can still apply to take the course.
+Write short answers to these two questions:
+
+1. What is CS 6120 about?
+2. Why do you want to take the course?
+
+Submit your responses as a one-page PDF to Adrian via [Zulip][].
+
 ### Academic Integrity
 
 Absolute integrity is expected of all Cornell students in every academic undertaking. The course staff will prosecute violations aggressively.
