@@ -176,7 +176,7 @@ details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephe
 
 [[classes]]
 title = "Interactive Verification"
-leader = "TK"
+leader = "Priya Srikumar"
 [[classes.readings]]
 name = "Formal Verification of a Realistic Compiler"
 link = "https://dl.acm.org/citation.cfm?id=1538814"
