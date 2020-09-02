@@ -54,7 +54,7 @@ lesson = 6
 
 [[classes]]
 title = "Automatic Verification"
-leader = "TK"
+leader = "Goktug Saatcioglu"
 [[classes.readings]]
 name = "Provably Correct Peephole Optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
