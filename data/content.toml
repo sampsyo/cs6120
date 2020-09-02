@@ -113,7 +113,7 @@ lesson = 11
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "TK"
+leader = "Evan Adler"
 [[classes.readings]]
 name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
