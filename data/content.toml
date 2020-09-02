@@ -157,7 +157,7 @@ lesson = 13
 
 [[classes]]
 title = "Vectorization"
-leader = "TK"
+leader = "Ankush Rayabhari"
 [[classes.readings]]
 name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
 link = "https://dl.acm.org/doi/10.1145/358438.349320"
