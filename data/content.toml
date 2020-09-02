@@ -91,7 +91,7 @@ lesson = 10
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TK"
+leader = "Mark Moeller"
 [[classes.readings]]
 name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
