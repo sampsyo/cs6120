@@ -19,7 +19,7 @@
     {% endfor %}
     {% if page.extra.due %}
     <li>
-      <a href="#tasks" class="icon due">tasks</a> due <strong>{{page.extra.due}}</strong>
+      <a href="{{ page.permalink }}/#tasks" class="icon due">tasks</a> due <strong>{{page.extra.due}}</strong>
     </li>
     {% endif %}
   </ul>

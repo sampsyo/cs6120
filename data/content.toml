@@ -77,7 +77,7 @@ lesson = 9
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TK"
+leader = "Kenneth Li"
 [[classes.readings]]
 name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
@@ -91,7 +91,7 @@ lesson = 10
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TK"
+leader = "Mark Moeller"
 [[classes.readings]]
 name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
@@ -135,7 +135,7 @@ lesson = 12
 
 [[classes]]
 title = "Superoptimization"
-leader = "TK"
+leader = "Socrates Wong"
 [[classes.readings]]
 name = "Superoptimizer: A Look at the Smallest Program"
 details = "Alexia Massalin. ASPLOS 1987."
@@ -157,7 +157,7 @@ lesson = 13
 
 [[classes]]
 title = "Vectorization"
-leader = "TK"
+leader = "Ankush Rayabhari"
 [[classes.readings]]
 name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
 link = "https://dl.acm.org/doi/10.1145/358438.349320"
@@ -165,7 +165,7 @@ details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 
 [[classes]]
 title = "Safe Parallelism"
-leader = "TK"
+leader = "Ted Bauer"
 [[classes.readings]]
 name = "A Type and Effect System for Deterministic Parallel Java"
 link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
