@@ -135,7 +135,7 @@ lesson = 12
 
 [[classes]]
 title = "Superoptimization"
-leader = "TK"
+leader = "Socrates Wong"
 [[classes.readings]]
 name = "Superoptimizer: A Look at the Smallest Program"
 details = "Alexia Massalin. ASPLOS 1987."
