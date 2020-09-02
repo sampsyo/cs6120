@@ -99,7 +99,7 @@ details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
 
 [[classes]]
 title = "Modern GC"
-leader = "TK"
+leader = "Patrick LaFontaine"
 [[classes.readings]]
 name = "Fast Conservative Garbage Collection"
 link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
