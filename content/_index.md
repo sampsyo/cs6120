@@ -22,6 +22,7 @@ There are no exams in this course, in-person or otherwise.
 
 If you want to "shop" this course, please [sign up for Zulip][zulip-signup] to participate virtually.
 University policy prohibits in-person attendance if you're not registered.
+If you're on the waitlist, please just wait—you'll get a PIN automatically, eventually.
 Please read the [syllabus][] for more details on how everything works.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
