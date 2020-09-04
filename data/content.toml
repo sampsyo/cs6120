@@ -121,7 +121,7 @@ details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
 [[classes]]
 title = "Tracing"
-leader = "TK"
+leader = "Will Smith"
 [[classes.readings]]
 name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
 details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
