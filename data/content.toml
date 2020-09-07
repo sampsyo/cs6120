@@ -37,7 +37,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "Michael Roberts"
+leader = "TK"
 [[classes.readings]]
 name = "Efficient Path Profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
