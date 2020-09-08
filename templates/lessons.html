@@ -14,7 +14,7 @@
     </li>
     {% for video in page.extra.videos | default(value=[]) %}
     <li>
-      <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
+      <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% elif video.box_id %}https://cornell.box.com/s/{{video.box_id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
     </li>
     {% endfor %}
     {% if page.extra.due %}
