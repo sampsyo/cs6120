@@ -165,7 +165,7 @@ details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 
 [[classes]]
 title = "Safe Parallelism"
-leader = "TK"
+leader = "Hanchen Jin"
 [[classes.readings]]
 name = "A Type and Effect System for Deterministic Parallel Java"
 link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
