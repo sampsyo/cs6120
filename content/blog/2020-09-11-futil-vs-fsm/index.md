@@ -52,11 +52,77 @@ and generation problems.
 
 ### Fused Temporal Intermediate Language (FuTIL)
 
-FuTIL is an intermediate language and a compiler infrastructure for building
-accelerator generators
+FuTIL is an intermediate language (IL) and a compiler infrastructure for building
+accelerator generators.
+This section provides a high-level overview for the IL.
+
+Before understanding the role of FuTIL, we need to understand how modern
+compilers are constructed.
+Every major compiler uses an intermediate language to represent the input
+programs, analyze them, and optimize them.
+As compilers have grown in complexity, they have started using many different
+ILs to represent different *abstraction levels*.
+For example, the [Rust][] compiler uses three different IL to analyze and
+optimize Rust programs: HIR for type checking the program, MIR to implement
+Rust-specific optimizations, and LLVM IR to implement generic optimizations.
+This IR-based organization structure allows Rust to reuse the optimizations in
+the LLVM compiler toolchain while also implementing specific optimizations
+using MIR.
+
+FuTIL is a generic mid-level IR for accelerator generators. It sits in the
+middle of the high-level input programs that imply an abstract architecture,
+and the low-level Verilog programs that instantiate a concrete architecture.
+By concretizing some aspects of the final architecture, while keeping others
+abstract, FuTIL is able to implement optimizations that can be shared across
+many different toolchains.
+
+**FuTIL programs**. FuTIL programs are constructed using *components* which
+roughly correspond to functions in the software world, and modules in the
+hardware world.
+Each component has three sections:
+(1) *cells* which describes all hardware units used by the component,
+(2) *wires* which describes connections between the hardware units, and
+(3) *control* which describes the execution schedule of the program.
+We elide the specifics of the first two sections. For a detailed overview,
+please take a look at the [FuTIL paper][futil-paper].
+
+The *control* program is the novel aspect of FuTIL's design. A control program
+looks like:
+```
+seq {
+  init;
+  while lt.out with cmp {
+    incr;
+  }
+}
+```
+Here, `seq` and `while` are two *control-flow operators*. They describe the
+execution flow of the program. `init`, `incr`, and `cmp` are dataflow graphs
+are defined in the *wires* section of the component. At a high-level, they
+define an "action". For example, `init` might define the connections required
+to initialize a register, `incr` for incrementing the value in the register,
+and `cmp` defines the connections to compare the current value in the register.
+Using these groups, the control program precisely describes the control flow.
+
+The key insight in the design of FuTIL is that by explicitly representing
+the control flow of a program, the mid-level IR can implement several
+optimizations that would otherwise not be possible in a Verilog designs.
+For example, if the control program says that two dataflow graphs execute
+in sequence, we know that they can share the same hardware resource and that
+they will never conflict.
+
+
+### The Dahlia-to-FuTIL Compiler
+
+
+### miniHLS: Statically Timed FSM Generation
+
+### FuTIL vs miniHLS
 
 [reconf-future]:
 [futil]:
 [spatial]:
 [aetherling]:
 [dahlia]:
+[rust]:
+[futil-paper]:
