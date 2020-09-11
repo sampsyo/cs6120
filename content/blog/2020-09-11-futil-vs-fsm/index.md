@@ -151,12 +151,60 @@ that can be implemented in the FuTIL compiler to recover the lost performance.
 In order to support such a comparison, I implemented a simple compiler that
 transforms FSM descriptions into hardware designs.
 
-
 ### miniHLS: Statically Timed FSM Generation
 
+miniHLS is a very simple tool: It takes definitions of FSMs and transforms
+them in hardware designs.
 
+Following an example FSM definition:
+```
+(start = 0, done = [6]) {
+  0: { a <= 4; b <= 12; next(1) }
+  1: { _cond <= b != 0; next(2) }
+  2: { next(_cond, 3, 6) }
+  3: { tmp <= b; next(4) }
+  4: { b <= a mod b; next(5) }
+  5: { a <= tmp; next(1) }
+  6: { b <= a; done }
+}
+```
+
+Each FSM consists of three things:
+(1) the start state of the FSM,
+(2) the done states of the FSM, and
+(3) actions performed in each state.
+The first two are straightforward: We simply specify the number of the corresponding
+states.
+
+Action definitions are the heart of the FSM language. Each action consists of
+updates to *registers* using some constant followed by the name of the next
+state. Each action takes exactly one cycle providing exact control over the
+execution of the program.
+
+This representation has several consequences. First, multi-cycle computations
+need to be explicitly staged and spread across different actions.
+Second, conditional state transitions are explicitly specified using the `next`
+function which uses a 1-bit register to decide which transition to take.
+Third, the designs can be analyzed to get the precise latency required to
+perform a computation.
+All of these design decisions make the FSM description language easy to compile
+to Verilog and get the most performance from the design.
+However, this also make FSM designs non-composable---any changes fundamentally
+require changing the latency of the design and therefore is a pervasive change.
+
+In the next section, we analyze designs generates from the FSM language and
+the Dahlia-to-FuTIL compiler.
 
 ### FuTIL vs miniHLS
+
+In order to understand the performance implications of using FuTIL as a compiler
+backend, we'll compare the generated designs to functionally equivalent ones
+from the miniHLS compiler. First, however, we acknowledge that this comparison
+is not apples-to-apples: The FuTIL designs are easy to generate from Dahlia
+compiler, whereas generating FSM designs from Dahlia would require careful
+analysis of the timing behavior of programs.
+
+**GCD**.
 
 [reconf-future]:
 [futil]:
