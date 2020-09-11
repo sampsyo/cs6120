@@ -88,7 +88,7 @@ please take a look at the [FuTIL paper][futil-paper].
 
 The *control* program is the novel aspect of FuTIL's design. A control program
 looks like:
-```
+```C
 seq {
   init;
   while lt.out with cmp {
@@ -114,8 +114,47 @@ they will never conflict.
 
 ### The Dahlia-to-FuTIL Compiler
 
+[Dahlia][] is an imperative, array-based programming language that is used
+to generate hardware accelerators.
+Dahlia programs look very similar to simple C/C++ programs. For example,
+the following implements a dot-product kernel:
+
+```C
+decl a: float[8];
+decl b: float[8];
+let sum = 0;
+for (let i = 0 .. 8) {
+  sum += a[i] * b[i];
+}
+```
+
+The first two lines define two memories `a` and `b` and the `for` loop iterates
+over their elements and accumulates the values into a register `sum`.
+
+The Dahlia compiler compiles Dahlia programs into FuTIL in three steps:
+(1) type checking, which establishes that the generated design will have
+predictable area-latency trade-offs, (2) lowering which removes complex
+control structures like `for` loops, loop unrolling, and memory banking, and
+(3) code generation which instantiates hardware components and generates
+FuTIL programs.
+
+The FuTIL backend for Dahlia is fairly mature and has been tested using the
+linear algebra kernels from the [Polybench][] benchmark suite. The backend
+currently does not support signed, fixed-point, or floating arithmetic. It
+also does not support C-style `struct` definitions.
+
+**Motivating the low-level comparison**. A FuTIL-based compiler has to represent
+the semantics of Dahlia programs using FuTIL constructs and rely on the FuTIL
+compiler to optimize programs. In this case, it is reasonable to ask how
+much performance is lost during the translation and if there any optimizations
+that can be implemented in the FuTIL compiler to recover the lost performance.
+In order to support such a comparison, I implemented a simple compiler that
+transforms FSM descriptions into hardware designs.
+
 
 ### miniHLS: Statically Timed FSM Generation
+
+
 
 ### FuTIL vs miniHLS
 
@@ -126,3 +165,5 @@ they will never conflict.
 [dahlia]:
 [rust]:
 [futil-paper]:
+[dahlia]:
+[polybench]:
