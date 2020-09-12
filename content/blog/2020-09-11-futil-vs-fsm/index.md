@@ -83,7 +83,7 @@ Each component has three sections:
 (2) *wires* which describes connections between the hardware units, and
 (3) *control* which describes the execution schedule of the program.
 We elide the specifics of the first two sections. For a detailed overview,
-please take a look at the [FuTIL paper][futil-paper].
+please take a look at the [FuTIL documentation][futil].
 
 The *control* program is the novel aspect of FuTIL's design. A control program
 looks like:
@@ -203,6 +203,9 @@ is not apples-to-apples: The FuTIL designs are easy to generate from Dahlia
 compiler, whereas generating FSM designs from Dahlia would require careful
 analysis of the timing behavior of programs.
 
+Since are goal is to evaluate the efficacy of FuTIL's FSM generation, we chose
+to implement the Euclidean algorithm, whose main computation is a loop body.
+
 **GCD**. Implementation of the Euclidean algorithm in both Dahlia (compiled to
 FuTIL) and as an FSM. The steps column shows the number of steps taken by the
 algorithm. We compare the following designs:
@@ -258,6 +261,10 @@ $3$ to $1$:
   3: { b <= a mod b; a <= b; next(4) }
 ```
 
+At the time of writing, it is unclear if such a swap optimization can be
+directly implemented in FuTIL since it requires analyzing program paths and
+preserving their functionality.
+
 ### Conclusion
 
 We presented the design and implementation of `miniHLS`, a tool for constructing
@@ -268,13 +275,11 @@ prototype microbenchmark FSMs and use it to come up with design optimizations.
 In the longer term, we hope that miniHLS can be used as a compiler target from
 high-level language and simplify the design iteration process even more.
 
-[reconf-future]:
-[futil]:
-[spatial]:
-[aetherling]:
-[dahlia]:
-[rust]:
-[futil-paper]:
-[dahlia]:
-[polybench]:
-[mhls]:
+[reconf-future]: https://rachitnigam.com/post/reconf-future/
+[futil]: https://github.com/cucapra/futil/
+[spatial]: https://spatial-lang.org/
+[aetherling]: https://aetherling.org/
+[dahlia]: https://capra.cs.cornell.edu/dahlia/
+[rust]: https://www.rust-lang.org/
+[polybench]: http://web.cse.ohio-state.edu/~pouchet.2/software/polybench/
+[mhls]: https://github.com/rachitnigam/minihls
