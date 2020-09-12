@@ -1,6 +1,7 @@
 +++
 title = "Cost of Abstraction in Compilers for Accelerator Generation"
 extra.author = "Rachit Nigam"
+extra.latex = true
 extra.bio = """
   [Rachit Nigam](https://rachitnigam.com) is a second year PhD student interested in
   programming languages & computer architecture. In his free time, he
@@ -204,7 +205,29 @@ is not apples-to-apples: The FuTIL designs are easy to generate from Dahlia
 compiler, whereas generating FSM designs from Dahlia would require careful
 analysis of the timing behavior of programs.
 
-**GCD**.
+**GCD**. Implementation of the Euclidean algorithm in both Dahlia (compiled to
+FuTIL) and as an FSM. The steps column shows the number of steps taken by the
+algorithm.
+
+
+| Inputs      | Steps | FSM | FuTIL |
+|-------------|-------|-----|-------|
+| (4, 12)     | 1     | 16  | 65    |
+| (28, 1124)  | 2     | 21  | 93    |
+| (28, 334)   | 3     | 26  | 121   |
+| (240, 1070) | 4     | 31  | 149   |
+| (25, 2261)  | 5     | 36  | 177   |
+| (816, 2260) | 6     | 41  | 205   |
+
+The best fit linear regression are
+
+$$
+y_{fsm} = 5x + 11
+$$
+$$
+y_{FuTIL} = 28x + 37
+$$
+
 
 [reconf-future]:
 [futil]:
