@@ -11,6 +11,7 @@ template = "home.html"
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
 While you're at it, check out the [old blog from 2019][oldblog].
+Everyone can watch the [lesson][] videos on [Kaltura][], [Box][], or [PeerTube][].
 
 ## Apocalypse Logistics
 
@@ -29,8 +30,10 @@ Please read the [syllabus][] for more details on how everything works.
 [blog]: @/blog/_index.md
 [rss]: rss.xml
 [gh]: https://github.com/sampsyo/cs6120
-[discussion]: @/discussion.md
-[project]: @/project/_index.md
 [syllabus]: @/syllabus.md
 [oldblog]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
 [zulip-signup]: https://www.cs.cornell.edu/courses/cs6120/2020fa/private/zulip.html
+[kaltura]: https://vod.video.cornell.edu/channel/CS%2B6120/179754792
+[box]: https://cornell.box.com/s/wb3387ebfbte9btx3weekmc8nij5glep
+[peertube]: https://video.radbox.org/video-channels/cs6120/videos
+[lesson]: @/lesson/_index.md
