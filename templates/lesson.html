@@ -39,6 +39,10 @@
   <div class="video">
     <iframe src="https://cornell.app.box.com/embed/s/{{video.box_id}}" allowfullscreen></iframe>
   </div>
+{% elif video.pt_id %}
+  <div class="video">
+    <iframe sandbox="allow-same-origin allow-scripts allow-popups" src="https://video.radbox.org/videos/embed/{{video.pt_id}}" allowfullscreen></iframe>
+  </div>
 {% endif %}
 {% endfor %}
 </div>
