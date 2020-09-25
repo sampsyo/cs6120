@@ -5,7 +5,7 @@ latex = true
 [[extra.authors]]
 name = "Theodore Bauer"
 bio = """
-  [Theodore Bauer][http://tedbauer.github.io/] is a first year M.S. student at Cornell who is interested in programming languages and systems. He spends his time being indecisive and waiting for the pandemic to end.
+  [Theodore Bauer][http://tedbauer.github.io/] is a first year M.S. student at Cornell who is interested in programming languages and systems. He likes spending time outside and making Spotify playlists.
 """
 link = "http://tedbauer.github.io/"
 +++
