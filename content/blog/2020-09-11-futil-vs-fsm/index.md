@@ -45,8 +45,8 @@ However, building such languages requires a lot of infrastructure---designing
 the frontend, picking an architectural template, optimizing the generated
 hardware, and generating code that can be run on an FPGA.
 Instead of redesigning everything from scratch, the [FuTIL][] infrastructure hopes
-to create a "LLVM for hardware design" by allowing frontends to target a small,
-but expressive language, and automatically handling the "boring" optimization
+to create "LLVM for hardware design" by allowing frontends to target a small
+but expressive language and by automatically handling the "boring" optimization
 and generation problems.
 
 ### Fused Temporal Intermediate Language (FuTIL)
@@ -69,7 +69,7 @@ the LLVM compiler toolchain while also implementing specific optimizations
 using MIR.
 
 FuTIL is a generic mid-level IR for accelerator generators. It sits in the
-middle of the high-level input programs that imply an abstract architecture,
+middle of the high-level input programs that imply an abstract architecture
 and the low-level Verilog programs that instantiate a concrete architecture.
 By concretizing some aspects of the final architecture, while keeping others
 abstract, FuTIL is able to implement optimizations that can be shared across
@@ -131,15 +131,16 @@ The first two lines define two memories `a` and `b` and the `for` loop iterates
 over their elements and accumulates the values into a register `sum`.
 
 The Dahlia compiler compiles Dahlia programs into FuTIL in three steps:
-(1) type checking, which establishes that the generated design will have
-predictable area-latency trade-offs, (2) lowering which removes complex
-control structures like `for` loops, loop unrolling, and memory banking, and
-(3) code generation which instantiates hardware components and generates
+(1) *type checking*, which establishes that the generated design will have
+predictable area-latency trade-offs,
+(2) *lowering*, which removes complex control structures like `for` loops, loop
+unrolling, and memory banking, and
+(3) *code generation*, which instantiates hardware components and generates
 FuTIL programs.
 
 The FuTIL backend for Dahlia is fairly mature and has been tested using the
 linear algebra kernels from the [Polybench][] benchmark suite. The backend
-currently does not support signed, fixed-point, or floating arithmetic. It
+currently does not support signed, fixed-point, or floating-point arithmetic. It
 also does not support C-style `struct` definitions.
 
 **Motivating the low-level comparison**. A FuTIL-based compiler has to represent
@@ -155,7 +156,7 @@ transforms FSM descriptions into hardware designs.
 miniHLS is a very simple tool: It takes definitions of FSMs and transforms
 them in hardware designs.
 
-Following an example FSM definition:
+Following is an example FSM definition:
 ```
 (start = 0, done = [6]) {
   0: { a <= 4; b <= 12; next(1) }
@@ -191,7 +192,7 @@ to Verilog and get the most performance from the design.
 However, this also make FSM designs non-composable---any changes fundamentally
 require changing the latency of the design and therefore is a pervasive change.
 
-In the next section, we analyze designs generates from the FSM language and
+In the next section, we analyze designs generated from the FSM language and
 the Dahlia-to-FuTIL compiler.
 
 ### FuTIL vs miniHLS
@@ -273,7 +274,7 @@ a state of the art compiler infrastructure.
 The short term utility of miniHLS is allowing compiler developers to quickly
 prototype microbenchmark FSMs and use it to come up with design optimizations.
 In the longer term, we hope that miniHLS can be used as a compiler target from
-high-level language and simplify the design iteration process even more.
+high-level languages and simplify the design iteration process even more.
 
 [reconf-future]: https://rachitnigam.com/post/reconf-future/
 [futil]: https://github.com/cucapra/futil/
