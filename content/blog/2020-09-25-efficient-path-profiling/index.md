@@ -1,12 +1,12 @@
 +++
 title = "Efficient Path Profiling"
 [extra]
+bio = """
+  [Theodore Bauer][http://tedbauer.github.io/] is a first year M.S. student at Cornell who is interested in programming languages and systems. Outside of research, he likes spending time outside and making Spotify playlists.
+"""
 latex = true
 [[extra.authors]]
 name = "Theodore Bauer"
-bio = """
-  [Theodore Bauer][http://tedbauer.github.io/] is a first year M.S. student at Cornell who is interested in programming languages and systems. He likes spending time outside and making Spotify playlists.
-"""
 link = "http://tedbauer.github.io/"
 +++
 
