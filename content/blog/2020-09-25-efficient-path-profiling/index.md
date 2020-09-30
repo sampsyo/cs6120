@@ -26,7 +26,7 @@ Additionally, the paper gives us an algorithm that lets us recover paths from th
 
 ### 1. Assigning CFG edges special weights
 
-The algorithm starts by assigning every edge in the program's CFG a weight in such a way that, the sum of the weights across every path through the CFG maps to a unique number (no two paths map to the same number) that's at least $0$ and less than the number of paths.
+The algorithm starts by assigning every edge in the program's CFG a weight in such a way that the sum of the weights across every path through the CFG maps to a unique number (no two paths map to the same number) that's at least $0$ and less than the number of paths.
 
 Put more formally, the algorithm assigns every edge $e$ in the CFG a value $\text{VAL}(e)$ such that every path's sum of $v(e)$s corresponds to a unique number in the range $0..\text{NUMPATHS}(v)$, and every vertex $v$ a value $\text{NUMPATHS}(v)$ that's the distance from $v$ to the graph sink. Here's pseudocode that accomplishes that, adapted from the paper:
 
@@ -41,7 +41,7 @@ foreach vertex v in reverse topological order:
       NUMPATHS(v) += NUMPATHS(w)
 ```
 
-Basically, for every vertex $v$, $v$'s outgoing edges are assigned the sum of the number of paths to the CFG sink of the already processed going edges for $v$.
+Basically, for every vertex $v$, each outgoing edge $e$ is assigned the sum of the paths from each already-processed outgoing edge to the CFG sink.
 
 Inductively proving that this algorithm gives us a unique mapping from paths to numbers in the range $0..\text{NUMPATHS}(v)$ helps to illuminate why it works. Let's call the distance from a vertex to the sink $H$. We can prove this by inducting on $H$ of a vertex. For the base case $H=0$, that is, $v$ is the sink, $\text{NUMPATHS}(v)$ is $1$ which is correct, because there's only a trivial path that crosses no edges. This path also maps to $0$, as it doesn't cross any edges with any weights. For the inductive case, for some vertex $v$ with some height $H$, we can assume the inductive hypothesis for all successors, that is, for all successors $w\_1, ..., w\_n$, all paths starting at each successor $w\_i$ map uniquely to ranges $0..\text{NUMPATHS}(w\_i)$. As we've mentioned, each edge $v \rightarrow w\_i$ is assigned the sum of the weights of the already-processed successors $w\_1, ..., w\_{i-1}$. These edge weights will "shift" the numbers that the paths starting with each $w\_i$ mapped to in such a way that every path starting at $v$ will map to a unique number.
 
@@ -57,7 +57,7 @@ The weights selected in step 1 could have suboptimal overhead. They are not sele
 
 ### 3. Instrumenting code
 
-The algorithm augments the code we're profiling so that when we run the code, we have logic that tracks which edges are traversed and which weights are added to our running sum. 
+The algorithm augments the code we're profiling so that when we run the code, we have logic that tracks which edges are traversed and which weights are added to our running sum. We don't need to track any complicated data structures like linked lists, or thread through much data. We only need to increment an integer in a register!
 
 ### Regenerating paths
 
@@ -69,11 +69,13 @@ Finally, the paper provides a straightforward algorithm to recover a path from a
 
 ## Augmenting CFGs with cycles
 
-The algorithm described in this paper only works on directed acyclic graphs (DAGs). The paper describes a technique for modifying the CFG to transform it into a DAG but still provide accurate path profiling, which is crucial to profile programs with loops.
+The algorithm described in the paper works only on directed acyclic graphs (DAGs). To handle cycles in a CFG, the authors of the paper add some extra instrumentation to backedges that let us track paths up to this backedge, and then the path after. The paper also describes a technique for modifying the CFG to transform it into a DAG but still provide accurate profiling, crucial to profiling programs with loops. They add "dummy edges," from the CFG source to nodes that are backedge targets, and from nodes that are backedge sources to the CFG sink. The source $\rightarrow$ node dummy edges are used to "start" new paths using the extra instrumentation, and then node $\rightarrow$ exit edges are used to "end" paths.
 
 ## Evaluation
 
 The authors ran their path profiling implementation on a variety of benchmarks, as well as edge profiling to get a sense of the relative overhead and accuracy. In general, path profiling performance tended to be comparable to edge profiling, and even when benchmarks were large and required more memory intensive instrumentation for path profiling, the overhead was tolerably worse than that of edge profiling.
+
+The paper used only one benchmark suite, on one sort of machine, and did not provide a thorough justification for why this suite in particular (SPEC95) was representative for this domain of profiling accuracy and overhead. The paper could have perhaps benefited from the usage of multiple suites, or at least some justification for the use of SPEC95, and some varying across some parameters such as the machines or machine settings, to alleviate some kind of measurement bias.
 
 ## Discussion Questions
 
@@ -82,4 +84,4 @@ The authors ran their path profiling implementation on a variety of benchmarks, 
 - When is the overhead of a profiling technique worth its accuracy?
 
 [pathprofiling]: https://dl.acm.org/doi/10.5555/243846.243857
-[eventcounting]: https://dl.acm.org/doi/10.1145/186025.186027.
+[eventcounting]: https://dl.acm.org/doi/10.1145/186025.186027
