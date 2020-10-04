@@ -10,9 +10,109 @@ The main difficulty with verifying LLVM opmtimizations is that the source code m
 
 After introducing Aive, the paper turns toward more technical concerns. In particular, it proves two versions of a soundness theorem for Alive's verification method--it first considers the language without memory and pointer concerns, then re-introduces pointer arithmetic. The theorem in essence states that if the Alive back-end accepts a given optimization, then the code transformation is semantics-refining.
 
-## Analysis
+## Detailed Summary
 
+At a high-level, the process of verifying a peephole optimization in Alive is as follows:
 
+1. Specify the transformation in Alive's domain-specific language (DSL).
+2. Alive discharges SMT formulas that encode the semantics of LLVM operations and datatypes.
+3. The formulas from step 2 are used as verification conditions and passed to an SMT solver.
+3. SMT solver either verifies the optimization as valid or returns a counterexample showing why the optimization is wrong.
+4. (Optional step) If optimization is correct, Alive synthesizes C++ code that can then generate the relevant optimization to optimize LLVM code.
+
+### Alive's DSL
+
+Optimizations in Alive are written as a transformation from a source (left hand side) to a target (right hand side). An example optimization is given below.
+
+```
+Pre: C1 & C2 == 0 && MaskedValueIsZero(%V, ∼C1)
+%t0 = or   %B,  %V
+%t1 = and %t0,  C1
+%t2 = and  %B,  C2
+%R  = or  %t1, %t2
+=>
+%R  = and %t0, (C1 | C2)
+```
+
+Here the left hand side is everything before the `=>` and the right hand side is everything after. The DSL abstracts LLVN semantics: anything beginning with a capital C is a constant, the pattern %t[num] are temporary registers and the lack of data-types indicates that this transformation is valid for all LLVM datatypes. The keyword `Pre:` allows the user of the DSL to specify a pre-condition which abstracts the results that an LLVM compiler may infer from dataflow analyses before applying a transformation. These predicates are hard-coded into Alive.
+
+### Correctness of Optimizations
+
+The goal of Alive is to prove that a target optimization refines the behavior of a source program under the presence of undefined behavior.  Undefined behavior is the result of the assumptions a compiler makes about certain instructions of a program. When an instruction with undefined behavior is used then the compiler may replace it with an arbitrary sequence of instructions or assume that such undefined behavior never occurs. For example, in `C` the instruction `x + 1 > x` can be replaced with `true` (i.e. any value `!= 0`) as signed overflow is undefined behavior.
+
+*A compiler should never introduce new behavior when there is no undefined behavior but can produce new results in the presence of undefined behavior.*
+
+A nice summary of Alive and a discussion on undefined behavior can be foundin this [blog post](alive-blog) by the authors of the paper.
+
+#### undef and poison
+
+In LLVM there are three types of undefined behavior. The first arises from the keyword `undef`. `undef` in LLVM represents any value (given a specific width) each time it is read from. For example, in the program
+
+```
+%z = xor i8 undef, undef
+```
+
+`%z` can be any value in the range `{0, ..., 255}` as we are taking the xor of any two 8-bit values. A more interesting example is
+
+```
+%z = or i8 1, undef
+```
+
+where the value of `%z` becomes any odd integer in the range `{0, ..., 255}`. `undef` allows the compiler to aggresively optimize a program as LLVM [makes the assumption](undef-val) that whenever an `undef` is seen "the program is well-defined no matter what value is used."
+
+`poison` values are distinct from `udef` values as they are used to indicate that "a side-effect-free instruction has a condition that produces undefined behavior." There is no way to explicitly indicate that a value is `poison` in LLVM. As an example, the LLVM instruction 
+
+```
+%r = shl nsw %x, log2(C1)
+```
+
+causes `%r` to be a `poison` value as the left shift might cause `%x` to go from a positive value to a negative one. If the value of `%r` were to be used in an instruction with side-effects, such as memory stores, then we get true undefined behavior. Furthermore, `poison` values will taint any subsequent dependent instructions meaning `poison` is propagated throughout a program. `poison` values are deferred undefined behaviors and can only be identified through careful analyses.
+
+Finally, instruction attributes allow the compiler to make assumptions about certain instructions. For example, `nsw` means "no signed wrap" which makes signed overflow undefined allowing us to perform the optimization where `x + 1 > x` replaced with `true`.
+
+### Refinement
+
+By considering the types of undefined behavior in LLVM, the authors define what valid refinements of programs are. If there is an `undef` value then an optimization must produce a value that is subset of the `undef` value produced by the source as `undef` represents a set of possible values. Similarly, if the source program has a `poison` value then the target program may have a `poison` value but a target instruction cannot create `poison` values when there were none in the source program. So, the authors use the intuition that compilers should not introduce new undefined behavior to generate SMT formulas that capture the following correctness criteria:
+
+> (1) the target is defined when the source is defined,
+> (2) the target is poison-free when the source is poison-free, and
+> (3) the source and the target produce the same result when the source is defined and poison-free.
+
+The SMT formulas generated by Alive encode all possible types for the instructions in the source and target programs and also encode `undef`, `poison` and instruction attributes to model undefined behavior.
+
+### Example
+
+The optimization of replacing `(X << C1) / C2 ` with `X / (C2 >> C1)` whenever `C2 is a multiple of C1` can be written in Alive as follows
+
+```
+Pre: C2 % (1<<C1) == 0
+%s = shl nsw i4 %X, C1
+%r = sdiv %s, C2
+  =>
+%r = sdiv %X, (C2 / (1 << C1))
+```
+
+This optimization does not refine the source program when `C1 = width(C1) - 1` as `X << C1` may overflow. This is not obvious to see so Alive produces the following output 
+
+```
+ERROR: Mismatch in values of i4 %r
+
+Example:
+%X i4 = 15 (0xf)
+C1 i4 = 3 (0x3)
+C2 i4 = 8 (0x8)
+%s i4 = 8 (0x8)
+Source value: 1 (0x1)
+Target value: 15 (0xf)
+```
+
+which gives a counterexample for `4`-bit unsigned integers. Here, the issue is that the optimization causes the target to produce a different result for a specific input that causes no undefined behavior in the source program. Note that the source program uses `nsw` to indicate that signed overflow is undefined behavior but assumes that unsigned overflow is not undefined behavior. This is why the counterexample produced by Alive uses unsigned integers.
+
+The authors of alive opened a [bug report](pr21245) and a fix was accepted where the pre-condition of the optimization was strengthened to 
+
+```
+Pre: C2 % (1<<C1) == 0 && C1 != width(C1)-1
+```
 
 ## Alive's Impact
 
@@ -46,7 +146,7 @@ In general, computer science education considers undefined behavior a harmful co
 > The essence of undefined behavior is the freedom to avoid a forced coupling between error checks and unsafe operations.
 
 
-
+[alive-blog]: https://blog.regehr.org/archives/1170
 [alive-fp]: https://link.springer.com/chapter/10.1007/978-3-662-53413-7_16
 [alive-infer]: https://dl.acm.org/doi/abs/10.1145/3062341.3062372
 [alive-practical]: https://dl-acm-org.proxy.library.cornell.edu/doi/abs/10.1145/3166064
@@ -65,3 +165,4 @@ In general, computer science education considers undefined behavior a harmful co
 [taming-undef-behav]: https://dl.acm.org/doi/abs/10.1145/3140587.3062343
 [undef!=unsafe]: https://blog.regehr.org/archives/1467
 [undef-val]: http://llvm.org/docs/LangRef.html#undefined-values
+[pr21245]: https://bugs.llvm.org/show_bug.cgi?id=21245
