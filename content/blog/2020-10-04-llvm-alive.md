@@ -10,10 +10,6 @@ The main difficulty with verifying LLVM opmtimizations is that the source code m
 
 After introducing Aive, the paper turns toward more technical concerns. In particular, it proves two versions of a soundness theorem for Alive's verification method--it first considers the language without memory and pointer concerns, then re-introduces pointer arithmetic. The theorem in essence states that if the Alive back-end accepts a given optimization, then the code transformation is semantics-refining.
 
-## Analysis
-
-
-
 ## Alive's Impact
 
 At the time of publication, Alive's authors manually translated 334 LLVM peephole optimizations (InstCombine) to Alive out of a possible 1028 instructions, meaning 694 were not processed for verification. Out of the translated optimizations, the authors found 8 bugs where the most uncommon bug was due to the introduction of undefined behavior. The authors state that most of the time Alive runs in a few seconds while for instructions with multiplication and division it "can take several hours or longer to verify the larger bit-widths" as most SMT solvers struggle with such inputs. The remaining optimizations could not be translated as they include instructions that were not supported by Alive at the time.
@@ -45,6 +41,15 @@ In general, computer science education considers undefined behavior a harmful co
 > ...
 > The essence of undefined behavior is the freedom to avoid a forced coupling between error checks and unsafe operations.
 
+## Analysis
+
+This paper's task is no simple one--it endeavors to introduce a brand-new DSL. It must therefore motivate the need for a new language, develop the language design and implementation process, present meta-theoretic properties about the language semantics, and provide a compelling evaluation of the language's initial/potential impact. Indeed, the authors are mostly successful in each of these tasks.
+
+The paper's strongest points are the expository method for the language features and meta-theoretic results. It tells a compelling and accessible story about the statement and proof of the soundness result, and motivates each distinct language feature persuasively. The only difficulty is with accessibilty in the presentation of the language. This section can be rather difficult to understand without a solid background in LLVM, which causes the DSL part of the paper to lose impact with broader audiences. Of course, it is not in the scope of the paper to provide such a background, and for this reason it is not a cricital flaw.
+
+The evaluation section is underwhelming yet promising. While the numbers may appear disappointing at first glance, it does serve as a proof of concept that the Alive verification tool can effectively eliminate bugs in real programs. Of course, it is also the case that at the time of this paper's publication, only a small portion of LLVM optimizations had been encoded in the Alive framework. As cited above, this has improved significantly in later stages of the project. Also, it is important to note that the tool already had several users at the time of publication, which is rare for an academic project.
+
+The paper's greatest shortcoming is with regard to motivation. Both the concept of verifying LLVM optimizations and the need for a new DSL are essentially taken for granted, and the paper moves right into the technical details. This is not a serious error in many cases since the target audience may be well-informed and familiar with these motivations already. Indeed, the need for verification seems to be in high demand considering the Alive users. However, the need for a new DSL was perhaps a small blunder considering that the project eventually moved away from a new language and focused on verifying tranformations directly from the source language. In general, there is a high threshold for needing to design a whole new programming language, and it seems that this threshold was not met in the case of this verification tool
 
 
 [alive-fp]: https://link.springer.com/chapter/10.1007/978-3-662-53413-7_16
