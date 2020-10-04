@@ -2,6 +2,18 @@
 title="Provably Correct Peephole Optimizations with Alive"
 +++
 
+## Contributions
+
+This paper introduces Alive, a Domain-Specific Language designed for conveniently verifying LLVM optimizations. The Alive language provides a framework for encoding LLVM transformations of compiled code. The implementation uses a transformation encoding to generate preconditions and correctness conditions expressed in terms of predicates, which may then be automatically verified by an SMT solver. The result is a verified LLVM optimization in Alive, which also provides a tool for extracting the optimization into C++ code. As an additional feature, the language supports built-in predicates which are implemented by dataflow analysis.
+
+The main difficulty with verifying LLVM opmtimizations is that the source code may have undefined behaviors. For this reason, much of the interesting design decision for Alive are related to handling undefined behavior. In principle, Alive is intended to check that optimizations are *refining*, that is, that the set of behaviors of the target code is included in the set of behaviors of the source.
+
+After introducing Aive, the paper turns toward more technical concerns. In particular, it proves two versions of a soundness theorem for Alive's verification method--it first considers the language without memory and pointer concerns, then re-introduces pointer arithmetic. The theorem in essence states that if the Alive back-end accepts a given optimization, then the code transformation is semantics-refining.
+
+## Analysis
+
+
+
 ## Alive's Impact
 
 At the time of publication, Alive's authors manually translated 334 LLVM peephole optimizations (InstCombine) to Alive out of a possible 1028 instructions, meaning 694 were not processed for verification. Out of the translated optimizations, the authors found 8 bugs where the most uncommon bug was due to the introduction of undefined behavior. The authors state that most of the time Alive runs in a few seconds while for instructions with multiplication and division it "can take several hours or longer to verify the larger bit-widths" as most SMT solvers struggle with such inputs. The remaining optimizations could not be translated as they include instructions that were not supported by Alive at the time.
