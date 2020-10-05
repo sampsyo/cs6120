@@ -176,7 +176,11 @@ The paper's strongest points are the expository method for the language features
 
 The evaluation section is underwhelming yet promising. While the numbers may appear disappointing at first glance, it does serve as a proof of concept that the Alive verification tool can effectively eliminate bugs in real programs. Of course, it is also the case that at the time of this paper's publication, only a small portion of LLVM optimizations had been encoded in the Alive framework. As cited above, this has improved significantly in later stages of the project. Also, it is important to note that the tool already had several users at the time of publication, which is rare for an academic project.
 
+### Need for Alive
+
 The paper's greatest shortcoming is with regard to motivation. Both the concept of verifying LLVM optimizations and the need for a new DSL are essentially taken for granted, and the paper moves right into the technical details. This is not a serious error in many cases since the target audience may be well-informed and familiar with these motivations already. Indeed, the need for verification seems to be in high demand considering the Alive users. However, the need for a new DSL was perhaps a small blunder considering that the project eventually moved away from a new language and focused on verifying tranformations directly from the source language. In general, there is a high threshold for needing to design a whole new programming language, and it seems that this threshold was not met in the case of this verification tool.
+
+### Practicality of Alive
 
 We may also consider the tool which accompanies the paper. The authors note that they hoped to create a practical verification tool that could be deployed in a real-world setting. This seems to have been acheived with some limitations. Indeed, since the release of this paper, the tool has been improved upon, gaining interest and users who seek guarantees for their usage of LLVM. The biggest limitation, which was the expensive operation of mannually encoding LLVM optimization passes into the Alive DSL, was also elided in future iterations of the tool by extracting conditions directly from the LLVM code. Today, Alive seems to be just as effective as the underlying SMT solver, which unfortunately can take hours to days to product a result on a few unlucky transformations.
 
