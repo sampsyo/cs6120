@@ -1,5 +1,8 @@
 +++
 title="Provably Correct Peephole Optimizations with Alive"
+[extra]
+bio = """
+  Samwise Parkinson is a first-year graduate student of computer science at Cornell University, working on formal verification of network programming language implementations.
 [[extra.authors]]
 name= "Goktug Saatcioglu"
 [[extra.authors]]
@@ -183,6 +186,14 @@ The paper's greatest shortcoming is with regard to motivation. Both the concept 
 ### Practicality of Alive
 
 We may also consider the tool which accompanies the paper. The authors note that they hoped to create a practical verification tool that could be deployed in a real-world setting. This seems to have been acheived with some limitations. Indeed, since the release of this paper, the tool has been improved upon, gaining interest and users who seek guarantees for their usage of LLVM. The biggest limitation, which was the expensive operation of mannually encoding LLVM optimization passes into the Alive DSL, was also elided in future iterations of the tool by extracting conditions directly from the LLVM code. Today, Alive seems to be just as effective as the underlying SMT solver, which unfortunately can take hours to days to product a result on a few unlucky transformations.
+
+## Discussion Questions
+
+1) Should formal verification of compilers seek to be practically applicable? What are some of the limitations of verification tools and how might one argue we should adopt them in a pragmatic setting notwithstanding?
+
+2) What are the tradeoffs of introducing/permitting undefined behavior in a language semantics? Should it be eliminated entirely, and if not what are some ways to tweak language design to protect a programmer from the negative effects of undefined behavior?
+
+3) When applying formal methods to compilers, what are the tradeoffs of building your own end-to-end verified system such as CompCert versus a tool like Alive, which provides micro-verifications for software that is already widely deployed?
 
 [paper]: https://dl.acm.org/doi/10.1145/2813885.2737965
 [alive-blog]: https://blog.regehr.org/archives/1170
