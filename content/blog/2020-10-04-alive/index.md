@@ -2,6 +2,8 @@
 title="Provably Correct Peephole Optimizations with Alive"
 [extra]
 bio = """
+  Goktug Saatcioglu is a first-year PhD student of computer science at Cornell University who is interested in programming languages, security and distributed systems. In his free time, he enjoys going on hikes with his dog and film photography.
+
   Samwise Parkinson is a first-year graduate student of computer science at Cornell University, working on formal verification of network programming language implementations.
 [[extra.authors]]
 name= "Goktug Saatcioglu"
