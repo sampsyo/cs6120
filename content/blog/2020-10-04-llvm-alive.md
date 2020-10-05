@@ -2,6 +2,12 @@
 title="Provably Correct Peephole Optimizations with Alive"
 +++
 
+## Background
+
+The paper pre-supposes a considerable familiarity with the LLVM library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
+
+The most pertinent technical background for understanding the Alive optimization tool is related to the distinct features of the LLVM IR. LLVM code resembles a sophisticated sort of abstract assembly code. There is a type system and a module system designed to assist linking, along with a notion of well-formedness for an LLVM program. There is also a wide variety of annotations, meta-data, and variable renaming. However, most of the optimization in the scope of this paper occurs locally within the body of individual functions. The code is easy enough to read, but the difficulty lies in ambiguous instructions. 
+
 ## Contributions
 
 This paper introduces Alive, a Domain-Specific Language designed for conveniently verifying LLVM optimizations. The Alive language provides a framework for encoding LLVM transformations of compiled code. The implementation uses a transformation encoding to generate preconditions and correctness conditions expressed in terms of predicates, which may then be automatically verified by an SMT solver. The result is a verified LLVM optimization in Alive, which also provides a tool for extracting the optimization into C++ code. As an additional feature, the language supports built-in predicates which are implemented by dataflow analysis.
