@@ -6,9 +6,17 @@ name= "Goktug Saatcioglu"
 name = "Samwise Parkinson"
 +++
 
+Verification of "things computers do" come in many flavors. In the context of compilers, the [CompCert](compcert) project is one approach where compilers are proven to never compile incorrectly. However, this fully verified formal approach comes at the cost of not supporting all language constructs and cannot optimize as well as current compilers. [Random](diff-testing) [testing](comp-validation) is another approach where random test inputs are generated in an attempt to find [bugs](find-bugs-c). These approaches can be highly effective both in terms of finding bugs and ease of use but have no correctness guarantees.
+
+This week's [paper](paper) attempts to combine the usability aspect from testing with the guarantees aspect of formal approaches. The proposed tool, Alive, formalizes our notions of compiler correctness to treat a source program as the ground truth and verify specific optimizations, namely peephole, that transform these programs. To be practical, Alive introduces a new domain-specific language (DSL) that is meant to resemble LLVM code which makes it easier to express what is meant to be verified.
+
+The authors of Alive state the following as their main contribution.
+
+> Alive’s main contribution to the state of the art is providing a usable formal methods tool based on the semantics of LLVM IR, with support for automated correctness proofs in the presence of LLVM’s three kinds of undefined behavior, and with support for code generation.
+
 ## Background
 
-The paper pre-supposes a considerable familiarity with the [LLVM](llvm) library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
+This paper pre-supposes a considerable familiarity with the [LLVM](llvm) library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
 
 The most pertinent technical background for understanding the Alive optimization tool is related to the distinct features of the LLVM IR. LLVM code resembles a sophisticated sort of abstract assembly code. There is a type system and a module system designed to assist linking, along with a notion of well-formedness for an LLVM program. There is also a wide variety of annotations, meta-data, and variable renaming. However, most of the optimization in the scope of this paper occurs locally within the body of individual functions. The code is easy enough to read, but the difficulty lies in ambiguous instructions. 
 
@@ -170,6 +178,7 @@ The evaluation section is underwhelming yet promising. While the numbers may app
 
 The paper's greatest shortcoming is with regard to motivation. Both the concept of verifying LLVM optimizations and the need for a new DSL are essentially taken for granted, and the paper moves right into the technical details. This is not a serious error in many cases since the target audience may be well-informed and familiar with these motivations already. Indeed, the need for verification seems to be in high demand considering the Alive users. However, the need for a new DSL was perhaps a small blunder considering that the project eventually moved away from a new language and focused on verifying tranformations directly from the source language. In general, there is a high threshold for needing to design a whole new programming language, and it seems that this threshold was not met in the case of this verification tool
 
+[paper]: https://dl.acm.org/doi/10.1145/2813885.2737965
 [alive-blog]: https://blog.regehr.org/archives/1170
 [alive-fp]: https://link.springer.com/chapter/10.1007/978-3-662-53413-7_16
 [alive-infer]: https://dl.acm.org/doi/abs/10.1145/3062341.3062372
@@ -192,3 +201,7 @@ The paper's greatest shortcoming is with regard to motivation. Both the concept 
 [pr21245]: https://bugs.llvm.org/show_bug.cgi?id=21245
 [instcombine]: https://llvm.org/doxygen/InstructionCombining_8cpp_source.html
 [llvm]: http://llvm.org
+[compcert]: http://compcert.inria.fr
+[diff-testing]: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.83.445
+[comp-validation]: https://dl.acm.org/doi/abs/10.1145/2666356.2594334
+[find-bugs-c]: https://dl.acm.org/doi/10.1145/1993316.1993532
