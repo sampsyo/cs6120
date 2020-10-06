@@ -12,9 +12,9 @@ name= "Goktug Saatcioglu"
 name = "Samwise Parkinson"
 +++
 
-Verification of "things computers do" come in many flavors. In the context of compilers, the [CompCert](compcert) project is one approach where compilers are proven to never compile incorrectly. However, this fully verified formal approach comes at the cost of not supporting all language constructs and cannot optimize as well as current compilers. [Random](diff-testing) [testing](comp-validation) is another approach where random test inputs are generated in an attempt to find [bugs](find-bugs-c). These approaches can be highly effective both in terms of finding bugs and ease of use but have no correctness guarantees.
+Verification of "things computers do" come in many flavors. In the context of compilers, the [CompCert][compcert] project is one approach where compilers are proven to never compile incorrectly. However, this fully verified formal approach comes at the cost of not supporting all language constructs and cannot optimize as well as current compilers. [Random][diff-testing)] [testing][comp-validation] is another approach where random test inputs are generated in an attempt to find [bugs][find-bugs-c]. These approaches can be highly effective both in terms of finding bugs and ease of use but have no correctness guarantees.
 
-This week's [paper](paper) attempts to combine the usability aspect from testing with the guarantees aspect of formal approaches. The proposed tool, Alive, formalizes our notions of compiler correctness to treat a source program as the ground truth and verify specific optimizations, namely peephole, that transform these programs. To be practical, Alive introduces a new domain-specific language (DSL) that is meant to resemble LLVM code which makes it easier to express what is meant to be verified.
+This week's [paper][paper] attempts to combine the usability aspect from testing with the guarantees aspect of formal approaches. The proposed tool, Alive, formalizes our notions of compiler correctness to treat a source program as the ground truth and verify specific optimizations, namely peephole, that transform these programs. To be practical, Alive introduces a new domain-specific language (DSL) that is meant to resemble LLVM code which makes it easier to express what is meant to be verified.
 
 The authors of Alive state the following as their main contribution.
 
@@ -22,15 +22,15 @@ The authors of Alive state the following as their main contribution.
 
 ## Background
 
-This paper pre-supposes a considerable familiarity with the [LLVM](llvm) library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
+This paper pre-supposes a considerable familiarity with the [LLVM][llvm] library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
 
 The most pertinent technical background for understanding the Alive optimization tool is related to the distinct features of the LLVM IR. LLVM code resembles a sophisticated sort of abstract assembly code. There is a type system and a module system designed to assist linking, along with a notion of well-formedness for an LLVM program. There is also a wide variety of annotations, meta-data, and variable renaming. However, most of the optimization in the scope of this paper occurs locally within the body of individual functions. The code is easy enough to read, but the difficulty lies in ambiguous instructions. 
 
 ## Contributions
 
-This paper introduces Alive, a Domain-Specific Language designed for conveniently verifying LLVM optimizations. The Alive language provides a framework for encoding LLVM transformations of compiled code. The implementation uses a transformation encoding to generate preconditions and correctness conditions expressed in terms of predicates, which may then be automatically verified by an SMT solver. The result is a verified LLVM optimization in Alive, which also provides a tool for extracting the optimization into C++ code. As an additional feature, the language supports built-in predicates which are implemented by dataflow analyses.
+This paper introduces Alive, a DSL designed for conveniently verifying LLVM optimizations. The Alive language provides a framework for encoding LLVM transformations of compiled code. The implementation uses a transformation encoding to generate preconditions and correctness conditions expressed in terms of predicates, which may then be automatically verified by an SMT solver. The result is a verified LLVM optimization in Alive, which also provides a tool for extracting the optimization into C++ code. As an additional feature, the language supports built-in predicates which are implemented by dataflow analyses.
 
-The main difficulty with verifying LLVM opmtimizations is that the source code may have undefined behaviors. For this reason, many of the interesting design decisions for Alive are related to handling undefined behavior. In principle, Alive is intended to check that optimizations are *refining*, that is, that the set of behaviors of the target code is included in the set of behaviors of the source.
+The main difficulty with verifying LLVM opmtimizations is that the source code may have undefined behavior. For this reason, many of the interesting design decisions for Alive are related to handling undefined behavior. In principle, Alive is intended to check that optimizations are *refining*, that is, that the set of behaviors of the target code is included in the set of behaviors of the source.
 
 After introducing Aive, the paper turns toward more technical concerns. In particular, it proves two versions of a soundness theorem for Alive's verification method, first considering the language without memory and pointer concerns, then re-introducing pointer arithmetic. The theorem in essence states that if the Alive back-end accepts a given optimization, then the code transformation is semantics-refining.
 
@@ -38,7 +38,7 @@ After introducing Aive, the paper turns toward more technical concerns. In parti
 
 At a high-level, the process of verifying a peephole optimization in Alive is as follows:
 
-1. Specify the transformation in Alive's domain-specific language (DSL).
+1. Specify the transformation in Alive's DSL.
 2. Alive discharges SMT formulas that encode the semantics of LLVM operations and datatypes.
 3. The formulas from step 2 are used as verification conditions and passed to an SMT solver.
 3. SMT solver either verifies the optimization as valid or returns a counterexample showing why the optimization is wrong.
@@ -58,33 +58,33 @@ Pre: C1 & C2 == 0 && MaskedValueIsZero(%V, ∼C1)
 %R  = and %t0, (C1 | C2)
 ```
 
-Here the left hand side is everything before the `=>` and the right hand side is everything after. The DSL abstracts LLVN semantics: anything beginning with a capital C is a constant, the pattern %t[num] are temporary registers and the lack of data-types indicates that this transformation is valid for all LLVM datatypes. The keyword `Pre:` allows the user of the DSL to specify a pre-condition which abstracts the results that an LLVM compiler may infer from dataflow analyses before applying a transformation. These predicates are hard-coded into Alive.
+Here the left hand side is everything before the `=>` and the right hand side is everything after. The DSL abstracts LLVM semantics: anything beginning with a capital C is a constant, the pattern %t[num] are temporary registers and the lack of data-types indicates that this transformation is valid for all LLVM datatypes. The keyword `Pre:` allows the user of the DSL to specify a pre-condition which abstracts the results that an LLVM compiler may infer from dataflow analyses before applying a transformation. These predicates are hard-coded into Alive.
 
 ### Correctness of Optimizations
 
-The goal of Alive is to prove that a target optimization refines the behavior of a source program under the presence of undefined behavior.  Undefined behavior is the result of the assumptions a compiler makes about certain instructions of a program. When an instruction with undefined behavior is used then the compiler may replace it with an arbitrary sequence of instructions or assume that such undefined behavior never occurs. For example, in `C` the instruction `x + 1 > x` can be replaced with `true` (i.e. any value `!= 0`) as signed overflow is undefined behavior. The guiding principle in Alive, and really for any other compiler, is:
+The goal of Alive is to prove that a target optimization refines the behavior of a source program under the presence of undefined behavior.  Undefined behavior is the result of the assumptions a compiler makes about certain instructions of a program. When an instruction with undefined behavior is used then the compiler may replace it with an arbitrary sequence of instructions or assume that such undefined behavior never occurs. For example, in `C` the instruction `x + 1 > x` can be replaced with `true` (i.e., any value `!= 0`) as signed overflow is undefined behavior. The guiding principle in Alive, and really for any other compiler, is:
 
 *A compiler should never introduce new behavior when there is no undefined behavior but can produce new results in the presence of undefined behavior.*
 
-A nice summary of Alive and a discussion on undefined behavior can be foundin this [blog post](alive-blog) by the authors of the paper.
+A nice summary of Alive and a discussion on undefined behavior can be foundin this [blog post][alive-blog] by the authors of the paper.
 
 #### undef and poison
 
-In LLVM there are three types of undefined behavior. The first arises from the keyword `undef`. `undef` in LLVM represents any value (given a specific width) each time it is read from. For example, in the program
+In LLVM there are three types of undefined behavior. The first arises from the keyword `undef`. `undef` in LLVM represents any value (given a specific width) each time it is read from. For example, in the program:
 
 ```
 %z = xor i8 undef, undef
 ```
 
-`%z` can be any value in the range `{0, ..., 255}` as we are taking the xor of any two 8-bit values. A more interesting example is
+`%z` can be any value in the range `{0, ..., 255}` as we are taking the xor of any two 8-bit values. A more interesting example is:
 
 ```
 %z = or i8 1, undef
 ```
 
-where the value of `%z` becomes any odd integer in the range `{0, ..., 255}`. `undef` allows the compiler to aggresively optimize a program as LLVM [makes the assumption](undef-val) that whenever an `undef` is seen "the program is well-defined no matter what value is used."
+where the value of `%z` becomes any odd integer in the range `{0, ..., 255}`. LLVM [assumes][undef-val] that whenever an `undef` is seen "the program is well-defined no matter what value is used." This assumption allows the compiler to aggresively optimize programs where it encounters `undef` values.
 
-`poison` values are distinct from `udef` values as they are used to indicate that "a side-effect-free instruction has a condition that produces undefined behavior." There is no way to explicitly indicate that a value is `poison` in LLVM. As an example, the LLVM instruction 
+`poison` values are distinct from `undef` values as they are used to indicate that "a side-effect-free instruction has a condition that produces undefined behavior." There is no way to explicitly indicate that a value is `poison` in LLVM. As an example, the LLVM instruction: 
 
 ```
 %r = shl nsw %x, log2(C1)
@@ -108,7 +108,7 @@ The SMT formulas generated by Alive encode all possible types for the instructio
 
 ### Example
 
-The optimization of replacing `(X << C1) / C2 ` with `X / (C2 >> C1)` whenever `C2 is a multiple of C1` can be written in Alive as follows
+The optimization of replacing `(X << C1) / C2 ` with `X / (C2 >> C1)` whenever C2 is a multiple of C1 can be written in Alive as follows:
 
 ```
 Pre: C2 % (1<<C1) == 0
@@ -118,7 +118,7 @@ Pre: C2 % (1<<C1) == 0
 %r = sdiv %X, (C2 / (1 << C1))
 ```
 
-This optimization does not refine the source program when `C1 = width(C1) - 1` as `X << C1` may overflow. This is not obvious to see so Alive produces the following output 
+This optimization does not refine the source program when `C1 = width(C1) - 1` as `X << C1` may overflow. This is not obvious to see so Alive produces the following output: 
 
 ```
 ERROR: Mismatch in values of i4 %r
@@ -134,7 +134,7 @@ Target value: 15 (0xf)
 
 which gives a counterexample for `4`-bit unsigned integers. Here, the issue is that the optimization causes the target to produce a different result for a specific input that causes no undefined behavior in the source program. Note that the source program uses `nsw` to indicate that signed overflow is undefined behavior but assumes that unsigned overflow is not undefined behavior. This is why the counterexample produced by Alive uses unsigned integers.
 
-The authors of Alive opened a [bug report](pr21245) and a fix was accepted where the pre-condition of the optimization was strengthened to 
+The authors of Alive opened a [bug report][pr21245] and a fix was accepted where the pre-condition of the optimization was strengthened to:
 
 ```
 Pre: C2 % (1<<C1) == 0 && C1 != width(C1)-1
@@ -142,7 +142,7 @@ Pre: C2 % (1<<C1) == 0 && C1 != width(C1)-1
 
 ## Alive's Impact
 
-At the time of publication, Alive's authors manually translated 334 LLVM peephole optimizations (from [InstCombine](instcombine)) to Alive out of a possible 1028 instructions, meaning 694 were not processed for verification. Out of the translated optimizations, the authors found 8 bugs where the most uncommon bug was due to the introduction of undefined behavior. The authors state that most of the time Alive runs in a few seconds while for instructions with multiplication and division it "can take several hours or longer to verify the larger bit-widths" as most SMT solvers struggle with such inputs. The remaining optimizations could not be translated as they include instructions that were not supported by Alive at the time (such as floating-point operations).
+At the time of publication, Alive's authors manually translated 334 LLVM peephole optimizations (from [InstCombine][instcombine]) to Alive out of a possible 1028 optimizations, meaning 694 were not processed for verification. Out of the translated optimizations, the authors found 8 bugs where the most uncommon bug was due to the introduction of undefined behavior. The authors state that most of the time Alive runs in a few seconds while for instructions with multiplication and division it "can take several hours or longer to verify the larger bit-widths" as most SMT solvers struggle with such inputs. The remaining optimizations could not be translated as they include instructions that were not supported by Alive at the time (such as floating-point operations).
 
 In addition to verifying existing optimizations, the authors also created a LLVM+Alive version of the LLVM compiler where the optimizations verified by Alive were replaced by C++ code generated by Alive that performed the optimization. On average, code generated by LLVM+Alive was 3% slower than LLVM's -O3 (the most aggressive optimization option) despite covering a fraction of the optimization LLVM offers. This suggests that Alive could be a viable option for both verifying and synthesizing optimization code.
 
@@ -158,15 +158,15 @@ While we couldn't find any documentation on the LLVM website showing us that LLV
 
 ### Alive2
 
-Following this work, Alive's authors have improved on Alive in multiple ways including [floating-point support](alive-fp), a precondition [inference](alive-infer) tool for optimizations and the formalization of Alive, called [AliveInLean](alive-lean), in the [Lean](lean) theorem prover (this work assumes that "proof obligations are correctly discharged by an SMT solver"). Most recently, the authors of Alive have switched Alive to [maintenance mode](alive-git) and introduced a newer version of Alive, called [Alive2](alive2-git). A nice introduction to Alive2 can be found in a series of blog posts ([1](alive2-blog1), [2](alive2-blog2), [3](alive2-blog3)). Alive2 supports regular LLVM code in addition to the DSL of Alive along with bidirectional refinement (the `=>` of Alive can be replaced with `<=>`). So far, Alive2 has found 58 total [bugs](alive2-bugs) in LLVM & [Z3](z3).
+Following this work, Alive's authors have improved on Alive in multiple ways including [floating-point support][alive-fp], a precondition [inference][alive-infer] tool for optimizations and the formalization of Alive, called [AliveInLean][alive-lean], in the [Lean][lean] theorem prover (this work assumes that "proof obligations are correctly discharged by an SMT solver"). Most recently, the authors of Alive have switched Alive to [maintenance mode][alive-git] and introduced a newer version of Alive, called [Alive2][alive2-git]. A nice introduction to Alive2 can be found in a series of blog posts ([1][alive2-blog1], [2][alive2-blog2], [3][alive2-blog3]). Alive2 supports regular LLVM code in addition to the DSL of Alive along with bidirectional refinement (the `=>` of Alive can be replaced with `<=>`). So far, Alive2 has found 58 total [bugs][alive2-bugs] in LLVM & [Z3][z3].
 
 ### Contributions to LLVM (Detour)
 
-Some of the authors of this paper (everyone except Santosh Nagarakatte) have pushed for the [removal of `undef`](remove-undef-llvm) from LLVM and introduce a new construct they call `freeze`. `freeze` is a compiler construct that stops the propagation of `poison` and instead forces the instruction to return an arbitrary value (similar to `undef`.) `freeze` was [added](freeze-twitter) to [LLVM](freeze-llvm) but `undef` was not removed.
+Some of the authors of this paper (everyone except Santosh Nagarakatte) have pushed for the [removal of `undef`][remove-undef-llvm] from LLVM and introduced a new construct they call `freeze`. `freeze` is a compiler construct that stops the propagation of `poison` and instead forces the instruction to return an arbitrary value (similar to `undef`.) `freeze` was [added][freeze-twitter] to [LLVM][freeze-llvm] but `undef` was not removed.
 
-The most interesting aspect for this work is Regher's blog post on why [undefined behavior is not always unsafe programming](undef!=unsafe). Recall that in LLVM the [undef](undef-val) is used to indicate that "the program is well-defined no matter what value is used" which gives an optimizer the freedom to optimize the program. Regher argues that exposing undefined behavior at the programmer visible abstractions level allows for more efficient programs and simpler compilers at the cost of program correctness. On the other hand, `undef` in LLVM "is an internal design choice" that need not be visible for the programmer to allow for better optimizations. If error-checking can be done at the higher-level and we can conclude that a program does not need such checks, then `undef` can be inserted into code at the LLVM level which then means these error checks can be factored out and more optimizations can be applied. 
+The most interesting aspect for this work is Regher's blog post on why [undefined behavior is not always unsafe programming][undef!=unsafe]. Recall that in LLVM the [undef][undef-val] is used to indicate that "the program is well-defined no matter what value is used" which gives an optimizer the freedom to optimize the program. Regher argues that exposing undefined behavior at the programmer visible abstractions level allows for more efficient programs and simpler compilers at the cost of program correctness. On the other hand, `undef` in LLVM "is an internal design choice" that need not be visible for the programmer to allow for better optimizations. If error-checking can be done at the higher-level and we can conclude that a program does not need such checks, then `undef` can be inserted into code at the LLVM level which then means these error checks can be factored out and more optimizations can be applied. 
 
-In general, computer science education considers undefined behavior a harmful concept. However, we also contend with the fact that undefined behavior might be required for aggressive optimizations and speculative execution. Alive seems to take a third route as articulated in Regher's blog post and documented in the LLVM documentation: undefined behavior is ok as long as it "refines' ' the original (source) program in some way. Here are two quotes from the aforementioned article.
+In general, computer science education considers undefined behavior a harmful concept. However, we also contend with the fact that undefined behavior might be required for aggressive optimizations and speculative execution. Alive seems to take a third route as articulated in Regher's blog post and documented in the LLVM documentation: undefined behavior is ok as long as it "refines" the original (source) program in some way. Here are two quotes from the aforementioned article.
 
 > Undefined behavior is the result of a design decision: the refusal to systematically trap program errors at one particular level of a system. The responsibility for avoiding these errors is delegated to a higher level of abstraction.
 >
