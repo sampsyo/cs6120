@@ -22,9 +22,17 @@ The authors of Alive state the following as their main contribution.
 
 ## Background
 
+### LLVM
+
 This paper pre-supposes a considerable familiarity with the [LLVM][llvm] library and IR in its exposition of new contributions. For context, LLVM (which is not an acronym) is a long-term software project that provides a plurality of tools for implementing compiler back-ends. The core of the software consists of a custom low-level IR and a library of optimization passes on this IR, both of which are thoroughly documented. Indeed, many of these optimization passes are rather familiar, such as dead instruction elimination, global value numbering, and loop-invariant code motion, to name a few. It also provides an end-to-end C compiler which utilizes these tools, and it has become a supporting library for countless compilers since the project began in 2002. Languages with compilers that use LLVM libraries range from Haskell to Ruby to Rust. Suffice to say, LLVM is deployed on countless devices worldwide today.
 
 The most pertinent technical background for understanding the Alive optimization tool is related to the distinct features of the LLVM IR. LLVM code resembles a sophisticated sort of abstract assembly code. There is a type system and a module system designed to assist linking, along with a notion of well-formedness for an LLVM program. There is also a wide variety of annotations, meta-data, and variable renaming. However, most of the optimization in the scope of this paper occurs locally within the body of individual functions. The code is easy enough to read, but the difficulty lies in ambiguous instructions. 
+
+### Peephole Optimizations
+
+[Peephole optimizations][peephole] are optimizations that involve a small set of instructions. The word peephole (sometimes also called window) refers to this small set. For example, if we have the instruction `y = n * x` where `n` is a power of `2` a peephole optimization might replace this instruction `y = x << 2`. This way, a slower instruction has been replaced with a faster one. Other examples of peephole optimizations involve removing redundant code such as unecessary loads/stores.
+
+In the introduction to the paper, the authors mention that in their testing of another tool called [CSmith][find-bugs-c] the single buggiest file was a part of LLVM's instruction combiner [InstCombine][instcombine] which performs peephole optimizations.
 
 ## Contributions
 
@@ -225,3 +233,4 @@ We may also consider the tool which accompanies the paper. The authors note that
 [diff-testing]: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.83.445
 [comp-validation]: https://dl.acm.org/doi/abs/10.1145/2666356.2594334
 [find-bugs-c]: https://dl.acm.org/doi/10.1145/1993316.1993532
+[peephole]: https://dl.acm.org/doi/10.1145/364995.365000
