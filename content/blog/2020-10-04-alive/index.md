@@ -42,7 +42,7 @@ At a high-level, the process of verifying a peephole optimization in Alive is as
 2. Alive discharges SMT formulas that encode the semantics of LLVM operations and datatypes.
 3. The formulas from step 2 are used as verification conditions and passed to an SMT solver.
 3. SMT solver either verifies the optimization as valid or returns a counterexample showing why the optimization is wrong.
-4. (Optional step) If optimization is correct, Alive synthesizes C++ code that can then generate the relevant optimization to optimize LLVM code.
+4. (Optional step) If the optimization is correct, Alive synthesizes C++ code that can then generate the relevant optimization to optimize LLVM code.
 
 ### Alive's DSL
 
