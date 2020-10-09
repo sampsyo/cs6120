@@ -60,8 +60,9 @@ name = "Provably Correct Peephole Optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
 details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
 
-[[classes]]
-lesson = 6
+# Fall break.
+# [[classes]]
+# lesson = 6
 
 
 # "Fancy" optimization.

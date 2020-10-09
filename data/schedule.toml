@@ -43,6 +43,8 @@ mon = true
 
 [[days]]
 date = "October 14"
+canceled = true
+event = "Fall break"
 
 [[days]]
 date = "October 19"
