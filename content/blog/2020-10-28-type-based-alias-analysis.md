@@ -129,3 +129,10 @@ modern compilers implement and support type-based alias analyses for many of
 their optimization passes. Among these compilers are GCC and LLVM, showing that 
 the benefits have even extended outside the paper’s original realm of type-safe 
 languages. 
+
+## Discussion
+1. What are some other ways types can influence and enhance compiler design?
+2. Are there other useful metrics for evaluating alias or other analyses? 
+How can these metrics be more generally applied?
+3. How do compilers make tradeoffs between efficiency and efficacy?
+4. How do researchers make tradeoffs between experimental depth and breadth?
