@@ -131,8 +131,9 @@ link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 
 # Synthesis.
 
-[[classes]]
-lesson = 12
+# HACK: No in-person day because of semi-finals.
+# [[classes]]
+# lesson = 12
 
 [[classes]]
 title = "Superoptimization"

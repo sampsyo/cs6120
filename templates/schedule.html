@@ -21,8 +21,11 @@
       <strong>{{ day.event }}</strong>
       {% else %}
       {% if class_idx < class_count %}
+      {% set collapse = day.collapse | default(value=1) %}
+      {% for collapse_idx in range(end=collapse) %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
+      <div class="class">
         {% if class.lesson %}
         {{ macros::lesson_link(id=class.lesson, title=true) }}
         {% endif %}
@@ -40,6 +43,8 @@
         {% endfor %}
         </ul>
         {% endif %}
+      </div>
+      {% endfor %}
       {% endif %}
       {% endif %}
       <ul>
