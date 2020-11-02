@@ -78,13 +78,19 @@ date = "November 11"
 [[days]]
 date = "November 16"
 mon = true
+canceled = true
+event = "Semi-Finals Study Period"
 
 [[days]]
 date = "November 18"
+canceled = true
+event = "Semi-Finals"
 
 [[days]]
 date = "November 23"
 mon = true
+canceled = true
+event = "Semi-Finals"
 
 [[days]]
 date = "November 25"

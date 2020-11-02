@@ -16,10 +16,10 @@
     {% set day = schedule.days[idx] %}
     <tr class="{% if day.canceled %}canceled{% endif %} {% if day.mon %}mon{% endif %}">
       <th scope="row" class="short">{{ day.date }}</th>
-      {% if day.event %}
-      <td><strong>{{ day.event }}</strong></td>
-      {% else %}
       <td>
+      {% if day.event %}
+      <strong>{{ day.event }}</strong>
+      {% else %}
       {% if class_idx < class_count %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
@@ -41,6 +41,7 @@
         </ul>
         {% endif %}
       {% endif %}
+      {% endif %}
       <ul>
       {% for note in day.notes | default(value=[]) %}
         <li>{{ note | markdown(inline=true) | safe }}</li>
@@ -54,7 +55,6 @@
       {% endfor %}
       </ul>
       </td>
-      {% endif %}
     </tr>
     {% endfor %}
   </tbody>
