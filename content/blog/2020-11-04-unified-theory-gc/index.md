@@ -24,7 +24,7 @@ reality is that these distinctions are certainly muddier in practice.
 
 The two paradigms are associated important performance tradeoffs. In particular,
 the mark and sweep approach adds significant pauses to program progress, since
-in the simplest approach one must pause execution to 'trace' all live objects
+in the simplest approach one must pause execution to "trace" all live objects
 before reclaiming unused space. Reference counting on the other hand does
 not have long pauses during execution, but rather pays for its overhead 
 incrementally. Reference counting's major drawback is the difficulty presented
@@ -71,20 +71,32 @@ order from most mark-n-sweepy to most-reference-county:
   garbage-collection time more efficiently by looking at newer objects more
   often.
 
-* **Older First.** (Sketched only). In this approach, the oldest generation
+* **Older First.** (Sketched only.) In this approach, the oldest generation
   is traced first instead of the nursery.
 
 * **GCH: Generational with Counted Heap.** Run normal tracing of the nursery,
-  but do reference counting on the mature remaining space of the heap.
+  but do reference counting on the mature remaining space of the heap. The
+  intuitive appeal here is twofold: (1) we expect the mutator is modifying
+  nursery objects frequently, so we avoid the reference counting overhead
+  of those actions, and (2) we don't expect to find a lot of garbage in the
+  mature space doing tracing anyway, and the overhead is low to just reference
+  count it.
 
-* **Train Algorithm.** (Presented but not analyzed). While this approach was
-  definitely interesting, and they drive home that it fits into their hybrid
-  model (car ordering provides implicit reference counts), I must admit I was not
-  able to glean much intuition about why the approach would be worth
-  implementing.
+* **Train Algorithm.** (Presented but not analyzed.) The idea here is generally
+  that we can shorten pause times by developing a more subtle notion of
+  "generation" in a multi-generational approach. (Remember, "short pause times"
+  is the classic advantage of reference counting!)  We divide the mature
+  generation first into trains, and then into cars. Since only one car is
+  collected during each pause, the cars can be made as small as needed to reduce
+  collection pause times to the amount desired. To keep the scheme going, we
+  need to find new cars for the live objects left over from a car collection, so
+  we pick them based on the links themselves. The authors go on to suggest that
+  the positional nature of the car choices, the "remembered sets" of links they
+  use, and the order of collection ultimately serve as a sort of macro-reference
+  counting scheme.
 
 * **CC: Reference Counting, Trial Deletion.** This is mostly reference counting,
-  but with some tracing of certain "candidates" mixed in to detect cycles (i.e.
+  but with some tracing of certain "candidates" mixed in to detect cycles (i.e.,
   check if a node's reference count is artificially high due to circular
   references; evidently the case we care about is when a reference count is
   non-zero purely due to circular references, in which case its memory should be
@@ -108,7 +120,9 @@ order from most mark-n-sweepy to most-reference-county:
 The paper concludes with a mathematical analysis of the costs of the
 above collection strategies. The authors point out that the analyses are not 
 big-O, so these costs are actually "real", up to the accuracy of the constants
-for a particular system (and I guess also the constancy of those constants?).
+for a particular system. It is not obvious to me that these particular constants
+even need to be constant on all systems. To the extent that these values might
+vary, certainly so would the validity of these results.
 
 The analyses focus on computing the formulas for: 
 * $\phi$, the frequency of garbage collection
