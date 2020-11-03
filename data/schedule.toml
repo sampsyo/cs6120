@@ -74,17 +74,24 @@ mon = true
 
 [[days]]
 date = "November 11"
+collapse = 2  # HACK
 
 [[days]]
 date = "November 16"
 mon = true
+canceled = true
+event = "Semi-Finals Study Period"
 
 [[days]]
 date = "November 18"
+canceled = true
+event = "Semi-Finals"
 
 [[days]]
 date = "November 23"
 mon = true
+canceled = true
+event = "Semi-Finals"
 
 [[days]]
 date = "November 25"
@@ -95,6 +102,7 @@ event = "Thanksgiving break"
 date = "November 30"
 mon = true
 notes = ["Classes go all-virtual"]
+collapse = 2  # HACK
 
 [[days]]
 date = "December 2"
