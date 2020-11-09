@@ -39,7 +39,7 @@ Self introduces prototypes, which is a way to have object oriented programming w
 
 Self objects constist of named "slots". Slots are object pointers which can reference class fields, method objects, or parent objects (Self uses multiple inheritance).
 
-If you have an object `o` with a slot named `foo` that contains 5, and you send `o` the message `foo`, you get 5. If `o` has a slot named `bar` that points to a method object `f(x)` that computes `foo*x`, and you send `o` the message `bar(3)`, you get 15. How can `f` refer to `foo` if the `f` object does not inherit from `o`? The answer is that when you send the message `bar(3)`, a new method object is created, using `f` as a prototype, which has a new parent slot pointing to `o`. The name of this new parent slot is ... "self".
+If you have an object `o` with a slot named `foo` that contains 5, and you send `o` the message `foo`, you get 5. If `o` has a slot named `bar` that points to a method object `f(x)` that computes `foo*x`, and you send `o` the message `bar(3)`, you get 15. How can `f` refer to `foo` if the `f` object does not inherit from `o`? The answer is that when you send the message `bar(3)`, a new method object is created, using `f` as a prototype, which has a new parent slot pointing to `o`. The name of this new parent slot is... "self".
 
 In the above example, the message `foo` acts like a "getter." If you want to provide a "setter" for the `foo` slot, you can give `o` a special "assignment slot" which behaves like a setter method. One really cool thing about Self is that you're not limited to just providing these setters for data fields. You can also provide assignment slots to methods and parent objects so that they can change dynamically at run-time!
 
