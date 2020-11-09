@@ -1,5 +1,5 @@
 +++
-title = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
+title = "Self-Confidence: How SELF Became a High-Performance Language"
 [extra]
 bio = """
 Evan Adler is a Masters of Engineering student at Cornell interested in compilers and programming languages. 
@@ -26,22 +26,22 @@ Every object is created from a class constructor. However, [classes themselves c
 The way to interact with objects is to send them messages. At runtime, the "receiver" object scans itself and its parent classes for a method with the same name as the message, and if one exists, it executes it. The message can also contain method arguments. This can be referred to as [single dynamic dispatch][dispatch] or [duck typing][duck]. In fact, this is the way in which Smalltalk and Self are dynamically typed languages.
 
 * Blocks<br>
-Blocks of Smalltalk code (i.e. the things enclosed by curly braces in most languages) are themselves objects and can be passed as values. They can also be given parameters, which facilitates their use as lambda functions.
+Blocks of Smalltalk code (i.e., the things enclosed by curly braces in most languages) are themselves objects and can be passed as values. They can also be given parameters, which facilitates their use as lambda functions.
 
 * JIT<br>
-Just In Time Compilers [can trace a lot of their history][jit] through Smalltalk, Self, and later Java. All three of these languages compile into an intermediary bytecode and translate into machine code at runtime.
+Just-in-time Compilers [can trace a lot of their history][jit] through Smalltalk, Self, and later Java. All three of these languages compile into an intermediary bytecode and translate into machine code at runtime.
 
 ### Self
 
 Self prides itself for its simplicity. I think this is because, while we could think of it as adding prototypes to Smalltalk, it can be equivilently thought of as removing classes from Smalltalk, which is a minimalistic language to begin with.
 
-Self introduces prototypes, which is a way to have object oriented programming without classes. Instead of calling class constructors, objects are created by cloning other objects (called the object's prototype) and potentially modifying their structure. The predominant modern adopter of prototypes is [Javascript][js].
+Self introduces prototypes, which is a way to have object oriented programming without classes. Instead of calling class constructors, objects are created by cloning other objects (called the object's prototype) and potentially modifying their structure. The predominant modern adopter of prototypes is [JavaScript][js].
 
-Self objects constist of named "slots". Slots are object pointers which can reference class fields, method objects, or parent objects (Self uses multiple inheritance).
+Self objects constist of named "slots." Slots are object pointers which can reference class fields, method objects, or parent objects (Self uses multiple inheritance).
 
 If you have an object `o` with a slot named `foo` that contains 5, and you send `o` the message `foo`, you get 5. If `o` has a slot named `bar` that points to a method object `f(x)` that computes `foo*x`, and you send `o` the message `bar(3)`, you get 15. How can `f` refer to `foo` if the `f` object does not inherit from `o`? The answer is that when you send the message `bar(3)`, a new method object is created, using `f` as a prototype, which has a new parent slot pointing to `o`. The name of this new parent slot is ... "self".
 
-In the above example, the message `foo` acts like a "getter." If you want to provide a "setter" for the `foo` slot, you can give `o` a special "assignment slot" which behaves like a setter method. One really cool thing about Self is that you're not limited to just providing these setters for data fields. You can also provide assignment slots to methods and parent objects so that they can change dynamically at run-time!
+In the above example, the message `foo` acts like a "getter." If you want to provide a "setter" for the `foo` slot, you can give `o` a special "assignment slot" which behaves like a setter method. One really cool thing about Self is that you're not limited to just providing these setters for data fields. You can also provide assignment slots to methods and parent objects so that they can change dynamically at run time!
 
 Back to our example with `o`, as I mentioned, when the message `bar(3)` is sent, `f`'s `self` slot is rebound dynamically. In contrast, there is a special object called a block which points to a method. The `self` field of that method does not get rebound dynamically, but is rather fixed. This corresponds to a lexically scoped method or a closure, which matches Smalltalk's blocks as you may recall.
 
@@ -60,7 +60,7 @@ Now on to the novel ideas of this paper. The authors point out that without clas
 
 ### Segregation
 
-This was a pretty interesting compiler optimization. Often, the heap is traversed and all references need to be processed. This is something the garbage collector does, something that needs to happen when an object is moved due to its size increasing, and something the "browser" does, which I believe is part of the Self IDE. Now, traversing through the heap looking for pointers becomes problematic when part of a byte-array happens to look like a memory address. Since byte-arrays are the only construct with this ambiguity in both Smalltalk and Self, Smalltalk implementations would traditionally have some extra overhead to check for byte-arrays as it processes the heap, so it knows to ignore pointer-like words which are part of a byte array.
+Often, the heap is traversed and all references need to be processed. This is something the garbage collector does, something that needs to happen when an object is moved due to its size increasing, and something the "browser" does, which I believe is part of the Self IDE. Now, traversing through the heap looking for pointers becomes problematic when part of a byte-array happens to look like a memory address. Since byte-arrays are the only construct with this ambiguity in both Smalltalk and Self, Smalltalk implementations would traditionally have some extra overhead to check for byte-arrays as it processes the heap, so it knows to ignore pointer-like words which are part of a byte array.
 
 Instead, Chambers, Ungar, and Lee segregate the heap into sections where byte array objects can be allocated and sections where all other objects can be allocated. This way they avoid the overhead of being "on the watch" for byte arrays as they scan the heap.
 
@@ -82,7 +82,7 @@ Self uses a JIT, and therefore Self code is compiled into bytecode. Method objec
 
 Like the state-of-the-art Smalltalk implementation of the day, the Self implementation uses *dynamic translation* (again, JIT), and *inline caching* of message results.
 
-Smalltalk programs are notoriously hard to optimize because the types of everything except primitives are not really known statically. Self has the same issue, compounded by the fact that variables are only accessible through message passing, which further obfuscates the compiler's view. In addition, Self cannot use Smalltalk optimizations which operate on classes. Nonetheless, the novel techniques described in this section make Self twice as efficient as the state-of-the-art Smalltalk implementation, or about five times slower than optimized C. I will point out that later implementations of Self acheived speeds only twice as slow as optimized C!
+A fundamental limitation of languages with dynamic typing or with run-time polymorphism is that the type of a given object is not always knowable statically. In Smalltalk, the compiler generally only knows the types of primitives. Self has the same issue, compounded by the fact that variables are only accessible through message passing, which further obfuscates the compiler's view. In addition, Self cannot use Smalltalk optimizations which operate on classes. Nonetheless, the novel techniques described in this section make Self twice as efficient as the state-of-the-art Smalltalk implementation, or about five times slower than optimized C. I will point out that later implementations of Self acheived speeds only twice as slow as optimized C!
 
 ### Customized Compilation
 
@@ -92,7 +92,7 @@ However, with customized compilation, an integer-specific version of `min` is co
 
 ### Message Inlining
 
-Remember, the idea of message passing is that the receiver searches itself and its parents for the required slot name, and does something depending on the type of the slot (data, assignment slot, method, block). However, if the type of the receiver is known at compile time (remember what "compile time" means for a JIT), and the message is also known at compile time, the compiler can search for the relevant slot itself so that this dynamic dispatch doesn't have to occur at run-time.
+Remember, the idea of message passing is that the receiver searches itself and its parents for the required slot name, and does something depending on the type of the slot (e.g., executing it if the slot is a method or returning it if the slot is a data field). However, if the type of the receiver is known at compile time (remember what "compile time" means for a JIT), and the message is also known at compile time, the compiler can search for the relevant slot itself so that this dynamic dispatch doesn't have to occur at run time.
 
 ### Primitive Inlining
 
