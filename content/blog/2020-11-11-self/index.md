@@ -11,7 +11,7 @@ latex = true
 
 ## Background
 
-This week, we discuss the paper [An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes][efficientself] (Chambers, Ungar, and Lee), which appeared in OOPSLA 1989. As it turns out, the same year which heralded the downfall of communism in Europe also marked a significant victory in the liberation of object-oriented programming languages from class-based domination. What I mean is, as we'll see, Self is the first object-oriented programming language without classes, something not really considered possible before its debut.
+This week, we discuss the paper ["An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"][efficientself] (Chambers, Ungar, and Lee), which appeared in OOPSLA 1989. As it turns out, the same year which heralded the downfall of communism in Europe also marked a significant victory in the liberation of object-oriented programming languages from class-based domination. What I mean is, as we'll see, Self is the first object-oriented programming language without classes, something not really considered possible before its debut.
 
 Over the years Self has been a research endeavour at three of the most important institutions in the history of Computer Science: Xerox PARC, Stanford University, and Sun Microsystems. As far as I can tell, this week's paper is the fourth Self paper to be published. The first, [SELF: The Power of Simplicity][self] (Ungar and Smith), written by the language's creators, introduced Self in 1987. The second, [Object Storage and Inheritance for Self][leethesis] (Lee), was written in 1988 and discusses Self's object layout (at that point in time) and Self's multiple inheritance rules. The third, [Customization: Optimizing Compiler Technology for Self, a Dynamically-Typed Object-Oriented Programming Language][customization] (Chambers and Ungar), written earlier in 1989, covers some of the same optimizations discussed in the Chambers, Ungar, and Lee paper.
 
@@ -39,7 +39,7 @@ Self introduces prototypes, which is a way to have object oriented programming w
 
 Self objects constist of named "slots." Slots are object pointers which can reference class fields, method objects, or parent objects (Self uses multiple inheritance).
 
-If you have an object `o` with a slot named `foo` that contains 5, and you send `o` the message `foo`, you get 5. If `o` has a slot named `bar` that points to a method object `f(x)` that computes `foo*x`, and you send `o` the message `bar(3)`, you get 15. How can `f` refer to `foo` if the `f` object does not inherit from `o`? The answer is that when you send the message `bar(3)`, a new method object is created, using `f` as a prototype, which has a new parent slot pointing to `o`. The name of this new parent slot is ... "self".
+If you have an object `o` with a slot named `foo` that contains 5, and you send `o` the message `foo`, you get 5. If `o` has a slot named `bar` that points to a method object `f(x)` that computes `foo*x`, and you send `o` the message `bar(3)`, you get 15. How can `f` refer to `foo` if the `f` object does not inherit from `o`? The answer is that when you send the message `bar(3)`, a new method object is created, using `f` as a prototype, which has a new parent slot pointing to `o`. The name of this new parent slot is... "self".
 
 In the above example, the message `foo` acts like a "getter." If you want to provide a "setter" for the `foo` slot, you can give `o` a special "assignment slot" which behaves like a setter method. One really cool thing about Self is that you're not limited to just providing these setters for data fields. You can also provide assignment slots to methods and parent objects so that they can change dynamically at run time!
 
@@ -138,7 +138,7 @@ One nitpicky thing is, and I'm not sure what kinds of benchmarks were available 
 * Which is superior, classes or prototypes? Why do we see so few languages implement prototypes?
 * Self is designed with simplicity in mind. This can be seen in the "everything is an object" policy and the minimalistic bytecode. What are the advantages of a simple language? Does it boil down to the [Principle of Least Astonishment][astonishment]?
 * This paper doesn't elaborate on Self's dynamic inheritance (changing a parent-object at runtime). What do you think of this feature?
-* What are some shortcomings of the paper? (I'm going to punt this one)
+* What are some shortcomings of the paper? (I'm going to punt this one.)
 
 [efficientself]: https://dl.acm.org/doi/10.1145/74878.74884
 [self]: https://bibliography.selflanguage.org/_static/self-power.pdf
