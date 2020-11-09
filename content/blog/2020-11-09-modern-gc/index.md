@@ -76,5 +76,5 @@ Across the six exact garbage collectors with their conservative counterparts, al
 ## Discussion Questions
 
   1. When might you choose conservative garbage collection over exact garbage collection?
-  2. Are there other ways/metrics that garbage collectors should be analyzed for efficiency(the metrics in this paper include excess retention of memory, amount of false pinning, total run time overhead, and GC overhead)? Is the analysis in this paper conclusive?
+  2. Are there other ways/metrics that garbage collectors should be analyzed for efficiency (the metrics in this paper include excess retention of memory, amount of false pinning, total run time overhead, and GC overhead)? Is the analysis in this paper conclusive?
   3. One possible implication of this work is that C/C++ could become an "efficient" garbage collected language. Would this be a good idea? Why or why not?
