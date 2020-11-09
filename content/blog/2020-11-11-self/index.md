@@ -138,7 +138,7 @@ One nitpicky thing is, and I'm not sure what kinds of benchmarks were available 
 * Which is superior, classes or prototypes? Why do we see so few languages implement prototypes?
 * Self is designed with simplicity in mind. This can be seen in the "everything is an object" policy and the minimalistic bytecode. What are the advantages of a simple language? Does it boil down to the [Principle of Least Astonishment][astonishment]?
 * This paper doesn't elaborate on Self's dynamic inheritance (changing a parent-object at runtime). What do you think of this feature?
-* What are some shortcomings of the paper? (I'm going to punt this one)
+* What are some shortcomings of the paper? (I'm going to punt this one.)
 
 [efficientself]: https://dl.acm.org/doi/10.1145/74878.74884
 [self]: https://bibliography.selflanguage.org/_static/self-power.pdf
