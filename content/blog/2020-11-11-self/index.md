@@ -13,7 +13,7 @@ latex = true
 
 This week, we discuss the paper ["An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"][efficientself] (Chambers, Ungar, and Lee), which appeared in OOPSLA 1989. As it turns out, the same year which heralded the downfall of communism in Europe also marked a significant victory in the liberation of object-oriented programming languages from class-based domination. What I mean is, as we'll see, Self is the first object-oriented programming language without classes, something not really considered possible before its debut.
 
-Over the years Self has been a research endeavour at three of the most important institutions in the history of Computer Science: Xerox PARC, Stanford University, and Sun Microsystems. As far as I can tell, this week's paper is the fourth Self paper to be published. The first, [SELF: The Power of Simplicity][self] (Ungar and Smith), written by the language's creators, introduced Self in 1987. The second, [Object Storage and Inheritance for Self][leethesis] (Lee), was written in 1988 and discusses Self's object layout (at that point in time) and Self's multiple inheritance rules. The third, [Customization: Optimizing Compiler Technology for Self, a Dynamically-Typed Object-Oriented Programming Language][customization] (Chambers and Ungar), written earlier in 1989, covers some of the same optimizations discussed in the Chambers, Ungar, and Lee paper.
+Over the years Self has been a research endeavour at three of the most important institutions in the history of Computer Science: Xerox PARC, Stanford University, and Sun Microsystems. As far as I can tell, this week's paper is the fourth Self paper to be published. The first, ["SELF: The Power of Simplicity"][self] (Ungar and Smith), written by the language's creators, introduced Self in 1987. The second, ["Object Storage and Inheritance for Self"][leethesis] (Lee), was written in 1988 and discusses Self's object layout (at that point in time) and Self's multiple inheritance rules. The third, ["Customization: Optimizing Compiler Technology for Self, a Dynamically-Typed Object-Oriented Programming Language"][customization] (Chambers and Ungar), written earlier in 1989, covers some of the same optimizations discussed in the Chambers, Ungar, and Lee paper.
 
 ### Smalltalk
 
@@ -23,7 +23,7 @@ It needs to be noted that Self is based on Smalltalk, a language which influence
 Every object is created from a class constructor. However, [classes themselves can be modified at runtime][sosmalltalk]. Also, under the hood, classes are just a special type of object (this leads naturally to the concept of prototypes that Self pioneered).
 
 * Message Passing<br>
-The way to interact with objects is to send them messages. At runtime, the "receiver" object scans itself and its parent classes for a method with the same name as the message, and if one exists, it executes it. The message can also contain method arguments. This can be referred to as [single dynamic dispatch][dispatch] or [duck typing][duck]. In fact, this is the way in which Smalltalk and Self are dynamically typed languages.
+The way to interact with objects is to send them messages. At run time, the "receiver" object scans itself and its parent classes for a method with the same name as the message, and if one exists, it executes it. These semantics can be referred to as [single dynamic dispatch][dispatch] or [duck typing][duck], and this is the way in which Smalltalk and Self are dynamically typed languages.
 
 * Blocks<br>
 Blocks of Smalltalk code (i.e., the things enclosed by curly braces in most languages) are themselves objects and can be passed as values. They can also be given parameters, which facilitates their use as lambda functions.
@@ -32,8 +32,6 @@ Blocks of Smalltalk code (i.e., the things enclosed by curly braces in most lang
 Just-in-time Compilers [can trace a lot of their history][jit] through Smalltalk, Self, and later Java. All three of these languages compile into an intermediary bytecode and translate into machine code at runtime.
 
 ### Self
-
-Self prides itself for its simplicity. I think this is because, while we could think of it as adding prototypes to Smalltalk, it can be equivilently thought of as removing classes from Smalltalk, which is a minimalistic language to begin with.
 
 Self introduces prototypes, which is a way to have object oriented programming without classes. Instead of calling class constructors, objects are created by cloning other objects (called the object's prototype) and potentially modifying their structure. The predominant modern adopter of prototypes is [JavaScript][js].
 
@@ -52,11 +50,11 @@ Self also has object-array and byte-array objects.
 The authors quickly mention that they borrow the following two implementation details from the state-of-the-art Smalltalk implementations of the time:
 
 * Avoiding an [object table][objecttable] (a piece of pointer indirection which speeds up garbage collection but slows down each object reference and requires space).
-* Using a garbage collector based on "Generation Scavenging with demographic feedback-mediated tenuring, augmented with a traditional mark-and-sweep collector to reclaim tenured garbage". It sounds like these guys had enough garbage industry know-how to put Tony Soprano out of business!
+* Using a garbage collector based on "Generation Scavenging with demographic feedback-mediated tenuring, augmented with a traditional mark-and-sweep collector to reclaim tenured garbage". It sounds like these guys had enough garbage industry know-how to put Tony Soprano out of business! Seriously though, this refers to a generational GC technique which tries to avoid promoting/"tenuring." You can read more about it [here][tenure].
 
 ### Maps
 
-Now on to the novel ideas of this paper. The authors point out that without classes, similar objects duplicate a lot of data. To save space, they define clone families and maps. A clone family is a set of objects with the same structure. That is, if you create object `A` by cloning `B` and you only modify the values of `A`'s assignable slots, then `A` and `B` are in the same clone family. Now, objects are no longer implemented "under the hood" as named slots, but rather as a pointer to the map of its clone family, which contains all the shared structure, as well as its assignable (field, method, or parent) pointers. However, the pointers are not named. Instead, the ordering and naming information resides in the map. Maps make the memory footprint of Self programs resemble that of class-based Smalltalk programs.
+Now on to the novel ideas of this paper. The authors point out that without classes, similar objects duplicate a lot of data. To save space, they define clone families and maps. A clone family is a set of objects with the same structure. That is, if you create object `A` by cloning `B` and you only modify the values of `A`'s assignable slots, then `A` and `B` are in the same clone family. Now, objects are no longer implemented "under the hood" as named slots, but rather as an array containing the assignable data and a pointer to the map of its clone family, which contains all the shared structure. Maps make the memory footprint of Self programs resemble that of class-based Smalltalk programs.
 
 ### Segregation
 
@@ -68,31 +66,21 @@ They also use two other tricks to speed up heap scans. First, at the end of the 
 
 Segregation, sentinels, and marks improve from the heap scanning speed of the fastest Smalltalk implementation by a factor of two.
 
-### Object Formats
+## Compiler Optimizations
 
-32-bit words in the slot contents can be one of three things: 30-bit integers, 30-bit floats, or 32-bit addresses. The two least significant bits encode which type of data the word represents. As far as the memory address is concerned, this type of encoding is an example of a [tagged pointer][taggedptr]. The last two bits are also used to differentiate the "mark" words described in the previous section, although these words are never placed inside slots.
-
-This section of the paper goes on to show how objects and maps are layed out in memory. I don't think there's anything too interesting or clever about this, but the kicker is that at the end the authors can demonstrate concretely that by using maps, their Self implementation is as space efficient as Smalltalk.
-
-## The Parser
-
-Self uses a JIT, and therefore Self code is compiled into bytecode. Method objects store the bytecode as data using a byte array and an object array. Self uses a very simple stack-based bytecode representation with only eight opcodes (four of them being used to originate or delegate messages). In contrast, Smalltalk-80 has a much more eleborate bytecode representation.
-
-## The Compiler
-
-Like the state-of-the-art Smalltalk implementation of the day, the Self implementation uses *dynamic translation* (again, JIT), and *inline caching* of message results.
+Self uses a JIT, and therefore Self code is first translated into bytecode. Method objects store the bytecode as data using a byte array and an object array. Self uses a very simple stack-based bytecode representation with only eight opcodes (four of them being used to originate or delegate messages). In contrast, Smalltalk-80 has a much more eleborate bytecode representation.
 
 A fundamental limitation of languages with dynamic typing or with run-time polymorphism is that the type of a given object is not always knowable statically. In Smalltalk, the compiler generally only knows the types of primitives. Self has the same issue, compounded by the fact that variables are only accessible through message passing, which further obfuscates the compiler's view. In addition, Self cannot use Smalltalk optimizations which operate on classes. Nonetheless, the novel techniques described in this section make Self twice as efficient as the state-of-the-art Smalltalk implementation, or about five times slower than optimized C. I will point out that later implementations of Self acheived speeds only twice as slow as optimized C!
 
 ### Customized Compilation
 
-To illustrate this optimization, the authors have us consider a `min` method which calls a `less-than` method. Both the `min` and `less-than` methods are potentially called from many types of objects. A traditional Smalltalk JIT compiler would translate `min` into machine code when it's called on an integer, and reuse the compiled method when called on a floating point. This means `min` needs to be compiled in a type-agnostic way, which prevents Message Inlining (which we'll see shortly) of `less-than`.
-
-However, with customized compilation, an integer-specific version of `min` is compiled when it's called on an integer, and a float-specific version is compiled when it's called on a float. This allows the `less-than` message-passing to be inlined...
+To illustrate this optimization, the authors have us consider a `min` method which calls a `less-than` method. Both the `min` and `less-than` methods are potentially called from many types of objects. A traditional Smalltalk JIT compiler would translate `min` into machine code when it's called on an integer, and reuse the compiled method when called on a floating point. Self on the other hand compiles a second, float-specific, method when `min` is called on the floating point object. Since the type of the receiver object is now known at compile time, some of the following optimizations are directly enabled.
 
 ### Message Inlining
 
-Remember, the idea of message passing is that the receiver searches itself and its parents for the required slot name, and does something depending on the type of the slot (e.g., executing it if the slot is a method or returning it if the slot is a data field). However, if the type of the receiver is known at compile time (remember what "compile time" means for a JIT), and the message is also known at compile time, the compiler can search for the relevant slot itself so that this dynamic dispatch doesn't have to occur at run time.
+Like the state-of-the-art Smalltalk implementation of the day, Self uses *inline caching* of message results. However, Message Inlining takes this further.
+
+Remember, the idea of message passing is that the receiver searches itself and its parents for the required slot name, and does something depending on the type of the slot (e.g., executing it if the slot is a method or returning it if the slot is a data field). However, if the type of the receiver is known at compile time (thanks to Customized Compilation), the compiler can search for the relevant slot itself so that this dynamic dispatch doesn't have to occur at run time. In the example above, Customized Compilation of `min` allows `less-than` to be Message-Inlined. In terms of eliminating the overhead of dynamic typing, I think Message Inlining is the most important idea in this paper.
 
 ### Primitive Inlining
 
@@ -107,6 +95,8 @@ This is an optimization that occurs at merge points in the control flow graph of
 This compiler optimization builds upon Message Splitting. The motivation here seems to be mostly based on Self's operator overloading. The idea is that a message like `less-than` will often be passed to integers, floats, and strings because the language provides this behavior, but in rare cases, this message could be passed to arbitrary objects. Then, any time the compiler sees a `less-than` message passed to an object `o`, it inserts branches that check if `o` is an integer, a float, a string, or something else. Then it Message Splits the single message-pass to the ends of these four branches. This allows Message Inlining in the common case and actual message passing in the worst case.
 
 ## Supporting the Programming Environment
+
+Toward the end of the paper, the authors discuss incremental recompilation and source-level debugging. The term "Programming Environment" here refers to Self being slightly more than just a language. [Self: The Movie][movie] demonstrates the graphical programming environment used to develop Self code.
 
 ### Support for Incremental Recompilation
 
@@ -126,10 +116,6 @@ There's a lot to unpack here, and to save some fuel for discussion, I'll just ou
 * The authors propose a new metric for measuring performance of Smalltalk-like languages, *Mims* (millions of messages per second) and a notion of *efficiency* (messages per instruction).
 * Self is also compared to two versions of Smalltalk which include type declarations, and it acheives roughly the same performance.
 
-## Merits and Shortcomings of the Paper
-
-I won't do anything other than heap praise on the Self implementation described in the paper. There are a lot of great ideas, some of which advance prototype-based languages and some of which improve upon Smalltalk-like languages.
-
 One nitpicky thing is, and I'm not sure what kinds of benchmarks were available in 1989, but the authors write that the Stanford integer benchmarks are 900 lines of Self code and the Richards benchmark is 400 lines. This seems pretty skimpy compared to something like the SPEC benchmarks.
 
 ## Questions
@@ -138,7 +124,7 @@ One nitpicky thing is, and I'm not sure what kinds of benchmarks were available 
 * Which is superior, classes or prototypes? Why do we see so few languages implement prototypes?
 * Self is designed with simplicity in mind. This can be seen in the "everything is an object" policy and the minimalistic bytecode. What are the advantages of a simple language? Does it boil down to the [Principle of Least Astonishment][astonishment]?
 * This paper doesn't elaborate on Self's dynamic inheritance (changing a parent-object at runtime). What do you think of this feature?
-* What are some shortcomings of the paper? (I'm going to punt this one.)
+* How good are the proposed Mims and Efficiency metrics?
 
 [efficientself]: https://dl.acm.org/doi/10.1145/74878.74884
 [self]: https://bibliography.selflanguage.org/_static/self-power.pdf
@@ -151,5 +137,7 @@ One nitpicky thing is, and I'm not sure what kinds of benchmarks were available 
 [jit]: https://en.wikipedia.org/wiki/Just-in-time_compilation#History
 [js]: https://medium.com/madhash/understanding-prototypes-in-javascript-e466244da086
 [objecttable]: http://www.mirandabanda.org/bluebook/bluebook_chapter30.html#TheObjectTable30
+[tenure]: http://pages.cs.wisc.edu/~zhong/termproj_surveyGC.html
 [taggedptr]: https://en.wikipedia.org/wiki/Tagged_pointer
+[movie]: https://www.youtube.com/watch?v=Ox5P7QyL774&feature=emb_logo
 [astonishment]: https://news.ycombinator.com/item?id=22794771
