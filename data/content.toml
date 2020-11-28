@@ -145,7 +145,7 @@ link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pd
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
-leader = "Griffin Berlstein, Jie Liu"
+leader = "Jie Liu"
 [[classes.readings]]
 name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
 link = "https://dl.acm.org/citation.cfm?id=2594339"
