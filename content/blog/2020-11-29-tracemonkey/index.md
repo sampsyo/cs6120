@@ -49,7 +49,7 @@ general, JavaScript types are not known until runtime. For example,
 the `+` operator in the following code could mean either number
 addition or string concatenation.
 
-```
+```js
 function ambiguous(a, b) {
     return a + b;
 }
@@ -83,7 +83,7 @@ particular, the authors focus on effectively handling nested
 loops. Consider the following example, an implementation of the Sieve
 of Eratosthones taken from the paper:
 
-```
+```js
 for (var i = 2; i < 100; ++i) { // outer loop
     if (!primes[i])
         continue;
@@ -185,7 +185,7 @@ path of control flow.
 Not all loops are type stable. Consider the following (admittedly
 contrived) piece of code:
 
-```
+```js
 var x;
 for (var i = 0; i < 100; ++i) {
   x = 1;
@@ -310,7 +310,7 @@ of a second when loading a web page.
 The authors present their results compared to the other engines in the
 following graph (TraceMonkey is labelled "Tracing"):
 
-![comparison of results between TraceMonkey, V8, and SFX](results.compare.png)
+![comparison of results between TraceMonkey, V8, and SFX](results_compare.png)
 
 First, TraceMonkey executed 16 of the 26 benchmarks twice as quickly
 as SpiderMonkey or faster, and only barely underperformed SpiderMonkey
