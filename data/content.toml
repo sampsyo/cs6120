@@ -120,13 +120,13 @@ name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented
 link = "http://portal.acm.org/citation.cfm?id=74884"
 details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
-[[classes]]
-title = "Tracing"
-leader = "Will Smith"
-[[classes.readings]]
-name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
-details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
-link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
+# [[classes]]
+# title = "Tracing"
+# leader = "Will Smith"
+# [[classes.readings]]
+# name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
+# details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
+# link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 
 
 # Synthesis.

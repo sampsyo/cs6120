@@ -102,7 +102,7 @@ event = "Thanksgiving break"
 date = "November 30"
 mon = true
 notes = ["Classes go all-virtual"]
-collapse = 2  # HACK
+# collapse = 2  # HACK
 
 [[days]]
 date = "December 2"
