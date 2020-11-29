@@ -21,18 +21,17 @@ All course communication will happen there (not on email).
 
 ## Class Sessions
 
-The scheduled class sessions for 6120 have a funky hybrid-flipped format this year.
+The scheduled class sessions for 6120 have a funky flipped format this year.
+Everything happens on Zoom (please join [Zulip][] for the link).
 Check the [schedule][] for each day of class—it will fall into one of two categories:
 
 * *"Lesson" days:*
   Before class, watch the (required) video and, if you like, do the optional associated reading.
   While or after watching the video, ask questions in the associated Zulip thread.
   The class will be a quiet hacking session and an opportunity to ask questions and work together with the rest of the class on [implementation tasks](#implementation-tasks).
-  In-person attendance is optional.
   To participate virtually, hang out on Zulip and ask questions while you work.
 * *"Discussion" days:*
   Before class, do the (required) reading and answer the (required) discussion questions on the associated Zulip thread.
-  The class is all virtual; please do not show up in person.
   We will discuss the reading on Zoom, which lets everyone participate on an equal footing.
   After the discussion wraps up, there may be time for more hanging around and hacking.
 

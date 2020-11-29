@@ -16,13 +16,16 @@
     {% set day = schedule.days[idx] %}
     <tr class="{% if day.canceled %}canceled{% endif %} {% if day.mon %}mon{% endif %}">
       <th scope="row" class="short">{{ day.date }}</th>
-      {% if day.event %}
-      <td><strong>{{ day.event }}</strong></td>
-      {% else %}
       <td>
+      {% if day.event %}
+      <strong>{{ day.event }}</strong>
+      {% else %}
       {% if class_idx < class_count %}
+      {% set collapse = day.collapse | default(value=1) %}
+      {% for collapse_idx in range(end=collapse) %}
       {% set class = content.classes[class_idx] %}
       {% set_global class_idx = class_idx + 1 %}
+      <div class="class">
         {% if class.lesson %}
         {{ macros::lesson_link(id=class.lesson, title=true) }}
         {% endif %}
@@ -40,6 +43,9 @@
         {% endfor %}
         </ul>
         {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
       {% endif %}
       <ul>
       {% for note in day.notes | default(value=[]) %}
@@ -54,7 +60,6 @@
       {% endfor %}
       </ul>
       </td>
-      {% endif %}
     </tr>
     {% endfor %}
   </tbody>

@@ -35,7 +35,7 @@ Include a link to your homepage if you have one, but it's optional.
 Also write a short bio for yourselves (using [Markdown][]), which will appear at the bottom of the post.
 Then, the rest of the text file is the Markdown text of your blog post.
 
-If you want to use math in your blog post, put `latex = true` in your `[extra]` section to enable [KaTeX][]. Then you can use `$\pi$` for inline math and `\[ e^{i\pi} = 0 \]` for display math.
+If you want to use math in your blog post, put `latex = true` in your `[extra]` section to enable [KaTeX][]. Then you can use `$\pi$` for inline math and `\[ e^{i\pi} + 1 = 0 \]` for display math.
 
 To include images or other resources in your post, make your post into a directory.
 That is, make a new directory called `YYYY-MM-DD-title` inside `content/blog/`.
