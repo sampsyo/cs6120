@@ -24,7 +24,8 @@ The biggest problem of implementing a synthesis-based compiler is that it may no
 ### Partitioning
 Chlorophyll extends a simple type system to simplify reasoning about partitioning and to avoid explicit communication code. The partitioning subproblem takes input source programs with partition annotations which specify the logical core where code and data reside. The input does not need to contain all annotations - actually most data and operators can be unannotated. The synthesizer will infer unspecified partitions, and output the fully annotated program with the minimized amount of messages among partitions. 
  
-Details on typing rules can be found in Figure 2 in the paper. The extended type system enables the type inference of unannotated partition types, which is essentially the job of the partitioning synthesizer. To infer the unannotated partition types, the partitioning synthesizer needs to estimate the communication count and memory space for each core. For example, the send operation ! increases the communication amount by 1, and increases the space consumption with the size of the sending operand; conditional statements add the communication amount by the number of body partitions since the condition expression will be sent to those partitions, and the condition expression takes up memory in all body partitions.
+Details on typing rules can be found in Figure 2 in the paper. The extended type system enables the type inference of unannotated partition types, which is essentially the job of the partitioning synthesizer. To infer the unannotated partition types, the partitioning synthesizer needs to estimate the communication count and memory space for each core. For example, the send operation `!` increases the communication amount by 1, and increases the space consumption with the size of the sending operand; conditional statements add the communication amount by the number of body partitions since the condition expression will be sent to those partitions, and the condition expression takes up memory in all body partitions.
+
 
 The communication count interpreter and the partition space checker are implemented using Rosette, a language for building light-weight synthesizers. For partially annotated programs, unspecified partition annotations will be represented as a symbolic variable, and Rosette’s back-end solver will search for a set of assigned partitions under the constraints of communication count and memory space. The process is pushed forward by setting the new constraint results to be the upper bound of the next iteration. This iterative process guarantees the optimality of the output annotated program.
 
@@ -68,5 +69,4 @@ One interesting observation is that the superoptimizer can discover clever optim
 2. Why did the authors tear apart the compilation problem into four subproblems?
 3. Why did the authors use superoptimization instead of dynamic programming when doing code generation? What benefits can be foreseen when choosing the algorithms?
 4. The paper mentioned some limitations in their methodology. What additional techniques do you think can help improve the results?
-
 
