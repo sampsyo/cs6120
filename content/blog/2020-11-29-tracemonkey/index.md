@@ -9,9 +9,9 @@ name = "Will Smith"
 link = "https://github.com/Calsign/"
 +++
 
-This week's paper, [Trace-based Just-in-Time Compilation for Dynamic
-Languages](https://dl.acm.org/citation.cfm?id=1542476.1542528) by Gal
-et. al., introduces TraceMonkey, a type specialized tracing approach
+This week's paper, ["Trace-based Just-in-Time Compilation for Dynamic
+Languages"](https://dl.acm.org/citation.cfm?id=1542476.1542528) by Gal
+et al., introduces TraceMonkey, a type specialized tracing approach
 to a JIT compiler for the SpiderMonkey JavaScript engine used in the
 Mozilla Firefox web browser. This paper was the first introduction of
 a tracing JIT compiler for a dynamic programming language, and the
@@ -28,21 +28,20 @@ applications have gotten more involved over time, requiring more
 capable JavaScript engines. At the time that this paper was published
 in June 2009, the existing Firefox engine worked by transforming the
 JavaScript syntax into a bytecode and then running an interpreter on
-the bytecode. In September 2008, Google released their Chrome browser
-and with it the [V8 JavaScript
-engine](https://v8.dev/blog/10-years). V8 introduced just-in-time
-(JIT) compilation of methods, which granted it a significant
-performance boost over the competing JavaScript runtimes. This paper
-seems largely driven by a need to respond in kind with Firefox's
-engine.
+the bytecode. TraceMonkey was the first introduction of just-in-time
+(JIT) compilation to a JavaScript engine, a technique which grants a
+significant performance boost. Shortly thereafter, Google and Apple
+revealed their own implementations in [Chrome's
+V8](https://v8.dev/blog/10-years) and Safari/WebKit's [SquirrelFish
+Extreme](https://webkit.org/blog/214/introducing-squirrelfish-extreme/).
 
 Just-in-time compilation is a technique in which code is compiled into
 machine code while it is being executed, rather than being compiled
-upfront (e.g. C/gcc) or interpreted directly
-(e.g. Python/CPython). JIT was pioneered with Java and the JVM in the
-90's, but JIT found a new use case with V8 because it improved
-performance of JavaScript which is distributed as source code and thus
-cannot be compiled in advance.
+upfront (e.g., C/GCC) or interpreted directly (e.g.,
+Python/CPython). JIT technology was pioneered early on, with prominent
+examples such as Self and the JVM, but it found a new use case with V8
+because it improved performance of JavaScript which is highly dynamic
+and thus difficult to compile in advance.
 
 Another benefit of using a JIT, as leveraged by this paper, is that in
 general, JavaScript types are not known until runtime. For example,
@@ -70,7 +69,7 @@ key contributions of this paper.
 V8 used a method-based JIT compiler, which means that it detected
 "hot" (frequently-executed) functions to compile, and the functions
 are compiled as a unit much like in a normal ahead-of-time compiler. A
-different approach, which was used by Gal et. al. in this paper, is a
+different approach, which was used by Gal et al. in this paper, is a
 trace-based JIT compiler, which detects hot traces through the
 program, which are linear sequences of bytecode instructions that
 cross branches and function invocations.
@@ -120,7 +119,7 @@ second time that a loop edge is encountered (which seems quite
 aggresive!).
 
 When a hot loop is entered, TraceMonkey switches to monitor mode,
-where it records the code being interpreted as a lowerer intermediate
+where it records the code being interpreted as a lowered intermediate
 representation (LIR) in SSA form, a format that is suitable for input
 to the JIT compiler. Tracing stops at the end of the loop, or earlier
 if some kind of error occurs.
@@ -130,7 +129,7 @@ small JIT compiler developed for TraceMonkey. The resulting compiled
 code is stored in the trace cache. When the loop header is encountered
 again, the compiled version can be used instead.
 
-The LIR trace is linear, so for each branch (e.g. `if` statement), it
+The LIR trace is linear, so for each branch (e.g., `if` statement), it
 follows the path that was taken by the program when it was being
 traced. This condition may not evaluate the same way each time through
 the trace, so the trace also needs to keep track of _guard_s, which
@@ -175,7 +174,7 @@ map of a trace tree to the signature of a function.
 
 When the trace of a loop body is completed and the control flow
 returns to the start of the loop, if the present trace map matches the
-trace map used to start the trace (i.e. the loop is _type stable_),
+trace map used to start the trace (i.e., the loop is _type stable_),
 then the compiled trace can simply jump back to the start of the loop,
 "tying the knot". The loop will not run forever unless the loop in the
 original program ran forever because it will eventually cause a guard
@@ -206,11 +205,11 @@ scenarious are still handled elegantly by this approach.
 ### Integer specialization
 
 JavaScript does not have a native integer type; instead, all numbers
-are implemented as 64-bit floating point numbers,
-i.e. "doubles". However, many use cases of numbers use them only as
-integers, and processor integer instructions are considered cheaper
-than their floating-point counterparts, so it is desirable to use
-integer operations when possible.
+are implemented as 64-bit floating point numbers, i.e.,
+"doubles". However, many use cases of numbers use them only as
+integers, and processor integer instructions are cheaper than their
+floating-point counterparts, so it is desirable to use integer
+operations when possible.
 
 To this end, TraceMonkey speculatively assumes that all numbers are
 integers and backtracks if it is discovered that a particular variable
@@ -230,12 +229,11 @@ local.
 
 The optimization passes are noticeably simpler than those used by
 static compilers because it is important not to spend too much time
-compiling while the program is executing. Other more recent JavaScript
-engines, including V8, go back and re-compile the same code with more
-sophisticated optimizations if it stays hot. TraceMonkey does not do
-this; perhaps such things are future improvements, or perhaps it was
-preferred to focus on the optimizations that deliver the best bang for
-your buck.
+compiling while the program is executing. More recent JavaScript
+engines, including modern SpiderMonkey and V8, go back and re-compile
+the same code with more sophisticated optimizations if it stays hot,
+but TraceMonkey, as an early implementation, did not include such
+features.
 
 In addition to the speculative integer conversion, the following
 optimizations are performed by nanojit:
@@ -246,7 +244,7 @@ optimizations are performed by nanojit:
  - Constant folding, another standard optimization (forward analysis)
 
  - Some pinhole optimizations for identities described by the authors,
-   e.g. `0 + x` being reduced to just `x` (forward analysis)
+   e.g., `0 + x` being reduced to just `x` (forward analysis)
 
  - Dead data-stack store elimination, essentially removing unused
    stack-allocated variables (backward analysis)
@@ -280,8 +278,7 @@ together when new branches are added, which allows the branches to be
 simple jumps with excellent performance. The problem is that
 recompiling the entire tree is expensive, especially for trace trees
 with lots of short branches. The authors discuss this problem and
-propose performing the recompilation in parallel, a technique which
-appears to have been adopted by modern JavaScript engines today.
+propose performing the recompilation in parallel.
 
 ## Evaluation
 
@@ -308,7 +305,7 @@ light of the fact that most JavaScript executes in the first fraction
 of a second when loading a web page.
 
 The authors present their results compared to the other engines in the
-following graph (TraceMonkey is labelled "Tracing"):
+following graph (TraceMonkey is labeled "Tracing"):
 
 ![comparison of results between TraceMonkey, V8, and SFX](results_compare.png)
 
@@ -341,7 +338,7 @@ spent in each state from the high-level state machine:
 
 As can be seen, the benchmarks that performed the best spent almost
 all of their time running compiled traces, while those that performed
-the worse either were unable to compile any traces at all (due to
+the worst either were unable to compile any traces at all (due to
 languages features where tracing was not yet supported) or got bogged
 down tracing/compiling (possibly due to the issue with trace
 stitching). Thus the authors suspect that the performance will be
@@ -380,18 +377,12 @@ the more durable contribution.
 ### Discussion questions
 
  - TraceMonkey has one pass of lightweight optimizations and a trivial
-   register allocator, whereas more modern engines like V8 include
-   several passes of increasingly complex optimizations. What kind of
+   register allocator, whereas modern engines like V8 include several
+   tiers of increasingly complex optimizations. What kind of
    optimizations should be performed by JIT compilers for dynamic
-   languages? When are the tradeoffs between compilation time and
-   improved performance worthwhile?
-
- - Modern JavaScript engines use parallelization to improve
-   performance, much like the authors of this paper described doing
-   trace stitching in parallel. Yet TraceMonkey does not rely on
-   parallelization and other JITs, like the JVM (at least in the
-   past), don't seem to either. Are modern JavaScript JIT
-   implementations tractable in non-parallel environments?
+   languages, or in the case of a tiered system, in which tiers should
+   certain optimizations be placed? When are the tradeoffs between
+   compilation time and improved performance worthwhile?
 
  - It seems that the major JavaScript engines began adding JIT
    implementations around the same time, circa 2008. Why did this
