@@ -4,6 +4,7 @@ title = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectur
 bio = """
   [Jie Liu](https://github.com/Sibylau) is a 2nd year PhD student in Computer Systems Lab at Cornell. She is working on domain-specific language and accelerators.
 """
+[extra]
 latex = true
 [[extra.authors]]
 name = "Jie Liu"
@@ -22,12 +23,19 @@ Rewrite-based classical compilers are not able to bridge the abstraction gap of 
 The biggest problem of implementing a synthesis-based compiler is that it may not scale to large programs. Chlorophyll decomposes the problem of compiling a high-level program to spatial machine code into four subproblems: partitioning, layout and routing, code separation, and code generation. While these problems are difficult for traditional compilers, synthesis-based techniques can naturally solve these consecutive subproblems and thus the methods can apply to large, practical applications. 
 
 ### Partitioning
-Chlorophyll extends a simple type system to simplify reasoning about partitioning and to avoid explicit communication code. The partitioning subproblem takes input source programs with partition annotations which specify the logical core where code and data reside. The input does not need to contain all annotations - actually most data and operators can be unannotated. The synthesizer will infer unspecified partitions, and output the fully annotated program with the minimized amount of messages among partitions. 
+Chlorophyll extends a simple type system to simplify reasoning about partitioning and to avoid explicit communication code. The partitioning subproblem takes input source programs with partition annotations which specify the logical core where code and data reside. The input does not need to contain all annotations - actually most data and operators can be unannotated. For example, in this input program
+```c
+  int@0 mult(int x, int y) { return x * y;}
+```
+ there are no annotations on the locations of variables `x`, `y` and the operation `*`. The synthesizer will infer all unspecified partitions, and output a fully annotated program with the minimized amount of messages among partitions. Here is one possible mapping:
+```c
+  int@0 mult(int@2 x, int@1 y) { return (x!1 *@1 y)!0;}
+```
  
-Details on typing rules can be found in Figure 2 in the paper. The extended type system enables the type inference of unannotated partition types, which is essentially the job of the partitioning synthesizer. To infer the unannotated partition types, the partitioning synthesizer needs to estimate the communication count and memory space for each core. For example, the send operation `!` increases the communication amount by 1, and increases the space consumption with the size of the sending operand; conditional statements add the communication amount by the number of body partitions since the condition expression will be sent to those partitions, and the condition expression takes up memory in all body partitions.
+Details on typing rules can be found in Figure 2 in the paper. The extended type system enables the type inference of unannotated partition types, which is essentially the job of the partitioning synthesizer. To infer the unannotated partition types, two cost models are constructed to guide the search of design space, the _communication interpreter_ estimates the number of communications needed and the _partition space checker_ ensures the code and data fit in the memory space for each core. For example, the send operation `!` increases the communication amount by 1, and consumes the memory space with the size of the sending operand. As for control statements, since it is necessary for each body partition of a control flow to access the result of the control expression locally in order to reduce the amount of communications, the evaluated control logic value will be sent to all the body partitions. Therefore, conditional statements will add the communication amount by the number of body partitions, and the condition expression takes up the memory space in all body partitions.
 
 
-The communication count interpreter and the partition space checker are implemented using Rosette, a language for building light-weight synthesizers. For partially annotated programs, unspecified partition annotations will be represented as a symbolic variable, and Rosette’s back-end solver will search for a set of assigned partitions under the constraints of communication count and memory space. The process is pushed forward by setting the new constraint results to be the upper bound of the next iteration. This iterative process guarantees the optimality of the output annotated program.
+The communication count interpreter and the partition space checker are implemented using [Rosette](http://emina.github.io/rosette/), a language for building light-weight synthesizers. For partially annotated programs, unspecified partition annotations will be represented as a symbolic variable, and Rosette’s back-end solver will search for a set of assigned partitions under the constraints of communication count and memory space. The process is pushed forward by setting the new constraint results to be the upper bound of the next iteration. This iterative process guarantees the optimality of the output annotated program.
 
 Loop splitting is performed before partitioning to divide a loop into several subloops which can reside in separate cores. 
 
@@ -43,11 +51,11 @@ The code generation procedure takes in a single-core program and generates machi
 
 The authors applied [superoptimization](https://web.stanford.edu/class/cs343/resources/superoptimizer.pdf) to search for the optimal code sequence. However, superoptimizers only scale to small programs, and it is non-trivial to apply superoptimization to real problems. 
 
-One challenge is that a straightforward set of specifications can prevent some hardware-specific optimizations. Take the use of data stack as an example, a simple way we consider two sequences of instructions P and P’ to be equivalent is that the live regions L and L’ after executing P and P’ respectively contain the same elements and the stack pointers are pointing at the same locations. This strict specification results in longer programs with additional instructions dedicated to removing older operands at the bottom of the circular stack, which is actually non-hazardous. The authors tailored the specifications for modular superoptimization to maximize the benefits of spatial architecture.
+One challenge is that a straightforward set of specifications can prevent some hardware-specific optimizations. Take the use of data stack as an example, a simple way we consider two sequences of instructions $P$ and $P’$ to be equivalent is that the live regions $L$ and $L’$ after executing $P$ and $P’$ respectively contain the same elements and the stack pointers are pointing at the same locations. This strict specification results in longer programs with additional instructions dedicated to removing older operands at the bottom of the circular stack, which is actually non-hazardous. The authors tailored the specifications for modular superoptimization to maximize the benefits of spatial architecture.
 
 The other challenge is that when breaking down the large program into smaller pieces, the selection of the boundary can be tricky. The authors applied superoptimization on a sliding window of superoptimization units and consecutively find valid superoptimized segments. Although dynamic programming is able to produce a better result, the sliding window technique turns out to be more efficient. 
 
-The authors used Z3 SMT solver to perform the search. The state of a program and communication channels are encoded as a large bitvector that is fed in Z3. The address space is compressed to speed up the searching process.
+The authors used [Z3](https://github.com/Z3Prover/z3) SMT solver to perform the search. The state of a program and communication channels are encoded as a large bitvector that is fed in Z3. The address space is compressed to speed up the searching process.
 
 ## Limitations
 There are some occasions when the proposed solution misses some optimization opportunities or fails to produce partitions that are small enough to fit in cores. Since both partitioning and routing stages are schedule-oblivious, the output can introduce performance loss. Moreover, some context-related optimizations can be missing as the scope of superoptimization is still local to individual segments. To deal with the oversized partitions generated from the partitioning synthesizer, the compiler employs an iterative refinement method which increases the estimate margin in each rerun after the output fails to fit in cores.
@@ -59,9 +67,13 @@ This paper organizes the experiments in a clear and concise manner. The benefits
   <img width="600" src="https://github.com/Sibylau/cs6120/blob/chlorophyll-blog/content/blog/2020-12-02-chlorophyll/1.PNG">
 </p>
 
-The above figure shows the performance improvement with sliding window superoptimization, partition synthesizer, and layout synthesizer. Another benefit observed is that the partitioning synthesizer produces smalled programs that occupy fewer cores. The authors also evaluate results against expert-written programs on several single-core applications and one multi-core MD5 hash application. The programs generated by Chlorophyll are comparable with hand-written programs. 
+The first and foremost hypothesis is that the proposed partitioning synthesizer, layout synthesizer, superoptimizer and sliding windows technique indeed provide performance gain. The authors conducted experiments to compare against heuristic partitioner (**hp**), imprecise layout synthesizer (**il**), no superoptimizer (**ns**), and fixed-windows superoptimization (**fixed s**). The above figure shows the results, from which we can see the benefits breakdown for each technique. 
 
-One interesting observation is that the superoptimizer can discover clever optimizations including logic simplification, strength reduction, and CSE. With the help of Chlorophyll, programmers can easily explore different implementations and get out a design with good performance in a short period of time. And Chlorophyll can be improved by providing more human insights.
+Another advantage is that the partitioning synthesizer produces smaller programs that occupy fewer cores, compared with the heuristic algorithm. One drawback of a heuristic partitioner is it relies on manual parameter tuning to ensure that each program fragment fits within the space limit per core. The space estimation margin factor $k$ is an example of such parameters, varying with different applications. Hence, the synthesizer is more robust than the heuristic. 
+
+The superoptimizer can discover clever optimizations that traditional compilers may not, including logic simplification, strength reduction, and automatic CSE. The authors selected three bit logic computations as benchmarks and found that superoptimization provides 1.8x speedup and 2.6x code length reduction on average. This observation corresponds to the motivation of leveraging synthesis-aided compilers for unusual and evolving architectures. Traditional rewrite-based compilers only perform a limited number of optimizations, for which it is hard for them to catch up with emerging new hardware technologies.
+
+The authors also evaluate results against expert-written programs on several single-core applications and one multi-core MD5 hash application. Compared to the experts’ implementation, the programs generated by Chlorophyll is 65% slower, 70% less energy-efficient and uses 2.2x more cores, which argues to be comparable. With the help of Chlorophyll, programmers can easily explore different implementations and get out a design with good performance in a short period of time. The compiler can also be improved by providing more human insights. For example, adding more highly optimized templates improves performance of generated programs and scalability of the synthesizers.
 
 ## Questions
 
