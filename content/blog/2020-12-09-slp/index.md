@@ -9,8 +9,8 @@ bio = """
 name = "Ankush Rayabhari"
 +++
 
-This week's paper [Exploiting Superword Level Parallelism
-with Multimedia Instruction Sets](https://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf)
+This week's paper, ["Exploiting Superword Level Parallelism
+with Multimedia Instruction Sets,"](https://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf)
 tries to explore a new way of exploiting single-instruction, multiple data or
 SIMD operations on a processor. It was written by Samuel Larsen and Saman 
 Amarasinghe and appeared in PLDI 2000.
