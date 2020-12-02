@@ -173,9 +173,9 @@ effectiveness of vectorization.
 - At the time, several architectures had different implementations of vector
   instructions. Additionally, they don't have first party support but use a 
   side-unit to achieve this.
-- At the time, there was a lack of support for proper packing/unpacking. 
-  Additionally, you can't move values between scalar and vector registers, 
-  forcing you to use memory.
+- At the time, there was a lack of support for proper packing/unpacking. You 
+  couldn't move values between scalar and vector registers, forcing you to use 
+  memory.
 
 Looking to future work, LLVM 
 [implemented](https://llvm.org/docs/Vectorizers.html#the-slp-vectorizer) the SLP 
@@ -193,5 +193,15 @@ integer linear programming solvers.
 
 * What has changed in the hardware support for vectorization since the release
   of the paper? Have the hardware limitations that the authors note in section 6
-  been resolved?
+  been resolved? For quick reference, they recommended:
+  - Removal of CISC style hardware operations such as matrix transform 
+    operations to simplify code generation for compmilers.
+  - Add support for floating point operations and increase the standard 
+    operations available to SIMD registers such as multiplication and division.
+  - Increase coupling between the CPU and the SIMD processor. For example, 
+    allowing for moving values between scalar and vector registers.
+  - Stop assuming data is always packed properly. Add support for packing and 
+    unpacking operations.
+  - Allow for unaligned memory access to improve the effectiveness
+    of packing/unpacking.
   
