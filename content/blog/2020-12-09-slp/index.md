@@ -110,12 +110,15 @@ The algorithm proceeds in 4 steps:
    - To simplify the search space for the next part, we 
      only allow a statement to occupy the beginning or end instruction in a 
      pack list once. This way, we don't have to choose between multiple options 
-     later down the line.
+     later down the line. For multiple choices, we use the cost model to
+     determine the most profitable one.
    ![phase2](phase2.png)
 3. Now that we have pairs of instructions that can be executed by a single SIMD
    instruction without any issues, we can combine multiple of these pairs into 
    an even wider SIMD instruction. Taking advantage of the last bullet above, 
-   we only combine two lists if the beginning and end instruction is the same.
+   we only combine two lists if we have the exact same beginning and end 
+   instruction. For example, we can merge the pack containing `(1) (4)` and 
+   `(4) (7)` to a pack containing `(1) (4) (7)`. 
    ![phase3](phase3.png)
 4. The last part is to actually generate the concrete SIMD instructions.
    Since statement groups could depend on data defined by a previous one, we
