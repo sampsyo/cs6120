@@ -9,6 +9,12 @@ bio = """
 name = "Ankush Rayabhari"
 +++
 
+This week's paper [Exploiting Superword Level Parallelism
+with Multimedia Instruction Sets](https://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf)
+tries to explore a new way of exploiting single-instruction, multiple data or
+SIMD operations on a processor. It was written by Samuel Larsen and Saman 
+Amarasinghe and appeared in PLDI 2000.
+
 ## Background
 
 As applications process more and more data, processors now include so called 
@@ -16,7 +22,7 @@ SIMD registers and instructions, to enable more parallelism. These registers are
 extra wide: a 512-bit wide register can hold 16 32-bit words. Instructions on
 these registers perform the same operation on each of the packed data types.
 
-For example, on Intel processors, the instruction vaddps adds each of the 
+For example, on Intel processors, the instruction `vaddps` adds each of the 
 corresponding packed data elements together.
 ```
 Instruction: vaddps zmm, zmm, zmm
@@ -94,6 +100,7 @@ The algorithm proceeds in 4 steps:
    effectively the list of independent, isomorphic instructions that we 
    want to combine into a single SIMD instruction. We store all these packs in a
    set.
+
    ![phase1](phase1.png)
 2. We now need to extend this set to contain non-memory operations. Since we
    want to take advantage of loaded data, we look for operations that use the 
@@ -112,13 +119,15 @@ The algorithm proceeds in 4 steps:
      pack list once. This way, we don't have to choose between multiple options 
      later down the line. For multiple choices, we use the cost model to
      determine the most profitable one.
+
    ![phase2](phase2.png)
 3. Now that we have pairs of instructions that can be executed by a single SIMD
    instruction without any issues, we can combine multiple of these pairs into 
    an even wider SIMD instruction. Taking advantage of the last bullet above, 
    we only combine two lists if we have the exact same beginning and end 
    instruction. For example, we can merge the pack containing `(1) (4)` and 
-   `(4) (7)` to a pack containing `(1) (4) (7)`. 
+   `(4) (7)` to a pack containing `(1) (4) (7)`.
+
    ![phase3](phase3.png)
 4. The last part is to actually generate the concrete SIMD instructions.
    Since statement groups could depend on data defined by a previous one, we
@@ -127,6 +136,7 @@ The algorithm proceeds in 4 steps:
    phase generates instructions in the order of the original basic block. To 
    deal with cycles, we simply revert the pack and use regular instructions 
    instead.
+
    ![phase4](phase4.png)
 
 This routine will take in a single basic block and then convert it to a basic
