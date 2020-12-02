@@ -7,14 +7,13 @@ bio = """
 """
 [[extra.authors]]
 name = "Ankush Rayabhari"
-latex = true
 +++
 
 ## Background
 
 As applications process more and more data, processors now include so called 
 SIMD registers and instructions, to enable more parallelism. These registers are
-extra wide, a 512-bit wide register can hold 16 32-bit words. Instructions on 
+extra wide: a 512-bit wide register can hold 16 32-bit words. Instructions on
 these registers perform the same operation on each of the packed data types.
 
 For example, on Intel processors, the instruction vaddps adds each of the 
@@ -62,8 +61,8 @@ these features. This paper proposes a new set of algorithms for that.
   parallel though use of multiple cores.
 
 - **Instruction level parallelism:** Here, multiple instructions are executed in 
-  a single cycle. SIMD instructions are one way of accomplishing this. Some 
-  processors also feature
+  a single cycle. SIMD instructions are one way of accomplishing this. All 
+  processors these days also feature
   [superscalar execution](https://en.wikipedia.org/wiki/Superscalar_processor) 
   where rather than have a single instruction execute, multiple instructions 
   are executed each cycle. This is very similar to using SIMD instructions but 
@@ -89,17 +88,18 @@ isomorphic (same operation) statements to merge together.
 
 The algorithm proceeds in 4 steps:
 
-1. First, identify pairs of independent, memory loads from adjacent locations.
+1. First, identify pairs of independent memory loads from adjacent locations.
    These are natural candidates for SIMD loads. This is generally done by some
-   enabling analysis as an initial step. We add these adjacent loads to a set, 
-   effectively the set of lists of independent, isomorphic instructions that we 
-   want to combine into a single SIMD instruction.
+   enabling analysis as an initial step. We add these adjacent loads to a pack, 
+   effectively the list of independent, isomorphic instructions that we 
+   want to combine into a single SIMD instruction. We store all these packs in a
+   set.
    ![phase1](phase1.png)
 2. We now need to extend this set to contain non-memory operations. Since we
    want to take advantage of loaded data, we look for operations that use the 
    packed data that we loaded before. We do this by following the uses and defs 
    on the list of instructions that we packed. We can combine two statements 
-   into the current set:
+   into the current set if:
    - The statements do the same operation on independent data.
    - It is beneficial to execute these at once rather than as multiple 
      instructions. If the data is already packed, then there's no additional 
@@ -135,9 +135,9 @@ version.
 ## Performance Comparison
 
 The authors chose to use a benchmark suite that consists of multimedia and 
-scientific programs. These process heavy amounts of data, e.x. 
+scientific programs. These process heavy amounts of data, e.g., 
 matrix multiplication or color conversion. Their experimental platform was a 
-Motorola processor with an AltiVec co-processor, i.e. all vector instructions 
+Motorola processor with an AltiVec co-processor, i.e., all vector instructions 
 work on the coprocessor and all sequential operations on the main unit. Any 
 movement between the vector registers and sequential registers must pass 
 through memory.
@@ -165,7 +165,7 @@ effectiveness of vectorization.
   forcing you to use memory.
 
 Looking to future work, LLVM 
-(implemented)[https://llvm.org/docs/Vectorizers.html#the-slp-vectorizer] the SLP 
+[implemented](https://llvm.org/docs/Vectorizers.html#the-slp-vectorizer) the SLP 
 vectorization algorithm. Additionally, a few of the same authors have worked on 
 [improving](https://arxiv.org/pdf/1804.08733.pdf) the relaxed assumptions,
 the reduced search space and greedy scheduling, by using techniques such as 
