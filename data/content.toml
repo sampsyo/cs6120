@@ -37,7 +37,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "TK"
+leader = "Ted Bauer"
 [[classes.readings]]
 name = "Efficient Path Profiling"
 link = "https://dl.acm.org/citation.cfm?id=243857"
@@ -54,14 +54,15 @@ lesson = 6
 
 [[classes]]
 title = "Automatic Verification"
-leader = "TK"
+leader = "Goktug Saatcioglu & Samwise Parkinson"
 [[classes.readings]]
 name = "Provably Correct Peephole Optimizations with Alive"
 link = "https://dl.acm.org/citation.cfm?id=2737965"
 details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
 
-[[classes]]
-lesson = 6
+# Fall break.
+# [[classes]]
+# lesson = 6
 
 
 # "Fancy" optimization.
@@ -77,7 +78,7 @@ lesson = 9
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TK"
+leader = "Kenneth Li"
 [[classes.readings]]
 name = "Type-Based Alias Analysis"
 link = "https://dl.acm.org/citation.cfm?id=277670"
@@ -91,7 +92,7 @@ lesson = 10
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TK"
+leader = "Mark Moeller"
 [[classes.readings]]
 name = "A Unified Theory of Garbage Collection"
 link = "https://dl.acm.org/citation.cfm?id=1028982"
@@ -99,7 +100,7 @@ details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
 
 [[classes]]
 title = "Modern GC"
-leader = "TK"
+leader = "Patrick LaFontaine"
 [[classes.readings]]
 name = "Fast Conservative Garbage Collection"
 link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
@@ -113,29 +114,22 @@ lesson = 11
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "TK"
+leader = "Evan Adler"
 [[classes.readings]]
 name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
 details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 
-[[classes]]
-title = "Tracing"
-leader = "TK"
-[[classes.readings]]
-name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
-details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
-link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
-
 
 # Synthesis.
 
-[[classes]]
-lesson = 12
+# HACK: No in-person day because of semi-finals.
+# [[classes]]
+# lesson = 12
 
 [[classes]]
 title = "Superoptimization"
-leader = "TK"
+leader = "Socrates Wong"
 [[classes.readings]]
 name = "Superoptimizer: A Look at the Smallest Program"
 details = "Alexia Massalin. ASPLOS 1987."
@@ -143,11 +137,20 @@ link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pd
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
-leader = "TK"
+leader = "Jie Liu"
 [[classes.readings]]
 name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
 link = "https://dl.acm.org/citation.cfm?id=2594339"
 details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+
+# HACK: out of order. Should be in JIT section.
+[[classes]]
+title = "Tracing"
+leader = "Will Smith"
+[[classes.readings]]
+name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
+details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
+link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
 
 
 # Parallelism.
@@ -157,7 +160,7 @@ lesson = 13
 
 [[classes]]
 title = "Vectorization"
-leader = "TK"
+leader = "Ankush Rayabhari"
 [[classes.readings]]
 name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
 link = "https://dl.acm.org/doi/10.1145/358438.349320"
@@ -165,7 +168,7 @@ details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
 
 [[classes]]
 title = "Safe Parallelism"
-leader = "TK"
+leader = "Hanchen Jin, Xinwen Wang"
 [[classes.readings]]
 name = "A Type and Effect System for Deterministic Parallel Java"
 link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
