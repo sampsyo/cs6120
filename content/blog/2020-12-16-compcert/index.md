@@ -89,7 +89,11 @@ Let $\mathcal{C}$ be a compiler, and $\sim$ a simulation (essentially, a relatio
 
 ### CompCert Approaches to Verified Compilation
 
-Reasoning about the source code of a compiler is intuitively straightforward, but difficult to verify and inefficient in practice. Alternatively, an unverified compiler may be paired with a verified *translation validator* $\mathcal{V}$, which halts compilation if translation validation fails. Our promise then becomes: $\mathcal{C}(s) = t \land \mathcal{V}(t) = \texttt{true} \rightarrow s \sim t$ for all source programs $s$. If the validator correctly validates results, then we have a verified compilation process. 
+Reasoning about the source code of a compiler is intuitively straightforward, but difficult to verify and inefficient in practice. 
+
+Alternatively, an unverified compiler may be paired with a verified *translation validator* $\mathcal{V}$, which halts compilation if translation validation fails. Our promise then becomes: $\mathcal{C}(s) = t \land \mathcal{V}(t) = \texttt{true} \rightarrow s \sim t$ for all source programs $s$. If the validator correctly validates results, then we have a verified compilation process. 
+
+CompCert employs both of these tactics. This hybrid approach (along with the substantiation of its sufficiency) is a critical contribution of this work. 
 
 ## Specifying Preservation with Simulations 
 
