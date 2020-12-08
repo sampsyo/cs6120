@@ -62,9 +62,7 @@ There are some occasions when the proposed solution misses some optimization opp
 ## Evaluation
 This paper organizes the experiments in a clear and concise manner. The benefits brought by the proposed framework are presented as several hypotheses, and experiments are designed to prove their validity. 
 
-<p align="center">
-  <img width="600" src="https://github.com/Sibylau/cs6120/blob/chlorophyll-blog/content/blog/2020-12-02-chlorophyll/1.PNG">
-</p>
+![evaluation bar chart](1.PNG)
 
 The first and foremost hypothesis is that the proposed partitioning synthesizer, layout synthesizer, superoptimizer and sliding windows technique indeed provide performance gain. The authors conducted experiments to compare against heuristic partitioner (**hp**), imprecise layout synthesizer (**il**), no superoptimizer (**ns**), and fixed-windows superoptimization (**fixed s**). The above figure shows the results, from which we can see the benefits breakdown for each technique. 
 
