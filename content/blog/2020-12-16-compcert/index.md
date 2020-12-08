@@ -150,7 +150,7 @@ The initial states of $\mathbf{S}$ and $\mathbf{T}$ are related by construction 
 
 The theorem assumes a deterministic target language. We will prove that a forward simulation $R_\rightarrow$ from $\mathbf{S}$ to $\mathbf{T}$ implies a backward simulation $R_\leftarrow$ from $\mathbf{T}$ to $\mathbf{S}$.
 
-Suppose $(s_i, t_j) \in R_\rightarrow$, with $t_j$ stepping to $t_{j'}$. All transitions out of $s_i$ must therefore match the transition from $t_k$, since $t_{j'}$ is unique due to the target language's deterministic semantics. Were this to not hold, the assumed forward simulation would be contradicted.
+Suppose $(s_i, t_j) \in R_\rightarrow$, with $t_j$ stepping to $t_k$. All transitions out of $s_i$ must therefore match the transition from $t_j$, since $t_k$ is unique due to the target language's deterministic semantics. Were this to not hold, the assumed forward simulation would be contradicted.
 
 ### Correctness, Composed
 
