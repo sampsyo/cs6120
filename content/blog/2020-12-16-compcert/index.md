@@ -162,17 +162,17 @@ We can then derive backwards simulations for these three language pairs.
 
 The theorem of correctness then asserts that Csem is in backwards simulation with Cstrategy, and therefore in backwards simulation with Asm. 
 
-### Limitations
+## Limitations
 
 CompCert doesn't guarantee that the executables it generates simulate the input C99 program; C99 and the executable itself lack formal semantics. In reality, CompCert verifies that its compilation from its semantics for C99, *CSem*, to its semantics for assembly languages, *Asm*, preserves those semantics. While this may seem like a distinction without a difference, there is an implicit assumption that the specification of CSem and Asm fully encompasses the correctness requirements that we want from our compiler. We'll see that that assumption isn't always guaranteed to hold.
 
-#### Nondeterminism in Languages
+### Nondeterminism in Languages
 
 Nondeterminism in the *source* language weakens backward simulations, as their proofs only need to work for one of the source transitions possible. C99 is nondeterministic; CompCert addresses this by employing a reduction strategy [CStrategy][cstrat] that chooses one of the source program's potential behaviors.
 
 Nondeterminism in the *target* language weakens forwards simulations, as there may be runtime target program behaviors that are not accounted for in the proof. CompCert avoids this problem by proving that its target languages are deterministic. 
 
-#### Diverging Source Programs
+### Diverging Source Programs
 
 If we wanted diverging source programs to produce diverging target programs, the compiler would probably be able to do fewer optimizations, such as the dead code elimination example in the twelfth pass. Alternatively, compilation could fail on more programs; this is also not great, since we'd like to support as many programs as we can. CompCert approaches this by embedding source program safety and defined behavior into the assumptions of its correctness theorem.
 
