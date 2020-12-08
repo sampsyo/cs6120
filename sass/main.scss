@@ -206,6 +206,11 @@ article {
 pre {
   line-height: 120%;
   overflow-x: auto;
+  code {
+      background-color: inherit;
+      padding: 0;
+      border-radius: 0;
+  }
 }
 
 .details {
