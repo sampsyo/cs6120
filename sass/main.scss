@@ -176,19 +176,23 @@ article {
   }
 
   &.small {
-    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: baseline;
+
+    margin-bottom: 0.4rem;
+
+    time {
+      width: 4rem;
+      flex: none;
+      text-align: right;
+      margin-right: 0.5rem;
+    }
     h1 {
       font-size: inherit;
+      line-height: 130%;
       &:hover {
         text-decoration: underline;
       }
-      display: inline;
-    }
-    time {
-      display: inline-block;
-      text-align: right;
-      width: 4rem;
-      margin-right: 0.5rem;
     }
   }
 
