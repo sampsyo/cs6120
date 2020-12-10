@@ -123,5 +123,5 @@ The following table shows the efforts required for changing the Java source code
 [5] C. von Praun, L. Ceze, and C. Cas ̧caval. Implicit parallelism with ordered transactions. PPOPP, 2007.<br/
 [6] Z. Anderson, D. Gay, R. Ennals, and E. Brewer. SharC: Checking data sharing strategies for multithreaded C. PLDI, 2008.<br/>
 [7] M. Snir. Parallel Programming Language 1 (PPL1), V0.9, Draft. Technical Report UIUCDCS-R-2006-2969, U. Illinois, 2006.<br/>
-[8] Concurrency JSR-166 Interest Site: http://gee.cs.oswego.edu/dl/concurrency-interest<br/
+[8] Concurrency JSR-166 Interest Site: http://gee.cs.oswego.edu/dl/concurrency-interest<br/>
 
