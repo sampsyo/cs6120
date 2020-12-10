@@ -64,19 +64,19 @@ Partially specified RPLs are also useful for subtyping, with signals like “=�
 ### 2. Index-Parameterized Arrays
 We can define a special array type with the restriction that an object reference value o assigned to cell n (where n is a natural number constant) of such an array has a runtime type that is parameterized by n. If accesses through cell n touch only region n (even by following a chain of references), then the accesses through different cells are guaranteed to be disjoint. Such an array is being called index-parameterized array. 
 
-To represent such arrays, the authors introduce two language constructs: <br\>
-(1) An array PRL element written [e], where e is an integer expression.<br\>
-(2) An index-parameterized array type that allows programmer to write the region and type of array cell e using the array RPL element [e]. For example, programmers can specify that cell e resides in region Root:[e] and has type C<Root:[e]><br\>
+To represent such arrays, the authors introduce two language constructs: <br/>
+(1) An array PRL element written [e], where e is an integer expression.<br/>
+(2) An index-parameterized array type that allows programmer to write the region and type of array cell e using the array RPL element [e]. For example, programmers can specify that cell e resides in region Root:[e] and has type C<Root:[e]><br/>
 
 ### 3. Subarrays
-A familiar pattern for writing divide and conquer recursion is to partition an array into two or more disjoint pieces and give each array to a subtask. <br\>
-(1) DPJ provides a class DPJArray that wraps an ordinary Java array and provides a view into contiguous segment of it, parameterized by start position S and length L.<br\>
-(2) DPJ provides a class DPJPartition, representing an indexed collection of DPJArray objects, all of which point into mutually disjoint segments of the original array.<br\>
-(3) To support recursive computations, the authors extend the syntax of RPLs by allowing a final local variable z of class type to appear at the head of an RPL which ensures that different partitions get different regions.<br\>
+A familiar pattern for writing divide and conquer recursion is to partition an array into two or more disjoint pieces and give each array to a subtask. <br/>
+(1) DPJ provides a class DPJArray that wraps an ordinary Java array and provides a view into contiguous segment of it, parameterized by start position S and length L.<br/>
+(2) DPJ provides a class DPJPartition, representing an indexed collection of DPJArray objects, all of which point into mutually disjoint segments of the original array.<br/>
+(3) To support recursive computations, the authors extend the syntax of RPLs by allowing a final local variable z of class type to appear at the head of an RPL which ensures that different partitions get different regions.<br/>
 
 ### 4. Commutativity Annotations
-(1) Classes may contain declarations of the form m commuteswith m’, where m and m’ are method names, indicating that any pair of invocations of the named methods may be safely done in parallel, regardless of the read and write effects of the methods.<br\>
-(2) To represent and check effects soundly in the present of commutativity annotations, the effect system provides a novel invocation effect of the form invokes m with E, which records that an invocation of method m occurred with underlying effects E.<br\>
+(1) Classes may contain declarations of the form m commuteswith m’, where m and m’ are method names, indicating that any pair of invocations of the named methods may be safely done in parallel, regardless of the read and write effects of the methods.<br/>
+(2) To represent and check effects soundly in the present of commutativity annotations, the effect system provides a novel invocation effect of the form invokes m with E, which records that an invocation of method m occurred with underlying effects E.<br/>
 
 In summary, the authors formalized a subset of DPJ, called CoreDPJ as a sequential language. For more details about the syntax, static and dynamic semantics, please refer to the paper. 
 
@@ -116,12 +116,12 @@ The following table shows the efforts required for changing the Java source code
 
 
 ## References
-[1] R. Bocchino, V. Adve, S. Adve, and M. Snir. Parallel programming must be deterministic by default. First USENIX Workshop on Hot Topics in Parallelism (HotPar), 2009.<br\>
-[2] A. Greenhouse and J. Boyland. An object-oriented effects system. ECOOP, 1999.<br\>
-[3] J. Boyland. The interdependence of effects and uniqueness. Workshop on Formal Techs. for Java Programs, 2001.<br\>
-[4] M. K. Prabhu and K. Olukotun. Using thread-level speculation to simplify manual parallelization. PPOPP, 2003.<br\>
-[5] C. von Praun, L. Ceze, and C. Cas ̧caval. Implicit parallelism with ordered transactions. PPOPP, 2007.<br\>
-[6] Z. Anderson, D. Gay, R. Ennals, and E. Brewer. SharC: Checking data sharing strategies for multithreaded C. PLDI, 2008.<br\>
-[7] M. Snir. Parallel Programming Language 1 (PPL1), V0.9, Draft. Technical Report UIUCDCS-R-2006-2969, U. Illinois, 2006.<br\>
-[8] Concurrency JSR-166 Interest Site: http://gee.cs.oswego.edu/dl/concurrency-interest<br\>
+[1] R. Bocchino, V. Adve, S. Adve, and M. Snir. Parallel programming must be deterministic by default. First USENIX Workshop on Hot Topics in Parallelism (HotPar), 2009.<br/>
+[2] A. Greenhouse and J. Boyland. An object-oriented effects system. ECOOP, 1999.<br/>
+[3] J. Boyland. The interdependence of effects and uniqueness. Workshop on Formal Techs. for Java Programs, 2001.<br/>
+[4] M. K. Prabhu and K. Olukotun. Using thread-level speculation to simplify manual parallelization. PPOPP, 2003.<br/
+[5] C. von Praun, L. Ceze, and C. Cas ̧caval. Implicit parallelism with ordered transactions. PPOPP, 2007.<br/
+[6] Z. Anderson, D. Gay, R. Ennals, and E. Brewer. SharC: Checking data sharing strategies for multithreaded C. PLDI, 2008.<br/>
+[7] M. Snir. Parallel Programming Language 1 (PPL1), V0.9, Draft. Technical Report UIUCDCS-R-2006-2969, U. Illinois, 2006.<br/>
+[8] Concurrency JSR-166 Interest Site: http://gee.cs.oswego.edu/dl/concurrency-interest<br/
 
