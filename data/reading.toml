@@ -52,6 +52,11 @@ name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architecture
 link = "https://dl.acm.org/citation.cfm?id=2594339"
 details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
 
+[notlib]
+name = "Threads Cannot Be Implemented as a Library"
+link = "https://dl.acm.org/doi/10.1145/1065010.1065042"
+details = "Hans-J. Boehm. PLDI 2005."
+
 [slp]
 name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
 link = "https://dl.acm.org/doi/10.1145/358438.349320"

@@ -11,7 +11,7 @@ hide = true
 "10" = ["ugc", "consgc"]
 "11" = ["self", "tracemonkey"]
 "12" = ["super", "chlorophyll"]
-"13" = ["slp", "dpj", "compcert"]
+"13" = ["notlib", "slp", "dpj", "compcert"]
 +++
 # CS 6120: Advanced Compilers: The Self-Guided Online Course
 
