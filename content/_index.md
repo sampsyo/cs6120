@@ -11,7 +11,9 @@ template = "home.html"
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
 While you're at it, check out the [old blog from 2019][oldblog].
-Anyone can watch the [lesson][] videos on [Kaltura][] or on [Box][] as a backup.
+The videos are also available on [Kaltura][] and [Box][box].
+
+Anyone can follow along with [a self-guided version of the course][self-guided].
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [zulip]: https://cs6120.zulipchat.com
@@ -22,3 +24,4 @@ Anyone can watch the [lesson][] videos on [Kaltura][] or on [Box][] as a backup.
 [kaltura]: https://vod.video.cornell.edu/channel/CS%2B6120/179754792
 [box]: https://cornell.box.com/s/wb3387ebfbte9btx3weekmc8nij5glep
 [lesson]: @/lesson/_index.md
+[self-guided]: @/self-guided.md

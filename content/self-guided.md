@@ -25,7 +25,7 @@ Each lesson has videos and written notes, and some have *implementation tasks* f
 Tasks are all open-ended, to one degree or another, and are meant to solidify your understanding of the abstract concepts by turning them into real code.
 The order represents a suggested interleaving of video-watching and paper-reading.
 
-Some differences with the "real" CS 6120 are that you can ignore the task deadlines and you can't participate in our discussion threads on Zulip.
+Some differences with the “real” CS 6120 are that you can ignore the task deadlines and you can't participate in our discussion threads on Zulip.
 Real 6120 also has an end-of-semester course project—in the self-guided version, your end-of-semester assignment is to change the world through the magic of compilers.
 
 The instructor is a video production neophyte, so please excuse the production values, especially in the early lessons.
