@@ -1,7 +1,7 @@
 +++
 title = "A Type and Effect System for Deterministic Parallel Java"
 [extra]
-bio = "
+bio = """
   [Hanchen Jin](https://hj424.github.io/) is a 4th year PhD student in Computer Systems Lab at Cornell. His reserach interest is compute architecture, hardware-software co-design, parallel computing with dedicated accelerators, and High-Level Synthesis (HLS).
 """
 latex = true
