@@ -1,22 +1,38 @@
 {% extends "base.html" %}
-{% set lessons = get_section(path="lesson/_index.md") %}
 {% block main %}
+{% set lessons = get_section(path="lesson/_index.md") %}
+{% set readings = load_data(path="data/reading.toml") %}
+
 {{ page.content | safe }}
-{% for page in lessons.pages | sort(attribute="extra.index") %}
-{% if not page.draft %}
+{% for lesson in lessons.pages | sort(attribute="extra.index") %}
+{% if not lesson.draft %}
 <article>
   <h1>
-    <a href="{{ page.permalink }}">Lesson {{ page.slug }}:</a>
-    {{ page.title }}
+    <a href="{{ lesson.permalink }}">Lesson {{ lesson.slug }}:</a>
+    {{ lesson.title }}
   </h1>
   <ul class="compact">
-    {% for video in page.extra.videos | default(value=[]) %}
+    {% for video in lesson.extra.videos | default(value=[]) %}
     <li>
       <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% elif video.box_id %}https://cornell.box.com/s/{{video.box_id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
     </li>
     {% endfor %}
   </ul>
 </article>
+{% if page.extra.readings[lesson.slug] %}
+<ul>
+{% for rdkey in page.extra.readings[lesson.slug] %}
+  {% set reading = readings[rdkey] %}
+  <li>
+    <a href="{{reading.link}}">{{reading.name}}</a>
+    {% if reading.details %}
+    <br>{{reading.details}}
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
 {% endif %}
 {% endfor %}
+
 {% endblock main %}
