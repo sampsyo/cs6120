@@ -277,6 +277,15 @@ ul.compact {
   }
 }
 
+ul.inline {
+  margin: 1.5rem 0;
+  list-style: none;
+  padding-left: 0;
+  li {
+      margin: 0.5rem 0;
+  }
+}
+
 // Funky responsive video embedding.
 .videos {
   .video {

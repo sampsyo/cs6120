@@ -20,11 +20,11 @@
   </ul>
 </article>
 {% if page.extra.readings[lesson.slug] %}
-<ul>
+<ul class="inline">
 {% for rdkey in page.extra.readings[lesson.slug] %}
   {% set reading = readings[rdkey] %}
   <li>
-    <a href="{{reading.link}}">{{reading.name}}</a>
+    <a href="{{reading.link}}" class="icon reading">{{reading.name}}</a>
     {% if reading.details %}
     <br>{{reading.details}}
     {% endif %}
