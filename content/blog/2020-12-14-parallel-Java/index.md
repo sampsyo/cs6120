@@ -9,7 +9,7 @@ latex = true
 name = "Hanchen Jin"
 +++
 
-## Background:
+## Background
 With the death of Moores’ Law around 2000, to further improve the compute power, the advent of multicore processors demands the behavior of parallel programming. And the dominant model is the multithreaded shared memory programming. It is inherently complex due to the possible thread interleavings that caused the nondeterministic program behaviors. This nondeterminism causes subtle bugs including data races, atomicity violations and deadlocks.
 
 To avoid the nondeterminism, the parallel programmer applies locks and semaphores to enforce the deterministic programming. But this task is tedious, error prone, and challenging.
@@ -25,7 +25,6 @@ This mode guarantees deterministic outputs in the given inputs unless the nondet
 A type and effect system allows the programmer to give the names to distinct parts of the heap and specify the accesses to the heap in different parts of the program. Thus the compiler can check with simple modular analysis and properly synchronize threads running in parallel to ensure determinism. This type and effect system enables the runtime checks thus eliminates unnecessary runtime checks. An type and effect system can also be supplemented with runtime speculation [4,5] or other runtime checks [6,7] to enable greater expressivity.
 
 Thus, the authors choose this method to simplify the parallel programming in Java by introducing deterministic semantics.
-
 
 ## Contribution
 
