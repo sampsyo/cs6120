@@ -1,5 +1,7 @@
 +++
 title = "Syllabus"
+[extra]
+hide = false
 +++
 # CS 6120: Advanced Compilers γ Syllabus
 

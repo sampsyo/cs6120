@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% set lessons = get_section(path="lesson/_index.md") %}
+{% block main %}
+{{ page.content | safe }}
+{% for page in lessons.pages | sort(attribute="extra.index") %}
+{% if not page.draft %}
+<article>
+  <h1>
+    <a href="{{ page.permalink }}">Lesson {{ page.slug }}:</a>
+    {{ page.title }}
+  </h1>
+  <ul class="compact">
+    {% for video in page.extra.videos | default(value=[]) %}
+    <li>
+      <a href="{% if video.url %}{{video.url}}{% elif video.id %}https://vod.video.cornell.edu/media/{{video.id}}{% elif video.box_id %}https://cornell.box.com/s/{{video.box_id}}{% endif %}" class="icon video">{{ video.name | default(value="video") }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</article>
+{% endif %}
+{% endfor %}
+{% endblock main %}
