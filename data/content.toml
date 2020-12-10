@@ -6,13 +6,7 @@ lesson = 1
 [[classes]]
 title = "Performance and Measurement"
 leader = "Adrian"
-[[classes.readings]]
-name = "Producing Wrong Data Without Doing Anything Obviously Wrong!"
-link = "https://dl.acm.org/citation.cfm?id=1508275"
-details = "Todd Mytkowicz, Amer Diwan, Matthias Hauswirth, and Peter F. Sweeney. ASPLOS 2009."
-[[classes.readings]]
-name = "SIGPLAN Empirical Evaluation Guidelines"
-link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
+readings = ["wrongdata", "eeg"]
 
 [[classes]]
 lesson = 2
@@ -38,10 +32,7 @@ lesson = 5
 [[classes]]
 title = "Profiling"
 leader = "Ted Bauer"
-[[classes.readings]]
-name = "Efficient Path Profiling"
-link = "https://dl.acm.org/citation.cfm?id=243857"
-details = "Thomas Ball and James R. Larus. MICRO 1996."
+readings = ["ball-larus"]
 
 [[classes]]
 lesson = 5
@@ -55,10 +46,7 @@ lesson = 6
 [[classes]]
 title = "Automatic Verification"
 leader = "Goktug Saatcioglu & Samwise Parkinson"
-[[classes.readings]]
-name = "Provably Correct Peephole Optimizations with Alive"
-link = "https://dl.acm.org/citation.cfm?id=2737965"
-details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
+readings = ["alive"]
 
 # Fall break.
 # [[classes]]
@@ -79,10 +67,7 @@ lesson = 9
 [[classes]]
 title = "Alias-Based Optimization"
 leader = "Kenneth Li"
-[[classes.readings]]
-name = "Type-Based Alias Analysis"
-link = "https://dl.acm.org/citation.cfm?id=277670"
-details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
+readings = ["tbaa"]
 
 
 # Memory management.
@@ -93,18 +78,12 @@ lesson = 10
 [[classes]]
 title = "GC & Reference Counting"
 leader = "Mark Moeller"
-[[classes.readings]]
-name = "A Unified Theory of Garbage Collection"
-link = "https://dl.acm.org/citation.cfm?id=1028982"
-details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
+readings = ["ugc"]
 
 [[classes]]
 title = "Modern GC"
 leader = "Patrick LaFontaine"
-[[classes.readings]]
-name = "Fast Conservative Garbage Collection"
-link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
-details = "Rifat Shahriyar, Stephen M. Blackburn, and Kathryn S. McKinley. OOPSLA 2014."
+readings = ["consgc"]
 
 
 # Dynamic languages.
@@ -115,10 +94,7 @@ lesson = 11
 [[classes]]
 title = "Dynamic Languages"
 leader = "Evan Adler"
-[[classes.readings]]
-name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
-link = "http://portal.acm.org/citation.cfm?id=74884"
-details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
+readings = ["self"]
 
 
 # Synthesis.
@@ -130,27 +106,18 @@ details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
 [[classes]]
 title = "Superoptimization"
 leader = "Socrates Wong"
-[[classes.readings]]
-name = "Superoptimizer: A Look at the Smallest Program"
-details = "Alexia Massalin. ASPLOS 1987."
-link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pdf"
+readings = ["super"]
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
 leader = "Jie Liu"
-[[classes.readings]]
-name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
-link = "https://dl.acm.org/citation.cfm?id=2594339"
-details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+readings = ["chlorophyll"]
 
 # HACK: out of order. Should be in JIT section.
 [[classes]]
 title = "Tracing"
 leader = "Will Smith"
-[[classes.readings]]
-name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
-details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
-link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
+readings = ["tracemonkey"]
 
 
 # Parallelism.
@@ -161,18 +128,12 @@ lesson = 13
 [[classes]]
 title = "Vectorization"
 leader = "Ankush Rayabhari"
-[[classes.readings]]
-name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
-link = "https://dl.acm.org/doi/10.1145/358438.349320"
-details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
+readings = ["slp"]
 
 [[classes]]
 title = "Safe Parallelism"
 leader = "Hanchen Jin, Xinwen Wang"
-[[classes.readings]]
-name = "A Type and Effect System for Deterministic Parallel Java"
-link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
-details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephen Heumann, Rakesh Komuravelli, Jeffrey Overbey, Patrick Simmons, Hyojin Sung, and Mohsen Vakilian. OOPSLA 2009."
+readings = ["dpj"]
 
 
 # Potpourri.
@@ -180,7 +141,4 @@ details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephe
 [[classes]]
 title = "Interactive Verification"
 leader = "Priya Srikumar"
-[[classes.readings]]
-name = "Formal Verification of a Realistic Compiler"
-link = "https://dl.acm.org/citation.cfm?id=1538814"
-details = "Xavier Leroy. CACM in 2009."
+readings = ["compcert"]
