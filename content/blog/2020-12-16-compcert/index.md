@@ -131,7 +131,7 @@ In 2015, static analysis tool vendor [AbsInt][absint] joined the project to mark
 
 Airbus, an aerospace corporation, uses CompCert to compile the software for its planes. A [2014 report][airbus] from the company indicated that the worst-case execution time of its programs had improved by 12% since integrating CompCert. The commercial success of CompCert speaks to its ability to hold its own as an optimizing compiler, even though it still doesn't employ some more aggressive code optimizations. 
 
-### An Achilles^\star Heel: Separate Compilation
+### An Achilles' Heel: Separate Compilation
 
 Consider the following two programs.
 
