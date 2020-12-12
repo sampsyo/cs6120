@@ -91,76 +91,9 @@ Let $\mathcal{C}$ be a compiler, and $\sim$ a simulation (essentially, a relatio
 
 Reasoning about the source code of a compiler is intuitively straightforward, but difficult to verify and inefficient in practice. 
 
-Alternatively, an unverified compiler may be paired with a verified *translation validator* $\mathcal{V}$, which halts compilation if translation validation fails. Our promise then becomes: $\mathcal{C}(s) = t \land \mathcal{V}(t) = \texttt{true} \rightarrow s \sim t$ for all source programs $s$. If the validator correctly validates results, then we have a verified compilation process. 
+Alternatively, an unverified compiler may be paired with a verified *translation validator* $\mathcal{V}$, which halts compilation if translation validation fails. Correctness is then stated as: $\mathcal{C}(s) = t \land \mathcal{V}(t) = \texttt{true} \rightarrow s \sim t$ for all source programs $s$. If the validator correctly validates results, then we have a verified compilation process. 
 
-CompCert employs both of these tactics. This hybrid approach (along with the substantiation of its sufficiency) is a critical contribution of this work. 
-
-## Specifying Preservation with Simulations 
-
-CompCert has a semantics of source and target language code behavior. Given such a semantics, we can formulate different notions of *simulation* such that two programs are equal if they are related by simulation. This section can be skipped if you're not too concerned with the mechanics of the proof of correctness. 
-
-Let a source language program $\mathbf{s}$ begins at state $s_0$, runs for $n$ steps, and ends at state $s_n$. Let a target language program $\mathbf{t}$ begins at state $t_0$, runs for $m$ steps, and ends at state $t_m$. State transitions may have effects, so let each transition $s_i \rightarrow s_j$ be accompanied by a label $e_{s_j}$ specifying the potential effect.
-
-### Bisimulation
-
-Two programs are bisimilar if their actions "match" in the sense that they are observationally indistinguishable. Formally, a *bisimulation* relation between a source and target program is a relation $R$ with these conditions: 
-
-* $(s_0, t_0) \in R$
-* For all $s_i$, $s_i \rightarrow s_{i+1}$ with effect $e_{s_{i+1}}$ implies that for all $t_j$ where $(s_i, t_j) \in R$, there exists a $t_{j+1}$ such that $t_j \rightarrow t_{j+1}$ with effect $e_{t_{j+1}}$ and $(s_{i+1}, t_{j+1}) \in R$ and $e_{s_{i+1}} = e_{t_{j+1}}$.
-* For all $t_j$, $t_j \rightarrow t_{j+1}$ with effect $e_{t_{j+1}}$ implies that for all $s_i$ where $(s_i, t_j) \in R$, there exists a $s_{i+1}$ such that $s_i \rightarrow s_{i+1}$ with effect $e_{s_{i+1}}$ and $(s_{i+1}, t_{j+1}) \in R$ and $e_{s_{i+1}} = e_{t_{j+1}}$.
-
-### Backward Simulation
-
-Bisimulation is great, but prohibits optimizations: a source program with a bunch of `nop` instructions would require that the target program have the same number of them. A *backwards simulation* relaxes the requirement of a one-to-one mapping between source and target program actions. Specifically, it's a relation $R_\leftarrow$ such that:
-
-* $(s_0, t_0) \in R_\leftarrow$
-* For all $t_j$, $t_j \rightarrow t_{j+1}$ with effect $e_{t_{j+1}}$ implies that for all $s_i$ where $(s_i, t_j) \in R_\leftarrow$, there exists a $s_k$ such that $s_i \rightarrow^+ s_k$ with effect $e_{s_k}$ and $(s_k, t_{j+1}) \in R_\leftarrow$ and $e_{s_k} = e_{t_{j+1}}$.
-
-The second point mandates that for all target transitions, there is *at least one* source transition; $\rightarrow^+$ indicates there may be more than one transition. (We'll ignore the problem of composing effects.)
-
-### Forward Simulation
-
-We could instead require that for all source transitions, there is *at least one* target transition. A *forward simulation* $R_\rightarrow$ requires:
-
-* $(s_0, t_0) \in R_\rightarrow$
-* For all $s_i$, $s_i \rightarrow s_{i+1}$ with effect $e_{s_{i+1}}$ implies that for all $t_j$ where $(s_i, t_j) \in R_\rightarrow$, there exists a $t_k$ such that $t_j \rightarrow^+ t_k$ with effect $e_{t_k}$ and $(s_{i+1}, t_k) \in R_\rightarrow$ and $e_{s_{i+1}} = e_{t_k}$.
-
-#### Measured Forward Simulation
-
-For several of the passes we went over, there might be no corresponding target transition for a source transition, such as a pass that removes `nop` instructions. Particularly, a source program that diverges while a target one gets stuck in one state violates semantic preservation as intuitively defined. To avoid this, we will use a well-founded measure on source states, $<$, to prove that a relation $R_\rightarrow^*$ has the following properties:
-
-* $(s_0, t_0) \in R_\rightarrow^*$
-* When $s$ steps to $s'$, one of two things must happen.
-    * $t$ steps to $t'$, and $(s', t') \in R_\rightarrow^*$
-    * $t$ does not step, but $(s', t) \in R_\rightarrow^*$, and $s' < s$.
-
-The measure $<$ allows us to require that the source program progresses as it steps. 
-
-### Composing Simulations
-
-We need to show two things about simulations in order to prove CompCert correct. For the sake of these proof sketches, let's assume that there are no effects or `nop` transitions. 
-
-#### Forward Simulations Compose
-
-Suppose there are two forward simulations: $R_1$ from $\mathbf{S}$ to $\mathbf{M}$, and $R_2$ from $\mathbf{M}$ to $\mathbf{T}$. Let $R_3 =$ <span style="font-size:larger;">{</span>$(s_i, t_k) | (s_i, m_j) \in R_1 \land (m_j, t_k) \in R_2$<span style="font-size:larger;">}</span>. We will prove that $R_3$ is a forward simulation from $\mathbf{S}$ to $\mathbf{T}$.
-
-The initial states of $\mathbf{S}$ and $\mathbf{T}$ are related by construction of $R_3$. If $s_i$ steps to $s_{i'}$, and $(s_i, m_j) \in R_1$, we know that there is an $m_{j'}$ such that $m_j\rightarrow m_{j'}$ and $(s_{i'}, m_{j'}) \in R_1$. Similarly, if there is a $t_{k}$ such that $(m_j, t_{k}) \in R_2$, there exists a $t_{k'}$ such that $t_k\rightarrow t_{k'}$ and $(m_{j'}, t_{k'}) \in R_2$. Again by construction, $(s_i, t_k) \in R_3$. Therefore, $t_{k'}$ matches the transition from $s_i$ to $s_{i'}$.
-
-#### Forward Simulations $\rightarrow$ Backward Simulations
-
-The theorem assumes a deterministic target language. We will prove that a forward simulation $R_\rightarrow$ from $\mathbf{S}$ to $\mathbf{T}$ implies a backward simulation $R_\leftarrow$ from $\mathbf{T}$ to $\mathbf{S}$.
-
-Suppose $(s_i, t_j) \in R_\rightarrow$, with $t_j$ stepping to $t_k$. All transitions out of $s_i$ must therefore match the transition from $t_j$, since $t_k$ is unique due to the target language's deterministic semantics. Were this to not hold, the assumed forward simulation would be contradicted.
-
-### Correctness, Composed
-
-Each pass between Csem and Asm is proved with a forward simulation, some with a measure, some with direct transition correspondences. 
-
-By composing these simulations, we get forward simulations from RTL to Asm, from Cminor to Asm, and from Cstrategy to Asm. 
-
-We can then derive backwards simulations for these three language pairs.
-
-The theorem of correctness then asserts that Csem is in backwards simulation with Cstrategy, and therefore in backwards simulation with Asm. 
+CompCert employs both of these tactics. This hybrid approach (along with the substantiation of its sufficiency) is a critical contribution of this work. The mechanics of the proof of correctness are included as a [bonus](#math).
 
 ## Limitations
 
@@ -220,7 +153,7 @@ Consider the following two programs.
     extern int x;
     int* const xptr = &x;
 
-When CompCert (version 2.4) compiles these programs separately and they are linked, the output is `2`, when it should actually be `0`. The global variable `xptr` is a `const` in `a.c`, so CompCert's value analysis assumes it's always uninitialized and assigns it $\bot$. Therefore, `xptr` is deemed unaliasable with `x`, and in `a.c`, `x` is presumed to be `1`. Constant propagation then replaces `x + x` with `2`. `xptr`'s declaration as `extern` means that `b.c` is able to initialize it, aliasing `x` and `xptr`. This bug, discovered by the authors of [SepCompCert][scc] in their efforts to verify separate compilation, is astoundingly egregious. It raises the question: how do we know that compiler correctness theorems encompass the behavior exhibited by the compiler? Relatedly, when do we know if a language specification characterizes its programs correctly? 
+When CompCert (version 2.4) compiles these programs separately and they are linked, the output is `2`, when it should actually be `0`. The global variable `xptr` is a `const` in `a.c`, so CompCert's value analysis assumes it's always uninitialized and assigns it $\bot$. Therefore, `xptr` is deemed unaliasable with `x`, and in `a.c`, `x` is presumed to be `1`. Constant propagation then replaces `x + x` with `2`. `xptr`'s declaration as `extern` means that `b.c` is able to initialize it, aliasing `x` and `xptr`. This bug, discovered by the authors of [SepCompCert][scc] in their efforts to verify separate compilation, is egregious. It raises the question: how do we know that compiler correctness theorems encompass the behavior exhibited by the compiler? Relatedly, when do we know if a language specification characterizes its programs correctly? 
 
 I don't know the answers to those questions, or the ones I'm asking you for discussion. I don't think that writing compilers in Coq is going to become the standard, but I do think that developing a formal semantics for several intermediate languages will lower the threshold for verifying compilers. CompCert has changed the way we approach compiler correctness and proof engineering for the better, and I can't wait to see where the next decade takes us in this field. 
 
@@ -231,6 +164,73 @@ I don't know the answers to those questions, or the ones I'm asking you for disc
 * Suppose you were asked to verify the full functionality of LLVM, fixing correctness bugs as needed but not significantly refactoring the implementation. You can't employ translation validation as a tactic. Would you augment CompCert with proofs of LLVM's optimizations, or would you scorch the earth and verify a new language akin to LLVM? (Check out the [tweet and resulting discourse][twt] that inspired this question!)
 * More generally, do you think it's worth it to keep trying to verify buggy, unsafe tools instead of searching for better alternatives? Should we spend time and effort to convince everyone to work with formally specified languages?
 * How do you think software testing will evolve with verified software?
+
+## Bonus: Specifying Preservation with Simulations <a name="math"></a>
+
+CompCert has a semantics of source and target language code behavior. Given such a semantics, we can formulate different notions of *simulation* such that two programs are equal if they are related by simulation.
+
+Suppose a source language program $\mathbf{s}$ begins at state $s_0$, runs for $n$ steps, and ends at state $s_n$. Suppose a target language program $\mathbf{t}$ begins at state $t_0$, runs for $m$ steps, and ends at state $t_m$. State transitions may have effects, so let each transition $s_i \rightarrow s_i^\star$ be accompanied by a label $e_{s_i^\star}$ specifying the potential effect.
+
+### Bisimulation
+
+Two programs are bisimilar if their actions "match" in the sense that they are observationally indistinguishable. Formally, a *bisimulation* relation between a source and target program is a relation $R$ with these conditions: 
+
+* $(s_0, t_0) \in R$
+* For all $s_i$, $s_i \rightarrow s_i^\star$ with effect $e_{s_i^\star}$ implies that for all $t_j$ where $(s_i, t_j) \in R$, there exists a $t_j^\star$ such that $t_j \rightarrow t_j^\star$ with effect $e_{t_j^\star}$ and $(s_i^\star, t_j^\star) \in R$ and $e_{s_i^\star} = e_{t_j^\star}$.
+* For all $t_j$, $t_j \rightarrow t_j^\star$ with effect $e_{t_j^\star}$ implies that for all $s_i$ where $(s_i, t_j) \in R$, there exists a $s_i^\star$ such that $s_i \rightarrow s_i^\star$ with effect $e_{s_i^\star}$ and $(s_i^\star, t_j^\star) \in R$ and $e_{s_i^\star} = e_{t_j^\star}$.
+
+### Backward Simulation
+
+Bisimulation is great, but prohibits optimizations: a source program with a bunch of `nop` instructions would require that the target program have the same number of them. A *backwards simulation* relaxes the requirement of a one-to-one mapping between source and target program actions. Specifically, it's a relation $R_\leftarrow$ such that:
+
+* $(s_0, t_0) \in R_\leftarrow$
+* For all $t_j$, $t_j \rightarrow t_j^\star$ with effect $e_{t_j^\star}$ implies that for all $s_i$ where $(s_i, t_j) \in R_\leftarrow$, there exists a $s_i^\star$ such that $s_i \rightarrow^+ s_i^\star$ with effect $e_{s_i^\star}$ and $(s_i^\star, t_j^\star) \in R_\leftarrow$ and $e_{s_i^\star} = e_{t_j^\star}$.
+
+The second point mandates that for all target transitions, there is *at least one* source transition; $\rightarrow^+$ indicates there may be more than one transition. (We'll ignore the problem of composing effects.)
+
+### Forward Simulation
+
+We could instead require that for all source transitions, there is *at least one* target transition. A *forward simulation* $R_\rightarrow$ requires:
+
+* $(s_0, t_0) \in R_\rightarrow$
+* For all $s_i$, $s_i \rightarrow s_i^\star$ with effect $e_{s_i^\star}$ implies that for all $t_j$ where $(s_i, t_j) \in R_\rightarrow$, there exists a $t_j^\star$ such that $t_j \rightarrow^+ t_j^\star$ with effect $e_{t_j^\star}$ and $(s_i^\star, t_j^\star) \in R_\rightarrow$ and $e_{s_i^\star} = e_{t_j^\star}$.
+
+#### Measured Forward Simulation
+
+For several of the passes we went over, there might be no corresponding target transition for a source transition, such as a pass that removes `nop` instructions. Particularly, a source program that diverges while a target one gets stuck in one state violates semantic preservation as intuitively defined. To avoid this, we will use a well-founded measure on source states, $<$, to prove that a relation $R_\rightarrow^*$ has the following properties:
+
+* $(s_0, t_0) \in R_\rightarrow^*$
+* When $s$ steps to $s^\star$, one of two things must happen.
+    * $t$ steps to $t^\star$, and $(s^\star, t^\star) \in R_\rightarrow^*$
+    * $t$ does not step, but $(s^\star, t) \in R_\rightarrow^*$, and $s^\star < s$.
+
+The measure $<$ allows us to require that the source program progresses as it steps. 
+
+### Composing Simulations
+
+We need to show two things about simulations in order to prove CompCert correct. For the sake of these proof sketches, let's assume that there are no effects or `nop` transitions. 
+
+#### Forward Simulations Compose
+
+Suppose there are two forward simulations: $R_1$ from $\mathbf{S}$ to $\mathbf{M}$, and $R_2$ from $\mathbf{M}$ to $\mathbf{T}$. Let $R_3 =$ <span style="font-size:larger;">{</span>$(s_i, t_j^\star) | (s_i, m_j) \in R_1 \land (m_j, t_j^\star) \in R_2$<span style="font-size:larger;">}</span>. We will prove that $R_3$ is a forward simulation from $\mathbf{S}$ to $\mathbf{T}$.
+
+The initial states of $\mathbf{S}$ and $\mathbf{T}$ are related by construction of $R_3$. If $s_i$ steps to $s_i^\star$, and $(s_i, m_j) \in R_1$, we know that there is an $m_j^\star$ such that $m_j\rightarrow m_j^\star$ and $(s_i^\star, m_j^\star) \in R_1$. Similarly, if there is a $t_{k}$ such that $(m_j, t_{k}) \in R_2$, there exists a $t_{k}^\star$ such that $t_j^\star\rightarrow t_{k}^\star$ and $(m_j^\star, t_{k}^\star) \in R_2$. Again by construction, $(s_i, t_j^\star) \in R_3$. Therefore, $t_{k}^\star$ matches the transition from $s_i$ to $s_i^\star$.
+
+#### Forward Simulations $\rightarrow$ Backward Simulations
+
+The theorem assumes a deterministic target language. We will prove that a forward simulation $R_\rightarrow$ from $\mathbf{S}$ to $\mathbf{T}$ implies a backward simulation $R_\leftarrow$ from $\mathbf{T}$ to $\mathbf{S}$.
+
+Suppose $(s_i, t_j) \in R_\rightarrow$, with $t_j$ stepping to $t_j^\star$. All transitions out of $s_i$ must therefore match the transition from $t_j$, since $t_j^\star$ is unique due to the target language's deterministic semantics. Were this to not hold, the assumed forward simulation would be contradicted.
+
+### Correctness, Composed
+
+Each pass between Csem and Asm is proved with a forward simulation, some with a measure, some with direct transition correspondences. 
+
+By composing these simulations, we get forward simulations from RTL to Asm, from Cminor to Asm, and from Cstrategy to Asm. 
+
+We can then derive backwards simulations for these three language pairs.
+
+The theorem of correctness then asserts that Csem is in backwards simulation with Cstrategy, and therefore in backwards simulation with Asm. 
 
 [absint]: http://www.absint.com/
 [airbus]: http://projects.laas.fr/IFSE/FMF/J3/slides/P05_Jean_Souyiris.pdf
