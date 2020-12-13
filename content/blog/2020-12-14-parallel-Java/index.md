@@ -138,13 +138,13 @@ The following table shows the efforts required for changing the Java source code
 ## Questions
 1. Have you ever written any multi-threaded programs in any programming languages? How did you divide up the workload and enforce the synchronization?
 
-2. Have you ever tried multi-threading in Java? What is the key limitation of writing concurrent program in the current Java programming model?
+2. Have you ever tried multi-threading in Java? What is the key limitation of writing concurrent programs in the current Java programming model?
 
-3.  Do you think the determinism is a good idea for parallel programing? And do you think building a static checker is the proper method to achieve the determinism? What can be the tradeoffs of enforcing determinism in runtime?
+3.  Do you think determinism is a good idea for parallel programming? And do you think building a static checker is the proper method to achieve determinism? What can be the tradeoffs of enforcing determinism in runtime?
 
 4. The authors in this paper provide the new features to help the programmer building the programs running in parallel. But the overall effort of writing, testing, and debugging a program with any parallel programming model is dominated by the time required to understand the parallelism and share patterns, and to debug the parallel code. Thus, probably the program synthesis technique could be our final goal? 
 
-Specifically, the programmer is responsible to designing the interface of the parallel program or kernels, specifying the mathematic euqations related to the input and output values. The mathematic equation should be break down into sub-equations to separate the process that is suppose to running in serial or in parallel. Then the programmer should specify the equations that they think should be running in parallel and the number of threads used for exploring the parallelism. Finally, the compiler will try to parallelize the key equations and execute the program. 
+Specifically, the programmer is responsible for designing the interface of the parallel program or kernels, specifying the mathematic equations related to the input and output values. The mathematic equation should be broken down into sub-equations to separate the process that is supposed to running in serial or in parallel. Then the programmer should specify the equations that they think should be running in parallel and the number of threads used for exploring the parallelism. Finally, the compiler will try to parallelize the key equations and execute the program. 
 
 ## References
 [1] R. Bocchino, V. Adve, S. Adve, and M. Snir. Parallel programming must be deterministic by default. First USENIX Workshop on Hot Topics in Parallelism (HotPar), 2009.<br/>
