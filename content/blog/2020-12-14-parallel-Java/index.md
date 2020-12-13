@@ -150,8 +150,8 @@ Specifically, the programmer is responsible for designing the interface of the p
 [1] R. Bocchino, V. Adve, S. Adve, and M. Snir. Parallel programming must be deterministic by default. First USENIX Workshop on Hot Topics in Parallelism (HotPar), 2009.<br/>
 [2] A. Greenhouse and J. Boyland. An object-oriented effects system. ECOOP, 1999.<br/>
 [3] J. Boyland. The interdependence of effects and uniqueness. Workshop on Formal Techs. for Java Programs, 2001.<br/>
-[4] M. K. Prabhu and K. Olukotun. Using thread-level speculation to simplify manual parallelization. PPOPP, 2003.<br/
-[5] C. von Praun, L. Ceze, and C. Cas ̧caval. Implicit parallelism with ordered transactions. PPOPP, 2007.<br/
+[4] M. K. Prabhu and K. Olukotun. Using thread-level speculation to simplify manual parallelization. PPOPP, 2003.<br/>
+[5] C. von Praun, L. Ceze, and C. Cas ̧caval. Implicit parallelism with ordered transactions. PPOPP, 2007.<br/>
 [6] Z. Anderson, D. Gay, R. Ennals, and E. Brewer. SharC: Checking data sharing strategies for multithreaded C. PLDI, 2008.<br/>
 [7] M. Snir. Parallel Programming Language 1 (PPL1), V0.9, Draft. Technical Report UIUCDCS-R-2006-2969, U. Illinois, 2006.<br/>
 
