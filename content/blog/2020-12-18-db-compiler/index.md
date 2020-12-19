@@ -38,7 +38,7 @@ Joins are implemented by creating a hash table of one of its inputs and then for
 
 ### Interpretation
 
-Most existing databases use interpretation to generate the output. This is generally implemented by having a produce function for each operator. When you call it, the operator will call a produce function from its child operators which returns the next tuple (or null if it's done), process that tuple (filter by some condition, execute a map function, join data, etc.), and then return the processed batch.
+Most existing databases use interpretation to generate the output. This is generally implemented by having a produce function for each operator. When you call it, the operator will call a produce function from its child operators which returns the next tuple (or null if it's done), process that tuple (filter by some condition, execute a map function, join data, etc.), and then return the processed tuple.
 
 For example, this would be what is executed for the interpreted version of `Filter(Scan(T), CompExpr(LT, ColRef(x), Literal(5)))`:
 ```
@@ -237,7 +237,7 @@ I also verify correctness by checking that the query results are identical in Po
 
 I'm running this on a Macbook Pro, Late 2013 with an i7-4750 HQ and 8GB of RAM. This is running Ubuntu 20.04 under the Windows Linux Subystem.
 
-For both systems, I took total running times on the client. THis means it includes time to print the result rows were printed but I redirected stdout to /dev/null. While this does include time to execute query planning for Postgres, Postgres reports that it takes less than a millisecond for these on all queries so I've omitted values beyond the decimal place to account for the loss of accuracy.
+For both systems, I took total running times on the client. This means it includes time to print the result rows but I redirected stdout to /dev/null. While this does include time to execute query planning for Postgres, Postgres reports that it takes less than a millisecond for these on all queries so I've omitted values beyond the decimal place to account for the loss of accuracy.
 
 ### Results
 
