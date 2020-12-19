@@ -225,6 +225,10 @@ The queries involved are a mix of filters, group/by aggregations and joins. I've
 
 Postgres is a popular database that uses an interpretation-style execution engine so I thought it was fit to compare against as a baseline. Since my code is single-threaded, I set `max_parallel_workers` to 1. I also set `jit` off. Postgres includes a very basic compiler that will generate LLVM code for expressions only and not operators. However, since I am interested in comparing against the interpretation version, I set this off. I'm running Postgres 13.
 
+Postgres does store tuples packed on disk while I store them separately. This does mean we load less data which gives us an unfair advantage but given that we have such low data size (only 1GB), I don't think this effect will greatly impact the results. I tried fixing this by generating code to load all columns on a scan but I believe the optimizations passes from clang eliminated them so unfortunately, I can't make this equal. I did take care to ensure that Postgres uses the same underlying data type for each column though.
+
+I also verify correctness by checking that the query results are identical in Postgres.
+
 ### Setup
 
 I'm running this on a Macbook Pro, Late 2013 with an i7-4750 HQ running Ubuntu 20.04 under the Windows Linux Subystem.
@@ -233,21 +237,21 @@ For both systems, I took total running times on the client. The result rows were
 
 ### Results
 
+None of the queries had a correctness error.
+
 I ran 4 trials for each query and report the 95% (t-statistic) confidence intervals for the runtime. Note that this doesn't include the time to compile the query for our system, nor does it include the planning/parsing time for Postgres.
 
 | Query | Postgres Interval (ms) | KushDB Interval (ms) 
 | ----  | -------------------| -------------------|
 | Q1    | 1747.46 - 2677.73  | 262.29 - 337.47 |
 | Q3    | 795.16  - 1066.11  | 562.46 - 617.76 |
-| Q6    | 87.88   - 177.81   | 63.05 - 68.61 |
+| Q6    | 87.88   - 177.81   | 63.75 - 65.31 |
 | Q11   | 455.48  - 630.89   | 28.09 - 118.99 |
 | Q12   | 562.46  - 617.76   | 105.98 - 114.08 |
 
 ![phase1](runtime.jpg)
 
 For all queries generated, the compilation version greatly outperforms Postgres or matches it in the case of Q11. I suspect that the noise of measurement outweights any improvement in runtime given how fast both systems execute the query.
-
-Postgres does store tuples packed on disk while I store them separately. This does mean we load less data which gives us an unfair advantage but given that we have such low data size (only 1GB), I don't think this effect will greatly impact the results. I tried fixing this by forcing the compiler to load all columns on a scan but I believe the optimizations passes from clang eliminated them so unfortunately, I can't make this equal.
 
 ### Compilation Time
 
