@@ -171,7 +171,7 @@ GroupBy.consume() {
 
 This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
 
-THe only thing of note is that operators need to keep track of the schema that it outputs. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. More generally, we associate an of expressions as the output schema where each expression computes a function of the input schema values.
+The only thing of note is that operators need to keep track of the schema that it outputs. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. More generally, we associate an array of expressions as the output schema where each expression computes a function of the input schema values.
 
 ### Input
 
@@ -203,7 +203,7 @@ To avoid having to implement a buffer pool manager and on-demand paging, I mmap 
 
 We generate C++ code directly to simplify the implementation. All the types above are native C++ types that we can reuse in the implementation. For example, we can use int16_t, int32_t and int64_t for 16, 32 and 64-bit signed integers respectively. Code is generated within a compute function, `extern "C" compute() {...}`.
 
-As mentioned in the design, we use the producer/consumer interface to generate the body of this compute function. Each operator in the tree needs to have a produce/consume function on it. While initially I developed these as plain functions that simply take in an operator as input, I quickly realized that  the produce and consume function calls on the same operator needed to share state. For example, the hash join produce function outputs a hash table declaration while the hash join consume function relies on that same variable.
+As mentioned in the design, we use the producer/consumer interface to generate the body of this compute function. Each operator in the tree needs to have a produce/consume function on it. While initially I developed these as plain functions that simply take in an operator as input, I quickly realized that the produce and consume function calls on the same operator needed to share state. For example, the hash join produce function outputs a hash table declaration while the hash join consume function relies on that same variable.
 
 Because state needs to be shared, we could attach these extra state variables onto the relation algebra operators. However, for better separation of concerns, we create a wrapper translator object around each operator and then organize them into the same tree. This allows for per-operator state sharing without having to modify each of the plan classes. We use the visitor pattern to generate these translator wrappers.
 
@@ -259,7 +259,7 @@ As I mentioned above, the above measurements only measured the time spent runnin
 
 ![phase1](compile.jpg)
 
-At such low table sizes, the time spent compiling actually dominates. Note that the time spent compiling is fixed so while on larger databases, the yellow portion of the graph will increase, the grey portion will stay constant. This means the ratio of time spent compiling to time spent executing will decrease.
+At such low table sizes, the time spent compiling actually dominates. Note that the time spent compiling is fixed so as the database size grows larger, the yellow portion of the graph will increase and the grey portion will stay constant. This means the ratio of time spent compiling to time spent executing will decrease.
 
 However, this is still unacceptable on smaller queries where Postgres outperforms the compilation version. In future work, I discuss some ways that this can be fixed.
 
