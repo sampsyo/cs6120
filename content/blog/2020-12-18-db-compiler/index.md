@@ -34,7 +34,7 @@ Filter(
 
 The key operators needed are Scan, Select, Join and Group By/Aggregate.
 
-Joins are implemented by creating a hash table of one of it's inputs and then for each tuple of the other input, concatenating it with any matching tuple in the hash table. Similarly, grouping is done by maintaining a map of the group by values to a bucket that contains all values in the group. Then, each aggregation function is computed over each bucket.
+Joins are implemented by creating a hash table of one of its inputs and then for each tuple of the other input, concatenating it with any matching tuple in the hash table. Similarly, grouping is done by maintaining a map of the group by values to a bucket that contains all values in the group. Then, each aggregation function is computed over each bucket.
 
 ### Interpretation
 
@@ -94,7 +94,7 @@ This should be much faster since there are no function calls (let alone virtual 
 
 ### Producer/Consumer Interface
 
-To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce  generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over it's result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generate code for calculating that expression.
+To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce  generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over its result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generate code for calculating that expression.
 
 To see this in action, let's consider the following psuedocode implementations for Scan and Filter:
 ```
