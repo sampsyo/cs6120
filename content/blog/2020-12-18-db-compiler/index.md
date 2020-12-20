@@ -167,15 +167,11 @@ GroupBy.consume() {
 
 ## Implementation
 
-### Operator Tree
+I chose to focus on the compilation aspects of the project and implement just enough of the database elements to get full queries to execute.
 
-This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
+We build up a basic storage engine by allowing user specified CSVs to be converted into our specific column files. Users can specify a catalog of these tables and column files in C++.
 
-The only thing of note is that operators need to keep track of the schema that they output. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. To handle the general case and allow for eager removal of unnecessary columns, we associate an array of expressions as the output schema where each expression computes a function of the input schema values. While most databases implement such functionality by adding map and project operators, creating a matching expression for each column in the output schema simplifies this. I learned of this technique by looking through the implementation of [NoisePage](https://github.com/cmu-db/noisepage/).
-
-### Input
-
-Since parsing and query planning/optimization are not the focus of this project, I've not implemented these. Rather, I manually enter a tree of relational algebra operators and then compile and execute that.
+Queries over this catalog are written in C++ by constructing a tree of our operator classes. Then, this can be executed by invoking the code generator and then compiler on this operator tree.
 
 ### Types
 
@@ -197,7 +193,17 @@ The file format used for a table consists of each of the columns stored as a sep
 - The format for all types except for TEXT consists of tightly-packed values of the underlying type, much like an in-memory array. No other metadata such as cardinality is stored.
 - For TEXT types, the format used is as follows. The first 4 bytes represent an unsigned 32-bit integer that contains the cardinality (number of strings) inside the file. Then, for each string, we store 8 bytes. The first 4 bytes are an unsigned 32-bit integer that contains the string length. The second 4 bytes are an unsigned 32-bit integer that contains the byte offset of the string's data in the file. After this metadata array, we store all the strings in a packed format.
 
-To avoid having to implement a buffer pool manager and on-demand paging, I mmap the column files and rely on OS paging to handle this.
+To avoid having to implement a buffer pool manager and on-demand paging, I mmap the column files and rely on OS paging to handle this. I simplified the [experiment code](https://github.com/TimoKersten/db-engine-paradigms) behind [this paper](http://www.vldb.org/pvldb/vol11/p2209-kersten.pdf) for the implementation.
+
+### Input
+
+Since parsing and query planning/optimization are not the focus of this project, I've not implemented these. Rather, I manually enter a tree of relational algebra operators and then compile and execute that.
+
+### Operator Tree
+
+This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
+
+The only thing of note is that operators need to keep track of the schema that they output. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. To handle the general case and allow for eager removal of unnecessary columns, we associate an array of expressions as the output schema where each expression computes a function of the input schema values. While most databases implement such functionality by adding map and project operators, creating a matching expression for each column in the output schema simplifies this. I learned of this technique by looking through the implementation of [NoisePage](https://github.com/cmu-db/noisepage/).
 
 ### Code Generation
 
@@ -211,7 +217,7 @@ Each translator needs to know which variables correspond to the schema of each o
 
 ### Code Execution
 
-Once the C++ file has been generated, we invoke clang on the file with optimizations turned on (-O3). We allow any C++ header defined in the codebase to be included. This enables us to reuse classes defined in the codebase such as the ones for file reading. This generates a dynamic library that we load into the database with dlopen. We retrieve the aforementioned compute function via dlsym and then execute it.
+Once the C++ file has been generated, we invoke clang on the file with optimizations turned on (-O3). We allow any C++ header defined in the codebase to be included. This enables us to reuse classes defined in the codebase such as the ones for file reading. This generates a dynamic library that we load into the database with `dlopen`. We retrieve the aforementioned compute function via `dlsym` and then execute it. Finally, we `dlclose` the dynamic library.
 
 ## Performance Evaluation
 
@@ -276,7 +282,7 @@ The largest barrier I had to overcome in working on this project was understandi
 
 While this generates extremely high performant code, the time spent compiling is extremely large. The following strategies are useful in reducing this:
 - Directly generate some IR. This removes any overhead for file I/O to output the C++ and parsing, type checking and lowering that C++ to IR. The paper mentioned above, by Thomas Neumann, directly generates LLVM. However, a recent paper from his research group, ["Tidy Tuples and Flying Start: Fast Compilation and Fast
-Execution of Relational Queries in Umbra"](https://db.in.tum.de/~kersten/Tidy%20Tuples%20and%20Flying%20Start%20Fast%20Compilation%20and%20Fast%20Execution%20of%20Relational%20Queries%20in%20Umbra.pdf?lang=en) by Timo Kersten, Viktor Leis and Thomas Neumann, describes how they move to a custom IR. While they noted that "LLVM IR is designed to be more generic to support a wide variety of optimization passes", they also "found that [LLVM's] flexibility is counter-productive for query latency" as it "has an emphasis on instruction reordering, replacement, and deletion". This matches the conventional wisdom that led to development of simpler code generators like [DynASM](https://luajit.org/dynasm.html), [B3](https://webkit.org/docs/b3/), and [Cranelift](https://cranelift.readthedocs.io/en/latest/).
+Execution of Relational Queries in Umbra"](https://db.in.tum.de/~kersten/Tidy%20Tuples%20and%20Flying%20Start%20Fast%20Compilation%20and%20Fast%20Execution%20of%20Relational%20Queries%20in%20Umbra.pdf?lang=en) by Timo Kersten, Viktor Leis and Thomas Neumann, describes how they move to a custom IR. While they noted that "LLVM IR is designed to be more generic to support a wide variety of optimization passes", they also "found that [LLVM's] flexibility is counter-productive for query latency" as it "has an emphasis on instruction reordering, replacement, and deletion". This matches the conventional wisdom that led to development of simpler code generators like [DynASM](https://luajit.org/dynasm.html), [B3](https://webkit.org/docs/b3/), and [Cranelift](https://cranelift.readthedocs.io/en/latest/). Similar to JITs, Umbra also adaptively switches from interpreting IR to converting IR to binary and executing that.
 - Control which optimization passes run on this. For example, most of the overhead comes from dead copies that get inserted into the code. One GVN/DCE pass can get rid of these. Auto-vectorization would also prove beneficial here.
 
 As always, there are a myriad of SQL features that I have not implemented as part of this project. Adding more features would allow me to test this more thoroughly.
