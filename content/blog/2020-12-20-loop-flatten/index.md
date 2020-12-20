@@ -52,7 +52,7 @@ In LLVM, this optimization unrolls the nested loop with the given unroll paramet
 for (int i = 0; i < n; i++) { // original outer loop
   Outer_Stmt(i);
   for (int j = 0; j < m; j++) { // original inner loop
-Inner_Stmt(i);
+    Inner_Stmt(i);
   }
 }
 ```
@@ -63,8 +63,8 @@ for (int i = 0; i < n; i+= 2) { // unrolled outer loop
   Outer_Stmt(i);
   Outer_Stmt(i+1);
   for (int j = 0; j < m; j+= 2) { // unrolled inner loop
-Inner_Stmt(i);
-Inner_Stmt(i+1);
+    Inner_Stmt(i);
+    Inner_Stmt(i+1);
   }
 }
 ```
