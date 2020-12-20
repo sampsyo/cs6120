@@ -88,7 +88,7 @@ query {
   return output
 }
 ```
-This should be much faster since there are no function calls (let alone virtual ones) and since tight loops are generated, values are kept in registers for as long as possible.
+This should be much faster since there are no function calls (let alone virtual ones) and since tight loops are generated, values are kept in registers for as long as possible. Our goal is to generate code like the above and then compile and execute it.
 
 ## High Level Design
 
