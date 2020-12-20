@@ -1,5 +1,5 @@
 +++
-title = "Compilation-based Execution Engine for a Database"
+title = "Compilation-Based Execution Engine for a Database"
 [extra]
 bio = """
  Ankush Rayabhari is a first-year MS student in Computer Science at Cornell who
@@ -44,7 +44,7 @@ For example, this would be what is executed for the interpreted version of `Filt
 ```
 query {
   output = []
-  while (t = child.produce()) {
+  while (t = op.produce()) {
     output.add(t)
   }
   return output
@@ -88,13 +88,13 @@ query {
   return output
 }
 ```
-This should be much faster since there are no function calls (let alone virtual ones) and since tight loops are generated, values are kept in registered for as long as possible.
+This should be much faster since there are no function calls (let alone virtual ones) and since tight loops are generated, values are kept in registers for as long as possible.
 
 ## High Level Design
 
 ### Producer/Consumer Interface
 
-To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce  generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over its result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generate code for calculating that expression.
+To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over its result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generates code for calculating that expression.
 
 To see this in action, let's consider the following psuedocode implementations for Scan and Filter:
 ```
@@ -167,11 +167,13 @@ GroupBy.consume() {
 
 ## Implementation
 
+I've chosen to focus
+
 ### Operator Tree
 
 This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
 
-The only thing of note is that operators need to keep track of the schema that it outputs. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. More generally, we associate an array of expressions as the output schema where each expression computes a function of the input schema values.
+The only thing of note is that operators need to keep track of the schema that they output. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. More generally, we associate an array of expressions as the output schema where each expression computes a function of the input schema values.
 
 ### Input
 
@@ -201,11 +203,11 @@ To avoid having to implement a buffer pool manager and on-demand paging, I mmap 
 
 ### Code Generation
 
-We generate C++ code directly to simplify the implementation. All the types above are native C++ types that we can reuse in the implementation. For example, we can use int16_t, int32_t and int64_t for 16, 32 and 64-bit signed integers respectively. Code is generated within a compute function, `extern "C" compute() {...}`.
+We generate C++ code directly to simplify the implementation. All the types above are native C++ types that we can reuse in the implementation. For example, we can use `int16_t`, `int32_t` and `int64_t` for 16, 32 and 64-bit signed integers respectively. Code is generated within a compute function, `extern "C" compute() {...}`.
 
 As mentioned in the design, we use the producer/consumer interface to generate the body of this compute function. Each operator in the tree needs to have a produce/consume function on it. While initially I developed these as plain functions that simply take in an operator as input, I quickly realized that the produce and consume function calls on the same operator needed to share state. For example, the hash join produce function outputs a hash table declaration while the hash join consume function relies on that same variable.
 
-Because state needs to be shared, we could attach these extra state variables onto the relation algebra operators. However, for better separation of concerns, we create a wrapper translator object around each operator and then organize them into the same tree. This allows for per-operator state sharing without having to modify each of the plan classes. We use the visitor pattern to generate these translator wrappers.
+Because state needs to be shared, we could attach these extra state variables onto the relational algebra operators. However, for better separation of concerns, we create a wrapper translator object around each operator and then organize them into the same tree. This allows for per-operator state sharing without having to modify each of the plan classes. We use the visitor pattern to generate these translator wrappers.
 
 Each translator needs to know which variables correspond to the schema of each operator. For example, the output operator needs to know which variables correspond to each column of the child operator's schema to know which variables to push into standard out. To handle this, each translator contains a list of variables that can be queried, one for each column of its output schema.
 
@@ -235,9 +237,9 @@ I also verify correctness by checking that the query results are identical in Po
 
 ### Setup
 
-I'm running this on a Macbook Pro, Late 2013 with an i7-4750 HQ and 8GB of RAM. This is running Ubuntu 20.04 under the Windows Linux Subystem.
+I'm running this on a MacBook Pro, Late 2013 with an i7-4750 HQ and 8GB of RAM. This is running Ubuntu 20.04 under the Windows Linux Subystem 2.
 
-For both systems, I took total running times on the client. This means it includes time to print the result rows but I redirected stdout to /dev/null. While this does include time to execute query planning for Postgres, Postgres reports that it takes less than a millisecond for these on all queries so I've omitted values beyond the decimal place to account for the loss of accuracy.
+For both systems, I took total running times on the client. This means it includes time to print the result rows but I redirected stdout to `/dev/null`. While this does include time to execute query planning for Postgres, Postgres reports that it takes less than a millisecond for these on all queries so I've omitted values beyond the decimal place to account for the loss of accuracy.
 
 ### Results
 
@@ -280,9 +282,9 @@ While this generates extremely high performant code, the time spent compiling is
 
 As always, there are a myriad of SQL features that I have not implemented as part of this project. Adding more features would allow me to test this more thoroughly.
 
-Another aspect to explore is how best to parallelize the generate code. Existing techniques break the code up into the materialization boundaries and then use simple strategies to parallelize it.
+Another aspect to explore is how best to parallelize the generated code. Existing techniques break the code up into the materialization boundaries and then use simple strategies to parallelize it.
 
-Finally, to simplify the codebase, we can take advantage of operator overloading to define proxy types. For example, if you have `int`s a and b, writing a * b in your source code generates code that multiplies a and b. One more layer of indirection will simplify this. For example, if you have `proxy[int]`s a and b, writing a * b in your source code generates code that generates a program that multiplies a and b. This technique allows you to write code that behaves like the compilation version but appears like the interpreted version.
+Finally, to simplify the codebase, we can take advantage of operator overloading to define proxy types. For example, if you have `int`s `a` and `b`, writing `a * b` in your source code generates code that multiplies `a` and `b`. One more layer of indirection will simplify this. For example, if you have `proxy[int]`s `a` and `b`, writing `a * b` in your source code generates code that generates a program that multiplies `a` and `b`. This technique was popularized by the [LMS project](https://scala-lms.github.io/) and was used by a few database systems like [LegoBase](https://github.com/peterboncz/LegoBase). This technique allows you to write code that behaves like the compilation version but appears like the interpreted version.
 
 ## Sources
 
