@@ -277,10 +277,10 @@ However, this is still unacceptable on smaller data sets where Postgres outperfo
 ## Personal Experiences
 
 The largest barrier I had to overcome in working on this project was understanding all the pieces of the puzzle:
-- While I theoretically knew how to implement paging and learned about it in detail in both databases and operating systems courses, I needed to do enough research to figure out which syscall's to use.
+- While I theoretically knew how to implement paging and learned about it in detail in both databases and operating systems courses, I needed to do enough research to figure out which syscalls to use.
 - I also knew of dynamic libraries but it took some time to figure out exactly how to load in a shared library and access functions within it.
 
-I also gained valuable experience building up a codebase that can easily scale. As an example, once I built in the functionality and infrastructure to specify arbitrary types, it felt good being able to add in new types to the system with only 3 lines of additional code.
+I also gained valuable experience building up a codebase that can easily scale. As an example, once I built in the functionality and infrastructure to specify arbitrary types, I could add in new types to the system with only 3 lines of additional code.
 
 ## Future Work
 
