@@ -15,7 +15,7 @@ My project was to implement a compilation-based execution engine for a database.
 
 Existing database systems initially convert a SQL query to a tree of relational algebra operators and then interpret that plan. In the past, this wasn't a bottleneck as the main cost of processing data was reading and writing data to disk. Since the amount of CPU time spent processing data was negligible compared to the disk access time, the overheads of interpretation didn't play a large role.
 
-Nowadays, databases have access to faster storage and large amounts of main memory which means that the CPU time spent processing data is much more valuable. To reduce the overhead of interpretation, we can directly compile trees of operators down to binary and then execute them. This projects explores implementing such a compiler.
+Nowadays, databases have access to faster storage and large amounts of main memory which means that the CPU time spent processing data is much more valuable. As mentioned in [this overview](https://15721.courses.cs.cmu.edu/spring2018/slides/03-compilation.pdf) of different execution engine implementations, "To go 10x faster, the DBMS must execute 90% fewer instructions. To go 100x faster, the DBMS must execute 99% fewer instructions." To reduce the overhead of interpretation, we can directly compile trees of operators down to binary and then execute them. This projects explores implementing such a compiler.
 
 ## Background
 
@@ -167,8 +167,6 @@ GroupBy.consume() {
 
 ## Implementation
 
-I've chosen to focus
-
 ### Operator Tree
 
 This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
@@ -260,7 +258,7 @@ I ran 4 trials for each query and report the 95% (t-statistic) confidence interv
 
 ![phase1](total-runtime.jpg)
 
-For all queries generated, the compilation version (once compiled) greatly outperforms Postgres or matches it in the case of Q11. I suspect that the noise of measurement outweights any improvement in runtime given how fast both systems execute the query. However, once we take into account the compilation time, a different result emerges.
+For all queries, the compilation version (once compiled) greatly outperforms Postgres or matches it in the case of Q11. I suspect that the noise of measurement outweights any improvement in runtime given how fast both systems execute the query. However, once we take into account the compilation time, a different result emerges.
 
 ### Compilation Time
 
