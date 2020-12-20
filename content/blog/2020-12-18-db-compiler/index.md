@@ -94,7 +94,7 @@ This should be much faster since there are no function calls (let alone virtual 
 
 ### Producer/Consumer Interface
 
-To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over its result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generates code for calculating that expression.
+To generate code for an operator tree, we introduce produce and consume functions for each operator. Produce generates a loop over the tuples in an operator's result. Consume is called by an operator's child surrounded by a loop over its result tuples. Effectively, produce signifies to "pull" tuples from an operator while consume "push"es them. Expressions have a produce function that generates code for calculating that expression. This idea comes from a paper by Thomas Neumann in 2011: ["Efficiently Compiling Efficient Query Plans for Modern Hardware"](https://www.vldb.org/pvldb/vol4/p539-neumann.pdf).
 
 To see this in action, let's consider the following psuedocode implementations for Scan and Filter:
 ```
@@ -171,7 +171,7 @@ GroupBy.consume() {
 
 This is fairly standard. We introduce a base Operator and Expression class that is inherited by respective implementations. Each one can hold any number of child operators or expressions.
 
-The only thing of note is that operators need to keep track of the schema that they output. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. More generally, we associate an array of expressions as the output schema where each expression computes a function of the input schema values.
+The only thing of note is that operators need to keep track of the schema that they output. For example, a table scan would have some or all the underlying table's columns in its schema. A filter operation would have the schema of its child. A join would have the schema of the concatenation of both its inputs. A group by would have the schema of whatever aggregation functions are defined on it. To handle the general case and allow for eager removal of unnecessary columns, we associate an array of expressions as the output schema where each expression computes a function of the input schema values. While most databases implement such functionality by adding map and project operators, creating a matching expression for each column in the output schema simplifies this. I learned of this technique by looking through the implementation of [NoisePage](https://github.com/cmu-db/noisepage/).
 
 ### Input
 
@@ -275,19 +275,12 @@ The largest barrier I had to overcome in working on this project was understandi
 ## Future Work
 
 While this generates extremely high performant code, the time spent compiling is extremely large. The following strategies are useful in reducing this:
-- Directly generate LLVM. This removes any overhead for file I/O to output the C++ and parsing, type checking and converting that C++ to LLVM.
+- Directly generate some IR. This removes any overhead for file I/O to output the C++ and parsing, type checking and lowering that C++ to IR. The paper mentioned above, by Thomas Neumann, directly generates LLVM. However, a recent paper from his research group, ["Tidy Tuples and Flying Start: Fast Compilation and Fast
+Execution of Relational Queries in Umbra"](https://db.in.tum.de/~kersten/Tidy%20Tuples%20and%20Flying%20Start%20Fast%20Compilation%20and%20Fast%20Execution%20of%20Relational%20Queries%20in%20Umbra.pdf?lang=en) by Timo Kersten, Viktor Leis and Thomas Neumann, describes how they move to a custom IR. While they noted that "LLVM IR is designed to be more generic to support a wide variety of optimization passes", they also "found that [LLVM's] flexibility is counter-productive for query latency" as it "has an emphasis on instruction reordering, replacement, and deletion". This matches the conventional wisdom that led to development of simpler code generators like [DynASM](https://luajit.org/dynasm.html), [B3](https://webkit.org/docs/b3/), and [Cranelift](https://cranelift.readthedocs.io/en/latest/).
 - Control which optimization passes run on this. For example, most of the overhead comes from dead copies that get inserted into the code. One GVN/DCE pass can get rid of these. Auto-vectorization would also prove beneficial here.
 
 As always, there are a myriad of SQL features that I have not implemented as part of this project. Adding more features would allow me to test this more thoroughly.
 
 Another aspect to explore is how best to parallelize the generated code. Existing techniques break the code up into the materialization boundaries and then use simple strategies to parallelize it.
 
-Finally, to simplify the codebase, we can take advantage of operator overloading to define proxy types. For example, if you have `int`s `a` and `b`, writing `a * b` in your source code generates code that multiplies `a` and `b`. One more layer of indirection will simplify this. For example, if you have `proxy[int]`s `a` and `b`, writing `a * b` in your source code generates code that generates a program that multiplies `a` and `b`. This technique was popularized by the [LMS project](https://scala-lms.github.io/) and was used by a few database systems like [LegoBase](https://github.com/peterboncz/LegoBase). This technique allows you to write code that behaves like the compilation version but appears like the interpreted version.
-
-## Sources
-
-I used the following sources as references:
-- [NoisePage](noise.page)
-- https://www.vldb.org/pvldb/vol4/p539-neumann.pdf
-- https://db.in.tum.de/~kersten/Tidy%20Tuples%20and%20Flying%20Start%20Fast%20Compilation%20and%20Fast%20Execution%20of%20Relational%20Queries%20in%20Umbra.pdf?lang=en
-- https://www.cs.purdue.edu/homes/rompf/papers/tahboub-sigmod18.pdf
+Finally, to simplify the codebase, we can take advantage of operator overloading to define proxy types. For example, if you have `int`s `a` and `b`, writing `a * b` in your source code generates code that multiplies `a` and `b`. One more layer of indirection will simplify this. For example, if you have `proxy[int]`s `a` and `b`, writing `a * b` in your source code generates code that generates a program that multiplies `a` and `b`. This technique was popularized by the [LMS project](https://scala-lms.github.io/) and is used by a few database systems like [LegoBase](https://github.com/peterboncz/LegoBase) and [LB2](https://www.cs.purdue.edu/homes/rompf/papers/tahboub-sigmod18.pdf). This technique allows you to write code that behaves like the compilation version but appears like the interpreted version, making development easier.
