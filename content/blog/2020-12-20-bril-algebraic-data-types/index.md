@@ -1,5 +1,5 @@
 +++
-title = """Bril extension for algebraic data types"""
+title = """Bril Extension for Algebraic Data Types"""
 [extra]
 bio = """
 Will is a senior undergraduate student interested in programming language implementation. He also enjoys autonomous robotics and music peformance."""
@@ -24,7 +24,7 @@ completed each of the following:
    [`bril-rs/src/main.rs`](https://github.com/Calsign/bril/blob/algebraic-types/bril-rs/src/main.rs)
 
 Additionally, I added support for the new instructions to the
-TypeScript, Ocaml, and Rust libraries as required to do the above.
+TypeScript, OCaml, and Rust libraries as required to do the above.
 
 The code is available on the [`algebraic-types`
 branch](https://github.com/Calsign/bril/tree/algebraic-types) of my
@@ -40,8 +40,8 @@ other types (a Cartesian product). Commonly, the two case is called
 a pair and the zero case is called unit.
 
 A sum type is a type that at any given time may contain any of one or
-more types, where which type a given value has may be inspected at
-runtime (a tagged union). Each type in a sum type is referred to as a
+more types, where which type a given value has may be inspected at run
+time (a tagged union). Each type in a sum type is referred to as a
 constructor. Note that the zero case is uninstantiable, so we do not
 allow it.
 
@@ -84,10 +84,10 @@ Here are some examples of types that are supported by my extension:
  - `sum<product<int, int>, bool>`
  - `product<sum<int, bool>, int>`
 
-Note that while sum types with duplicate constructors (e.g. `sum<int,
+Note that while sum types with duplicate constructors (e.g., `sum<int,
 int>`) can be declared with the above type definitions, as we will
 see, it is not possible to differentiate between different
-constructors of the same type at runtime, so such sum types are not
+constructors of the same type at run time, so such sum types are not
 useful.
 
 I considered adding a subtyping rule for sum types that would permit
@@ -178,7 +178,7 @@ Here is a sample Bril program that uses tuples:
 The `construct` instruction is used to construct sum types. It takes
 as its sole argument the value to use. The semantics of the
 instruction dictate that constructor to use is determined
-automatically by examining the runtime type of the argument.
+automatically by examining the run-time type of the argument.
 
 The destination must have a sum type and the type of the argument must
 correspond to one of the constructors of that sum type.
@@ -242,9 +242,9 @@ d: sum<t1, ..., tn> = destruct v .l1 ... .ln
 ```
 
 A common use case is some way of representing an empty, or unit,
-value. For this it is recommended to use the empty product type,
-i.e. `product<>`. For example, to represent an optional `int`, one
-could use the following type: `sum<int, product<>>`.
+value. For this it is recommended to use the empty product type, i.e.,
+`product<>`. For example, to represent an optional `int`, one could
+use the following type: `sum<int, product<>>`.
 
 I debated whether to even include a powerful instruction like
 `destruct` at all. I could have instead offered an instruction to get
@@ -528,7 +528,7 @@ more confident in the correctness of the Rust compiler.
 I do think that it would have been preferable to make the `construct`
 instruction require explicitly specifying the index of the constructor
 to construct. This approach would have been better for a number of
-reasons: it would have eliminated the dependency on runtime knowledge
+reasons: it would have eliminated the dependency on run-time knowledge
 of types; it would have made the Rust compiler's job easier; it would
 have made the code more explicit and readable; and it would have made
 it possible to use variants with multiple constructors that carry the
