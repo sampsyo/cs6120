@@ -38,7 +38,7 @@ dependencies between loop iterations.
 
 We denote the lower-bound II limited by resource usage confliction as ResMII, which is 
 given by the formula (1):
-![phase1](mii.PNG)
+<img src="https://github.com/Sibylau/cs6120/blob/project-jl3952/content/blog/2020-12-22-pipeline-II-analysis/mii.PNG" width="300" />
 
 Where R is the set of available resources. $O_r$ is the number of operations in the loop 
 body which occupy the resource $r$, and $N_r$ is the number of allocated resources, for 
