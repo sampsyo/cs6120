@@ -28,7 +28,7 @@ programmers at an early stage don't have much information on the performance of 
 they write. If the specified pipeline initial interval (II) cannot be achieved, the HLS 
 tools will throw out messages at least after running synthesis, which can take hours for 
 a large design. In this project, I want to perform a quick analysis of the achievable loop 
-pipeline II written in C-level. I believe early feedbacks will help programmers iterate 
+pipeline II written at the C level. I believe early feedbacks will help programmers iterate 
 their designs in a much faster way.
 
 ## Background
@@ -38,9 +38,10 @@ dependencies between loop iterations.
 
 We denote the lower-bound II limited by resource usage confliction as ResMII, which is 
 given by the formula (1):
-<img src="https://github.com/Sibylau/cs6120/blob/project-jl3952/content/blog/2020-12-22-pipeline-II-analysis/mii.PNG" width="300" />
 
-Where $R$ is the set of available resources. $O_r$ is the number of operations in the loop
+\[ ResMII = \max_{r \in R} ResMII_r = \max_{r \in R} {\lceil \frac{O_r}{N_r} \rceil} \]
+
+Where $R$ is the set of available resources. $O_r$ is the number of operations in the loop 
 body which occupy the resource $r$, and $N_r$ is the number of allocated resources, for 
 example, the number of memory ports, or the number of DSPs. 
 
@@ -136,7 +137,7 @@ the dependency load-store pair, which is 1, and adds the tool-specific additiona
 which outputs 2. It turns out that the estimation is over ideal, and the real II given by Catapult HLS tool is 3.
 
 ## Future work
- - For more precise estimation of ResMII, I need to add more types of resource constraints, e.g. interface ports, 
+ - For more precise estimation of ResMII, I need to add more types of resource constraints, e.g., interface ports, 
 and compute resources.
  - For more precise estimation of RecMII, a more accurate and robust loop-carried dependency analysis is 
  required to attain the exact dependency distance. In order to tune the analysis pass towards an HLS tool, 
