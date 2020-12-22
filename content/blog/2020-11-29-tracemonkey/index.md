@@ -195,9 +195,9 @@ The first time the loop is encountered, the type of `x` is undefined,
 but the second time through it is now a number and remains that way
 for the rest of execution. Thus this loop converges to type stability.
 
-In such a situation, TraceMonkey will produce a seprate compiled trace
-for each type map, but eventually it will be able to tie the knot as
-the input and output types converge. Other more complicated
+In such a situation, TraceMonkey will produce a separate compiled
+trace for each type map, but eventually it will be able to tie the
+knot as the input and output types converge. Other more complicated
 convergence patterns are possible, including topologies where the
 control oscillates between two or more compiled traces, but these
 scenarious are still handled elegantly by this approach.

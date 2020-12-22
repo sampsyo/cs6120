@@ -4,7 +4,7 @@ build_search_index = false
 generate_rss = true
 
 highlight_code = true
-highlight_theme = "inspired-github"
+highlight_theme = "subway-madrid"
 
 title = "CS 6120"
 

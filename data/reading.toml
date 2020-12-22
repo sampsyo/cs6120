@@ -1,0 +1,73 @@
+[wrongdata]
+name = "Producing Wrong Data Without Doing Anything Obviously Wrong!"
+link = "https://dl.acm.org/citation.cfm?id=1508275"
+details = "Todd Mytkowicz, Amer Diwan, Matthias Hauswirth, and Peter F. Sweeney. ASPLOS 2009."
+
+[eeg]
+name = "SIGPLAN Empirical Evaluation Guidelines"
+link = "https://www.sigplan.org/Resources/EmpiricalEvaluation/"
+
+[ball-larus]
+name = "Efficient Path Profiling"
+link = "https://dl.acm.org/citation.cfm?id=243857"
+details = "Thomas Ball and James R. Larus. MICRO 1996."
+
+[alive]
+name = "Provably Correct Peephole Optimizations with Alive"
+link = "https://dl.acm.org/citation.cfm?id=2737965"
+details = "Nuno P. Lopes, David Menendez, Santosh Nagarakatte, and John Regehr. PLDI 2015."
+
+[tbaa]
+name = "Type-Based Alias Analysis"
+link = "https://dl.acm.org/citation.cfm?id=277670"
+details = "Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss."
+
+[ugc]
+name = "A Unified Theory of Garbage Collection"
+link = "https://dl.acm.org/citation.cfm?id=1028982"
+details = "David F. Bacon, Perry Cheng, and V. T. Rajan. OOPSLA 2004."
+
+[consgc]
+name = "Fast Conservative Garbage Collection"
+link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
+details = "Rifat Shahriyar, Stephen M. Blackburn, and Kathryn S. McKinley. OOPSLA 2014."
+
+[self]
+name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
+link = "http://portal.acm.org/citation.cfm?id=74884"
+details = "C. Chambers, D. Ungar, and E. Lee. OOPSLA 1989."
+
+[tracemonkey]
+name = "Trace-Based Just-in-Time Type Specialization for Dynamic Languages"
+details = "Andreas Gal, Brendan Eich, Mike Shaver, David Anderson, David Mandelin, Mohammad R. Haghighat, Blake Kaplan, Graydon Hoare, Boris Zbarsky, Jason Orendorff, Jesse Ruderman, Edwin W. Smith, Rick Reitmaier, Michael Bebenita, Mason Chang, and Michael Franz. PLDI 2009."
+link = "https://dl.acm.org/citation.cfm?id=1542476.1542528"
+
+[super]
+name = "Superoptimizer: A Look at the Smallest Program"
+details = "Alexia Massalin. ASPLOS 1987."
+link = "https://courses.cs.washington.edu/courses/cse501/15sp/papers/massalin.pdf"
+
+[chlorophyll]
+name = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures"
+link = "https://dl.acm.org/citation.cfm?id=2594339"
+details = "Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik. PLDI 2014."
+
+[notlib]
+name = "Threads Cannot Be Implemented as a Library"
+link = "https://dl.acm.org/doi/10.1145/1065010.1065042"
+details = "Hans-J. Boehm. PLDI 2005."
+
+[slp]
+name = "Exploiting Superword Level Parallelism with Multimedia Instruction Sets"
+link = "https://dl.acm.org/doi/10.1145/358438.349320"
+details = "Samuel Larsen and Saman Amarasinghe. PLDI 2000."
+
+[dpj]
+name = "A Type and Effect System for Deterministic Parallel Java"
+link = "http://dpj.cs.illinois.edu/DPJ/Publications_files/DPJ-OOPSLA-2009.pdf"
+details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephen Heumann, Rakesh Komuravelli, Jeffrey Overbey, Patrick Simmons, Hyojin Sung, and Mohsen Vakilian. OOPSLA 2009."
+
+[compcert]
+name = "Formal Verification of a Realistic Compiler"
+link = "https://dl.acm.org/citation.cfm?id=1538814"
+details = "Xavier Leroy. CACM in 2009."

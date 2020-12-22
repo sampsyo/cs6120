@@ -176,19 +176,23 @@ article {
   }
 
   &.small {
-    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: baseline;
+
+    margin-bottom: 0.4rem;
+
+    time {
+      width: 4rem;
+      flex: none;
+      text-align: right;
+      margin-right: 0.5rem;
+    }
     h1 {
       font-size: inherit;
+      line-height: 130%;
       &:hover {
         text-decoration: underline;
       }
-      display: inline;
-    }
-    time {
-      display: inline-block;
-      text-align: right;
-      width: 4rem;
-      margin-right: 0.5rem;
     }
   }
 
@@ -206,6 +210,11 @@ article {
 pre {
   line-height: 120%;
   overflow-x: auto;
+  code {
+      background-color: inherit;
+      padding: 0;
+      border-radius: 0;
+  }
 }
 
 .details {
@@ -265,6 +274,15 @@ ul.compact {
   li {
     display: inline-block;
     margin-right: 1em;
+  }
+}
+
+ul.inline {
+  margin: 1.5rem 0;
+  list-style: none;
+  padding-left: 0;
+  li {
+      margin: 0.5rem 0;
   }
 }
 

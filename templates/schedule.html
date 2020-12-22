@@ -3,6 +3,7 @@
 {% block main %}
 {% set schedule = load_data(path="data/schedule.toml") %}
 {% set content = load_data(path="data/content.toml") %}
+{% set readings = load_data(path="data/reading.toml") %}
 {% set lessons = get_section(path="lesson/_index.md") %}
 
 <h1>{{ page.title }}</h1>
@@ -33,7 +34,8 @@
         {% if class.leader %}({{class.leader}}){% endif %}
         {% if class.readings %}
         <ul>
-        {% for reading in class.readings %}
+        {% for rdkey in class.readings %}
+          {% set reading = readings[rdkey] %}
           <li>
             <a href="{{reading.link}}">{{reading.name}}</a>
             {% if reading.details %}
