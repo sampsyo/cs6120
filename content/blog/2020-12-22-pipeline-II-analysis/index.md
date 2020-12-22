@@ -90,9 +90,11 @@ ResMII and data-dependency bounded RecMII.
 
 For ResMII, it is easy to estimate using the formula (1). The pass traverses the loop, calculates 
 the number of independent loads and stores in the code, and divide it by the number of available 
-resources. I applied LLVM global value numbering pass on input programs before my handwritten pass, 
-in order to avoid counting recurring memory accesses. The number of resources, as the denominator of 
-the formula, is configured in advance as MACRO parameters. The pass I implemented only considered the
+resources. The parameters of available resources come from HLS resource constraints for real 
+application needs, e.g., mapping arrays to 1R1W RAMs or dual-port RAMs, or registers, which are 
+configured in the tool by the user. To use the pass for estimation, the users need to manually 
+set them as MACROs. I applied LLVM global value numbering pass on input programs before my handwritten pass, 
+in order to avoid counting recurring memory accesses. The pass I implemented only considered the
 memory resource constraints. There are other types of resources that can incur usage conflict, for 
 instance, the number of I/O ports, and certain compute resources, which I did not take into account 
 for the course of simplicity.
