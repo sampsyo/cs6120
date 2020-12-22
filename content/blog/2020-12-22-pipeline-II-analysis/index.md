@@ -40,7 +40,7 @@ We denote the lower-bound II limited by resource usage confliction as ResMII, wh
 given by the formula (1):
 <img src="https://github.com/Sibylau/cs6120/blob/project-jl3952/content/blog/2020-12-22-pipeline-II-analysis/mii.PNG" width="300" />
 
-Where R is the set of available resources. $O_r$ is the number of operations in the loop 
+Where $R$ is the set of available resources. $O_r$ is the number of operations in the loop
 body which occupy the resource $r$, and $N_r$ is the number of allocated resources, for 
 example, the number of memory ports, or the number of DSPs. 
 
