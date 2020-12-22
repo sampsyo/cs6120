@@ -2,7 +2,7 @@
 title = "LLVM IR to Assembly"
 [extra]
 bio = """
-   Socrates Wong is a secound year PhD student at Cornell who intreset lies in Computer Archicture.
+   Socrates Wong is a second year PhD student at Cornell who interest lies in Computer Archicture..
 """
 [[extra.authors]]
 name = "Socrates Wong"
@@ -25,7 +25,7 @@ The benchmark is primarily done by FFT, which is implement in SSE.   Which is al
 The benchmark is done on a 4 core i9-9900K CPU with 16 GB ram in a ubuntu VM.  The results are reported cycle count with rdtsc and execute time is reported as wall time.  The results are verified by comparing the results of different implementations.
 The results are outlined as below:
 
-##Microbenchmark :
+## Microbenchmark:
 
 | Microbenchmark 4x4   matrix (min cycle) | gcc                   | clang  | clang (0.75) |
 |-----------------------------------------|-----------------------|--------|--------------|
