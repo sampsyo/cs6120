@@ -37,19 +37,19 @@ pipelining can exploit: one is hardware resource contention, and the other is th
 dependencies between loop iterations. 
 
 We denote the lower-bound II limited by resource usage confliction as ResMII, which is 
-given by the formula (1):
+given by the formula (1), according to [this paper](https://www.jstage.jst.go.jp/article/ipsjtsldm/11/0/11_46/_pdf):
 
 \[ ResMII = \max_{r \in R} ResMII_r = \max_{r \in R} {\lceil \frac{O_r}{N_r} \rceil} \]
 
-Where $R$ is the set of available resources. $O_r$ is the number of operations in the loop 
+Where $R$ is the set of available resources, $O_r$ is the number of operations in the loop 
 body which occupy the resource $r$, and $N_r$ is the number of allocated resources, for 
 example, the number of memory ports, or the number of DSPs. 
 
 RecMII stands for Recurrence minimum II. It denotes the lower-bound of II due to loop-carried 
 dependence. A loop-carried dependence indicates that operations in the subsequent loop 
 iteration cannot start until the operations in the current iteration have finished. Array 
-accesses are a common source of loop-carried dependence. For example, the following code 
-snippet shows that the next iteration of the loop will read the array element updated by the 
+accesses are a common source of loop-carried dependence. I refered to [this document](https://www.xilinx.com/support/documentation/sw_manuals/xilinx2015_2/sdsoc_doc/topics/calling-coding-guidelines/concept_pipelining_loop_unrolling.html#:~:text=A%20data%20dependence%20from%20an,called%20a%20loop%2Dcarried%20dependence.&text=In%20case%20of%20loop%20pipelining,operation%2C%20and%20the%20memory%20write) and copied the following code 
+snippet, which shows that the next iteration of the loop will read the array element updated by the 
 current loop iteration. The minimum initiation interval, in this case, is the total number of 
 clock cycles required for memory read, the add operation, and the memory write.
 
@@ -146,6 +146,3 @@ and compute resources.
  [Gem5-SALAM](https://github.com/TeCSAR-UNCC/gem5-SALAM/blob/master/GEM5README) is a 
  recent work that leverages Gem5 hardware models to simulate system-scale accelerators. 
 
-## References:
- -  [xilinx2015_2/sdsoc_doc manual](https://www.xilinx.com/support/documentation/sw_manuals/xilinx2015_2/sdsoc_doc/topics/calling-coding-guidelines/concept_pipelining_loop_unrolling.html#:~:text=A%20data%20dependence%20from%20an,called%20a%20loop%2Dcarried%20dependence.&text=In%20case%20of%20loop%20pipelining,operation%2C%20and%20the%20memory%20write)
- - Seto, Kenshu. "Scalar Replacement with Polyhedral Model." IPSJ Transactions on System LSI Design Methodology 11 (2018): 46-56.
