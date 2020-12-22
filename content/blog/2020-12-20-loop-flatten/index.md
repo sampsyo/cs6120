@@ -9,12 +9,15 @@ latex = true
 name = "Hanchen Jin"
 +++
 
+## Overview
+This blog is talking about the experiment of implementing and evaluating an LLVM loop flattening pass. It starts from the background knowledge of loop optimizations, then dives into the motivation of this work, i.e., the reason why loop flattening is necessary for supporting other optimizations. And the implementation will be introduced, followed by the evaluation with small special benchmarks and benchmarks from real-world program ([embench-iot](https://github.com/embench/embench-iot)).
+
 ## Background
-1. LLVM Compiler Infrastructure<br/>
-This open-source project was started by the researchers from UIUC in 2000. It is a collection of the modular and reusable compiler. The goal of this project is to provide a modern, SSA-based compilation strategy capable of supporting both static and dynamic compilation of arbitrary programming languages. With the hard work from a diverse community, the LLVM compiler has become a powerful and stable tool that is widely applied in many commercial and academic research projects. LLVM is a robust compiler with abundant APIs which is easy for us to hack it and develop a more efficient compiler for our own requirements. Thus, we select the LLVM compiler as the framework for this project. If you are interested in the LLVM, please check out the links in the References section.
+1. [LLVM Compiler Infrastructure](https://llvm.org/)<br/>
+This open-source project was started by the researchers from UIUC in 2000. It is a collection of modular and reusable components for the compiler. With the hard work from a diverse community, the LLVM compiler has become a powerful and stable tool that is widely applied in many commercial and academic research projects. LLVM is a robust compiler with abundant APIs which is easy for us to hack it and develop a more efficient compiler for our own requirements. Thus, we select the LLVM compiler as the framework for this project. If you are interested in the LLVM, please check out the links in the References section. If you would like to learn more about the LLVM compiler, please check out the [LLVM user reference manual]( https://llvm.org/docs/LangRef.html) and [LLVM developer reference manual](http://llvm.org/doxygen/). Also, here is the Github repository for [LLVM source code](https://github.com/llvm/llvm-project).
 
 2. Loop Optimizations<br/>
-As a programmer, we always want to finish running our programs as fast as possible. However, with the end of Moore’s law around 2000, the computing power for a single CPU is limited by its physical features. To further improve the performance, the multi-core system with parallel computing has become a popular solution. But it requires the programmer to manually optimize the code to achieve higher performance. For some applications, we really want the compiler itself can figure out the heated piece of the code and automatically optimize it.
+As a programmer, we always want to finish running our programs as fast as possible. However, with the end of Moore’s law around 2000, the computing power for a single CPU is limited by its physical features. To further improve the performance, the multi-core system with parallel computing has become a popular solution. But it requires the programmer to manually optimize the code to achieve higher performance. For some applications, we really want the compiler itself to figure out the hot piece of the code and automatically optimize it.
 
 As we know, loops are usually the heavy part during execution, which consumes most of the runtime. Thus, many strategies have been applied to speed up the execution time of the loops. For example, Loop Invariant Code Motion (LICM) removes the loop invariant instructions out of the loop to avoid perform useless instructions. For more details about all available loop optimizations, please check out [this link](https://llvm.org/docs/Passes.html). And for the explanation of loop optimizing terminologies, please check out [this link](https://llvm.org/docs/TransformMetadata.html).
 
@@ -52,7 +55,7 @@ In LLVM, this optimization unrolls the nested loop with the given unroll paramet
 for (int i = 0; i < n; i++) { // original outer loop
   Outer_Stmt(i);
   for (int j = 0; j < m; j++) { // original inner loop
-    Inner_Stmt(i);
+    Inner_Stmt(i);
   }
 }
 ```
@@ -63,8 +66,8 @@ for (int i = 0; i < n; i+= 2) { // unrolled outer loop
   Outer_Stmt(i);
   Outer_Stmt(i+1);
   for (int j = 0; j < m; j+= 2) { // unrolled inner loop
-    Inner_Stmt(i);
-    Inner_Stmt(i+1);
+    Inner_Stmt(i);
+    Inner_Stmt(i+1);
   }
 }
 ```
@@ -113,6 +116,8 @@ for (int i = 0; i < n; i++) { // unflattened “perfect” nested loop
     for (int j = 0; j < m; j++) {
       Stmt(f(i, j))
 ```
+
+Also, to enforce the correctness of the optimized code, I implement the functions of checking the propoteies of the nested loop. That is to say, if the nested loop is not a perfect loop, this pass will quit without destroying the code. 
 
 My naïve pass is available in [this link](https://github.com/hj424/bril/tree/master/tasks/project/llvm-pass-skeleton).
 
@@ -168,7 +173,9 @@ Multiplication res: 30;
    17|      1|  return 0;
    18|      1|}
 ```
-The first line is the sample result I printed out to verify the correctness of the optimized code. And then the following code is the optimized one with the updated inner loop bound. As you can see from line 11, the outer loop was being executed only 1 time. The number is 2 here means the second time, it checks the loop bound and exits the outer loop. And accordingly, the inner loop is being executed `N*M` times, which is 220 from line 13. This naïve pass is being tested with other small benchmarks I created with perfect nested loop and passed all the tests.
+The first line is the sample result I printed out to verify the correctness of the optimized code. And then the following code is the optimized one with the updated inner loop bound. As you can see from line 11, the outer loop was being executed only 1 time. The number is 2 here means the second time, it checks the loop bound and exits the outer loop. And accordingly, the inner loop is being executed `N*M` times, which is 220 from line 13. This naïve pass is being tested with other small benchmarks I created with a perfect nested loop and passed all the tests.
+
+From the evaluation of simple programs, we learn that this pass can correctly flatten the loop. To further demonstrate the functionality, I choose several real-world programs from [embench-iot](https://github.com/embench/embench-iot), like the wiki-sort and matmult-int. And the perfect nested loops are flattened by the pass and other loops are ignored. Thus, the correctness of this pass is proved. 
 
 2. Performance gain<br/>
 As we mentioned before, the loop flattening pass itself does not offer any benefits for performance. But this technique helps to better explore the parallelism when combining with the loop unrolling technique. Specifically, we can apply larger unroll parameters to further explore the parallelism across the loop iterations. Also, this technique is used to support other optimizing pragmas (like loop pipelining in HLS tools) for better performance.
@@ -188,12 +195,5 @@ In summary, loop flattening is a useful optimizing technique for supporting loop
 ```
 
 However, it also has some constraints which are elaborated in the [source code](https://llvm.org/doxygen/LoopFlatten_8cpp_source.html).
-
-## References
-[1] The LLVM Compile Infrastructure: https://llvm.org/ <br/>
-[2] LLVM user reference manual: https://llvm.org/docs/LangRef.html<br/>
-[3] LLVM developer reference manual: http://llvm.org/doxygen/<br/>
-[4] LLVM official github repository: https://github.com/llvm/llvm-project<br/>
-[5] Loop flatten techniques applied in software pipelining (converting loop level parallelism into instruction parallelism): https://people.ece.uw.edu/hauck/publications/LoopFlattening.pdf<br/>
 
 
