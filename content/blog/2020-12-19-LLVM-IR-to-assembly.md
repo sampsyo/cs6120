@@ -43,7 +43,7 @@ Table 1, Microbenchmark of 4x4 matrix in CPU Cycles, 4096 trials, Minimum Number
 | AVX_8                                   | 93.48                 | 98.99  | 95.75        |
 
 ### Results and Analysis
-As this microbenchmark is designed to measure the maximum performance of the complied code, I have chosen to aggregate the result a min function. Preliminary analysis has shown that reducing the number of architectural registers has little or no effect on the performance on microbenchmarks.  This is as expected as microbenchmark do not have high amounts register pressure as they often contain couple of register operands.  In this case, the complier backend implementation has more of an impact on the final performance then the modification on the number of x86-64 architectural registers.  
+As this microbenchmark is designed to measure the maximum performance of the complied code, I have chosen to aggregate the result a min function. Preliminary analysis has shown that reducing the number of architectural registers has little or no effect on the performance on microbenchmarks.  This is as expected as microbenchmarks do not have high amounts register pressure as they often contain couple of register operands.  In this case, the complier backend implementation has more of an impact on the final performance then the modification on the number of x86-64 architectural registers.  
 
 
 ## FFT benchmark:
