@@ -34,7 +34,7 @@ All loops are built around back edges. We started by finding all pairs of `[tail
 for node in cfg:
   for dominator in dom[node]: # dom[node] is an array of dominators of the node
     if dominator in successor[node]: # successor[node] is an array of successors of the node
-      back_edges.append([node,dominator]) #storing the backedge pair of [tail,head] into the list of backedges
+      back_edges.append([node, dominator]) # storing the backedge pair of [tail,head] into the list of backedges
 ```
 Assuming this is a reducible CFG, all back edges would be associated with a natural loop. This assumption makes it easier to find loops associated with each back edge. Hence, we'd like to associate a list of nodes (basic blocks) which form a loop corresponding to a back edge pair from the previous step.
 
@@ -42,10 +42,10 @@ For a back edge `A->B` we know that `B` dominates `A`, hence all paths to `A` ar
 
 ```python
 all_loops = []
-for A,B in back_edges:
-  natural_loop=[B]
-  explored=[B] # won't find predecessors of explored nodes
-  find_pred(A,natural_loop,explored) # add predecessors and current node to natural_lop list
+for A, B in back_edges:
+  natural_loop = [B]
+  explored = [B] # won't find predecessors of explored nodes
+  find_pred(A, natural_loop, explored) # add predecessors and current node to natural_lop list
   all_loops.append(natural_loop)
 return all_loops
 ```
@@ -75,7 +75,7 @@ The union function for our data structure is more nuanced than a simple union of
 ```python
 out = {}
     for s in dicts:
-        for k,v in s.items():
+        for k, v in s.items():
             if k not in out:
                 out.update({k:v}) # add a reaching definition of a variable 'k' if not already present
             else:
@@ -93,11 +93,11 @@ A loop invariant instruction is one that does not change execution result during
 These two conditions are realized by the following code.
 
 ```python
-rd = reach_def[block][var] #var is defined at rd block
-c1 = all([x not in loops[loop] for x in rd ]) #all rd blocks outside the loop
-li = loop_invariants[loop].get(rd[0]) #None or LIs in rd block
+rd = reach_def[block][var] # var is defined at rd block
+c1 = all([x not in loops[loop] for x in rd ]) # all rd blocks outside the loop
+li = loop_invariants[loop].get(rd[0]) # None or LIs in rd block
 li = [] if li is None else li
-c2 = len(rd)==1 and any([var == i['dest'] for i in li]) #one reaching definition and var is defined as LI (matches one of dest in LIs in rd block).
+c2 = len(rd)==1 and any([var == i['dest'] for i in li]) # one reaching definition and var is defined as LI (matches one of dest in LIs in rd block).
 ```
 
 ### Create Pre-Headers of Loop Headers
@@ -109,8 +109,8 @@ Also notice that usually pre-headers are created so that even in loop with multi
 For each block, we first copy old block content and then check if the next block is a loop header. If so, we create an empty block. 
 
 ```python
-for edge in loops:#we use back edge as key to denote loop
-    if b_names[i+1] in edge[1]: #edge[1] is the pre-header block name
+for edge in loops: # we use back edge as key to denote loop
+    if b_names[i+1] in edge[1]: # edge[1] is the pre-header block name
         name = fresh('b', new_blocks) # generate block name that is never used before
         new_blocks[name] = []
         pre_header = {x:name for x in loops[edge]}
@@ -123,7 +123,7 @@ for edge in loops:#we use back edge as key to denote loop
 
 Not all pre-headers are allowed to be moved to the pre-headers. If the destination of an LI is `d`, it needs to satisfy the following condition:
 
-1. There is only one definition of  `d` in the loop.
+1. There is only one definition of `d` in the loop.
 2. `d` dominates all its uses, or equivalently, `d` is not live-out of its pre-header.
 3. `d`'s block dominates all loop exits where $d$ is live-out.
 
@@ -131,14 +131,14 @@ To learn the first condition, we need to know all definitions inside the loop an
 
 ```python
 defs = [ins.get('dest') for b in loops[back_edge] for ins in blocks[b] if ins.get('dest')]
-defs.count(instr['dest']) ==  # if true, first check passed
+defs.count(instr['dest']) == 1 # if true, first check passed
 ```
 
 For the second condition, we can check the predecessor block of the pre-header we just added, by simply reading the index of pre-header and subtracting 1. Then check if `d` is live-out of block.
 
 ```python
-ind = b_names.index(pre_header[b_name]) - 1 #b_name is the name of block where d is LI.
-instr['dest'] not in live_var[1][b_names[ind]] #if true, second check passed
+ind = b_names.index(pre_header[b_name]) - 1 # b_name is the name of block where d is LI.
+instr['dest'] not in live_var[1][b_names[ind]] # if true, second check passed
 ```
 
 For the third condition, we need to know which blocks are exit blocks. The exits are blocks that have successors not in the loop. 
