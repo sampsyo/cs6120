@@ -165,7 +165,7 @@ I don't know the answers to those questions, or the ones I'm asking you for disc
 * More generally, do you think it's worth it to keep trying to verify buggy, unsafe tools instead of searching for better alternatives? Should we spend time and effort to convince everyone to work with formally specified languages?
 * How do you think software testing will evolve with verified software?
 
-## Bonus: Specifying Preservation with Simulations <a name="math"></a>
+## Bonus: Specifying Preservation with Simulations {#math}
 
 CompCert has a semantics of source and target language code behavior. Given such a semantics, we can formulate different notions of *simulation* such that two programs are equal if they are related by simulation.
 
