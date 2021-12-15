@@ -1,7 +1,9 @@
 base_url = "https://www.cs.cornell.edu/courses/cs6120/2020fa"
 compile_sass = true
 build_search_index = false
-generate_rss = true
+
+generate_feed = true
+feed_filename = "rss.xml"
 
 highlight_code = true
 highlight_theme = "subway-madrid"
