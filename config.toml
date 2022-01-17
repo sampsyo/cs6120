@@ -10,6 +10,9 @@ highlight_theme = "subway-madrid"
 
 title = "CS 6120"
 
+[markdown]
+smart_punctuation = true
+
 [extra]
 favicon = "/img/favicon.ico"
 bigicon = "/img/favicon152.png"

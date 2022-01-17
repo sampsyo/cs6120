@@ -5,7 +5,8 @@ template = "home.html"
 # CS 6120: Advanced Compilers γ
 
 **Instructor:** [Adrian Sampson][adrian]  
-**When:** Monday and Wednesday, 9:55am–10:05am  
+**When:** Tuesday and Thursday, 9:40–10:55am  
+**Where:** [Bard][] 140 (when we're in person)  
 **Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)
 
 Read & [subscribe][rss] to our [course blog][blog]!
@@ -25,3 +26,4 @@ Anyone can follow along with [a self-guided version of the course][self-guided].
 [box]: https://cornell.box.com/s/wb3387ebfbte9btx3weekmc8nij5glep
 [lesson]: @/lesson/_index.md
 [self-guided]: @/self-guided.md
+[bard]: https://www.fs.cornell.edu/fs/facinfo/fs_facilInfo.cfm?facil_cd=2070
