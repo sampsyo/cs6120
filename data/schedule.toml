@@ -1,128 +1,122 @@
 [[days]]
-date = "September 2"
+date = "January 25"
 
 [[days]]
-date = "September 7"
-mon = true
+date = "January 27"
 
 [[days]]
-date = "September 9"
+date = "February 1"
 lesson_due = "1"
-
-[[days]]
-date = "September 14"
 mon = true
 
 [[days]]
-date = "September 16"
+date = "February 3"
 
 [[days]]
-date = "September 21"
+date = "February 8"
+mon = true
+# TK first in-person class
+
+[[days]]
+date = "February 10"
+
+[[days]]
+date = "February 15"
 mon = true
 
 [[days]]
-date = "September 23"
+date = "February 17"
 
 [[days]]
-date = "September 28"
+date = "February 22"
 mon = true
 
 [[days]]
-date = "September 30"
+date = "February 24"
 
 [[days]]
-date = "October 5"
+date = "March 1"
 mon = true
-
-[[days]]
-date = "October 7"
-
-[[days]]
-date = "October 12"
-mon = true
-
-[[days]]
-date = "October 14"
 canceled = true
-event = "Fall break"
+event = "February break"
 
 [[days]]
-date = "October 19"
+date = "March 3"
+
+[[days]]
+date = "March 8"
 mon = true
 
 [[days]]
-date = "October 21"
+date = "March 10"
 
 [[days]]
-date = "October 26"
+date = "March 15"
 mon = true
 
 [[days]]
-date = "October 28"
+date = "March 17"
 
 [[days]]
-date = "November 2"
+date = "March 22"
 mon = true
 
 [[days]]
-date = "November 4"
+date = "March 24"
+
+[[days]]
+date = "March 29"
 notes = ["Due: [Project](../syllabus/#project) proposal."]
-
-[[days]]
-date = "November 9"
 mon = true
 
 [[days]]
-date = "November 11"
-collapse = 2  # HACK
+date = "March 31"
 
 [[days]]
-date = "November 16"
+date = "April 5"
 mon = true
 canceled = true
-event = "Semi-Finals Study Period"
+event = "Spring break"
 
 [[days]]
-date = "November 18"
+date = "April 7"
 canceled = true
-event = "Semi-Finals"
+event = "Spring break"
 
 [[days]]
-date = "November 23"
-mon = true
-canceled = true
-event = "Semi-Finals"
-
-[[days]]
-date = "November 25"
-canceled = true
-event = "Thanksgiving break"
-
-[[days]]
-date = "November 30"
-mon = true
-notes = ["Classes go all-virtual"]
-
-[[days]]
-date = "December 2"
-collapse = 2  # HACK
-
-[[days]]
-date = "December 7"
+date = "April 12"
 mon = true
 
 [[days]]
-date = "December 9"
+date = "April 14"
 
 [[days]]
-date = "December 14"
+date = "April 19"
 mon = true
 
 [[days]]
-date = "December 16"
+date = "April 21"
 
 [[days]]
-date = "December 18"
-event = "Final project due (no class)"
-canceled = true
+date = "April 26"
 mon = true
+
+[[days]]
+date = "April 28"
+
+[[days]]
+date = "May 3"
+mon = true
+
+[[days]]
+date = "May 5"
+
+[[days]]
+date = "May 10"
+mon = true
+
+# [[days]]
+# date = "May ??"
+# event = "Final project due (no class)"
+# canceled = true
+# mon = true
