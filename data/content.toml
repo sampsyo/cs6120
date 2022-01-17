@@ -30,12 +30,12 @@ lesson = 4
 lesson = 5
 
 [[classes]]
+lesson = 5
+
+[[classes]]
 title = "Profiling"
 leader = "TK"
 readings = ["ball-larus"]
-
-[[classes]]
-lesson = 5
 
 
 # LLVM.

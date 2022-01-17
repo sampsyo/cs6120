@@ -63,10 +63,10 @@ mon = true
 
 [[days]]
 date = "March 24"
+notes = ["Due: [Project](../syllabus/#project) proposal."]
 
 [[days]]
 date = "March 29"
-notes = ["Due: [Project](../syllabus/#project) proposal."]
 mon = true
 
 [[days]]
