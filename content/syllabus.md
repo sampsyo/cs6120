@@ -17,7 +17,7 @@ All course communication will happen there (not on email).
 (Zulip is an open-source Slack-like chat tool with a few unique features that make it a good fit for class discussion. Thanks to [the Zulip folks][zulip-co] for donating a plan for 6120!)
 
 [zulip]: https://cs6120.zulipchat.com
-[zulip-signup]: https://www.cs.cornell.edu/courses/cs6120/2020fa/private/zulip.html
+[zulip-signup]: https://www.cs.cornell.edu/courses/cs6120/2022sp/private/zulip.html
 [zulip-co]: https://zulipchat.com
 
 
