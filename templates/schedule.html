@@ -51,7 +51,7 @@
       {% endif %}
       </td>
       <td class="short">
-      <ul class="inline">
+      <ul class="simple">
       {% for note in day.notes | default(value=[]) %}
         <li>{{ note | markdown(inline=true) | safe }}</li>
       {% endfor %}

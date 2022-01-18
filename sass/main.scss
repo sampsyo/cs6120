@@ -287,6 +287,11 @@ ul.inline {
   }
 }
 
+ul.simple {
+  list-style: none;
+  padding-left: 0;
+}
+
 // Funky responsive video embedding.
 .videos {
   .video {
