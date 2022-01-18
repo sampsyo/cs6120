@@ -3,7 +3,7 @@ title = "Syllabus"
 [extra]
 hide = false
 +++
-# CS 6120: Advanced Compilers γ Syllabus
+# CS 6120: Advanced Compilers Syllabus
 
 This is a research-oriented PhD course about programming language implementation.
 The class focuses on hacking, reading papers, and writing [blog][] posts.
@@ -45,9 +45,9 @@ There are four kinds of things that make up the coursework for CS 6120.
 * *Implementation tasks:*
   Discrete bits of compiler implementation work to deepen your understanding of the topics in the [lessons][].
 * *Paper reading:*
-  We'll read research papers, and everybody will participate in online discussion.
+  We'll read research papers, and everybody will participate in asynchronous (pre-class, online) discussions and synchronous (in-class) discussions.
 * *Leading paper discussions:*
-  For a subset of the aforementioned research papers, you'll be responsible for writing a [blog][] post and leading the online discussion.
+  For a subset of the aforementioned research papers, you'll be responsible for leading the online and synchronous discussion and synthesizing a [blog][] post.
 * *Course project:*
   There is an open-ended course implementation project that culminates in a blog post.
 
@@ -70,11 +70,30 @@ When you finish an implementation, do this:
 ### Paper Reading & Discussion
 
 Another part of 6120 is reading and discussing research papers.
-Every time we read a paper (see the [schedule][]), you need to participate in [Zulip][] and Zoom discussion.
-For every paper, there will be a Zulip topic; post at least one message there with your thoughts on the paper before the class period with the discussion.
+Every time we read a paper (see the [schedule][]), everybody participates in the discussion in two ways:
+through [GitHub Discussions][gh-disc] threads before class,
+and then synchronously in class.
+For every paper, there will be a Discussions topic; post at least one message there with your thoughts on the paper before the class period with the discussion.
 
 For some subset of the papers, you will be the discussion leader!
-For those, here is what you need to do—all due one week before the designated day:
+Leaders have three extra responsibilities:
+monitoring and replying to the asynchronous discussion,
+moderating and guiding the in-class discussion,
+and synthesizing some ideas into a blog post after the fact.
+
+*Before* the discussion day:
+
+* Watch the GitHub Discussions thread for your topic.
+  Answer any questions you can, offer extra insight when you have it, and so on.
+* Collect a list questions for the in-class discussion.
+  You can write your own or steal the best from the online discussion.
+
+*On* the discussion day:
+
+* Moderate a short discussion.
+  There is no presentation component to the discussion—just set up enough background to get to the discussion questions and help move the conversation along.
+
+Due *one week after* the discussion day:
 
 * Write a post about the paper for our [course blog][blog].
   The post should contain:
@@ -83,20 +102,20 @@ For those, here is what you need to do—all due one week before the designated 
      * A detailed summary of the main contributions in the work.
      * Critical thinking about the merits and shortcomings of the work.
      * Discussion of the work's role in history and its connections to the current computing landscape.
-     * A bulleted list of questions you have about the work to start the discussion.
 
-    If you need inspiration for the style of post to write, check out [last year's blog][blog2019]. But probably avoid reading posts about your paper, if they exist!
+    Feel free to incorporate the best ideas you heard during the online and in-class discussion.
+    You can represent your own opinions, ones from the class as a whole, or both.
+
+    If you need inspiration for the style of post to write, check out [last year's blog][blog2020]. But probably avoid reading posts about your paper, if they exist!
 * Optionally, you can record a video to go along with your blog post that people should watch to get the discussion started.
 * Publish the post to the [course GitHub repository][gh] by opening a pull request.
   The repository README has instructions.
-* When your PR is open, announce it on [Zulip][] and invite people to start the discussion.
-  Include the bulleted list of questions from your blog post and help facilitate the discussion by answering follow-ups.
-* Moderate a short discussion on Zoom on the day of the discussion.
-  There is no presentation component to the discussion—just set up enough background to get to the discussion questions and help move the conversation along.
+* When your PR is open, announce it on the appropriate GitHub Discussions thread to let other people take a look.
 
 [schedule]: @/schedule.md
-[blog2019]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
+[blog2019]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
 [gh]: https://github.com/sampsyo/cs6120
+[gh-disc]: https://github.com/sampsyo/cs6120/discussions
 
 ### Project
 
