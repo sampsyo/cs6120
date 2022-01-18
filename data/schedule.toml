@@ -1,5 +1,6 @@
 [[days]]
 date = "January 25"
+month = true
 
 [[days]]
 date = "January 27"
@@ -8,6 +9,7 @@ date = "January 27"
 date = "February 1"
 lesson_due = "1"
 mon = true
+month = true
 
 [[days]]
 date = "February 3"
@@ -39,6 +41,7 @@ date = "March 1"
 mon = true
 canceled = true
 event = "February break"
+month = true
 
 [[days]]
 date = "March 3"
@@ -77,6 +80,7 @@ date = "April 5"
 mon = true
 canceled = true
 event = "Spring break"
+month = true
 
 [[days]]
 date = "April 7"
@@ -107,6 +111,7 @@ date = "April 28"
 [[days]]
 date = "May 3"
 mon = true
+month = true
 
 [[days]]
 date = "May 5"

@@ -141,6 +141,15 @@ table {
   .short {
     white-space: nowrap;
   }
+  .num {
+    text-align: right;
+  }
+  .month{
+    color: $exception-color;
+    &.first {
+      color: inherit;
+    }
+  }
 }
 
 
