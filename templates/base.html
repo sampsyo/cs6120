@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon-precomposed" href="{{ get_url(path=config.extra.bigicon, trailing_slash=false) | safe }}">
   {% block header %}{% endblock header %}
 </head>
-<body>
+<body {% if page.extra.class %}class="{{page.extra.class}}"{% endif %}>
   <header>
     <nav>
       <h1>

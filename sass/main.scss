@@ -2,6 +2,7 @@ $main-color: rgb(179, 27, 27);
 $disabled-color: #666;
 $exception-color: #ccc;
 $max-width: 40rem;
+$max-width-wide: 60rem;
 
 
 // Layout.
@@ -28,7 +29,7 @@ main {
   padding-right: 1rem;
 }
 
-// On wide pages, do not constrain.
+// On wide pages, allow wider column.
 body.wide {
   display: flex;
   flex-direction: column;
@@ -36,7 +37,7 @@ body.wide {
   justify-content: center;
   main {
     margin: 1rem;
-    max-width: none;
+    max-width: $max-width-wide;
   }
 }
 
