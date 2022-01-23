@@ -67,6 +67,12 @@ When you finish an implementation, do this:
 * Include a short README (just a paragraph is fine) describing what you did and how you know your implementation works.
 * Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
 
+Do all your own work on implementation tasks.
+I have sample implementations for many of the tasks in the 6120 GitHub repository; you may not use this code.
+Past 6120 students have open-sourced their implementations; you may not use this either.
+I recommend not looking at my or others' implementations at all while working on tasks, so you actually learn how to do it---but it's not hiding if you absolutely need it.
+You are an adult, presumably, and can control your own impulse to skip the hard work.
+
 ### Paper Reading & Discussion
 
 Another part of 6120 is reading and discussing research papers.
