@@ -29,12 +29,12 @@ Check the [schedule][] for each day of class—it will fall into one of two cate
 
 * *"Lesson" days:*
   Before class, watch the (required) video and, if you like, do the optional associated reading.
-  While or after watching the video, ask questions in the associated Zulip thread.
+  While or after watching the video, ask questions in the associated GitHub Discussions thread or on Zulip.
   The class will be a quiet hacking session and an opportunity to ask questions and work together with the rest of the class on [implementation tasks](#implementation-tasks).
   To participate virtually, hang out on Zulip and ask questions while you work.
 * *"Discussion" days:*
-  Before class, do the (required) reading and answer the (required) discussion questions on the associated Zulip thread.
-  We will discuss the reading on Zoom, which lets everyone participate on an equal footing.
+  Before class, do the (required) reading and answer the (required) discussion questions on the associated GitHub Discussions thread.
+  We will discuss the reading synchronously (on Zoom or in person).
   After the discussion wraps up, there may be time for more hanging around and hacking.
 
 
@@ -66,6 +66,10 @@ When you finish an implementation, do this:
 * I recommend (but do not require) that you put all your code online in an open-source source code repository, e.g., on GitHub.
 * Include a short README (just a paragraph is fine) describing what you did and how you know your implementation works.
 * Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
+* Write a brief post in the lesson's associated GitHub Discussions thread covering the following topics (just a paragraph or so is fine):
+    * Summarize what you did.
+    * Explain how you know your implementation works---how did you test it? Did you use any qualitative or quantitative experiments?
+    * What was the hardest part of the task? How did you solve this problem?
 
 Do all your own work on implementation tasks.
 I have sample implementations for many of the tasks in the 6120 GitHub repository; you may not use this code.
