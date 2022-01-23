@@ -91,7 +91,11 @@ monitoring and replying to the asynchronous discussion,
 moderating and guiding the in-class discussion,
 and synthesizing some ideas into a blog post after the fact.
 
-*Before* the discussion day:
+*At least a week before* the discussion day:
+
+* Create a GitHub Discussions thread in the [Reading][gh-disc-reading] category for your topic.
+
+*During the lead-up to* the discussion day:
 
 * Watch the GitHub Discussions thread for your topic.
   Answer any questions you can, offer extra insight when you have it, and so on.
@@ -126,6 +130,7 @@ Due *one week after* the discussion day:
 [blog2019]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
 [gh]: https://github.com/sampsyo/cs6120
 [gh-disc]: https://github.com/sampsyo/cs6120/discussions
+[gh-disc-reading]: https://github.com/sampsyo/cs6120/discussions/categories/reading
 
 ### Project
 
