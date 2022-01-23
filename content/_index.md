@@ -6,7 +6,7 @@ template = "home.html"
 
 **Instructor:** [Adrian Sampson][adrian]  
 **When:** Tuesday and Thursday, 9:40–10:55am  
-**Where:** [Bard][] 140 (when we're in person)  
+**Where:** [Zoom][] for the first two weeks, then [Bard][] 140  
 **Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)
 
 Read & [subscribe][rss] to our [course blog][blog]!
@@ -18,6 +18,7 @@ Anyone can follow along with [a self-guided version of the course][self-guided].
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [zulip]: https://cs6120.zulipchat.com
+[zoom]: https://www.cs.cornell.edu/courses/cs6120/2022sp/private/zoom.html
 [blog]: @/blog/_index.md
 [rss]: rss.xml
 [gh]: https://github.com/sampsyo/cs6120
