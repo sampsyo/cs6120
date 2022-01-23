@@ -20,3 +20,7 @@ bigicon = "/img/favicon152.png"
 [[extra.links]]
 name = "Zulip"
 url = "https://cs6120.zulipchat.com"
+
+[[extra.links]]
+name = "Discussions"
+url = "https://github.com/sampsyo/cs6120/discussions"
