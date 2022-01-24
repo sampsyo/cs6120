@@ -99,9 +99,8 @@ readings = ["self"]
 
 # Synthesis.
 
-# HACK: No in-person day because of semi-finals.
-# [[classes]]
-# lesson = 12
+[[classes]]
+lesson = 12
 
 [[classes]]
 title = "Superoptimization"
@@ -124,11 +123,6 @@ readings = ["tracemonkey"]
 
 [[classes]]
 lesson = 13
-
-[[classes]]
-title = "Vectorization"
-leader = "TK"
-readings = ["slp"]
 
 [[classes]]
 title = "Safe Parallelism"
