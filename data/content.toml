@@ -96,8 +96,16 @@ title = "Dynamic Languages"
 leader = "TK"
 readings = ["self"]
 
+[[classes]]
+title = "Tracing"
+leader = "TK"
+readings = ["tracemonkey"]
+
 
 # Synthesis.
+
+[[classes]]
+lesson = 12
 
 [[classes]]
 title = "Superoptimization"
@@ -105,18 +113,9 @@ leader = "TK"
 readings = ["super"]
 
 [[classes]]
-lesson = 12
-
-[[classes]]
 title = "Synthesis-Aided Compilers"
 leader = "TK"
 readings = ["chlorophyll"]
-
-# HACK: out of order. Should be in JIT section.
-[[classes]]
-title = "Tracing"
-leader = "TK"
-readings = ["tracemonkey"]
 
 
 # Parallelism.
