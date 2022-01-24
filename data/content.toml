@@ -100,12 +100,12 @@ readings = ["self"]
 # Synthesis.
 
 [[classes]]
-lesson = 12
-
-[[classes]]
 title = "Superoptimization"
 leader = "TK"
 readings = ["super"]
+
+[[classes]]
+lesson = 12
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
