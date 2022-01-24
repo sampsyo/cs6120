@@ -30,39 +30,35 @@ lesson = 4
 lesson = 5
 
 [[classes]]
-lesson = 5
-
-[[classes]]
 title = "Profiling"
 leader = "TK"
 readings = ["ball-larus"]
+
+[[classes]]
+lesson = 6
 
 
 # LLVM.
 
 [[classes]]
-lesson = 6
+lesson = 7
 
 [[classes]]
 title = "Automatic Verification"
 leader = "TK"
 readings = ["alive"]
 
-# Fall break.
-# [[classes]]
-# lesson = 6
-
 
 # "Fancy" optimization.
-
-[[classes]]
-lesson = 7
 
 [[classes]]
 lesson = 8
 
 [[classes]]
 lesson = 9
+
+[[classes]]
+lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
@@ -73,7 +69,7 @@ readings = ["tbaa"]
 # Memory management.
 
 [[classes]]
-lesson = 10
+lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
@@ -89,7 +85,7 @@ readings = ["consgc"]
 # Dynamic languages.
 
 [[classes]]
-lesson = 11
+lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
@@ -105,7 +101,7 @@ readings = ["tracemonkey"]
 # Synthesis.
 
 [[classes]]
-lesson = 12
+lesson = 13
 
 [[classes]]
 title = "Superoptimization"
@@ -121,7 +117,7 @@ readings = ["chlorophyll"]
 # Parallelism.
 
 [[classes]]
-lesson = 13
+lesson = 14
 
 [[classes]]
 title = "Safe Parallelism"
