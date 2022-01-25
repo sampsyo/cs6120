@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TK"
+leader = "Andrew Butt"
 readings = ["tbaa"]
 
 
