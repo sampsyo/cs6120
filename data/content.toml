@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Ayaka Yorihiro"
+leader = "Ayaka Yorihiro and Andrew Butt"
 readings = ["tbaa"]
 
 
