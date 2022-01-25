@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Andrew Butt"
+leader = "Ayaka Yorihiro and Andrew Butt"
 readings = ["tbaa"]
 
 
@@ -73,12 +73,12 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TK"
+leader = "Michael Maitland"
 readings = ["ugc"]
 
 [[classes]]
 title = "Modern GC"
-leader = "TK"
+leader = "Shubham Chaudhary"
 readings = ["consgc"]
 
 
@@ -105,7 +105,7 @@ lesson = 13
 
 [[classes]]
 title = "Superoptimization"
-leader = "TK"
+leader = "Victor Giannakouris"
 readings = ["super"]
 
 [[classes]]
