@@ -121,7 +121,7 @@ lesson = 14
 
 [[classes]]
 title = "Safe Parallelism"
-leader = Nikita Lazarev
+leader = "Nikita Lazarev"
 readings = ["dpj"]
 
 
