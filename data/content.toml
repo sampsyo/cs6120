@@ -129,5 +129,5 @@ readings = ["dpj"]
 
 [[classes]]
 title = "Interactive Verification"
-leader = "TK"
+leader = "Anshuman Mohan"
 readings = ["compcert"]
