@@ -31,7 +31,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "TK"
+leader = "Niansong Zhang"
 readings = ["ball-larus"]
 
 [[classes]]
@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Ayaka Yorihiro"
+leader = "Ayaka Yorihiro and Andrew Butt"
 readings = ["tbaa"]
 
 
@@ -94,7 +94,7 @@ readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "TK"
+leader = "Yulun Yao"
 readings = ["tracemonkey"]
 
 
@@ -110,7 +110,7 @@ readings = ["super"]
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
-leader = "TK"
+leader = "Hongzheng Chen"
 readings = ["chlorophyll"]
 
 
@@ -121,7 +121,7 @@ lesson = 14
 
 [[classes]]
 title = "Safe Parallelism"
-leader = "TK"
+leader = "Nikita Lazarev"
 readings = ["dpj"]
 
 
