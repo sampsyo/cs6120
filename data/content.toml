@@ -73,7 +73,7 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Michael Maitland (mtm68)"
+leader = "Michael Maitland"
 readings = ["ugc"]
 
 [[classes]]
