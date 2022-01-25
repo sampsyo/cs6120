@@ -78,7 +78,7 @@ readings = ["ugc"]
 
 [[classes]]
 title = "Modern GC"
-leader = "TK"
+leader = "Shubham Chaudhary"
 readings = ["consgc"]
 
 
