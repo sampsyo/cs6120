@@ -129,5 +129,5 @@ readings = ["dpj"]
 
 [[classes]]
 title = "Interactive Verification"
-leader = "Anshuman Mohan"
+leader = "Anshuman Mohan and Alaia Solko-Breslin"
 readings = ["compcert"]
