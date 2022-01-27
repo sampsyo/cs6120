@@ -84,6 +84,8 @@ Every time we read a paper (see the [schedule][]), everybody participates in the
 through [GitHub Discussions][gh-disc] threads before class,
 and then synchronously in class.
 For every paper, there will be a Discussions topic; post at least one message there with your thoughts on the paper before the class period with the discussion.
+Your comment need not be long at all; just a couple of sentences is fine.
+And it need not be a top-level post; I encourage you to respond to other people's thoughts on the thread.
 
 For some subset of the papers, you will be the discussion leader!
 Leaders have three extra responsibilities:
