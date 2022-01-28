@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Ayaka Yorihiro and Andrew Butt"
+leader = "Andrew Butt"
 readings = ["tbaa"]
 
 
@@ -78,7 +78,7 @@ readings = ["ugc"]
 
 [[classes]]
 title = "Modern GC"
-leader = "Shubham Chaudhary"
+leader = "Shubham Chaudhary and Ayaka Yorihiro"
 readings = ["consgc"]
 
 
