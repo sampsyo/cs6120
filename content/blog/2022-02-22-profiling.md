@@ -74,7 +74,7 @@ The intuition of the path encoding algorithm is to count the number of paths alo
 
 Therefore, we count the number of paths from leaf to node. In other words, we visit vertices in the reverse topological order. 
 
-[Discussion]: based on the discussion in class, we think the time complexity of this algorithm can be represented as both O(n*n) and O(e). Because every edge is only visited once. 
+[Discussion]: based on the discussion in class, we think the time complexity of this algorithm can be represented as both O(n*n) and O(e) because every edge is only visited once. 
 
 
 ### Instrumentation
