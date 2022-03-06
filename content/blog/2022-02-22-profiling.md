@@ -37,7 +37,7 @@ For example, the two path profiling results in the table correspond to the same 
 
 Also, given an edge profiling result, a commonly used heuristic to select a heavily executed path follows the most frequently executed edge out of a basic block, which identifies path ACDEF in the above example. However, this path is not the most frequently visited in both Prof1 and Prof2, showing the inaccuracy of edge/block profiling. 
 
-The naive way to count how many times each path executes is to exhaust every path in the CFG and label each one. However, this quickly becomes intractable as the CFG becomes large, or the CFG contains cycles with infinite paths. 
+The naive way to count how many times each path executes is to exhaust every path in the CFG and label each one. However, this quickly becomes intractable as the CFG becomes large, or the CFG contains cycles and therefore infinite paths. 
 
 In short, the motivation is to use an efficient path profiling method instead of traditional block/edge profiling to improve the accuracy without increasing too much effort. To have a preview, the overhead of path profiling is 30.9%, while the overhead of edge profiling is 16.1%. (You can decide whether this overhead is acceptable for you!)
 
