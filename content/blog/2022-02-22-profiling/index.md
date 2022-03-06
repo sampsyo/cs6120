@@ -37,7 +37,7 @@ For example, the two path profiling results in the table correspond to the same 
 
 Also, given an edge profiling result, a commonly used heuristic to select a heavily executed path follows the most frequently executed edge out of a basic block, which identifies path ACDEF in the above example. However, this path is not the most frequently visited in both Prof1 and Prof2, showing the inaccuracy of edge/block profiling. 
 
-The naive way to count how many times each path executes is to exhaust every path in the CFG and label each one. However, this quickly becomes intractable as the CFG becomes large, or the CFG contains cycles with infinite paths. 
+The naive way to count how many times each path executes is to exhaust every path in the CFG and label each one. However, this quickly becomes intractable as the CFG becomes large, or the CFG contains cycles and therefore infinite paths. 
 
 In short, the motivation is to use an efficient path profiling method instead of traditional block/edge profiling to improve the accuracy without increasing too much effort. To have a preview, the overhead of path profiling is 30.9%, while the overhead of edge profiling is 16.1%. (You can decide whether this overhead is acceptable for you!)
 
@@ -74,7 +74,7 @@ The intuition of the path encoding algorithm is to count the number of paths alo
 
 Therefore, we count the number of paths from leaf to node. In other words, we visit vertices in the reverse topological order. 
 
-[Discussion]: based on the discussion in class, we think the time complexity of this algorithm can be represented as both O(n*n) and O(e). Because every edge is only visited once. 
+[Discussion]: based on the discussion in class, we think the time complexity of this algorithm can be represented as both O(n*n) and O(e) because every edge is only visited once. 
 
 
 ### Instrumentation
@@ -155,7 +155,7 @@ It’s also worth noting that the result presented in this paper might be the wo
 
 We need to run edge profiling first and determine where we will put our instrumentation. Only after that, can we run path profiling. This additional overhead makes readers think that the Ball-Larus method would not be as efficient as it claims in the paper. 
 
-Some other works also raise questions on it: Kumar et al. [1] claim that methods like Ball-Larus algorithm take significant time to identify profile points in the program, cannot be used in dynamic (JIT) compilation. 
+Some other works also raise questions on it: Kumar et al. [1] claim that methods like the Ball-Larus algorithm take significant time to identify profile points in the program, so they cannot be used in dynamic (JIT) compilation. 
 
 We think the phase of identifying instrumentation could be accelerated by only analyzing a tiny and representative sample of the entire program because we only need a rough idea for the edge profiling result. There is also an interesting idea to adopt static program analysis methods like “constant propagation” to know some deterministic value range of certain variables to know additional information about edge profiling without any runtime analysis. 
 
