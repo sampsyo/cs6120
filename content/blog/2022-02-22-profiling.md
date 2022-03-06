@@ -155,7 +155,7 @@ It’s also worth noting that the result presented in this paper might be the wo
 
 We need to run edge profiling first and determine where we will put our instrumentation. Only after that, can we run path profiling. This additional overhead makes readers think that the Ball-Larus method would not be as efficient as it claims in the paper. 
 
-Some other works also raise questions on it: Kumar et al. [1] claim that methods like Ball-Larus algorithm take significant time to identify profile points in the program, cannot be used in dynamic (JIT) compilation. 
+Some other works also raise questions on it: Kumar et al. [1] claim that methods like the Ball-Larus algorithm take significant time to identify profile points in the program, so they cannot be used in dynamic (JIT) compilation. 
 
 We think the phase of identifying instrumentation could be accelerated by only analyzing a tiny and representative sample of the entire program because we only need a rough idea for the edge profiling result. There is also an interesting idea to adopt static program analysis methods like “constant propagation” to know some deterministic value range of certain variables to know additional information about edge profiling without any runtime analysis. 
 
