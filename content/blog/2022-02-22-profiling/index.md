@@ -9,7 +9,7 @@ link = "https://tonyjie.github.io/"
 +++
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/2_ugrqoi.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
+<img src="Figure1.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
 </p>
 
 
@@ -26,7 +26,7 @@ This paper addresses how to count each path’s execution times in a CFG with as
 The “old” way to identify heavily executed paths in a program is to approximate path frequency with edge or vertex frequency. However, this estimation is not accurate.
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/1_y0atni.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
+<img src="Figure2.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
 </p>
 
 <p align="center">
@@ -54,7 +54,7 @@ The paper starts from a CFG with a single back edge and generalizes to CFGs with
 How do we generate unique encoding for each path? We use the following simplified example to illustrate intuition.
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646251186/cs6120/Screen_Shot_2022-03-02_at_14.59.36_cpnltz.png" alt="alt_text" title="image_tooltip" style="zoom:20%;" />
+<img src="Figure3.png" alt="alt_text" title="image_tooltip" style="zoom:20%;" />
 </p>
 
 <p align="center">
@@ -66,7 +66,7 @@ There are four paths in the graph; we now assign a value to each edge to make th
 The intuition of the path encoding algorithm is to count the number of paths along “the other” edges and increment by the number of paths. 
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/3_dmiy5c.png">
+<img src="Figure4.png">
 <p>
 <p align="center">
 <strong> The path encoding generation algorithm </strong>
@@ -84,7 +84,7 @@ It turns out we don’t have to increment the register at every edge. Instead, w
 Instrumentation aims to minimize the profiling overhead, namely the latency and memory overhead of incrementing registers and counters. Concretely, we want to increment the register as few times as possible. Therefore, the paper develops an approach to select the least frequently executed edges based on a prior edge profiling result.
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646244206/cs6120/instr_phdtwe.png">
+<img src="Figure5.png">
 </p>
 
 <p align="center">
@@ -106,7 +106,7 @@ The edges in the graph but not in the spanning tree are called chords. With a sp
 Correctness always comes first over efficiency. We need to ensure that each path still sums to a unique number after instrumentations are placed. The paper adopts the “event counting” algorithm to identify the unique loops formed by chords and spanning trees and “push” the value in the loop to the instrumentations. 
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/4_huqtyo.png" alt="alt_text" title="image_tooltip" style="zoom:40%;" />
+<img src="Figure6.png" alt="alt_text" title="image_tooltip" style="zoom:40%;" />
 </p>
 <p align="center">
 <strong>Use event counting algorithm to decide increment values on instrumentations.</strong>
@@ -120,7 +120,7 @@ General CFGs have nested loops, which results in multiple back edges such as the
 Figure (a) has two back edges I->A and inner E->B. We add dummy edges A->B and E->I, and remove the back edge E->B. Note that A is the entry block, and I is the exit block in this CFG. So the dummy edges we add are the edge from the entry block to the destination node of the back edge, and the edge from the source node of the back edge to the exit block. Through this transformation, general CFGs are downgraded to the previous CFG problem we already solved. 
 
 <p align="center">
-<img src="https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/5_ajv4lx.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
+<img src="Figure7.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
 </p>
 <p align="center">
 <strong>Removing back edge and creating dummy edges for general CFGs</strong>
@@ -133,7 +133,7 @@ An intuitive way to understand why adding dummy edges works: the original back e
 
 ### Results
 
-![alt_text](https://res.cloudinary.com/dxzx2bxch/image/upload/v1646243822/cs6120/6_xpyzbz.png "image_tooltip")
+![alt_text](Figure8.png "image_tooltip")
 
 
 Table 1 shows the experiment results on runtime overhead of path profiling (PP) and edge profiling (QPT). The runtime overhead of path profiling is 30.9%, while the overhead of edge profiling is 16.1%. 
