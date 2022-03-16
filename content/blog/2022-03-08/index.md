@@ -85,19 +85,24 @@ In my opinion, the usability and real-world usage of the Alive toolchain is itse
 #### Toolchain
 The authors were able to build a project that other people both wanted to use and contribute to. This project still has users![^2]
 
-[^2] Technically, Alive 2 is still maintained, which is a similar idea but used on a different part of LLVM. 
+[^2] Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test wuite. 
 
 #### Know your audience
-The authors selected an audience (LLVM contributors) who they knew would be interested in using the tool to make their lives easier. This was enough for some contributors to be using the tool even before the paper was published. The authors were also able to show users the value of their tool by monitoring proposed patches to LLVM, finding bugs in them, and working with contributors to fix them.
+The authors selected an audience (LLVM contributors) who they knew would be interested in using the tool to make their lives easier. This was enough for some contributors to be using the tool even before the paper was published. The authors were also able to show users the value of their tool by monitoring proposed patches to LLVM, finding bugs in them, and working with contributors to fix them. This greatly improved the impact of the work by getting LLVM contributors to use the tool to continue fixing and avoiding bugs even after the paper was published.
 
 ## Discussion
 While many of the great points from class have already been discussed, there are a few other points that didn’t really make it into the blog post so far.
+
+### Limitations
+The paper has a few limitations which the authors also mention, such as not being able to translate all of InstCombine because it doesn't handle vectors, call/return instructions, or floating point operation.
+
+More deeply, its reliance on an SMT solver means that as more variables, operations, or bits get added to an optimization, the harder it is to verify the optimization, without there really being any way to fix the method. The paper already has issues with the handling larger bitwidths quickly for multiplication and division, and it seems that it would be hard to scale this method to handle larger bitwidths or expressions with more variables.
 
 ### Defining Undefined for Fun and Profit
 One possibly-confusing thing in the paper is that the SMT solver can choose any value that it finds convenient for any `undef` value. While a glib justification may simply be that LLVM and C say that anything can happen, I think this is actually a quite reasonable and good thing for Alive to do. By choosing convenient values for `undef`, it maximizes its ability to verify specifications which agree on the values that are correct. It would have been interesting for the paper to report on how many of the successful verifications depended on this behavior.
 
 ### Empirical Testing vs. Formal Verification
-Another interesting part of the class discussion was around the need for empirically checking the formally verified code. Theoretically, formal verification should mean that the code is correct. However, there could be challenges in translating into/out of C which break it, and more realistically it also just makes sense to check whenever possible. A Knuth quote came up 
+Another interesting part of the class discussion was around the need for empirically checking the formally verified code. Theoretically, formal verification should mean that the code is correct. However, there could be challenges in translating into/out of C which break it, the translation into/out of SMT might be wrong, and more pragmatically it would also just be very suspicious if someone who claimed that their program worked perfectly every time never ran it. This discussion brought up the fun Knuth quote:
 > Beware of bugs in the above code; I have only proved it correct, not tried it.
 
 ### Really? We’re just going to trust the programmer to not write code with undefined behavior?
