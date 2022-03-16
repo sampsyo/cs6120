@@ -33,9 +33,9 @@ Given the prevalence of security vulnerabilities caused by improper bounds check
 
 Ralf Jung has [a good discussion](https://blog.sigplan.org/2021/11/18/undefined-behavior-deserves-a-better-reputation/), but there was also a simple (and reasonably convincing to me) example from the class discussion. When people are writing in C, they are much more likely to care a lot about performance. If the programmer knows that they didn’t mess up their loop to iterate through all of the elements of the array, then doing bounds-checking on every array access will slow down your program unnecessarily, and doing bounds checking only when it might be useful might be too hard for your compiler to do.
 
-In a similar flavor, undefined behavior allows a compiler to more aggressively optimize code, since while the optimized code must generate the same results whenever the results are defined, it is free to do optimizations and take shortcuts which further modify (mangle?) the code whenever it would produce an undefined result.  [^1]
+In a similar flavor, undefined behavior allows a compiler to more aggressively optimize code, since while the optimized code must generate the same results whenever the results are defined, it is free to do optimizations and take shortcuts which further modify (mangle?) the code whenever it would produce an undefined result.[^1]
 
-[^1] If this is unsatisfying, you can also wait until later, where we will talk about this again.
+[^1]: If this is unsatisfying, you can also wait until later, where we will talk about this again.
 
 ## Main Contributions
 With the background out of the way, I reiterate:
@@ -85,7 +85,7 @@ In my opinion, the usability and real-world usage of the Alive toolchain is itse
 #### Toolchain
 The authors were able to build a project that other people both wanted to use and contribute to. This project still has users![^2]
 
-[^2] Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test wuite. 
+[^2]: Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test suite. 
 
 #### Know your audience
 The authors selected an audience (LLVM contributors) who they knew would be interested in using the tool to make their lives easier. This was enough for some contributors to be using the tool even before the paper was published. The authors were also able to show users the value of their tool by monitoring proposed patches to LLVM, finding bugs in them, and working with contributors to fix them. This greatly improved the impact of the work by getting LLVM contributors to use the tool to continue fixing and avoiding bugs even after the paper was published.
