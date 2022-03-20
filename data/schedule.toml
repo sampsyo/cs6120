@@ -120,8 +120,8 @@ date = "May 5"
 date = "May 10"
 mon = true
 
-# [[days]]
-# date = "May ??"
-# event = "Final project due (no class)"
-# canceled = true
-# mon = true
+[[days]]
+date = "May 18"
+event = "Final project due (no class)"
+canceled = true
+mon = true
