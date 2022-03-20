@@ -129,7 +129,7 @@ Due *one week after* the discussion day:
 * When your PR is open, announce it on the appropriate GitHub Discussions thread to let other people take a look.
 
 [schedule]: @/schedule.md
-[blog2019]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
+[blog2020]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
 [gh]: https://github.com/sampsyo/cs6120
 [gh-disc]: https://github.com/sampsyo/cs6120/discussions
 [gh-disc-reading]: https://github.com/sampsyo/cs6120/discussions/categories/reading
