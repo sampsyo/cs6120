@@ -1,4 +1,9 @@
-+++ title = "Efficient Path Profiling" [[extra.authors]] name = "Aaron Tucker" link = "https://www.cs.cornell.edu/~aarondtucker/" +++
++++
+title = "Efficient Path Profiling"
+[[extra.authors]]
+name = "Aaron Tucker"
+link = "https://www.cs.cornell.edu/~aarondtucker/"
++++
 
 ## Blog: Provably Correct Peephole Optimizations with Alive
 
