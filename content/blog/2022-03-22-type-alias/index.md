@@ -46,9 +46,69 @@ An access path is defined to be any combination of one or more of these memory r
 
 ### Type Declarations Only
 
-To predict whether two paths $\mathcal{P}_1, \mathcal{P}_2$ might alias, an obvious heuristic is to say this is when the (typeof $\mathcal{P}$) has nonempty intersection with the subtypes of (typeof $\mathcal{P}$). Of course, if the two types are disjoint, then if any expression involving $\mathcal{P}_1$ type checks, the same expression with $\mathcal{P}_2$ substituted in place cannot type check, and so the two paths cannot possibly alias.
+To predict whether two paths $\mathcal{P}_1, \mathcal{P}_2$ might alias, an obvious heuristic is to say this is when the (typeof $\mathcal{P}$) has nonempty intersection with the subtypes of (typeof $\mathcal{P}$). Of course, if the two types are disjoint, then if any expression involving $\mathcal{P}_1$ type checks, the same expression with $\mathcal{P}_2$ substituted in place cannot type check, and so the two paths cannot possibly alias. We will define a function TD, which takes two access paths and returns true iff their types have a common subtype.
 
 ### With Field Access
+We can extend the above heuristic by taking into account the language fact that `a.f` and `a.g` cannot alias each other for some object `a`. Here we also assume that a field access and an array indexing never alias. This is probably true for many OOP languages. We can summarize whether two access paths may alias inductively using the following table:
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;margin:0px auto;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-a0yd{border-color:inherit;font-family:inherit;font-size:12px;text-align:center;vertical-align:top}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-a0yd">$\mathcal{P}_1$</th>
+    <th class="tg-c3ow">$\mathcal{P}_2$</th>
+    <th class="tg-c3ow">FTD($\mathcal{P}_1$, $\mathcal{P}_2$)</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-c3ow">p</td>
+    <td class="tg-c3ow">p</td>
+    <td class="tg-c3ow">true</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">p.f</td>
+    <td class="tg-c3ow">q.g</td>
+    <td class="tg-c3ow">f=g $\land$ TD(p,q)</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">p.f</td>
+    <td class="tg-c3ow">*q</td>
+    <td class="tg-c3ow">AT(p.f) $\land$ TD(p.f, *q)</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">*p</td>
+    <td class="tg-c3ow">q[m]</td>
+    <td class="tg-c3ow">AT(q[m]) $\land$ TD(*p, q[m])</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">p.f</td>
+    <td class="tg-c3ow">q[m]</td>
+    <td class="tg-c3ow">false</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">p[n]</td>
+    <td class="tg-c3ow">q[m]</td>
+    <td class="tg-c3ow">FTD(p, q)</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">p</td>
+    <td class="tg-c3ow">q</td>
+    <td class="tg-c3ow">TD(p, q)</td>
+  </tr>
+</tbody>
+</table>
+
+Here $AT$ stands for "address taken", and AT(\mathcal{P}) is defined to betrue iff the program has ever taken the address of $\mathcal{P}$. One hidden assumption about the table is that the cases are supposed to be checked from top to bottom. For example, if two paths fit case 2 then case 7 on the last row will not apply. Thus it should be very straightforward to implement the function FTD on an AST recursively using ML-style pattern matching.
+
 
 ### Extended With Assignments
 
