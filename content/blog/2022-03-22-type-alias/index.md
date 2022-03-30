@@ -49,7 +49,7 @@ An access path is defined to be any combination of one or more of these memory r
 To predict whether two paths $\mathcal{P}_1, \mathcal{P}_2$ might alias, an obvious heuristic is to say this is when the (typeof $\mathcal{P}$) has nonempty intersection with the subtypes of (typeof $\mathcal{P}$). Of course, if the two types are disjoint, then if any expression involving $\mathcal{P}_1$ type checks, the same expression with $\mathcal{P}_2$ substituted in place cannot type check, and so the two paths cannot possibly alias. We will define a function TD, which takes two access paths and returns true iff their types have a common subtype.
 
 ### With Field Access
-We can extend the above heuristic by taking into account the language fact that `a.f` and `a.g` cannot alias each other for some object `a`. Here we also assume that a field access and an array indexing never alias. This is probably true for many OOP languages. We can summarize whether two access paths may alias inductively using the following table:
+We can extend the above heuristic by taking into account the language fact that `a.f` and `a.g` cannot alias each other for some object `a`. Here we also assume that a field access and an array indexing never alias. This is probably true for many OOP languages. We can summarize whether two access paths may alias inductively using the following table, where "FTD" is true iff its arguments paths may alias. 
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;margin:0px auto;}
@@ -107,8 +107,32 @@ We can extend the above heuristic by taking into account the language fact that 
 </tbody>
 </table>
 
-Here $AT$ stands for "address taken", and AT(\mathcal{P}) is defined to betrue iff the program has ever taken the address of $\mathcal{P}$. One hidden assumption about the table is that the cases are supposed to be checked from top to bottom. For example, if two paths fit case 2 then case 7 on the last row will not apply. Thus it should be very straightforward to implement the function FTD on an AST recursively using ML-style pattern matching.
-
+Here $AT$ stands for "address taken", and AT($\mathcal{P}$) is defined to betrue iff the program has ever taken the address of $\mathcal{P}$. One hidden assumption about the table is that the cases are supposed to be checked from top to bottom. For example, if two paths fit case 2 then case 7 on the last row will not apply. Thus it should be very straightforward to implement the function FTD on an AST recursively using ML-style pattern matching, for example.
 
 ### Extended With Assignments
+So far TD and FTD operats on the assumption that access paths with compatible types and appropriate field accesses can always read or write to each other. However, this can be improved by observing that given $\tau_1\leq\tau_2$, if there are no assignments from variables of type $\tau_1$ to references of type $\tau_2$ anywhere in the program, then references to type $\tau_1$ cannot possibly alias references to type $\tau_2$. This gives rise to the following algorithm:
 
+```
+[Part 1]
+//Start by assuming no types alias each other
+initiliazie Equiv := {{t} | t is a pointer type}
+
+for each pointer assignment a := b
+	EA := set in Equiv containing typeof(a)
+	EB := set in Equiv containing typeof(b)
+	//Merges the equivalence classes of the two types
+	remove EA, EB from Equiv and insert (EA union EB)
+end
+
+[Part 2]
+for each type t
+	ET := set in Equiv containing t
+	TypeRefsTable[t] = ET intersect (subtypesof t)
+end
+```
+The algorithm can be broken down into roughly two stages. In Part 1, we construct the equivalence classes of types based on the aliasing relation, which is an equivalence relation. Note that equivalence classes of a set partition the set, so in each loop iteration of the algorithm, each type $\tau$ belongs to a unique set inside `Equiv`. Before we saw any assignments in the program, we assume no types alias each other. Each time we see a pointer assignment, we merge the two classes.
+
+Part 2 of the algorithm refines the equivalence relation with subtyping information, at the cost of symmetry of the relation. When the algorithm terminates we end up with `TypeRefsTable`, a map from types $\tau$ to the set of types that might be referenced by some access path of type $\tau$.
+
+### Asymptotic Complexity
+This analysis is flow-insensitive and takes $O(n)$ time, where $n$ is the number of instructions. However, using the result of TBAA can have runtime quadratic in the number of memory reference expressions. 
