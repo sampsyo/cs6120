@@ -177,6 +177,9 @@ The limitations of alias analysis in unsafe languages like C++ with an open worl
 TBAA has surprisingly high accuracy in real-world optimizations while maintaining a fast time bound. The evaluation also effectively shows that extensions to the simple TypeDecl version of TBAA provide significant improvements in accuracy.
 
 
+## TBAA in the Modern Computing Landscape
+
+The simplicity, speed, and accuracy of TBAA has allowed it to stick around in many modern compilers. LLVM has several different alias analyses, including an implementation of TBAA. The compiler frontend must include type annotations that can then be used for alias based optimization within LLVM itself. With a proper understanding of undefined behavior, TBAA can even be implemented for C and C++. Given the continued use of TBAA in real compilers, it is clear that TBAA works well in practice. TBAA can also be used in conjunction with flow sensitive alias analysis to improve accuracy in some cases.
 
 
 ## Related Readings
