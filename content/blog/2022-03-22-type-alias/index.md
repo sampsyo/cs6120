@@ -25,9 +25,7 @@ In this blog post, we will first study the specific ideas of TBAA with examples 
 ** Readers can skip this section if they are already familiar with type systems or wish to focus on TBAA **
 
 Given two types $\tau_1$ and $\tau_2$, we say that $\tau_1$ is a subtype of $\tau_2$ if whenever a value of $\tau_2$ is expected, it is legal to supply a value of $\tau_1$ in its place. If we view types as sets and all possible values of a type as its elements, the subtyping relation can be considered roughly the subset relation. Familiar examples from Java include `class Person extends Object` and `class LinkedList<T> implements Iterable<T>`, etc. There's also the numeric tower from Typed Racket:
-<p align="center">
-<img src="numeric_tower.png" alt="alt_text" title="Racket number types" style="zoom:30%;" />
-</p>
+<p align="center"> <img src="numeric_tower.png" style="zoom:30%;" /> </p>
 **St-Amour, Vincent et al. “Typing the Numeric Tower.” PADL (2012).**
 TODO add this citation to the end
 
@@ -136,3 +134,46 @@ Part 2 of the algorithm refines the equivalence relation with subtyping informat
 
 ### Asymptotic Complexity
 This analysis is flow-insensitive and takes $O(n)$ time, where $n$ is the number of instructions. However, using the result of TBAA can have runtime quadratic in the number of memory reference expressions. 
+
+
+
+
+## Evaluation
+
+The evaluation of TBAA presented in this paper is presented as three different kinds of analysis, static metrics, dynamic metrics, and limit analysis. Eight realistic Modula-3 benchmarks are included in the evaluation.
+
+### Static Evaluation
+
+Static evaluation is the most straightforward analysis method. In the case of TBAA, the static property being evaluated is the number of aliases determined by each of the three forms of TBAA. For each of the benchmarks and for each version of TBAA, the number of local and global alias pairs are calculated. Local alias pairs are heap memory references within the same procedure that may alias, whereas global alias pairs also include references that may alias between procedures.
+
+<p align="center"> <img src="table_5.png" style="zoom:30%;" /> </p>
+
+From static evaluation we can see that the simplest version of TBAA, TypeDecl, performs significantly worse than the other versions of TBAA. TypeDecl conservatively says that many more reference pairs may alias. However, simple static evaluation does not give the full picture of the benefits of this algorithm.
+
+### Dynamic Evaluation
+
+In contrast to static evaluation, dynamic evaluation compares the performance of optimizations that use the analysis pass. To evaluate TBAA, the authors implement a Redundant Load Elimination pass using TBAA. Redundant Load Elimination (RLE) is a common optimization that combines versions of loop invariant code motion and common subexpression elimination to hoist memory loads out of loops. Importantly, to determine if a load instruction can be hoisted out of a loop, RLE must know that the memory location being accessed cannot be aliased.
+
+<p align="center"> <img src="table_6.png"/> </p>
+
+As can be seen from the table above, FieldTypeDevl and SMFieldTypeRefs can significantly improve the number of redundant loads removed during optimization, compared to TypeDecl. However, the improvement in the number of redundant loads eliminated depends on the specific benchmark and is not nearly as big of an improvement as static metrics might suggest. Therefore, the paper concludes that a more precise alias analysis is not necessarily much better for real optimization. Additionally, static metrics are insufficient by themselves for evaluation alias analyses.
+
+### Limit Analysis
+
+While dynamic evaluation provides a better view of the real-world optimization provided by TBAA, both static and dynamic evaluation lack a real comparison point. In theory, TBAA could be overly conservative in all three forms, missing out on significant optimization opportunities. To limit this shortcoming in the analysis, the paper proposes the use of limit analysis. At run-time, the authors track the real number of redundant loads before and after applying RLE. By comparing redundant loads before and after RLE, we can see that in most cases, RLE based on TBAA significantly reduces the fraction of redundant heap references. In fact, most benchmarks show a reduction of redundant heap accesses to within 5% of the upper bound.
+
+<p align="center"> <img src="figure_9.png"/> </p>
+
+The discussion also shows that the majority of remaining redundant loads were a result of specific implementation details. The authors only know of two cases where redundant loads were not eliminated because TBAA did not disambiguate memory aliases.
+
+### Open vs Closed World Assumptions
+
+One advantage of performing alias analysis in type-safe languages like Modula-3 and Java is stronger type-safety assumptions about unavailable code. Most user-defined types are encapsulated within a module, and therefore references to those types cannot be aliased by code outside of the module. Figure 12 below shows that as a result, RLE is minimally impacted by open vs closed world assumptions.
+
+<p align="center"> <img src="figure_12.png"/> </p>
+
+The limitations of alias analysis in unsafe languages like C++ with an open world assumption can be mitigated by a proper understanding of undefined behavior.
+
+### Evaluation Summary
+
+TBAA has surprisingly high accuracy in real-world optimizations while maintaining a fast time bound. The evaluation also effectively shows that extensions to the simple TypeDecl version of TBAA provide significant improvements in accuracy.
