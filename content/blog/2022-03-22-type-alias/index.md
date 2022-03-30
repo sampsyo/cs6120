@@ -19,7 +19,9 @@ The type system of a statically-typed language allows compilers to reject illega
 
 They also presented evaluations of TBAA. They performed static and dynamic performance analyses on the effectiveness of TBAA when used for redundant load elimination (RLE). Perhaps most notably, they adopted the strategy of limit analysis by comparing empirical speedups with the maximum possible speedups.
 
-In this blog post, we will first study the specific ideas of TBAA with examples in C#-like syntax, as opposed to Modula-3, the language used in the paper. Then we will review the performance analyses and discuss potential factors behind the empirical results. We will then digress a little bit and talk about extensions to TBAA for more complicated programming language features. Finally we will briefly touch upon the general philosophy of empirical evaluations.
+In this blog post, we will first study the specific ideas of TBAA with examples in C#-like syntax, as opposed to Modula-3, the language used in the paper. Then we will review the performance analyses and discuss potential factors behind the empirical results. Finally we will discuss how the paper affected later work in the literature.
+
+[comment]: <> (We will then digress a little bit and talk about extensions to TBAA for more complicated programming language features. Finally we will briefly touch upon the general philosophy of empirical evaluations.)
 
 ## Type Preliminaries
 **Readers can skip this section if they are already familiar with type systems or wish to focus on TBAA**
@@ -133,9 +135,6 @@ Part 2 of the algorithm refines the equivalence relation with subtyping informat
 ### Asymptotic Complexity
 This analysis is flow-insensitive and takes $O(n)$ time, where $n$ is the number of instructions. However, using the result of TBAA can have runtime quadratic in the number of memory reference expressions. 
 
-
-
-
 ## Evaluation
 
 The evaluation of TBAA presented in this paper is presented as three different kinds of analysis, static metrics, dynamic metrics, and limit analysis. Eight realistic Modula-3 benchmarks are included in the evaluation.
@@ -175,6 +174,14 @@ The limitations of alias analysis in unsafe languages like C++ with an open worl
 ### Evaluation Summary
 
 TBAA has surprisingly high accuracy in real-world optimizations while maintaining a fast time bound. The evaluation also effectively shows that extensions to the simple TypeDecl version of TBAA provide significant improvements in accuracy.
+
+
+## Stengths and Weaknesses of the paper
+This TBAA paper took a very concrete approach with examples from Modula-3 syntax, as well as three different performance analysis. One advantage of this is that the paper is fairly self-contained, and doesn't require highly specialized knowledge to understand. Thus the paper is more accessible to researchers from other areas, as well as people who want to implement TBAA but don't have a super strong techincal background. However, as a consequence, the paper doesn't explicitly provide a general theoretical framework that can be easily adopted by future programming languages and concepts.
+
+Limit analysis is a very neat idea, and it should definitely be incorporated into the empirical evaluation of other research projects. Having eight benchmark programs doesn't give the most convincing result, but the fact the programs are all real, practical ones does help.
+
+Finally, what the paper lacks the most is a concrete comparison between the effectiveness of this TBAA against other forms of alias analysis. Although the authors have touched upon how TBAA is usually more efficient, actual numbers and data points would be much more convincing.
 
 
 ## TBAA in the Modern Computing Landscape
