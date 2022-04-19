@@ -68,7 +68,7 @@ With this out of the way, we can now understand the somewhat notationally dense 
 #### Attribute Inference
 While LLVM allows developers to annotate instructions with attributes which can help enable optimizations, it is often tricky as a developer to know whether or not an attribute is appropriate. The authors also added a tool to automatically add attributes by trying to verify that the optimization with and without various attributes, aiming for the weakest preconditions and strongest postconditions.
 
-Note that pre/postcondition here refers only to attribute annotation (like no signed overflow), not conditions for when an optimization can be applied (like isPowerOfTwo). This means that it is only used in generating the poison-free constraints.
+Note that pre/postcondition here refers only to attribute annotation (like no signed overflow), not conditions for when an optimization can be applied (like `isPowerOfTwo`). This means that it is only used in generating the poison-free constraints.
 
 I think that this is a very useful usage of formal verification – it works on a very narrow part of the specification, and lets the SMT solver do the hard work of grinding through the examples to try to see whether or not it can add the attribute, rather than relying on a person to do so.
 
