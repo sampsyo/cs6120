@@ -3,6 +3,7 @@ title = "Provably Correct Peephole Optimizations with Alive"
 [[extra.authors]]
 name = "Aaron Tucker"
 link = "https://www.cs.cornell.edu/~aarondtucker/"
+latex = true
 +++
 
 ## Provably Correct Peephole Optimizations with Alive
@@ -17,17 +18,21 @@ At its core, Alive is a domain specific language for formally verifying peephole
 ### LLVM
 According to [the project site](https://llvm.org), LLVM is “a collection of modular and reusable compiler and toolchain technologies”. Basically, compilers have a lot of similar components – they need to split up the program’s control flow to define all the basic blocks, perform dead code elimination, rearrange loops, and many other optimizations. LLVM makes it easier to reuse and compose these components by creating an _intermediate representation_ which is much closer to being machine code, but still has enough complexity and expressiveness to be able to figure out and perform the optimizations on a representation which is not yet specific to a particular architecture, and which is easier to think about.
 
-This project has an active development community and people do contribute individual optimizations and pieces of code, so architecturally this seems to have been a great choice.
+Importantly, LLVM is also widely _used_, and so bugs in LLVM can impact many different programs, and correctness is particularly important. This project has an active development community and people do contribute individual optimizations and pieces of code, so architecturally this seems to have been a great choice.
 
 ### SMT Solvers
 SMT stands for Satisfiability Modulo Theory. Basically an SMT solver takes in a mathematical formula with many unknowns, and tries to figure out if the formula is satisfiable in the sense that there is some way to assign the variables such that the formula is true.
 
 For example, in Boolean Logic the formula `x or y` is satisfiable with `x=True`, but `x and not x` is not satisfiable for any `x`.
 
-Fascinatingly, despite the fact that SMT is NP-complete, computer scientists have been developing faster and faster SMT solvers, and using them in a variety of problems. While in general solving satisfiability problems requires brute force, in practice it appears that lovingly crafted (and ruthlessly empirically tested) heuristics are able to get better and better results on the problems that people feed to SMT solvers. However, that is not to say that an SMT solver is likely to solve your problem well – setting up problems for SMT solvers to solve them successfully is a bit of an art, and it is fortunate when researchers discover encodings that work for their problems. For example, in this paper the researchers discovered that a hand-written implementation of pointer allocation and accessing resulted in faster SMT solving than using the theory of arrays, even though they are theoretically equivalent.
+SMT can also be used to describe more expressive theories, such as first order logic, or the theory of different data structures such as integers or arrays.
+
+Fascinatingly, despite the fact that SMT is NP-complete (or even undecidable for some theories), computer scientists have been developing faster and faster SMT solvers, and using them in a variety of problems. While in general solving satisfiability problems requires brute force, in practice it appears that lovingly crafted (and ruthlessly empirically tested) heuristics are able to get better and better results on the problems that people feed to SMT solvers. However, that is not to say that an SMT solver is likely to solve your problem well – setting up problems for SMT solvers to solve them successfully is a bit of an art, and it is fortunate when researchers discover encodings that work for their problems. For example, in this paper the researchers discovered that a hand-written implementation of pointer allocation and accessing resulted in faster SMT solving than using the theory of arrays, even though they are theoretically equivalent.
 
 ### Peephole Optimizations
-Peephole optimizations are small optimizations which look at a small number of instructions to find ways to do the same task but make them more computationally efficient. 
+Peephole optimizations are small optimizations which look at a small number of instructions to find ways to do the same task but make them more computationally efficient.
+
+For example, we know that if `x` is an integer and `y=2*x`, then `isEven(y)` is always true and can be replaced with `True`.
 
 ### Undefined Behaviors in C/C++
 Finally, it is worth understanding that C and C++ both have a variety of ways to write code which result in  _undefined behavior_, where the specification of the language says that anything is allowed to happen. For example, if you try to index an array outside of its bounds, it is okay for the program to crash, but it is also okay for it to return data, print something out, or literally anything that it wants.
@@ -49,20 +54,20 @@ With the background out of the way, I reiterate:
 A core engine of the paper is in creating a domain specific language which makes it easy to write peephole optimizations which can be formally verified.
 
 #### Basic Overview
-An LLVM instruction can have source preconditions $\phi$ and target postconditions $\bar \phi$, source definedness constraints $\delta$, a source poison-free constraint $\rho$, a source result $\iota$, as well as target definedness, poison-free constraint, and result  $\bar delta$, $\bar \rho$, andt $\bar \iota$ respectively.
+An LLVM instruction can have source preconditions $\phi$ and target postconditions $\bar \phi$, source definedness constraints $\delta$, a source poison-free constraint $\rho$, a source result $\iota$, as well as target definedness, poison-free constraint, and result  $\bar delta$, $\bar \rho$, and $\bar \iota$ respectively.
 
-*Preconditions* can be defined using a must-analysis for precise constraints, and may-analysis for over/underapproximations. For example, the precise `isPowerOfTwo(%a)` constraint is defined as $p \leftarrow a \neq 0 \wedge a &(a-1) = 0$, while the approximate `mayAlias(%a, %b)` 
+*Preconditions* can be defined using a must-analysis for precise constraints, and may-analysis for over/underapproximations. For example, the precise `isPowerOfTwo(%a)` constraint is defined as $p \Rightarrow a \neq 0 \wedge a &(a-1) = 0$, while the approximate `mayAlias(%a, %b)` constraint is defined as $a = b \Rightarrow p$.
 
 *Definedness* simply describes when a variable has a defined output. For example, unsigned division of a/b is defined whenever $b \neq 0$.
 
-*Poison-free* describes when a variable will not generate a poison value, which is a value which could generate undefined behavior under some circumstances. For example, left shift with no sign overflow is poison-free as long as it does not generate a sign overflow, namely as long as $(a << b) >> b = a.
+*Poison-free* describes when a variable will not generate a poison value, which is a value which could generate undefined behavior under some circumstances. For example, left shift with no sign overflow is poison-free as long as it does not generate a sign overflow, namely as long as $(a << b) >> b = a$.
 
 *Result*s are simply their normal meaning – the result of applying the functions in the definition to their inputs.
 
 With this out of the way, we can now understand the somewhat notationally dense definition of correctness in the paper.
 
 <p align="center">
-<img src="paper_snippet.png" alt="A snippet from the paper of section 3.1.2, which describes the correctness criteria" title="Section 3.1.2 Snippet" style="zoom:25%;" />
+<img src="paper_snippet.png" alt="A snippet from the paper of section 3.1.2, which describes the SMT encoding of the correctness criteria. In particular, the first condition encodes the constraint that the target operation is defined whenever the source operation is defined. The second constraint is that the target operation is poison-free whenever the source operation is poison-free. And the third constraint is that the source and target instructions produce the same result as long as the precondition holds and the operation is defined and poison-free." title="Section 3.1.2 Snippet" style="zoom:25%;" />
 </p>
 
 #### Attribute Inference
@@ -97,7 +102,7 @@ The authors selected an audience (LLVM contributors) who they knew would be inte
 While many of the great points from class have already been discussed, there are a few other points that didn’t really make it into the blog post so far.
 
 ### Limitations
-The paper has a few limitations which the authors also mention, such as not being able to translate all of InstCombine because it doesn't handle vectors, call/return instructions, or floating point operation.
+The paper has a few limitations which the authors also mention, such as not being able to translate all of [InstCombine](https://llvm.org/docs/Passes.html#instcombine-combine-redundant-instructions) because it doesn't handle vectors, call/return instructions, or floating point operation.
 
 More deeply, its reliance on an SMT solver means that as more variables, operations, or bits get added to an optimization, the harder it is to verify the optimization, without there really being any way to fix the method. The paper already has issues with the handling larger bitwidths quickly for multiplication and division, and it seems that it would be hard to scale this method to handle larger bitwidths or expressions with more variables.
 
@@ -109,4 +114,4 @@ Another interesting part of the class discussion was around the need for empiric
 > Beware of bugs in the above code; I have only proved it correct, not tried it.
 
 ### Really? We’re just going to trust the programmer to not write code with undefined behavior?
-Finally, to return to footnote 1, it turns out that there are more recent tools that kind of let you have your cake and eat it too with regards to the performance benefits of undefined behavior. By compiling with an LLVM tool called [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) automatically adds checks for a bunch of different types of undefined behavior, so that when you test your code you can have the program crash with helpful error messages that help you remove the undefined behavior. When you deploy the code, you can then just compile without UndefinedBehaviorSanitizer, and get the performance benefits of not doing the safety checks.
+Finally, to return to footnote 1, it turns out that there are more recent tools that kind of let you have your cake and eat it too with regards to the performance benefits of undefined behavior. For example, compiling with an LLVM tool called [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) will automatically add checks for a bunch of different types of undefined behavior, so that when you test your code you can have the program crash with helpful error messages that help you remove the undefined behavior. When you deploy the code, you can then just compile without UndefinedBehaviorSanitizer, and get the performance benefits of not doing the safety checks.
