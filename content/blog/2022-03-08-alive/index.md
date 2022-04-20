@@ -42,8 +42,6 @@ Ralf Jung has [a good discussion](https://blog.sigplan.org/2021/11/18/undefined-
 
 In a similar flavor, undefined behavior allows a compiler to more aggressively optimize code, since while the optimized code must generate the same results whenever the results are defined, it is free to do optimizations and take shortcuts which further modify (mangle?) the code whenever it would produce an undefined result.[^1]
 
-[^1]: If this is unsatisfying, you can also wait until later, where we will talk about this again.
-
 ## Main Contributions
 With the background out of the way, I reiterate:
 
@@ -53,7 +51,7 @@ With the background out of the way, I reiterate:
 A core engine of the paper is in creating a domain specific language which makes it easy to write peephole optimizations which can be formally verified.
 
 #### Basic Overview
-An LLVM instruction can have source preconditions $\phi$ and target postconditions $\bar \phi$, source definedness constraints $\delta$, a source poison-free constraint $\rho$, a source result $\iota$, as well as target definedness, poison-free constraint, and result  $\bar delta$, $\bar \rho$, and $\bar \iota$ respectively.
+An LLVM instruction can have source preconditions $\phi$ and target postconditions $\bar \phi$, source definedness constraints $\delta$, a source poison-free constraint $\rho$, a source result $\iota$, as well as target definedness, poison-free constraint, and result  $\bar \delta$, $\bar \rho$, and $\bar \iota$ respectively.
 
 *Preconditions* can be defined using a must-analysis for precise constraints, and may-analysis for over/underapproximations. For example, the precise `isPowerOfTwo(%a)` constraint is defined as $p \Rightarrow a \neq 0 \wedge a &(a-1) = 0$, while the approximate `mayAlias(%a, %b)` constraint is defined as $a = b \Rightarrow p$.
 
@@ -92,8 +90,6 @@ In my opinion, the usability and real-world usage of the Alive toolchain is itse
 #### Toolchain
 The authors were able to build a project that other people both wanted to use and contribute to. This project still has users![^2]
 
-[^2]: Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test suite. 
-
 #### Know your audience
 The authors selected an audience (LLVM contributors) who they knew would be interested in using the tool to make their lives easier. This was enough for some contributors to be using the tool even before the paper was published. The authors were also able to show users the value of their tool by monitoring proposed patches to LLVM, finding bugs in them, and working with contributors to fix them. This greatly improved the impact of the work by getting LLVM contributors to use the tool to continue fixing and avoiding bugs even after the paper was published.
 
@@ -114,3 +110,6 @@ Another interesting part of the class discussion was around the need for empiric
 
 ### Really? We’re just going to trust the programmer to not write code with undefined behavior?
 Finally, to return to footnote 1, it turns out that there are more recent tools that kind of let you have your cake and eat it too with regards to the performance benefits of undefined behavior. For example, compiling with an LLVM tool called [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) will automatically add checks for a bunch of different types of undefined behavior, so that when you test your code you can have the program crash with helpful error messages that help you remove the undefined behavior. When you deploy the code, you can then just compile without UndefinedBehaviorSanitizer, and get the performance benefits of not doing the safety checks.
+
+[^1]: If this is unsatisfying, you can also wait until later, where we will talk about this again.
+[^2]: Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test suite. 
