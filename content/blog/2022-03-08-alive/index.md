@@ -53,9 +53,9 @@ A core engine of the paper is in creating a domain specific language which makes
 #### Basic Overview
 An LLVM instruction can have source preconditions $\phi$ and target postconditions $\bar \phi$, source definedness constraints $\delta$, a source poison-free constraint $\rho$, a source result $\iota$, as well as target definedness, poison-free constraint, and result  $\bar \delta$, $\bar \rho$, and $\bar \iota$ respectively.
 
-*Preconditions* can be defined using a must-analysis for precise constraints, and may-analysis for over/underapproximations. For example, the precise `isPowerOfTwo(%a)` constraint is defined as $p \Rightarrow a \neq 0 \wedge a &(a-1) = 0$, while the approximate `mayAlias(%a, %b)` constraint is defined as $a = b \Rightarrow p$.
+*Preconditions* can be defined using a must-analysis for precise constraints, and may-analysis for over/underapproximations. For example, the precise `isPowerOfTwo(%a)` constraint is defined as $p \Rightarrow a \neq 0 \wedge a\\&(a-1) = 0$, while the approximate `mayAlias(%a, %b)` constraint is defined as $a = b \Rightarrow p$.
 
-*Definedness* simply describes when a variable has a defined output. For example, unsigned division of a/b is defined whenever $b \neq 0$.
+*Definedness* simply describes when a variable has a defined output. For example, unsigned division of `a/b` is defined whenever $b \neq 0$.
 
 *Poison-free* describes when a variable will not generate a poison value, which is a value which could generate undefined behavior under some circumstances. For example, left shift with no sign overflow is poison-free as long as it does not generate a sign overflow, namely as long as $(a << b) >> b = a$.
 
