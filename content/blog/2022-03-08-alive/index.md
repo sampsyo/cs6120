@@ -112,4 +112,5 @@ Another interesting part of the class discussion was around the need for empiric
 Finally, to return to footnote 1, it turns out that there are more recent tools that kind of let you have your cake and eat it too with regards to the performance benefits of undefined behavior. For example, compiling with an LLVM tool called [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) will automatically add checks for a bunch of different types of undefined behavior, so that when you test your code you can have the program crash with helpful error messages that help you remove the undefined behavior. When you deploy the code, you can then just compile without UndefinedBehaviorSanitizer, and get the performance benefits of not doing the safety checks.
 
 [^1]: If this is unsatisfying, you can also wait until later, where we will talk about this again.
+
 [^2]: Technically, Alive 2 is still maintained, which uses SMT solvers for translation validation of LLVM's test suite. 
