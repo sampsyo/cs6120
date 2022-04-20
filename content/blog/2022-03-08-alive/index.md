@@ -1,12 +1,11 @@
 +++
 title = "Provably Correct Peephole Optimizations with Alive"
+[extra]
+latex = true
 [[extra.authors]]
 name = "Aaron Tucker"
 link = "https://www.cs.cornell.edu/~aarondtucker/"
-latex = true
 +++
-
-## Provably Correct Peephole Optimizations with Alive
 
 ## Introduction
 [Provably Correct Peephole Optimizations with Alive](https://www.cs.utah.edu/~regehr/papers/pldi15.pdf) by [Nuno P. Lopes](https://web.ist.utl.pt/nuno.lopes/), [David Menendez](https://www.cs.rutgers.edu/people/professors/details/david-menendez), [Santosh Nagarakatte](https://people.cs.rutgers.edu/~sn349/), and [John Regehr](https://www.cs.utah.edu/~regehr/) ([PLDI 2015](https://conf.researchr.org/home/pldi2015)) is a paper with a pretty straightforward goal -- define a domain specific language and semantics for peephole optimizations in LLVM which make it easy to verify the correctness of peephole optimizations, while also building tools which make it simple to actually use the domain specific language when _you_ write peephole optimizations. Overall, I think this paper is great at scoping the project to be tractable and impactful, and is also rather elegant in how it leverages various properties of SMT solvers to make a better tool. Before we get into all of that, there is some preliminary background.
