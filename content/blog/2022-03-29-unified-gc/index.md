@@ -32,12 +32,12 @@ Tracing and reference counting collectors each have their pros and cons. Researc
 ## Fix-Point Formulation
 
 Garbage collection is first defined using a fixed point formulation. Later in the paper, it is shown how tracing, reference counting, and hybrids of tracing and reference counting satisfy this fixed point formulation. We start out with a characterization of memory:
-* `V` is the set of all objects. This includes objects that are still in use, objects that are no longer in use but not yet freed, and objects that have been freed. 
-* `E` is the multiset of edges in the graph. In other words, the references between one object between another. It is a multi-set because an object can have multiple pointers to another node. Consider the case where object `a` has fields `f1` and `f2` which both point to the same object `b`.
-* `R` is the multiset of objects that are roots in the graph.
-* `p(v)` where `v in V` is the reference count of vertex `v`.
+* $V$ is the set of all objects. This includes objects that are still in use, objects that are no longer in use but not yet freed, and objects that have been freed. 
+* $E$ is the multiset of edges in the graph. In other words, the references between one object between another. It is a multi-set because an object can have multiple pointers to another node. Consider the case where object $a$ has fields $f1$ and $f2$ which both point to the same object $b$.
+* $R$ is the multiset of objects that are roots in the graph.
+* $p(v)$ where $v \in V$ is the reference count of vertex $v$.
 
-The object graph is the triple `G = <V, E, R>`. From here, garbage collection is given as a fixed point computation.
+The object graph is the triple $G = <V, E, R>$. From here, garbage collection is given as a fixed point computation.
 
 <p align="center">
 <img src="FP.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
