@@ -46,6 +46,9 @@ The object graph is the triple $G = <V, E, R>$. From here, garbage collection is
 Once reference counts have been assigned, vertices with counts of 0 are reclaimed. It is important to note that this fixed point equation is not an algorithm. Instead, tracing, reference counting, and hybrids of the two are algorithms that satisfy this fixed point equation.
 
 ## Algorithmic Duals
+
+One of the key insights of this paper was that tracing and reference counting garbage collection methods are "algorithmic duals" of one another. The paper gives the intuition that tracing opperate on live objects or "matter" while reference counting operates on dead objects or "anti-matter".
+
 ## Tracing vs Reference Counting
 
 The tracing garbage collection and reference counting algorithms are shown below. Tracing computes the least fix point and reference counting computes the greatest fix point. The set difference between the two fix point solutions is comprised of cyclical garbage. Cyclical garbage will be discussed in more detail below.
@@ -65,6 +68,13 @@ Now that tracing and referencing counting algorithms have been presented, it is 
 When comparing the two algorithms side by side, we see how similar the two are. The scan and sweep functions are almost identical except for the duality differences highlighted in the previous paragraph.
 
 ## Deferred Reference Counting vs Partial Tracing
+
+In making optimizations to the traditional methods of garbage collection such as reference counting and tracing, we have deferred reference counting and, its converse, partial tracing. In deferred reference counting we maintain a Zero Count Table (ZCT) which maintains objects with reference count 0. We also save some overhead in not counting mutations to root references. At collection time, elements in the ZCT that are pointed to by roots are removed from the ZCT and the remaining elements are collected. In partial tracing, we count root references and then perform tracing from those root references. Note that partial tracing is not a fast optimization, instead it is brought up to illustrate how we can create converses of tracing or reference counting based algorithms. This is illustrated in the following figure.
+
+<p align="center">
+<img src="def_rc_partial_tracing.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
+</p>
+
 ## Generational Garbage Collection Hybrids
 
 Generational garbage collection is another well researched method of garbage collection. These collectors operate on the assumption that most objects die young. In other words, objects that have been recently allocated have a higher chance of becoming unreachable compared to objects that have been reachable for a long time. To accomplish this the heap is split into two regions: a nursery and a mature space. Objects are allocated into the nursery and at some point objects that survive long enough are moved to the mature space.
@@ -76,11 +86,29 @@ The paper presents and compares three generational garbage collector algorithms:
 </p>
 
 ## Cycle Collection
+
+One of the key disadvantages of reference counting is the lack of cycle collection. The authors propose two solutions, one is to run reference counting without cycle collection, and occasionally run a tracing algorithm to detect cycles. The other solution proposed was reference counting with trial deletion. In this algorithm, objects with suspiciouslly high references are traced to check for cycles.
+
 ## Multi-Heap Collectors
+
+All of the collectors described so far were analyzed in the scope of a single heap, but with multiple heaps there is more flexibility in how garbage collection runs on each heap. The train algorithm presented shows how we can introduce a more subtle notion of generations as in the generational garbage collectors, and run tracing on a smaller set of references to get shorter pause times. These algorithms are presented in the paper to extend the concept of duality between tracing and renference counting.
+
 ## Cost Analysis
-## Conclusions
 
-# Analysis of Contributions
+In the final section of the paper, we get a methodology to analyze garbage collectors in a real-world setting. The cost factors associated with a collector are broken down into 
+* $\kappa (X)$ - The time it takes to run a single garbage collection
+* $\sigma (X)$ - The space overhead of the collector
+* $\phi (X)$ - The frequency of collection
+* $\mu (X)$ - The mutation overhead
+* $\tau (X)$ - The total time overhead for collection
 
-# Impact
+where $X$ is the collector.
 
+The paper then goes onto computing these factors for various collectors, paramatarized by machine or program specifications.
+
+# Conclusions
+
+The paper concludes with some general recommendations to those looking to implement collectors. They state to consider three key decisions in implmenting collectors: how to paritition memory, how to traverse that memory and the trade-offs associated with the partition scheme.
+
+# Analysis of Contributions and Impact
+The paper itself does not present any new ideas on how to perform garbage collection. Instead the paper introduces a new methodology of how to develop collectors by creating a design space and evaluation method. This methodology is inspired by the idea that reference counting and tracing are algorithmic duals of one another. This key, and very cool, insight is the underlying motivation for the methodology. The paper also seems to be best for an engineer looking to build a garabage collector than a formal method in evaluating collectors. The cost analysis they give is much more practical, using "real" values for evaluation rather than estimates with a Big-Oh analysis.
