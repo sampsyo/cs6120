@@ -8,6 +8,14 @@ name = "Shubham Chaudhary"
 link = "https://www.cs.cornell.edu/~shubham/"
 +++
 
+# Fast Conservative Garbage Collection
+
+This paper explores the common challenges of implementing a efficient
+conservative garbage collectors in managed languages, namely excess
+retention and pinning caused by ambiguous references. Additionally,
+the authors introduce the concept of an optimized object map, which
+tracks alive objects, which mitigates pinning.
+
 # Background
 
 Within language implementations, memory management can be done by
@@ -23,7 +31,7 @@ implement an exact collector. So, work on implementing effective and
 efficient conservative collectors is necessary.
 
 The key challenges in implementing conservative collectors are
-twofold:
+as follows:
 
 1. Excess retention: Because an ambiguous reference _could_ point to
 an object, that "referent" cannot be collected. This is because the
@@ -38,6 +46,25 @@ causing fragmentation.
 
 # Contributions
 
+The contributions of this paper are:
+
+- the first detailed study of the impact of conservatism
+
+# Techniques
+
+## Existing Exact Collectors
+
+## Making Collectors Conservative
 
 # Evaluation
 
+The authors conduct an extensive evaluation in two parts: (1)
+understanding the impact of conservatism by comparing between exact
+and conservative versions of collectors; (2) a performance evaluation
+comparing the conservative versions of RC, Immix, Sticky Immix, and RC
+Immix against existing state-of-the-art conservative garbage
+collectors.
+
+## Impact of Conservatism
+
+## Performance Evaluation
