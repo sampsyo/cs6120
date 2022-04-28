@@ -44,7 +44,40 @@ The takeaways are as follows:
 ## Performance Evaluation
 
 The authors also evaluated the performance impacts of conservatism, by
-comparing newly developed conservative collection techniques (the
-conservative versions of Reference Counting, Immix, Sticky Immix,
-and RC Immix) against their exact counterparts and previous
-state-of-the-art conservative collectors.
+first comparing between six conservative collectors and their exact
+variants: MCC (mostly copying collector with object map), BDW
+(conservative mark-sweep with BDW reference filtering), conservative
+RC (deferred reference counting with free-list heap organization),
+conservative Immix, conservative Sticky Immix, and conservative RC
+Immix.
+
+<img src="Figure4.png">
+
+Figure 4 displays the performance outcomes of the six conservative
+collectors and their exact counterparts. The key takeaways from this
+evaluation are that (1) conservative overheads are rather minimal,
+ranging from _1%_ to _2.7%_; (2) all Immix collectors outperform the
+free-list collectors (most likely due to cache locality); and (3)
+conservative RC Immix is actually _1% faster_ than Gen Immix, the
+fastest exact collector. Thus, the authors conclude that conservative
+collectors can be on par with exact collectors in terms of performance.
+
+Following this, the authors perform a per-benchmark performance
+analysis of five collectors: Gen Immix (the best performing exact
+collector), conservative RC Immix (the best performing conservative
+collector), RC Immix (the exact counterpart of conservative RC Immix),
+MCC and BDW (prior conservative collectors given 2x the minimum size
+heap).
+
+
+evaluating
+total, mutator, and collection times in normal execution, executions
+with constrained heap size, and executions with artifically increased
+pinning.
+
+
+comparing newly developed conservative collection
+techniques (the conservative versions of Reference Counting, Immix,
+Sticky Immix, and RC Immix) against their exact counterparts and
+previous state-of-the-art conservative collectors.
+
