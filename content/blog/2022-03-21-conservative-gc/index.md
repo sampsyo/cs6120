@@ -46,9 +46,18 @@ causing fragmentation.
 
 # Contributions
 
-The contributions of this paper are:
+The main contributions of this paper include:
 
-- the first detailed study of the impact of conservatism
+- A detailed examination on conservative garbage collection, including
+  the first detailed study of impacts of exact and conservative
+  collectors in practice.
+
+- The idea of introducing an object map that precisely tracks alive
+  objects to filter ambiguous roots.
+
+- The design, implementation, and evaluation of new conservative
+  collectors that use the object map, against their prior conservative
+  collectors.
 
 # Techniques
 
