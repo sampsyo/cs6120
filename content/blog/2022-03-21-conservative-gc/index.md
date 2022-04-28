@@ -58,12 +58,15 @@ The main contributions of this paper include:
 - The design, implementation, and evaluation of new conservative
   collectors that use the object map, against their prior conservative
   collectors.
+  - Conservative RC Immix, introduced in this paper, is 1%
+  _faster_ than Gen Immix, the best-performing exact collector.
 
 # Techniques
 
 ## Existing Exact Collectors
 
 ## Making Collectors Conservative
+
 
 # Evaluation
 
@@ -75,5 +78,6 @@ Immix against existing state-of-the-art conservative garbage
 collectors.
 
 ## Impact of Conservatism
+
 
 ## Performance Evaluation
