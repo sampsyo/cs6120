@@ -43,6 +43,8 @@ The takeaways are as follows:
 
 ## Performance Evaluation
 
+### Conservative vs. Exact Variants
+
 The authors also evaluated the performance impacts of conservatism, by
 first comparing between six conservative collectors and their exact
 variants: MCC (mostly copying collector with object map), BDW
@@ -62,6 +64,8 @@ conservative RC Immix is actually _1% faster_ than Gen Immix, the
 fastest exact collector. Thus, the authors conclude that conservative
 collectors can be on par with exact collectors in terms of performance.
 
+### Performance Analysis
+
 Following this, the authors perform a per-benchmark performance
 analysis of five collectors: Gen Immix (the best performing exact
 collector), conservative RC Immix (the best performing conservative
@@ -69,15 +73,22 @@ collector), RC Immix (the exact counterpart of conservative RC Immix),
 MCC and BDW (prior conservative collectors given 2x the minimum size
 heap).
 
+The takeaways from this analysis is as follows:
 
-evaluating
-total, mutator, and collection times in normal execution, executions
-with constrained heap size, and executions with artifically increased
-pinning.
+- Conservative RC Immix has very good performance, outperforming Gen
+  Immix on the majority of benchmarks. This is attributed to (1)
+  better mutator performance due to using coarse grained allocation
+  regions, (2) locality benefits, (3) utilizing the weak generational
+  hypothesis.
 
+- In evaluating the time-space tradeoff of collection via varying the
+  heap size, the authors found that Gen Immix's total time performance
+  was better than conservative RC Immix's in small heap sizes; both
+  exact and conservative variants of RC Immix performed best in terms
+  of collection time; conservative RC Immix performed at least as well
+  as the best exact generational collector.
 
-comparing newly developed conservative collection
-techniques (the conservative versions of Reference Counting, Immix,
-Sticky Immix, and RC Immix) against their exact counterparts and
-previous state-of-the-art conservative collectors.
-
+- Garbage collection slowdown increases as the percentage of pinned
+  objects increases, and slowdown decreases as heap sizes increases.
+  Therefore, the impact of pinned objects can be mitigated by
+  increasing the heap size.
