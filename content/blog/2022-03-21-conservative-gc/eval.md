@@ -11,7 +11,14 @@ The takeaways are as follows:
    authors found that conservative scanning results in _1.6x_
    more identified "roots" than exact scanning.
 
-- *Excess Retention*: (Not significant probelms for conservative collectors)
+- *Excess Retention*: While excess retention is a very obvious side
+   effect of conservative collection, its precise impacts in practice
+   were not known. The authors measured excess retention by comparing
+   the sizes of transitive closures between the exact and conservative
+   versions, and found that excess retention was on average _0.02%_,
+   with the maximum retention being _6.1%_. So, the authors concluded
+   that excess retention does not cause significant problems for
+   conservative collectors.
 
 - *Pointer Filtering*: The authors compare the time performances
   between their object map and the state-of-the-art BDW free-list
