@@ -10,11 +10,11 @@ link = "https://www.cs.cornell.edu/~shubham/"
 
 # Fast Conservative Garbage Collection
 
-This paper[^1] explores the common challenges of implementing a efficient
+This paper[^1] explores the common challenges of implementing an efficient
 conservative garbage collectors in managed languages, namely excess
 retention and pinning caused by ambiguous references. To that end,
 the authors introduce the concept of an optimized object map, which
-tracks alive objects, which mitigates pinning. Finally, they compare
+tracks live objects, to mitigate some of these issues. Finally, they compare
 conservative collectors to their exact counterparts and conclude that
 conservative collectors can be as efficient in space and time as exact
 collectors.
@@ -27,8 +27,8 @@ references, or _conservative_ garbage collectors, which must deal with
 _ambiguous references_ that could be either pointers or values.
 
 Because exact collectors know references, they can move objects and
-filter out more dead references. However, exact collectors impose
-nontrivial engineering and performance challenges, such as having to
+filter out more references. However, exact collectors impose
+non-trivial engineering and performance challenges, such as having to
 maintain a shadow stack. In many situations, it is also impossible to
 implement an exact collector. So, work on implementing effective and
 efficient conservative collectors is necessary.
@@ -55,15 +55,15 @@ The main contributions of this paper include:
   the first detailed study of impacts of exact and conservative
   collection in practice.
 
-- Introducing an object map that precisely tracks alive objects to filter
+- Introducing an object map that precisely tracks live objects to filter
   ambiguous roots efficiently.
 
 - The design, implementation, and evaluation of new conservative
   collectors that use the object map, against prior conservative
   collectors and their exact counterparts.
 
-  - **Conservative RC Immix**, introduced in this paper, is 1%
-  _faster_ than **Generational Immix**, the best-performing exact collector.
+  - **RC Immix<sub>Cons</sub>**, introduced in this paper, is 1%
+  _faster_ than **Gen Immix**, the best-performing exact collector.
 
 <center>
 <img src="fig1.png" alt="Exact versus Conservative Collectors" width="50%" />
@@ -123,14 +123,19 @@ collector which marks objects that survive collection as old and only performs t
 roots. The idea is to maintain a bitmap for each 8-byte word in memory indicating whether that
 location is alive.
 
-**Conservative Immix** is a conservative version of Immix. It only considers roots as ambiguous,
-and the objects referenced by these are pinned on line granularity (256 bytes) which is space
-efficient. Like Immix, it performs opportunistic copying for other non-root exact references.
-Furthermore, ambiguous roots are filtered against the object map.
+**Conservative Immix (Immix<sub>Cons</sub>)** is a conservative version of Immix. It only
+considers roots as ambiguous, and the objects referenced by these are pinned on line
+granularity (256 bytes) which is space efficient. Like Immix, it performs opportunistic
+copying for other non-root exact references. Furthermore, ambiguous roots are filtered
+against the object map, which is updated after every collection cycle.
 
-Similarly, **Conservative Sticky Immix** is the conservative counterpart of Sticky Immix.
+Similarly, **Conservative Sticky Immix (Sticky Immix<sub>Cons</sub>)** is the conservative
+counterpart of Sticky Immix. Maintaining the object map is trickier since only young objects
+are traced regularly.
+
 **Conservative Immix RC (RC Immix<sub>Cons</sub>)** performs tracing on young objects, and
-reference counting on mature objects.
+reference counting on mature objects. Object map is used here as well, and is updated incrementally
+as reference counting is performed.
 
 # Evaluation
 
@@ -151,19 +156,17 @@ The takeaways are as follows:
 
 - *Ambiguous Pointers*: A challenge in conservative collection is how
    often a non-pointer object may be interpreted as a pointer. The
-   authors found that conservative scanning results in _1.6x_
-   more identified "roots" than exact scanning.
+   authors found that conservative scanning results in _60%_
+   more "roots" than exact scanning.
 
 - *Excess Retention*: While excess retention is a very obvious side
    effect of conservative collection, its precise impacts in practice
    were not known. The authors measured excess retention by comparing
    the sizes of transitive closures between the exact and conservative
-   versions, and found that excess retention was on average _0.02%_,
-   with the maximum retention being _6.1%_. So, the authors concluded
-   that excess retention does not cause significant problems for
-   conservative collectors.
+   versions, and found that excess retention was, on average, only _0.02%_,
+   with the maximum being only _6.1%_, as a fraction of heap size.
 
-- *Pointer Filtering*: The authors compare the time performances
+- *Pointer Filtering*: The authors compare the performances
   between their object map and the state-of-the-art BDW free-list
   introspection, which are functionally equivalent ways of filtering
   ambiguous roots. Object maps had a higher overhead in total,
@@ -175,12 +178,11 @@ The takeaways are as follows:
 
 - *Pinning Granularity*: Conservative collectors need to pin the
    "referents" of ambiguous pointers, but the effect of pinning
-   depends on the collector's pinning granularity. In Bartlett-style
-   page pinning granularity (used by the Mostly Copying Collectors
-   (MCC)), where the "referent" and all other objects on the page that
+   depends on the collector's pinning granularity. In MCCs, where
+   the "referent" and all other objects on the page that
    it resides in are retained, _2.1%_ of the live heap was impacted.
-   In the 256B line granularity (used by the Immix family of
-   collectors), where only the "referent" is pinned, _0.2%_ of the
+   In the 256 bytes line granularity (used by the Immix family of
+   collectors), where only the referent line is pinned, _0.2%_ of the
    live heap was impacted. Therefore, the authors concluded that
    pinning at the line granularity is significantly less impact-full.
 
@@ -190,9 +192,7 @@ The takeaways are as follows:
 
 The authors also evaluated the performance impacts of conservatism, by
 first comparing between six conservative collectors and their exact
-variants: MCC (mostly copying collector with object map), BDW
-(conservative mark-sweep with BDW reference filtering), RC<sub>Cons</sub> (deferred
-reference counting with free-list heap organization), Immix<sub>Cons</sub>,
+variants: MCC, BDW, RC<sub>Cons</sub>, Immix<sub>Cons</sub>,
 Sticky Immix<sub>Cons</sub>, and RC Immix<sub>Cons</sub>.
 
 <center>
