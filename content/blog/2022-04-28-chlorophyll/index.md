@@ -3,12 +3,16 @@ title = "Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectur
 [extra]
 bio = """
   [Hongzheng Chen](https://chhzh123.github.io/) is a first-year CS PhD student at the Computer Systems Laboratory, Cornell University. His research interests include domain-specific languages, compiler optimization, and heterogeneous computing systems.
+latex = true
 """
 [[extra.authors]]
 name = "Hongzheng Chen"
 link = "https://chhzh123.github.io/"
 +++
 
+> [**Chlorophyll: Synthesis-Aided Compiler for Low-Power Spatial Architectures**](https://dl.acm.org/citation.cfm?id=2594339)
+> Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah Chasins, and Rastislav Bodik.
+> PLDI, 2014.
 
 **TL;DR**: This paper proposes *Chlorophyll*, the first synthesis-aided programming model and compiler for the low-power spatial architecture *GreenArray GA144*. It decomposes a complex compilation program into smaller synthesis subprograms -- partitioning, layout, code separation, and code generation. Experimental results show that Chlorophyll can significantly reduce the programming burden and achieve good performance for several benchmarks.
 
@@ -56,15 +60,81 @@ Therefore, the authors propose a synthesis-aided compiler Chlorophyll to solve t
 
 ## Methods
 
-In this section, I will talk about the four stages of the compiler.
+In this section, I will talk about the four stages of the compiler, including program partition, layout and routing, code separation, and code generation.
 
 ### Program Partition
+#### Programming Model
+Chlorophyll provides a easy-to-use programming model for partitioning. Basically, users can directly write C code and add partition annotation to the program. `@` specifies the variable or the computation is on which partition, and `!` means the data is send from one partition to another.
 
-is code separation a synthesis problem?
+Programmers only need to write partially annotated code as shown below, and the compiler will automatically generate the fully annotated one. This example shows `x` is in the `2`nd partition, and `y` is in the `1`st partition. Partition `2` needs to firstly transfer data `x` to partition `1`, and then compute `x * y`. Finally the result will be passed to partition `0` and returned.
+```cpp
+// partial annotation
+int@0 mult(int x, int y) { return x * y; } 
+// full annotation
+int@0 mult(int@2 x, int@1 y)
+  { return (x!1 *@1 y)!0; }
+```
+
+For control flow, Chlorophyll only supports constant-bound `for` loops and general `while` loops. It will duplicate the control flow in each core to ensure the program correctness.
+
+For distributed arrays, users can annotate which part of data should be put on which partition, and use `place` to specify the partition based on the data location in the array. For example, the following figure shows `[0:32]` elements in array `x` are put on partition `0`, and `[32:64]` elements are put on partition `1`.
+
+![](distributed-arrays.png)
+
+The authors mention this programming model have several limitations like cannot support recursive calls, multi-dimensional arrays, and non-loop-variable indices. These limitations are reasonable, and even for nowadays HLS tools, they still cannot support recursive function calls[^2].
+
+#### Partition Type
+> Partitioning a program can be thought of as a type inference on the partition types.
+
+I think this is the most interesting part of the paper. The authors add partition information to the type system, thus partitioning the program can be automatically done using type inference. The definition of partition type is shown below.
+![](partition-inference.png)
+
+#### Partition Process
+The partition process in the paper is a bit messy, so I reorganize it into a more clear way. We have the following steps:
+
+1. <u>Loop splitting.</u> Since array data are distributed among partitions, we also need to split the control flow (the loop) to ensure the computation access the correct data. The code snippet shows how to split the loop for two partitions.
+```cpp
+// before splitting
+int@{[0:5]=0, [5:10]=1} x[10];
+for (i from 1 to 10) x[i] = x[i] + x[i-1];
+// after splitting
+for (i from 1 to 5) x[i] = x[i] + x[i-1]; // x[i] at 0, x[i-1] at 0
+for (i from 5 to 6) x[i] = x[i] + x[i-1]; // x[i] at 0, x[i-1] at 1
+for (i from 6 to 10) x[i] = x[i] + x[i-1]; // x[i] at 1, x[i-1] at 1
+```
+
+2. <u>Create symbolic variables for unannotated variables.</u> If the partition type can be inferenced from the user-annotated types, then the compiler will directly add that type after the operator or variable. Otherwise, it will generate a symbolic variable for those unannotated variables like `sym0` shown below.
+```cpp
+// before annotating
+int@6 r = 0;
+for (i from 0 to 64) {
+  z[i] = leftrotate(x[i], y[i], r) - @place(z[i]) 1;
+  r = r +@6 1; // + happens at partition 6.
+  if (r > 32) r = 0; 
+}
+// after annotating
+int@6 r = 0;
+for (i from 0 to 64) {
+  z[i] = leftrotate(x[i]!sym0, y[i]!sym1, r!sym2) - @place(z[i]) 1;
+  r = r +@6 1; // + happens at partition 6.
+  if (r >@6 32) r = 0; 
+}
+```
+
+3. <u>Construct communication count and partition space constraints with [Rosette](http://emina.github.io/rosette/) synthesizer.</u> The overall memory space should satisfy the following constraints:
+
+\[ \text{Space} (\text{operation}) + \text{Space} (\text{statement}) + \text{Space} (\text{maxComm}) < \text{Memory per core}\]
+
+The synthesizer will solve the constraint, use that solution as an additional constraint for `maxComm`, and then iteratively solve it to find the minimum communication cost. Finally we can obtain the following fully annotated program.
+
+![](fully-annotated.png)
+
+One question here is that where is the boundary between programmers and compiler. For this programming model, programmers do not exactly know where they should annotate the partition types. Some may be benefit for the synthesizer to quickly solve the constraint, but others may have negative impact or even cause infeasible solution. This actually can be a burden for programmers since they still have to have a good understanding of the underlying architecture and annotate the partition in a right way.
 
 ### Layout and Routing
 
 ### Code Separation
+is code separation a synthesis problem?
 
 ### Code Generation
 
@@ -80,3 +150,4 @@ is code separation a synthesis problem?
 
 ## Reference
 [^1]: James Bornholt, Emina Torlak, [Scaling Program Synthesis by Exploiting Existing Code](https://www.cs.utexas.edu/~bornholt/papers/scalesynth-ml4pl15.slides.pdf)
+[^2]: Xilinx Vitis HLS, [Recursive Functions](https://docs.xilinx.com/r/en-US/ug1399-vitis-hls/Recursive-Functions)
