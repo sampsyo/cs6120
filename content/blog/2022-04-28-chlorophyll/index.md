@@ -256,14 +256,25 @@ This compilation time seems does not count into the development time mentioned a
 
 
 ## Further Discussion
+### Synthesis and Compilation
+Prof. Armando Solar-Lezama at MIT mentions in his course, "One distinguishing feature between a compiler and a synthesizer is the element of **search**"[^3]. Traditional compiler only does some simple transformation to the program, while synthesizer may have lots of valid programs but need to search for the best one. However, we can see a trend of blurring the boundary between compiler and synthesizer nowadays. A trend of domain-specific compiler is to decouple the schedule (how to optimize the program) from the algorithm (what to compute). Using this new interface, some compilers may be equipped with auto-tuning methods, which is essentially what synthesizer does for searching. Examples of these compilers include Halide[^4] for image processing, TVM[^5] for deep learning, HeteroCL[^6] for software-defined hardware, and GraphIt[^7] for graph processing, etc.
 
+Recently, we can also see some efforts in deploying program synthesis techniques for deep learning model optimization. For example, Cowan et al.[^8] provide compute sketch and reduction sketch to synthesize high-performance quantized machine learning kernels. Xie et al.[^9] uses program synthesis to generate optimal parallelism plan for distributed training. Those examples prove that program synthesis can be a powerful tool for a compiler to generate high-performance code.
 
 ### Programming Model
+Someone also mentions the [high-level programming abstraction](https://github.com/sampsyo/cs6120/discussions/321#discussioncomment-2651248) for these spatial architecture. One recent effort to reduce the programming burden for data communication is HeteroFlow[^10]. It propose the `.to()` interface to conduct host-to-accelerator, inter-kernel, and intra-kernel communication. Users can easily specify how to pass the data between kernels or between devices.
 
-
-### Synthesis and Compilation
+![](heteroflow.png)
 
 
 ## Reference
-[^1]: James Bornholt, Emina Torlak, [Scaling Program Synthesis by Exploiting Existing Code](https://www.cs.utexas.edu/~bornholt/papers/scalesynth-ml4pl15.slides.pdf)
-[^2]: Xilinx Vitis HLS, [Recursive Functions](https://docs.xilinx.com/r/en-US/ug1399-vitis-hls/Recursive-Functions)
+[^1]: James Bornholt, Emina Torlak, [Scaling Program Synthesis by Exploiting Existing Code](https://www.cs.utexas.edu/~bornholt/papers/scalesynth-ml4pl15.slides.pdf).
+[^2]: Xilinx Vitis HLS, [Recursive Functions](https://docs.xilinx.com/r/en-US/ug1399-vitis-hls/Recursive-Functions).
+[^3]: Armando Solar-Lezama, [Introduction to Program Synthesis](http://people.csail.mit.edu/asolar/SynthesisCourse/Lecture1.htm).
+[^4]: Jonathan Ragan-Kelley, Connelly Barnes, Andrew Adams, Sylvain Paris, Frédo Durand, and Saman Amarasinghe, "Halide: a language and compiler for optimizing parallelism, locality, and recomputation in image processing pipelines", PLDI, 2013.
+[^5]: Tianqi Chen, Thierry Moreau, Ziheng Jiang, Lianmin Zheng, Eddie Yan, Meghan Cowan, Haichen Shen, Leyuan Wang, Yuwei Hu, Luis Ceze, Carlos Guestrin, Arvind Krishnamurthy, "TVM: An Automated End-to-End Optimizing Compiler for Deep Learning", OSDI, 2018.
+[^6]: Yi-Hsiang Lai, Yuze Chi, Yuwei Hu, Jie Wang, Cody Hao Yu, Yuan Zhou, Jason Cong, and Zhiru Zhang, "HeteroCL: A Multi-Paradigm Programming Infrastructure for Software-Defined Reconfigurable Computing", FPGA, 2019.
+[^7]: Yunming Zhang, Mengjiao Yang, Riyadh Baghdadi, Shoaib Kamil, Julian Shun, Saman Amarasinghe, "GraphIt: A High-Performance Graph DSL", OOPSLA, 2018.
+[^8]: Meghan Cowan, Thierry Moreau, Tianqi Chen, James Bornholt, and Luis Ceze, "Automatic generation of high-performance quantized machine learning kernels", CGO, 2020.
+[^9]: Ningning Xie, Tamara Norman, Dominik Grewe, Dimitrios Vytiniotis, "Synthesizing Optimal Parallelism Placement and Reduction Strategies on Hierarchical Systems for Deep Learning", MLSys, 2022.
+[^10]: Shaojie Xiang, Yi-Hsiang Lai, Yuan Zhou, Hongzheng Chen, Niansong Zhang, Debjit Pal, Zhiru Zhang,"HeteroFlow: An Accelerator Programming Model with Decoupled Data Placement for Software-Defined FPGAs", FPGA, 2022.
