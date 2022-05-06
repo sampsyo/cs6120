@@ -46,13 +46,17 @@ A consensus is that there does not exist an one-size-fits all processor. Differe
 We also discuss in class why GA144 is not widely adopted nowadays and what makes a device become popular. The first thing should be programmers' productivity. If a device is easy to use and debug, even its performance is not that good, it can still be accepted by many people. The second thing is the cost of the device. Based on the [price](http://www.greenarraychips.com/home/products/index.php) listed on the GreenArray website, it costs $20 per chip, which is a very reasonable price and can be massively manufactured, so the main problem of low acceptance is probably programmability.
 
 
-## Contribution
-program partition, layout and routing, code separation, and code generation
+## Motivation
+Based on the background we discussed above, the authors propose the following challenges that motivate them to develop a compiler for GA144:
+1. <u>Spatial architecture is hard to program.</u> The data placement, communication, and computation all need to be manually specified by the programmers using very low-level language.
+2. <u>Classical compiler may not be able to bridge the abstraction gap of low-power computing.</u> For one thing, designing compilers for new hardware is hard since no well-known optimizations can be applied. For the other, the GA144 architecture was still evolving at that time, so the compiler should also evolve fast to keep up with the pace.
+3. <u>Program synthesis is hard to scale to large programs.</u>
 
-## Introduction
-
+Therefore, the authors propose a synthesis-aided compiler Chlorophyll to solve the above challenges. 
 
 ## Methods
+
+In this section, I will talk about the four stages of the compiler.
 
 ### Program Partition
 
