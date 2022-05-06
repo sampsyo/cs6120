@@ -16,6 +16,9 @@ link = "https://chhzh123.github.io/"
 
 **TL;DR**: This paper proposes *Chlorophyll*, the first synthesis-aided programming model and compiler for the low-power spatial architecture *GreenArray GA144*. It decomposes a complex compilation program into smaller synthesis subprograms -- partitioning, layout, code separation, and code generation. Experimental results show that Chlorophyll can significantly reduce the programming burden and achieve good performance for several benchmarks.
 
+The code of Chlorophyll is available on [GitHub](https://github.com/mangpo/chlorophyll).
+
+
 ## Background
 
 In this section, I will firstly introduce the background of the program synthesis and spatial architecture.
@@ -228,6 +231,28 @@ Since the authors decompose the problem into four subproblems and solve them ind
 1. Partition before superoptimization. For example, A, B, and C are three code segments. A+B may have the lowest communication cost, but B+C may have the lowest computation cost if they are put on the same core. The partition algorithm is not aware of that.
 2. Schedule-oblivious routing strategy. The routing algorithm does not know which core is busy and may still send message to the busy core.
 3. Scope of superoptimizer. The superoptimizer leverages a greedy algorithm, which works well for local code segments but not the best for the whole program.
+
+
+## Performance Evaluation
+### Execution Time
+The authors evaluate their compiler on different benchmarks, and compare the performance of different settings (with/without sliding-window superoptimization, with/without partitioning synthesis, and with/without layout synthesis). The results are shown below. But since the author only makes self-comparison, it is hard to say whether the results are good enough.
+![](perf.png)
+
+They do compare their generated code with handwritten code, and give the following statement.
+> Compared to the experts' implementation, it is **only 65% slower, 70% less energy-efficient and uses 2.2x more cores**. This result confirms that our generated programs are comparable with experts’ not only on small programs but also on a real application.
+
+The authors are somehow proud of this result. Considering Chlorophyll is the first high-level compiler for GA144, if it indeed reduces the programming effort, then even the performance is not good, it is useful for more programs running on GA144.
+
+### Productivity
+The authors also state that a graduate student spent one summer learning arrayForth to program GA144 but only implemented 2 benchmarks. With Chlorophyll, authors can implement 5 benchmarks within one afternoon, and the 2-core version is better than expert's implementation.
+
+We all agree that the sample is too small. The authors can hold an undergraduate class to gather more coding examples and compare the efficiency of their proposed compiler.
+
+### Compilation Time
+The authors also provides the compilation time of different benchmarks. We can see from the following figure, it tatkes more than 16 hours to compile the largest benchmark. Most of the time is spent in the partition synthesis part.
+![](compilation-time.png)
+
+This compilation time seems does not count into the development time mentioned above. If compilation a program costs such a long time, it is hard for a programmer to debug. It is impossible to write a program and verify its correctness in just one afternoon.
 
 
 ## Further Discussion
