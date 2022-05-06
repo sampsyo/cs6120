@@ -139,7 +139,48 @@ The next stage is to map the logical representation to physical cores. We can de
 This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing#:~:text=Simulated%20annealing%20(SA)%20is%20a,space%20for%20an%20optimization%20problem.).
 
 ### Code Separation
-is code separation a synthesis problem?
+After the layout mapping is generated, we can generate code for each core, which consists of the data storage, computation, and communication part. For basic statements, we can directly put the variable to corresponding partition and generate the communication between different partitions.
+
+```cpp
+// basic statement
+int@3 x = (1 +@2 2)!3 *@3 (3 +@1 4)!3; 
+// partition 1
+write(E, 3 + 4);
+// partition 2
+write(E, 1 + 2); write(E, read(W));
+// partition 3
+int x = read(W) * read(W);
+```
+
+For functions, the arguments need to be transferred to the corresponding partition.
+```cpp
+// function call
+int@3 f(int@1 x, int@2 y) { return (x!2 +@2 y)!3; }
+int@3 x = f(1,2); 
+// partition 1
+void f(int x) { send(E, x); } f(1);
+// partition 2
+void f(int y) { send(E, read(W) + y); } f(2);
+// partition 3
+int f() { return read(W); } int x = f();
+```
+
+For distributed arrays, we need to generate subarrays for each partition and split the loops.
+```cpp
+int @{[0:16]=0, [16:32]=1} x[32];
+for (i from 0 to 32) x[i] = x[i] +@place(x[i]) 1;
+// partition 0
+int x[16];
+for (i from 0 to 16) x[i] = x[i] + 1;
+// partition 1
+int x[16];
+for (i from 16 to 32) x[i-16] = x[i-16] + 1;
+```
+
+Finally we can obtain the following code after separation.
+![](code-separation.png)
+
+Notice the code separation itself is not a synthesis problem. The authors only said they decomposed the problem into several subproblems, but not necessarily each subproblem should be solved by synthesis.
 
 ### Code Generation
 
