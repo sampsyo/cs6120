@@ -183,6 +183,41 @@ Finally we can obtain the following code after separation.
 Notice the code separation itself is not a synthesis problem. The authors only said they decomposed the problem into several subproblems, but not necessarily each subproblem should be solved by synthesis.
 
 ### Code Generation
+The last step is to generate the code for each partition. This paper leverages superoptimization to generate the optimized code, the reason of which is that GA144 is a new architecture and there does not exist well-known optimization techniques for it. Brute force search may be good choice to obtain high-performance "assembly" code (written in arrayForth), but there exists two challenges:
+1. We can break down code sequences into smaller ones but it is hard to choose segment boundaries.
+2. Only specifying the input-output behavior may disallow garbage values on the stack, which miss optimization opportunities.
+
+Therefore, the authors propose modular superoptimization to tackle the above challenges. The overview of the superoptimizer is shown below.
+
+![](superopt.png)
+
+Traditionally, if the superoptimizer use a strict equivalence form, to prove two programs $P\equiv P'$, we require the programs have the same behavior and generate the same output. For example, for the following stack example, we want to remove $\beta$ from the top of the stack, and add $\gamma` to the stack. Strict form requires us to have the same behavior, i.e. for $P$ and $P'$, we have $\alpha\mid\beat \to \alpha\mid\gamma$, but actually we do not strictly require $\alpha$ to be on the bottom of the stack.
+
+![](stack-spec.png)
+
+Like the following example, we want to calculate $b-a$. We need to retrieve $b$ and $a$'s value, calculate the difference, and push the result back to the stack. Since the stack is circular, leaving garbage value at the bottom of the stack does not harm. We do not require $a$ to be popped, so the optimized version only has 5 instructions.
+
+![](stack-example.png)
+
+```cpp
+// strict form (8 instructions)
+b = stack.top()
+stack.pop()
+a = stack.top()
+stack.pop() // 3 instr (no idea why in GA it is 3)
+v = b - a
+stack.push(v)
+// relaxed form (5 instructions)
+b = stack.top()
+stack.pop()
+a = stack.top()
+v = b - a
+stack.push(v)
+```
+
+To optimize a whole program, the authors separate the program into several superoptimizable units, and use sliding window to search for the optimal solution. The superoptimizer takes in a few superoptimizable units whose total size does not exceed the bound of the optimizer (16 instructions). If these units can be optimized as a whole, then directly generate the optimized code. Otherwise, it only takes the first unit to optimize, and generate the code for the first unit. Try again for the rest of the units, and repeat the above process. Finally all the code segments will be traversed, and the optimzed code of the whole program can be generated. For implementation, they use Z3 SMT solver to conduct the [counterexample-guided inductive synthesis (CEGIS)](http://www.kroening.com/papers/cav2018-synthesis.pdf).
+
+![](sliding-window.png)
 
 
 ## Further Discussion
