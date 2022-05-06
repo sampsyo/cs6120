@@ -219,14 +219,24 @@ To optimize a whole program, the authors separate the program into several super
 
 ![](sliding-window.png)
 
+## Interaction Between Steps
+### Iterative Refinement Method
+Since the above four steps are not aware of each other, it may be possible that some optimizations in specific step are not suitable for others. For example, passing message from A to B, the layout result may require the message to be passed by C, but in the previous step, C is not aware of that, so the message buffer is not counted into C's partition space, which may exceed the memory of C. The authors propose an iterative refinement method to relax the communication constraints until all data fit in each of the core.
+
+### Optimization Opportunity Loss
+Since the authors decompose the problem into four subproblems and solve them individually, which may lead to possible optimization opportunity loss:
+1. Partition before superoptimization. For example, A, B, and C are three code segments. A+B may have the lowest communication cost, but B+C may have the lowest computation cost if they are put on the same core. The partition algorithm is not aware of that.
+2. Schedule-oblivious routing strategy. The routing algorithm does not know which core is busy and may still send message to the busy core.
+3. Scope of superoptimizer. The superoptimizer leverages a greedy algorithm, which works well for local code segments but not the best for the whole program.
+
 
 ## Further Discussion
 
 
-## Programming Model
+### Programming Model
 
 
-## Synthesis and Compilation
+### Synthesis and Compilation
 
 
 ## Reference
