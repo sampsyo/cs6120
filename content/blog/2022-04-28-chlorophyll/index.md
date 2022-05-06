@@ -132,6 +132,11 @@ The synthesizer will solve the constraint, use that solution as an additional co
 One question here is that where is the boundary between programmers and compiler. For this programming model, programmers do not exactly know where they should annotate the partition types. Some may be benefit for the synthesizer to quickly solve the constraint, but others may have negative impact or even cause infeasible solution. This actually can be a burden for programmers since they still have to have a good understanding of the underlying architecture and annotate the partition in a right way.
 
 ### Layout and Routing
+The next stage is to map the logical representation to physical cores. We can denote $F$ as the logical facilities or the code partition, $L$ as the physical core locations (represented in a 2D tuple), $t:F\times F\to\mathbb{R}$ as the flow function (i.e., the number of messages between two partitions), and $d:L\times L\to\mathbb{R}$ as the distance function (use Manhattan distance as a measurement). Thus, the layout and routing problem becomes finding the assignment that minimizes the following communication function:
+
+\[\sum_{f_1\in F, f_2\in F}t(f_1,f_2)\cdot d(a(f_1),a(f_2))\]
+
+This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing#:~:text=Simulated%20annealing%20(SA)%20is%20a,space%20for%20an%20optimization%20problem.).
 
 ### Code Separation
 is code separation a synthesis problem?
