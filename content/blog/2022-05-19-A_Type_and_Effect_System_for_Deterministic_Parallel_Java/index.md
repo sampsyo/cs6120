@@ -3,7 +3,7 @@ title = "A Type and Effect System for Deterministic Parallel Java"
 [extra]
 bio = """
   [Nikita Lazarev](https://www.nikita.tech/) is an PhD student at Cornell's ECE department;
-  Susan Garry is an undergraduate student at Cornell' CS department.
+  Susan Garry is an undergraduate student at Cornell's CS department.
 """
 [[extra.authors]]
 name = "Nikita Lazarev"
@@ -18,17 +18,17 @@ name = " Susan Garry"
 
 ### Introduction
 
-Multithreading is notoriously difficult to reason about and error-prone. This happens due to potential race conditions that can be arise when two threads are trying to access the same region in memory simultaneously. Traditional approaches using locks (e.g. mutexes) can cause a deadlock and are also hard to reason about.
+Multithreading is notoriously difficult to reason about and error-prone. This happens due to potential race conditions that can be arise when two threads try to access the same region in memory simultaneously. Traditional approaches using locks (e.g. mutexes) can cause a deadlock and are also difficult to reason about and debug.
 
-In this paper, the authors propose a new way of making concurrency in Java safe and lock-free by introducing a novel mechanism for partitioning and annotating of parallel Java programs. They develop a new extension for Java called DPJ (Deterministic Parallel Java) which additionally comes with the formal verification functionality. The papers demonstrates how DPJ can be used to implement realistic algorithms and verify their thread-safeness.
+In this paper, the authors propose making concurrency in Java safe and lock-free by using a type and effect system that involves partitioning and annotating Java programs. They introduce novel mechanisms that expand on the capabilities of previous type and effect systems, allowing for concurrent operations on recursive data structures via **region nesting**, concurrent array operations via **index-parameterized arrays** and **subarrays**, and concurrent writes to the same location in memory via **commutativity annotations**. They develop a new extension for Java called DPJ (Deterministic Parallel Java) which additionally comes with the formal verification functionality. The paper demonstrates how DPJ can be used to implement realistic algorithms and verify their thread-safeness.
 
 ### Basic Idea
 
 The paper introduces a set of annotations for unsafe memory accesses. The systems defines two main classes of annotations:
 * **regions** - the programmer names portions of the heap and assigns each object and variable to a region of the heap;
-* **effect annotations** - denotes what regions a method reads and writes from, e.g. ```reads <region-list> writes <region-list>```, where ```<region-list>``` is the region list defined above.
+* **effect annotations** - denotes what regions a method reads and writes from, e.g. ```reads <region-list> writes <region-list>```, where ```<region-list>``` is a list of regions as defined above.
 
-The listing bellow shows an example of a class definition (a Tree class for a tree datastructure) with annotations, the example is taken form the original paper, and we added more comments in it to show the functionality.
+The code below shows an example of a class definition (a Tree class for a tree data structure) with annotations. The example is taken from the original paper, and we added more comments in it to show the functionality.
 
 ```
 // take the "global" region P for this class as a template argument.
@@ -54,7 +54,7 @@ class TreeNode<region P> {
 
 ### Region Nesting
 
-Since many datastructures are naturally recursive, DPJ comes with the functionality to express recursiveness of memory regions. This is called **region nesting**. The listing bellow shows how the aforementioned program can be extended with region nesting:
+Since many datastructures are naturally recursive, DPJ comes with the functionality to express recursiveness of memory regions. This is called **region nesting**. The listing below shows how the aforementioned program can be extended with region nesting:
 
 ```
 // take the "global" region P for this class as a template argument.
@@ -78,15 +78,15 @@ class TreeNode<region P> {
  }
 ```
 
-The above code results in the following recursive region nesting as shown in the figure bellow. Here, the mass region M is different for every nested/recursive node.
+The above code results in the following recursive region nesting as shown in the figure below. Here, the mass region M is different for every nested/recursive node.
 
 <p align="center">
-<img src="figure_1.jpg" alt="alt_text" title="image_tooltip" " />
+<img src="figure_1.jpg" alt="alt_text" title="image_tooltip" width="500" />
 </p>
 
 ### Subtyping
 
-The DPJ type system supports subtyping to better express nested regions. A summary of the subtyping rules is shown bellow:
+The DPJ type system supports subtyping to better express nested regions. A summary of the subtyping rules is shown below:
 
 * Two regions are nested within each other, R1 ≤ R2,  iff R1 is contained within R2, e.g. P:M ≤ P;
 * C<R1> is a subtype of C<R2> iff every region of R1 is in R2 (R1 ⊆ R2); examples:
@@ -120,4 +120,4 @@ defines that two invocations of `add` are atomic and either order of invocations
 
 ### Evaluation
 
-The authors evaluate their type and effect system on a set of benchmarks and show that it indeed allows to express concurrency that provides near-ideal linear scaling of performance with the number of executors. Some algorithms do not scale linearly due to certain limitations of DPJ such as impossibility of re-shuffling for array elements.
+The authors evaluate their type and effect system on a set of benchmarks and show that it indeed allows to express concurrency that provides near-ideal linear scaling of performance with the number of executors. Some algorithms do not scale linearly due to certain limitations of DPJ such as impossibility of re-shuffling for array elements. Additionally, while these techniques allow some realistic concurrent algorithms to be expressed in this language, threads which write to the same location in memory must make use of the commutativity annotations, and the correctness of these annotations must be verified by the programmer.
