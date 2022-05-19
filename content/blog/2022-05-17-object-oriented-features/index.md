@@ -1,5 +1,5 @@
 +++
-title = "Xic++: Object Oriented Features for Xic"
+title = "Xi++: Object Oriented Features for Xi"
 [[extra.authors]]
 name = "Orko Sinha"
 link = ""
@@ -147,7 +147,7 @@ Both of these classes have been well tested.
 
 When generating the actual IR for the dispatch vectors, we tried a few different approaches. First, we converted the mangled function names into strings by representing them as an array of characters in the IR, and then tried to call the function by loading the string. We quickly realized that this would be difficult because the strings are longer often multiple characters and when we do `call [dv + index], we're really calling a function with the name corresponding the the first character in the mangled function name. We quickly scrapped this approach and tried to build them using static data.
 
-In Xic, static data is represented by an `IRData` class. Out of the box, `IRData` is not a traditional `IRNode` (it does not extend `IRNode`. This means its children nodes are not `IRNode`s. Instead, it has a field `long[] data`. We tried to encode the dispatch vector as the concatenation of function names seperated by the null terminator. Again, we ran into the problem that when we do `call classADVLabel` it only reads the first word of data which corresponds to the first character.
+In Xi, static data is represented by an `IRData` class. Out of the box, `IRData` is not a traditional `IRNode` (it does not extend `IRNode`. This means its children nodes are not `IRNode`s. Instead, it has a field `long[] data`. We tried to encode the dispatch vector as the concatenation of function names seperated by the null terminator. Again, we ran into the problem that when we do `call classADVLabel` it only reads the first word of data which corresponds to the first character.
 Even worse, the interpreter tried to jump to the instruction at the address corresponding to that character instead of looking up that character in the function defn to address table and jumping there. I wrote a version of the interpreter that read until the next null terminator and then did the correct lookup. This got things to worked but it felt hacky because we could no longer write IR that jumped to an address -- it required we jumped to a function that was named as the string starting at that memory address until the next null terminator byte in memory.
 
 We explored trying to put the memory address of the function in the IRData instead of the name. That way, we would only need to read one word and the interpeter would jump there as it wanted to do. The problem with this approach is that when we convert to the IR, we have no idea about the memory layout. The memory addresses are defined by the interpeter and would be different than the memory scheme if we went all the way to assembley. Additionally, there was no way to know about the memory layout of the simulator when converting to IR because it does not initialize its memory until after the IR is created.
@@ -181,3 +181,14 @@ As discussed above, much of the work that went into this project was with respec
 ## Private Methods
 
 The specification of Xi++ allows methods to be defined in class definitions that are not part of class declarations. The current implementation expects that this would result in a type checking error since the declaration and definition do not match. However, we could imagine that a class definition declares methods that it does not want to export. These types of functions could be represented in the object but not part of the dispatch vector. An alternative approach would be to store it in the dispatch vector but type checking would not permit `MethodCall`s outside the class to use it nor allow subclasses to use it.
+
+## Evaluation
+In addition to unit tests for Lexing, Parsing, `NodeToIRNodeConverter`, `ThisAugmenter` and dispatch vector tests we also have a series of integration tests that combine these features into the Xi/Xi++ compiler.
+
+These integration tests include:
+1. `class_equality.xi` - Checks if an object is equal to itself and if two objects are not equivalent to each other by using the `==` operator 
+2. `class_field_access.xi` - Checks a series of class field accesses with inheritance
+3. `class_method.xi` - A test for methods working for classes using a field
+4. `field_access.xi` - A test for fields working for classes
+5. `method_call.xi` - A test for methods working for classes without a field
+6. `point.xi` - A comprehensive test using inheritence and various field and methods of classes
