@@ -7,7 +7,7 @@ link = ""
 name = "Michael Maitland"
 link = "https://michaelmaitland.com"
 +++
-Building a compiler for Xi is the main project in [CS 4120](https://www.cs.cornell.edu/courses/cs4120/) at Cornell. The final assignment, now discontinued, is to extend the compiler to support feaures of the [Xi++ Language Specification](https://www.cs.cornell.edu/courses/cs4120/2019sp/project/oolang.pdf) such as object-oriented programing. Our project is an implementation of these features on Michael's compiler created for CS 4120. Our project is [here](https://github.com/Yasgur99/xic/pull/5).
+Building a compiler for Xi is the main project in [CS 4120](https://www.cs.cornell.edu/courses/cs4120/) at Cornell. The final assignment, now discontinued, is to extend the compiler to support feaures of the [Xi++ Language Specification](https://www.cs.cornell.edu/courses/cs4120/2019sp/project/oolang.pdf) such as object-oriented programing. Our project is an implementation of these features on Michael's compiler created for CS 4120. Our project is [here](https://github.com/Yasgur99/xic/tree/oo).
 
 # Lexing
 For lexing, there are 5 new syntax elements that we need to handle, listed below:
@@ -20,18 +20,34 @@ For lexing, there are 5 new syntax elements that we need to handle, listed below
 These correspond to 5 new token types corresponding to each keyword in the language. The existing JFlex file created for the original project is extended to support these features.
 
 # Parsing
-The parser handles the new semantics and allow parsing of the following
-1. Parsing of `Interface` that contain `use` statements and class definitions.
-    * Interfaces may contain zero or more use statements followed by zero or more function declarations or class declarations). A class declaration is the name of the class, optionally the class it extends, and zero or more function declarations. `ClassDecl` is created as a new AST node to represent this.
-2. Parsing of `Program` that contain class definitions.
-    * Programs can now contain one or more (function definitions or class definitions). A class definition is the name of the class, and the class it extends a list of fields which are `Decl` or `ExtendedDecl`s, and a list of function defintions. However, the ist of fields or methods can be empty. `ClassDefn` also represents this.
+The parser handles the new semantics and allow parsing of the following:
+1. Parsing of `Interface` that contain zero or more `use` statements and zero or more class declarations. A class declaration is the name of the class, optionally the class name it extends, and zero or more function declarations. `ClassDecl` is created as a new AST node to represent this.
+2. Parsing of `Program` that contain class definitions and function definitions. Programs can now contain one or more functions definitions and/or class definitions. A class definition is the name of the class, and the class it extends a list of fields which are `SimpleDecl`s, and a list of function defintions. However, the list of fields or methods can be empty. `ClassDefn` also represents this.
 3. Parsing of `Exp` with the `new` and `this` keyword.
+4. Parsing of `MethodCall`s which take the form `o.f()` or `this.f()`
+5. Parsing of `FieldAccess` which take the form of `o.x` or `this.x`
 
 Additionally, two AST nodes are added to handle Interfaces and Classes.
 1. `InterfaceBody`
 2. `ClassBody`
 
 Previously, an `Interface` and `Program` contained the function declarations and definitions respectively. Previously, the parser would add to the lists directly when it came across a declaration or definition. Now that we are also handling class declarations and definitions, the parser has `fdecl_or_cdecl_star` and `fdefn_or_cdefn_plus` nonterminal to account for this. These two new nonterminals correspond to the two new AST nodes. This does not have a big input on the rest of the compiler as we just need to add a `getBody()` call in certain places that expected the function declarations and definitions to be accessed directly from the `Program`.
+
+We also add AST nodes `FieldAccess`, `MethodCall`, and `New`.
+
+# Symbol Tables
+
+We extend the old symbol table that just included entries for function declarations into a symbol table that includes both function declarations, class declarations and object fields
+
+## Implementation
+
+The old symbol table was represented as a `Map<String, FunctionDecl>`. Now, we introduce a class `SymbolTable` that really serves as a wrapper. It has has fields `Map<String, FunctionDecl>` and `Map<String, ClassDecl>`. By using a wrapper, we can pass around the `SymbolTable` as a single object and we shift some of the operations on the map into our new abstraction.
+
+This change required us to change the `SymbolTableManager` to operate on `SymbolTable` and do logic related to merging class symbols.
+
+It also requires a renaming of `FunctionCollector` to `SymbolCollector` which extends the logic of collection function to also collect classes. We use the same visitor pattern where all `ClassDecl` nodes tell the visitor to extract their declaration out of them. All other nodes that are not `ClassDecl`s do nothing when the visitor visits them.
+
+The `getValidPrograms()` function now returns a `ValidProgram` and takes one less argument. Previously it took an argument that the function mutated since it already had a different return value. I decided to create the `ValidProgram` class which lets us store both the old return value and this list of function declarations in one object. However after extending with class symbols we need a list of `FunctionDecl` and `ClassDecl`. A new object to represent this is `ProgramSymbols` which is really a wrapper over both lists.
 
 # Desugaring
 The Xi++ specification states that fields and methods in a class are brought into scope automatically. To supplement this, we refer to fields as `this.x` and methods `this.f()`.  However, as per the language specifiction, we also need to support `x` and `f()` respectively from the examples prior. This is syntactic sugar. The `ThisAugmentor` created is a visitor that converts unqualified field accesses and method calls to qualified ones. Simply, it takes `x` or `f()` into `this.x` or `this.f()` respectively.
