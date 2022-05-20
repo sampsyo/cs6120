@@ -1,5 +1,5 @@
 +++
-title = "Peephole Improvements for Numyp with JAX"
+title = "Peephole Improvements for Numpy with JAX"
 [extra]
 latex = true
 [[extra.authors]]
@@ -17,7 +17,15 @@ The implementation of the project builds on several ideas explored in class, suc
 The basic design of the project is to convert code which uses numpy into an intermediate representation, perform the peephole optimizations on the intermediate representation, and then execute the code.
 
 ### Scope
-The project's proof of concept for "peephole improvements" is to implement code which does the `logsumexp` trick for people. In machine learning the `logsumexp` operation will come up somewhat frequently, such as when computing the log of a softmax (when coupled with another normalization term). However, it is easy for this operation to run into overflow issues when any value of $x$ is big. The logsumexp trick of replacing $\log\sum_{i=1}^n\exp(x_i)$ with $\max_{i\in[n]}(x_i) + \log\sum_{i=1}^n\exp(x_i - \max_{i\in[n]}(x_i))$ with is a common way of dealing with this problem, since $\log\sum_{i=1}^n\exp(x_i) = c + \log\sum_{i=1}^n\exp(x_i-c)$ for all $c$, and so setting $c = \max_{i\in[n]}(x_i)$ guarantees that you only exponentiate terms $x_i - c \leq 0$, avoiding overflow issues. 
+The project's proof of concept for "peephole improvements" is to implement code which does the `logsumexp` trick for people. In machine learning the `logsumexp` operation will come up somewhat frequently, such as when computing the log of a softmax (when coupled with another normalization term). However, it is easy for this operation to run into overflow issues when any value of $x$ is big.
+The logsumexp trick of replacing $\log\sum_{i=1}^n\exp(x_i)$ with $\max_{i\in[n]}(x_i) + \log\sum_{i=1}^n\exp(x_i - \max_{i\in[n]}(x_i))$
+with is a common way of dealing with this problem, since
+$$\log\sum_{i=1}^n\exp(x_i) = c + \log\sum_{i=1}^n\exp(x_i-c) \text{ for all } c,$$
+and so setting $c = \max_{i\in[n]}(x_i)$ guarantees that you only exponentiate terms
+$$x_i - c \leq 0,$$ avoiding overflow issues. 
+
+#### Logsumexp trick proof
+$$\begin{aligned}\log\sum_{i=1}^n\exp(x_i) &=\log\sum_{i=1}^n1\exp(x_i)\\\ &= \log\sum_{i=1}^n\exp(c-c)\exp(x_i)\\\ &= \log\exp(c)\sum_{i=1}^n\exp(x_i-c)\\\ &= c + \log\sum_{i=1}^n\exp(x_i-c) \end{aligned}$$
 
 ### JAX and Jaxpr
 Thankfully, there is already a project which converts numpy code into an intermediate representation, then then executes it. [JAX](https://jax.readthedocs.io/en/latest/) is a project which combines autograd (automatic differentiation for python) and XLA to make it easier to write numpy code which runs on GPUs and lets you take derivatives automatically. This seemed like a better starting point for writing peephole improvements than trying to start from scratch because it already exists and has other useful features.
