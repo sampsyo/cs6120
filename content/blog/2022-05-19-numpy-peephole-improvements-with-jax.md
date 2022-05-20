@@ -25,7 +25,7 @@ and so setting $c = \max_{i\in[n]}(x_i)$ guarantees that you only exponentiate t
 $$x_i - c \leq 0,$$ avoiding overflow issues. 
 
 #### Logsumexp trick proof
-$$\begin{aligned}\log\sum_{i=1}^n\exp(x_i) &=\log\sum_{i=1}^n1\exp(x_i)\\\ &= \log\sum_{i=1}^n\exp(c-c)\exp(x_i)\\\ &= \log\exp(c)\sum_{i=1}^n\exp(x_i-c)\\\ &= c + \log\sum_{i=1}^n\exp(x_i-c) \end{aligned}$$
+$$\begin{aligned}\log\sum_{i=1}^n\exp(x_i) &=\log\sum_{i=1}^n1\exp(x_i)\\\ &= \log\sum_{i=1}^n\exp(c-c)\exp(x_i)\\\ &= \log\left(\exp(c)\sum_{i=1}^n\exp(x_i-c)\right)\\\ &= c + \log\sum_{i=1}^n\exp(x_i-c) \end{aligned}$$
 
 ### JAX and Jaxpr
 Thankfully, there is already a project which converts numpy code into an intermediate representation, then then executes it. [JAX](https://jax.readthedocs.io/en/latest/) is a project which combines autograd (automatic differentiation for python) and XLA to make it easier to write numpy code which runs on GPUs and lets you take derivatives automatically. This seemed like a better starting point for writing peephole improvements than trying to start from scratch because it already exists and has other useful features.
