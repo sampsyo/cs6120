@@ -1,24 +1,35 @@
++++
+title = "A Learned Query Compiler"
+[extra]
+latex = true
+[[extra.authors]]
+name = "Victor Giannakouris"
+link = "https://www.linkedin.com/in/vgian/"
++++
+
 # What was the goal?
 The goal of this project was to create an optimizer for a cross-database query compiler. A cross-database query, also 
 known as federated query, is an SQL query that consists of tables that span across different, individual database 
-systems.
+systems. The main weakness with the already existing federated query optimization approaches is of the complexity
+of integration, as the existing solutions need to obtain specific knowledge from the externally connected databases
+by writing complex drivers. We propose a solution based on a machine learning model that enables the easy integration of
+any SQL-based system, with less than 10 loc.
 
 ## Federated Query Compilation Challenges
 A lot of interesting challenges are arising in cross-database query compilation, due to the heterogeneity of the underlying 
-infrastructure. Some challenges that arise are the following:
-1. How could the query plan be split to further subqueries and how the execution of these subqueries could be orchestrated across the different data sources in order to utilize the external data systems and take advantage of their powerful implementations (e.g. access methods and join algorithms)? 
-2. Could we redefine the already existing operators (like join algorithms) and make them more efficient for the cross-database environment? 
+infrastructure. An interesting challenge that arises is the following: How could the query plan be split to further subqueries and how the execution of these subqueries could be orchestrated across the different data sources in order to utilize the external data systems and take advantage of their powerful implementations (e.g. access methods and join algorithms)? 
 
-In this project, we experimented with a cross-database query system called Spark SQL, we identified significant 
-weaknesses related to the aforementioned, and we developed a cross-database query compiler that takes into account the 
+In this project, we experimented with a cross-database query system called Spark SQL, and we developed a cross-database query compiler that takes into account the 
 heterogeneity of the underlying infrastructure and it's able to optimize the query with respect to each table location.
 
 # What did you do?
-We focused on two different aspects of this problem, and we present the implementations and some early experimental 
-evaluation of both. The first part is the federated query compiler that optimizes each query by taking into account the 
-underlying data sources. The second part is some experimentation with the current federated join algorithms. 
-We identify some major performance issues to these join algorithms and we present a new implementation that can overcome 
-these performance issues.
+We mainly focused on the optimizer of our federated query compiler. We implemented a federated query compiler which is
+able to do optimize federated queries by splitting the execution of the initial query into individual, smaller parts
+that are pushed-down to the external database systems, achieving significant performance improvements. The optimizer
+of our query compiler is based on a machine learning approach which treats the external systems as black-boxes,
+profiles them and learns how to estimate the query execution cost of each individual system. Thus, our federated query
+compiler is able to easily connect with any system that supports SQL, without needing any expertise of the underlying 
+infrastructure.
 
 ## The Self-Learned Federated Query Compiler
 We developed a query compiler that optimizes input queries with respect to the underlying table locations. To explain 
@@ -163,4 +174,5 @@ accuracy, it is able to achieve performance improvements close to the optimal pl
 optimizer that is assisted by our learned cost model, but there is still work to be done in order to create a robust 
 federated query planner. Our future steps include the following:
 - Include more complex features to the vectorized query representation in order to improve the cost model accuracy
-- Develop a more sophisticated query planner
+- Develop a more sophisticated, dynamic programming based query planner that uses the learned cost model in order to provide better query execution plans
+- Develop and evaluate self-learned planner using Reinforcement Learning.
