@@ -26,9 +26,13 @@ link = "https://tonyjie.github.io/"
 * Were you successful? (Report rigorously on your empirical evaluation.) -->
 
 ## Background
-[HeteroCL](https://github.com/cornell-zhang/heterocl)[^1] is a programming infrastructure composed of a Python-based domain-specific language (DSL) and a compilation flow that targets heterogeneous hardware platforms. It aims to provide a clean abstraction that decouples algorithm specification from hardware customizations, and a portable compilation flow that compiles programs to CPU, GPU, FPGA, and beyond.
+[HeteroCL](https://github.com/cornell-zhang/heterocl)[^1] is a programming infrastructure composed of a Python-based domain-specific language (DSL) and a compilation flow that targets heterogeneous hardware platforms. It aims to provide a clean abstraction that decouples algorithm specification from hardware customizations, and a portable compilation flow that compiles programs to CPU, GPU, FPGA, and more.
 
-![](compile_flow.png)
+
+<p align="center">
+<img src="compile_flow.png">
+Figure 1. HeteroCL supports compilation for various backends
+</p>
 
 The original HeteroCL uses Halide IR as an intermediate representation. However, Halide IR is difficult to extend and scales poorly to programs with hundreds of modules. Therefore, we are moving to the MLIR ecosystem for better scalability and extensibility. [MLIR](https://mlir.llvm.org/)[^2] stands for Multi-Level Intermediate Representation, which is a modular compiler infrastructure that enables different optimizations performed at different levels of abstraction.
 
@@ -44,7 +48,12 @@ For this project, we aim to strengthen HeteroCL’s memory customization ability
 * We propose a `buffer_at` primitive to generate write buffers.
 * We add a profiling tool to evaluate arithmetic intensity and plot a roofline model.
 
-![](rw_mem.png)
+<center>
+<img src="rw_mem.png" alt="alt_text" title="image_tooltip" style="zoom:30%;">
+</center>
+<center>
+Figure 2. Read and write buffer generation with `reuse_at` and `buffer_at`.
+</center>
 
 Figure 2 is an overview of reuse buffer and write buffer generation with `reuse_at` and `buffer_at` primitives. We will go into details in the following sections.
 
@@ -67,6 +76,9 @@ $\{\mathbf{a}^{(i)}\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$
 colored with red, and the span of each dimension is $s_0=s_1=2$.
 
 ![](reuse_buffer.png)
+<center>
+Figure 3. TODO
+</center>
 
 Declaring this kernel in HeteroCL is easy. Users can leverage the declarative API `hcl.compute()` to explicitly write out the computation rule as follows.
 ```python
@@ -296,9 +308,12 @@ module {
 `hcl.buffer_at` only specifies the buffer we want to generate. To generate the buffer, we transform the IR through a pass and generate operations that allocate the buffer, initialize it, and write it back to tensor C. The above code snippet shows the MLIR assembly code with the row buffer generated. 
 
 ### Interleaving Accumulation
-We can combine `buffer_at` with loop reordering to achieve a technique called interleaving accumulation[^1]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. The figure below shows the GEMM example after interleaving accumulation is applied. 
+We can combine `buffer_at` with loop reordering to achieve a technique called interleaving accumulation[^5]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. The figure below shows the GEMM example after interleaving accumulation is applied. 
 
 ![](interleave.png)
+<center>
+Figure 4. Interleave accumulations to remove loop-carried dependency
+</center>
 
 To implement the interleaving accumulation technique, we reorder the reduction loop with the outer loop in the GEMM example and add a write buffer for partial results:
 
@@ -374,7 +389,12 @@ Other questions may be relevant depending on the project you choose. Consider th
 ### MLIR-based HeteroCL compilation flow
 MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR.
 
-![](hcl-flow.png)
+<center>
+<img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
+</center>
+<center>
+Figure 5. MLIR-based HeteroCL end-to-end compilation flow.
+</center>
 
 Experiment | Latency | Speedup | DSP | BRAM | LUT | FF
 -- | -- | -- | -- | -- | -- | --
@@ -389,6 +409,11 @@ conv_acc | 6.538 ms | 1.1x | 5 | 0 | 919 | 747
 
 ## References
 [^1]: Yi-Hsiang Lai, Yuze Chi, Yuwei Hu, Jie Wang, Cody Hao Yu, Yuan Zhou, Jason Cong, Zhiru Zhang, "*HeteroCL: A Multi-Paradigm Programming Infrastructure for Software-Defined Reconfigurable Computing*", FPGA, 2019.
+
 [^2]: Chris Lattner, Mehdi Amini, Uday Bondhugula, Albert Cohen, Andy Davis, Jacques Pienaar, River Riddle, Tatiana Shpeisman, Nicolas Vasilache, Oleksandr Zinenko, "*MLIR: Scaling Compiler Infrastructure for Domain Specific Computation*", CGO, 2021.
+
 [^3]: Yuze Chi, Jason Cong, Peng Wei, Peipei Zhou, "*SODA: Stencil with Optimized Dataflow Architecture*", ICCAD, 2018.
+
 [^4]: Louis-Noel Pouchet, Peng Zhang, P. Sadayappan, Jason Cong, "*Polyhedral-Based Data Reuse Optimization for Configurable Computing*", FPGA, 2013
+
+[^5]: de Fine Licht, Johannes, Maciej Besta, Simon Meierhans, and Torsten Hoefler. "Transformations of high-level synthesis codes for high-performance computing." IEEE Transactions on Parallel and Distributed Systems 32, no. 5 (2020): 1014-1029.
