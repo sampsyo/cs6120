@@ -42,7 +42,7 @@ We build a HeteroCL(HCL) dialect in MLIR to capture hardware customizations and 
 * Data type customizations: quantization, packing and unpacking.
 * Memory customizations: build custom memory hierarchies and scratchpad memories.
 
-In HeteroCL, we use *schedule* and *stage* to specify hardware customizations. A stage is either a function or a loop nest that produces or updates tensors. A schedule is a graph of stages created from the algorithm description, and all hardware customizations are specified on the schedule, thus decoupled from the algorithm specification.
+In HeteroCL, we use *schedule* and *stage* to specify hardware customizations. A stage is either a function or a loop nest that produces or updates tensors. A schedule is a graph of stages created from the algorithm description. All hardware customizations are specified on the schedule, thus decoupled from the algorithm specification.
 For this project, we aim to strengthen HeteroCL’s memory customization ability and add performance profiling infrastructure. Specifically:
 * We extend the `reuse_at` primitive to generate reuse buffers for higher dimension tensors.
 * We propose a `buffer_at` primitive to generate write buffers.
@@ -387,7 +387,7 @@ module {
 Other questions may be relevant depending on the project you choose. Consider the [SIGPLAN empirical evaluation guidelines](https://www.sigplan.org/Resources/EmpiricalEvaluation/) when you design your methodology. -->
 
 ### MLIR-based HeteroCL compilation flow
-MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR.
+MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Figure 5.
 
 <center>
 <img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
@@ -396,16 +396,31 @@ MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM di
 Figure 5. MLIR-based HeteroCL end-to-end compilation flow.
 </center>
 
+From affine dialect level, the IR either generates HLS code through a translation pass or keep lowering to LLVM dialect level for CPU execution.
+
+### Write buffer experiments
+We evaluate `hcl.buffer_at` on the FPGA backend with Vivado HLS. Since creating write buffer between PE and off-chip memory is essentially customizing memory hierarchy, and we don't have such freedom on CPU, we omit the experiments on the LLVM backend.
+
 Experiment | Latency | Speedup | DSP | BRAM | LUT | FF
 -- | -- | -- | -- | -- | -- | --
-gemm | 25.778 sec | 1x | 5 | 0 | 525 | 576
-gemm_buffer | 23.639 sec | 1.1x | 5 | 2 | 677 | 617
-gemm_acc | 2.156 sec | 11.9x | 5 | 2 | 783 | 745
-conv | 6.978 ms | 1x | 5 | 0 | 739 | 619
-conv_acc | 6.538 ms | 1.1x | 5 | 0 | 919 | 747
+`gemm` | 25.778 sec | 1x | 5 | 0 | 525 | 576
+`gemm_buffer` | 23.639 sec | 1.1x | 5 | 2 | 677 | 617
+`gemm_acc` | 2.156 sec | 11.9x | 5 | 2 | 783 | 745
+`conv` | 6.978 ms | 1x | 5 | 0 | 739 | 619
+`conv_acc` | 0.639 ms | 10.9x | 5 | 2 | 858 | 1586
 
+- `gemm`: baseline, without any hardware customization.
+- `gemm_buffer`: buffering a row of output tensor with `hcl.buffer_at`.
+- `gemm_acc`: interleaving accumulation with loop reordering and write buffer.
+- `conv`: 2D convolution baseline, without any hardware customization.
+- `conv_acc`: 2D convolution with interleaving accumulation.
+
+We observe that buffering a row of output tensor alone brings 1.1x speedup, with some BRAM overhead. Using interleaving accumulation to remove loop-carried dependency delivers 11.9x speedup compared to baseline. 
+
+In addition to the GEMM example, we add 2D convolution experiments with interleaving accumulation. Similarly, we first reorder the reduction loops and its outer loop, then create write buffer and add pipelining. The complete implementation is [here](https://github.com/zzzDavid/hcl-memory-opt/blob/main/buffer_at/conv_acc.mlir). Convolution with interleaving accumulation has 10.9x speedup to baseline, also with some BRAM and FF overhead.
 
 ## Conclusion and Future Work
+In conclusion, we enhance the memory customization ability and add performance profiling infrastructure to MLIR-based HeteroCL. We extend the `reuse_at` primitive to generate reuse buffers for 3D and higher dimention tensors. We propose a `buffer_at` primitive to generate write buffers and demonstrate its use cases with interleaving accumulation. We add a profiling tool to evaluate arithmetic intensity and plot a roofline model.
 
 ## References
 [^1]: Yi-Hsiang Lai, Yuze Chi, Yuwei Hu, Jie Wang, Cody Hao Yu, Yuan Zhou, Jason Cong, Zhiru Zhang, "*HeteroCL: A Multi-Paradigm Programming Infrastructure for Software-Defined Reconfigurable Computing*", FPGA, 2019.
