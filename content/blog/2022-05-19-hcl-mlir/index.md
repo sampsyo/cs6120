@@ -25,8 +25,28 @@ link = "https://tonyjie.github.io/"
 * What were the hardest parts to get right?
 * Were you successful? (Report rigorously on your empirical evaluation.) -->
 
-## Introduction
+## Background
 [HeteroCL](https://github.com/cornell-zhang/heterocl)[^1] is a programming infrastructure composed of a Python-based domain-specific language (DSL) and a compilation flow that targets heterogeneous hardware platforms. It aims to provide a clean abstraction that decouples algorithm specification from hardware customizations, and a portable compilation flow that compiles programs to CPU, GPU, FPGA, and beyond.
+
+![](compile_flow.png)
+
+The original HeteroCL uses Halide IR as an intermediate representation. However, Halide IR is difficult to extend and scales poorly to programs with hundreds of modules. Therefore, we are moving to the MLIR ecosystem for better scalability and extensibility. [MLIR](https://mlir.llvm.org/)[^2] stands for Multi-Level Intermediate Representation, which is a modular compiler infrastructure that enables different optimizations performed at different levels of abstraction.
+
+## Introduction
+We build a HeteroCL(HCL) dialect in MLIR to capture hardware customizations and define program abstractions. Hardware customizations are the techniques to build faster and more efficient programs or architectures. There are three types of hardware customizations:
+* Compute customizations: such as loop unrolling, splitting, reordering, pipelining.
+* Data type customizations: quantization, packing and unpacking.
+* Memory customizations: build custom memory hierarchies and scratchpad memories.
+
+In HeteroCL, we use *schedule* and *stage* to specify hardware customizations. A stage is either a function or a loop nest that produces or updates tensors. A schedule is a graph of stages created from the algorithm description, and all hardware customizations are specified on the schedule, thus decoupled from the algorithm specification.
+For this project, we aim to strengthen HeteroCL’s memory customization ability and add performance profiling infrastructure. Specifically:
+* We extend the `reuse_at` primitive to generate reuse buffers for higher dimension tensors.
+* We propose a `buffer_at` primitive to generate write buffers.
+* We add a profiling tool to evaluate arithmetic intensity and plot a roofline model.
+
+![](rw_mem.png)
+
+Figure 2 is an overview of reuse buffer and write buffer generation with `reuse_at` and `buffer_at` primitives. We will go into details in the following sections.
 
 ## Reuse Buffer
 The original HeteroCL paper only talks about how to generate reuse buffers for simple 2D convolutional kernel, while real-life applications generally have high-dimensional arrays with complex access patterns. In this project, we try to extend the idea of reuse buffer in the MLIR framework to support more applications. In this section, we will first discuss the high-level design of reuse buffer and details the implementation.
@@ -73,7 +93,7 @@ def test_stencil():
 
 From the memory access pattern above, we can see that when the stencil window is moved from the previous iteration (blue grids in Fig. (a)) to the next iteration in the same row (red grids in Fig.(a)), there exist two replicated data in these two iterations (highlighted with dash line). If all the data are loaded from off-chip memory, it may cause contention and introduce large memory access overheads. To exploit this data reuse opportunity, HeteroCL provides a push-button primitive `.reuse_at()` for users to declare reuse buffers. By specifying the dimension, users can exactly control the location of reuse buffers.
 
-The best case to generate minimal size reuse buffer is to generate small retangular strips whose total length is equal to the reuse distance of the stencil [^2]. In the five-point stencil example, this requires generate buffer covering elements from $(0,1)$ to $(2,1)$. The total size of the buffer is $4+6+3=13$. However, this may introduce complicated control logic when implementing on FPGA. Thus, for simplicity, we use *rectangular hull* of the stencil as the reuse buffer, which is labeled as red frame in Fig. (a). We call it *window buffer*. The shape of this buffer is $[s_0,s_1,\ldots,s_m]$. We can always reuse data when the buffer moves along the same row.
+The best case to generate minimal size reuse buffer is to generate small retangular strips whose total length is equal to the reuse distance of the stencil [^3]. In the five-point stencil example, this requires generate buffer covering elements from $(0,1)$ to $(2,1)$. The total size of the buffer is $4+6+3=13$. However, this may introduce complicated control logic when implementing on FPGA. Thus, for simplicity, we use *rectangular hull* of the stencil as the reuse buffer, which is labeled as red frame in Fig. (a). We call it *window buffer*. The shape of this buffer is $[s_0,s_1,\ldots,s_m]$. We can always reuse data when the buffer moves along the same row.
 
 While this works well for one dimension, when the stencil window moves from the end of previous row to the front of the next row, there will be no elements that can be reused, which may incur extra latency to load data from off-chip memory. A traditional way to tackle this problem is leveraging another load process to prefetch the data, so the reuse buffer can always be prepared with data. This method again complicates the control logic and requires extra prefetching function to work concurrently. To be consistent with the API that HeteroCL proposed, we can further create hierarchical reuse buffers to hide memory access overheads. As shown in Fig. (b), we can create a *line buffer* to reuse data along the column dimension. Basically, only one element needs to be fetched from off-chip memory to line buffer in each iteration. The original elements in the line buffer need to be shifted up for one grid as depicted in blue arrows. After the elements are loaded to line buffer, they are further copied to window buffer as shown in the red arrows. In this way, the data loading pipeline can work perfectly without stall. Finally the kernel can simply use the indices in $\{\mathbf{a}^{(i)}\}^{5}_{i=1}$ to access the elements in the window buffer.
 
@@ -203,6 +223,143 @@ module {
 The above steps can be extended to high-dimensional stencils, and we will give more experimental results in the following sections.
 
 ## Write Buffer
+`buffer_at` generates on-chip write buffers for a certain tensor at a specified loop level. An example use case is writing partial results to memory, which will be loaded again for computation until the reduction loop finishes. Instead of writing the partial results to the off-chip memory every time, we can instantiate an on-chip buffer to hold the partial results, and write only once to off-chip memory when reduction finishes.
+
+`buffer_at` syntax is shown below.
+
+```python
+schedule.buffer_at(Tensor, Stage, Axis)
+```
+
+`Tensor` is the target tensor that holds write-back values. `Stage` is the loop nest that writes to the target tensor. `Axis` the loop level at which a write buffer of the target tensor is instantiated.
+
+### GEMM Example
+We use general matrix-to-matrix multiplication as an example to illustrate the effect of `buffer_at`. We also empirically evaluate the result on the FPGA backend with Vivado HLS, which is discussed in the experiment section.
+
+```mlir
+module {
+   func @kernel(%A: memref<1024x512xf32>, %B: memref<512x1024xf32>, %C: memref<1024x1024xf32>)
+   {
+       %li = hcl.create_loop_handle "i" : !hcl.LoopHandle
+       %lj = hcl.create_loop_handle "j" : !hcl.LoopHandle
+       %lk = hcl.create_loop_handle "k" : !hcl.LoopHandle
+       %s = hcl.create_stage_handle "s" : !hcl.StageHandle
+       affine.for %i = 0 to 1024 {
+           affine.for %j = 0 to 1024 {
+               affine.for %k = 0 to 512 {
+                   %a = affine.load %A[%i, %k] : memref<1024x512xf32>
+                   %b = affine.load %B[%k, %j] : memref<512x1024xf32>
+                   %c = affine.load %C[%i, %j] : memref<1024x1024xf32>
+                   %prod = arith.mulf %a, %b : f32
+                   %sum = arith.addf %prod, %c: f32
+                   affine.store %sum, %C[%i, %j] : memref<1024x1024xf32>
+               } { loop_name = "k", reduction = 1 : i32}
+           } { loop_name = "j" }
+       } { loop_name = "i", stage_name = "s" }
+       %buf = hcl.buffer_at(%s, %C: memref<1024x1024xf32>, %li) -> memref<1024xf32>
+       return
+   }
+}
+```
+
+The above example is matrix multiplication with a write buffer at the first level in MLIR assembly code. The program multiplies matrices A and B and updates the matrix C. Operations such as `hcl.create_loop_handle` and `hcl.create_stage_handle` define loop and stage handles which are used to describe customizations. In this example, we have three loops `i`, `j`, `k`, and one stage `s`. We apply `hcl.buffer_at` for target tensor `C` in stage `s` at loop level `i`. This will create a buffer that stores 1024 values of `C` tensor’s one row.
+
+```mlir
+module {
+  func @kernel(%arg0: memref<1024x512xf32>, %arg1: memref<512x1024xf32>, %arg2: memref<1024x1024xf32>) {
+    affine.for %arg3 = 0 to 1024 {
+      %0 = memref.alloc() : memref<1024xf32>
+      %cst = arith.constant 0.000000e+00 : f32
+      affine.for %arg4 = 0 to 1024 {
+        affine.store %cst, %0[%arg4] : memref<1024xf32>
+      } {loop_name = "j_init", pipeline_ii = 1 : i32}
+      affine.for %arg4 = 0 to 1024 {
+        affine.for %arg5 = 0 to 512 {
+          %1 = affine.load %arg0[%arg3, %arg5] : memref<1024x512xf32>
+          %2 = affine.load %arg1[%arg5, %arg4] : memref<512x1024xf32>
+          %3 = affine.load %0[%arg4] : memref<1024xf32>
+          %4 = arith.mulf %1, %2 : f32
+          %5 = arith.addf %4, %3 : f32
+          affine.store %5, %0[%arg4] : memref<1024xf32>
+        } {loop_name = "k", reduction = 1 : i32}
+      } {loop_name = "j"}
+      affine.for %arg4 = 0 to 1024 {
+        %1 = affine.load %0[%arg4] : memref<1024xf32>
+        affine.store %1, %arg2[%arg3, %arg4] : memref<1024x1024xf32>
+      } {loop_name = "j_back", pipeline_ii = 1 : i32}
+    } {loop_name = "i", stage_name = "s"}
+    return
+  }
+}
+```
+
+`hcl.buffer_at` only specifies the buffer we want to generate. To generate the buffer, we transform the IR through a pass and generate operations that allocate the buffer, initialize it, and write it back to tensor C. The above code snippet shows the MLIR assembly code with the row buffer generated. 
+
+### Interleaving Accumulation
+We can combine `buffer_at` with loop reordering to achieve a technique called interleaving accumulation[^1]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. The figure below shows the GEMM example after interleaving accumulation is applied. 
+
+![](interleave.png)
+
+To implement the interleaving accumulation technique, we reorder the reduction loop with the outer loop in the GEMM example and add a write buffer for partial results:
+
+```mlir
+module{
+   func @kernel(%A: memref<1024x512xf32>, %B: memref<512x1024xf32>, %C: memref<1024x1024xf32>)
+   {
+       %li = hcl.create_loop_handle "i" : !hcl.LoopHandle
+       %lj = hcl.create_loop_handle "j" : !hcl.LoopHandle
+       %lk = hcl.create_loop_handle "k" : !hcl.LoopHandle
+       %s = hcl.create_stage_handle "s" : !hcl.StageHandle
+       affine.for %i = 0 to 1024 {
+           affine.for %j = 0 to 1024 {
+               affine.for %k = 0 to 512 {
+                   %a = affine.load %A[%i, %k] : memref<1024x512xf32>
+                   %b = affine.load %B[%k, %j] : memref<512x1024xf32>
+                   %c = affine.load %C[%i, %j] : memref<1024x1024xf32>
+                   %prod = arith.mulf %a, %b : f32
+                   %sum = arith.addf %prod, %c: f32
+                   affine.store %sum, %C[%i, %j] : memref<1024x1024xf32>
+               } { loop_name = "k", reduction = 1 : i32}
+           } { loop_name = "j" }
+       } { loop_name = "i", stage_name = "s" }
+       hcl.reorder(%s, %lk, %lj)
+       %buf = hcl.buffer_at(%s, %C: memref<1024x1024xf32>, %li) -> memref<1024xf32>
+       hcl.pipeline(%s, %lj, 1)
+       return
+   }
+}
+```
+
+With the same pass to implement loop reordering and buffer generation, the transformed MLIR assembly code has the reduction loop at axis 1, inner loop pipelined, and partial results written to the row buffer `%0`, as shown in the following code snippet.
+
+```mlir
+module {
+  func @kernel(%arg0: memref<1024x512xf32>, %arg1: memref<512x1024xf32>, %arg2: memref<1024x1024xf32>) {
+    affine.for %arg3 = 0 to 1024 {
+      %0 = memref.alloc() : memref<1024xf32>
+      %cst = arith.constant 0.000000e+00 : f32
+      affine.for %arg4 = 0 to 1024 {
+        affine.store %cst, %0[%arg4] : memref<1024xf32>
+      } {loop_name = "j_init", pipeline_ii = 1 : i32}
+      affine.for %arg4 = 0 to 512 {
+        affine.for %arg5 = 0 to 1024 {
+          %1 = affine.load %arg0[%arg3, %arg4] : memref<1024x512xf32>
+          %2 = affine.load %arg1[%arg4, %arg5] : memref<512x1024xf32>
+          %3 = affine.load %0[%arg5] : memref<1024xf32>
+          %4 = arith.mulf %1, %2 : f32
+          %5 = arith.addf %4, %3 : f32
+          affine.store %5, %0[%arg5] : memref<1024xf32>
+        } {loop_name = "j", pipeline_ii = 1 : i32}
+      } {loop_name = "k", reduction = 1 : i32}
+      affine.for %arg4 = 0 to 1024 {
+        %1 = affine.load %0[%arg4] : memref<1024xf32>
+        affine.store %1, %arg2[%arg3, %arg4] : memref<1024x1024xf32>
+      } {loop_name = "j_back", pipeline_ii = 1 : i32}
+    } {loop_name = "i", stage_name = "s"}
+    return
+  }
+}
+```
 
 ## Roofline Model
 
@@ -213,6 +370,20 @@ The above steps can be extended to high-dimensional stencils, and we will give m
 * How will you measure the benefit (in performance, energy, complexity, etc.) of your implementation?
 * How will you present the data you collect from your empirical evaluation?
 Other questions may be relevant depending on the project you choose. Consider the [SIGPLAN empirical evaluation guidelines](https://www.sigplan.org/Resources/EmpiricalEvaluation/) when you design your methodology. -->
+
+### MLIR-based HeteroCL compilation flow
+MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR.
+
+![](hcl-flow.png)
+
+Experiment | Latency | Speedup | DSP | BRAM | LUT | FF
+-- | -- | -- | -- | -- | -- | --
+gemm | 25.778 sec | 1x | 5 | 0 | 525 | 576
+gemm_buffer | 23.639 sec | 1.1x | 5 | 2 | 677 | 617
+gemm_acc | 2.156 sec | 11.9x | 5 | 2 | 783 | 745
+conv | 6.978 ms | 1x | 5 | 0 | 739 | 619
+conv_acc | 6.538 ms | 1.1x | 5 | 0 | 919 | 747
+
 
 ## Conclusion and Future Work
 
