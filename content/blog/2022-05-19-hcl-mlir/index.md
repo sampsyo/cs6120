@@ -2,8 +2,8 @@
 title = "Memory Optimization and Profiling for MLIR-Based HeteroCL"
 [extra]
 bio = """
-  [Hongzheng Chen](https://chhzh123.github.io/) is a first-year CS PhD student at the Computer Systems Laboratory, Cornell University. His research interests include domain-specific languages, compiler optimization, and heterogeneous computing systems.
-  [Niansong Zhang](https://www.zzzdavid.tech/) is a first-year ECE PhD student at the Computer Systems Laboratory. His research interests include electronic design automation, efficient machine learning, and high-level synthesis.
+  [Hongzheng Chen](https://chhzh123.github.io/) is a first-year CS PhD student at the Computer Systems Laboratory, Cornell University. His research interests include domain-specific languages, compiler optimization, and heterogeneous computing systems.<br/>
+  [Niansong Zhang](https://www.zzzdavid.tech/) is a first-year ECE PhD student at the Computer Systems Laboratory. His research interests include electronic design automation, efficient machine learning, and high-level synthesis.<br/>
   [Jiajie Li](https://tonyjie.github.io/) is a first-year ECE PhD student at Cornell.
 """
 latex = true
@@ -64,7 +64,7 @@ $s_d=\max_{i}(\mathbf{a}^{(i)}_d)-\min_i(\mathbf{a}^{(i)}_d)+1$
 
 In the Fig. 3(a) example, we consider a five-point stencil
 
-$\{\mathbf{a}^{(i)}\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$
+$\\{\mathbf{a}^{(i)}\\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$
 
 colored with red, and the span of each dimension is $s_0=s_1=2$.
 
@@ -387,7 +387,9 @@ module {
 * How will you present the data you collect from your empirical evaluation?
 Other questions may be relevant depending on the project you choose. Consider the [SIGPLAN empirical evaluation guidelines](https://www.sigplan.org/Resources/EmpiricalEvaluation/) when you design your methodology. -->
 
-### MLIR-based HeteroCL compilation flow
+In this section, we will first talk about the MLIR-based HeteroCL compilation flow and the experimental setup. We will later discuss the results of our memory optimizations.
+
+### MLIR-Based HeteroCL Compilation Flow
 MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Fig. 5.
 
 <center>
@@ -403,7 +405,7 @@ We evaluate our memory optimizations on the open-source benchmarks[^6] written i
 
 ### Reuse Buffer
 We evaluate `.reuse_at()` using the following benchmarks.
-* `conv2d-nchw`: baseline conv2d implementation with conventional (n,c,h,w) dimensions, and the kernel size is $3\times 3$.
+* `conv2d-nchw`: baseline conv2d implementation with conventional $(n,c,h,w)$ dimensions, and the kernel size is $3\times 3$.
 * `conv2d-nchw+LB/WB`: create line buffer (LB) and window buffer (WB) for conv2d kernel.
 * `5point`: the five-point stencil kernel as mentioned in the previous section (see Fig. 3).
 * `5point+LB+WB`: create line buffer (LB) and window buffer (WB) for 5-point stencil kernel.
@@ -458,11 +460,7 @@ In conclusion, we enhance the memory customization ability and add performance p
 
 [^3]: Yuze Chi, Jason Cong, Peng Wei, Peipei Zhou, "*SODA: Stencil with Optimized Dataflow Architecture*", ICCAD, 2018.
 
-[^5]: de Fine Licht, Johannes, Maciej Besta, Simon Meierhans, and Torsten Hoefler. "Transformations of high-level synthesis codes for high-performance computing." IEEE Transactions on Parallel and Distributed Systems 32, no. 5 (2020): 1014-1029.
-
-[^4]: Louis-Noel Pouchet, Peng Zhang, P. Sadayappan, Jason Cong, "*Polyhedral-Based Data Reuse Optimization for Configurable Computing*", FPGA, 2013
-
-[^5]: de Fine Licht, Johannes, Maciej Besta, Simon Meierhans, and Torsten Hoefler. "Transformations of high-level synthesis codes for high-performance computing." IEEE Transactions on Parallel and Distributed Systems 32, no. 5 (2020): 1014-1029.
+[^5]: Johannes de Fine Licht, Maciej Besta, Simon Meierhans, Torsten Hoefler, "*Transformations of high-level synthesis codes for high-performance computing*", TPDS, 2020.
 
 [^6]: HeteroCL test programs, https://github.com/cornell-zhang/heterocl/tree/hcl-mlir/tests/mlir
 
