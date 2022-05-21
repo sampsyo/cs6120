@@ -109,4 +109,6 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
 
 ### Future Work
 
+One of the biggest limitations we faced when lowering AMC dialect to Calyx is the limited support of certain memory operations in Calyx itself. TODO: give an example.
 
+As the future work we are planning to extend Calyx to support these operations so we can implement more functionality in AMC dialect and showcase more benefits of it over existing HLS tools. Comprehensive evaluation of AMC dialect and implementation of more optimizations is another major part of the future work.
