@@ -84,6 +84,124 @@ LB = s.reuse_at(A, s[B], B.axis[0])
 WB = s.reuse_at(LB, s[B], B.axis[1])
 ```
 
+### Implementation
+The above description seems straightforward, but the actual implementation in MLIR is intractable. There are two challenges here:
+1. The affine dialect decouples the expression from actual variables making analysis indirect. For example, the `affine.load` operation accepts block arguments as operands, the `AffineMapAttr` that describes the memory access is attached in the attribute. The actual indices are calculated by applying the `AffineMapAttr` to the operands. For `affine.load %1[0, %arg2 + 1]`, there is only two operands `%1` and `%arg2`. The attached `AffineMapAttr` is `(d0)->(0, d0+1)`.
+2. MLIR uses a strict SSA form, meaning the computation rule is not written in one line and requires us to traverse the use-def chain to obtain the actual memory access operations. We also need to distinguish off-chip memory access and on-chip memory access.
+
+To tackle the above challenge, we need to prepare required information before actual analysis. Since there are so many ways to declare memory access, users can directly write out each input element, or they can leverage `hcl.sum` to give the reduction axis as shown below, which calls for a systematic way to extract the memory access.
+
+```python
+def conv2d(A, F):
+    rc = hcl.reduce_axis(0, ic)
+    rh = hcl.reduce_axis(0, kh)
+    rw = hcl.reduce_axis(0, kw)
+    B = hcl.compute(
+        (bs, oc, oh, ow),
+        lambda n, c, h, w: hcl.sum(
+            A[n, rc, h + rh, w + rw] * F[c, rc, rh, rw],
+            axis=[rc, rh, rw],
+            dtype=dtype,
+        ),
+        name="B",
+        dtype=dtype,
+    )
+    return B
+```
+
+We record the span of each dimension. If the access pattern is written in reduction format, we can easily figure out the span of dimension equal to the size of reduction axis. Otherwise, we need to manually get the offset from the affine expression and calculate the difference between the largest and smallest offset. The affine expressions are stored in a `set` with the offset as the sorting key.
+
+Based on the span and original tensor shape, we can allocate a reuse buffer with correct size. We ignore the leading `1` in the shape, while original HeteroCL does not eliminate these dimensions. Our approach makes the code more compact and easier to calculate the memory indices.
+
+After the reuse buffer is created, the original memory read should be changed to read from reuse buffer that directly use stencil offsets as the indices. Since we are now conducting computation regarding to the input tensor, the loop bound also needs to be changed to the size of the output tensor. The original memory store should be updated to reflect the new loop bound.
+
+Since the reuse buffer is actually reusing the data in the input tensor, we need to create `if` statement to check if the points are on the boundary. If so, only data loading will be performed. Otherwise, the computation will also be conducted.
+
+Before the computation starts, the first thing to do is to shift buffer elements and load one element from off-chip memory to on-chip buffer. Following shows the MLIR code for five-point stencil with line buffer.
+
+```mlir
+#set = affine_set<(d0) : (d0 - 2 >= 0)>
+module {
+  func @top(%arg0: memref<10x10xi32>) -> memref<8x8xi32> {
+    %0 = memref.alloc() {name = "B"} : memref<8x8xi32>
+    %1 = memref.alloc() : memref<3x10xi32>
+    affine.for %arg1 = 0 to 10 {
+      affine.for %arg2 = 0 to 10 {
+        %2 = affine.load %1[1, %arg2] : memref<3x10xi32>
+        affine.store %2, %1[0, %arg2] : memref<3x10xi32>
+        %3 = affine.load %1[2, %arg2] : memref<3x10xi32>
+        affine.store %3, %1[1, %arg2] : memref<3x10xi32>
+        %4 = affine.load %arg0[%arg1, %arg2] : memref<10x10xi32>
+        affine.store %4, %1[2, %arg2] : memref<3x10xi32>
+      } {spatial}
+      affine.if #set(%arg1) {
+        affine.for %arg2 = 0 to 8 {
+          %2 = affine.load %1[0, %arg2 + 1] : memref<3x10xi32>
+          %3 = affine.load %1[1, %arg2] : memref<3x10xi32>
+          %4 = arith.addi %2, %3 : i32
+          %5 = affine.load %1[1, %arg2 + 1] : memref<3x10xi32>
+          %6 = arith.addi %4, %5 : i32
+          %7 = affine.load %1[1, %arg2 + 2] : memref<3x10xi32>
+          %8 = arith.addi %6, %7 : i32
+          %9 = affine.load %1[2, %arg2 + 1] : memref<3x10xi32>
+          %10 = arith.addi %8, %9 : i32
+          affine.store %10, %0[%arg1 - 2, %arg2] : memref<8x8xi32>
+        } {loop_name = "j"}
+      }
+    } {loop_name = "i", stage_name = "B"}
+    return %0 : memref<8x8xi32>
+  }
+}
+```
+
+The last optimization is to merge loops with the same bound. The following example shows the five-point stencil code with line buffer and window buffer, and we can see that the shifting part of the line buffer is merged with the traversal part, so that the loop overhead is reduced.
+
+```mlir
+#set = affine_set<(d0) : (d0 - 2 >= 0)>
+module {
+  func @top(%arg0: memref<10x10xi32>) -> memref<8x8xi32> {
+    %0 = memref.alloc() {name = "B"} : memref<8x8xi32>
+    %1 = memref.alloc() : memref<3x10xi32>
+    %2 = memref.alloc() : memref<3x3xi32>
+    affine.for %arg1 = 0 to 10 {
+      affine.for %arg2 = 0 to 10 {
+        %3 = affine.load %1[1, %arg2] : memref<3x10xi32>
+        affine.store %3, %1[0, %arg2] : memref<3x10xi32>
+        %4 = affine.load %1[2, %arg2] : memref<3x10xi32>
+        affine.store %4, %1[1, %arg2] : memref<3x10xi32>
+        %5 = affine.load %arg0[%arg1, %arg2] : memref<10x10xi32>
+        affine.store %5, %1[2, %arg2] : memref<3x10xi32>
+        affine.if #set(%arg1) {
+          affine.for %arg3 = 0 to 3 {
+            %6 = affine.load %2[%arg3, 1] : memref<3x3xi32>
+            affine.store %6, %2[%arg3, 0] : memref<3x3xi32>
+            %7 = affine.load %2[%arg3, 2] : memref<3x3xi32>
+            affine.store %7, %2[%arg3, 1] : memref<3x3xi32>
+            %8 = affine.load %1[%arg3, %arg2] : memref<3x10xi32>
+            affine.store %8, %2[%arg3, 2] : memref<3x3xi32>
+          } {spatial}
+          affine.if #set(%arg2) {
+            %6 = affine.load %2[1, 0] : memref<3x3xi32>
+            %7 = affine.load %2[0, 1] : memref<3x3xi32>
+            %8 = arith.addi %6, %7 : i32
+            %9 = affine.load %2[1, 1] : memref<3x3xi32>
+            %10 = arith.addi %8, %9 : i32
+            %11 = affine.load %2[2, 1] : memref<3x3xi32>
+            %12 = arith.addi %10, %11 : i32
+            %13 = affine.load %2[1, 2] : memref<3x3xi32>
+            %14 = arith.addi %12, %13 : i32
+            affine.store %14, %0[%arg1 - 2, %arg2 - 2] : memref<8x8xi32>
+          }
+        }
+      } {loop_name = "j"}
+    } {loop_name = "i", stage_name = "B"}
+    return %0 : memref<8x8xi32>
+  }
+}
+```
+
+The above steps can be extended to high-dimensional stencils, and we will give more experimental results in the following sections.
+
 ## Write Buffer
 
 ## Roofline Model
