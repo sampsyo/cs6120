@@ -121,7 +121,7 @@ date = "May 10"
 mon = true
 
 [[days]]
-date = "May 18"
+date = "May 19"
 event = "Final project due (no class)"
 canceled = true
 mon = true
