@@ -53,7 +53,7 @@ The main contributions of this paper include:
 
 - A detailed examination on conservative garbage collection, including
   the first detailed study of impacts of exact and conservative
-  collection in practice.
+  collection in practice. See [below](#impact-of-conservatism).
 
 - Introducing an object map that precisely tracks live objects to filter
   ambiguous roots efficiently.
@@ -80,7 +80,11 @@ make them match exact collectors:
 
 2. **Ambiguous Roots**: many collectors strike the balance between exact and conservative
    collection by using available run-time information such that the only conservative references
-   are the roots. Other references are exactly known, and therefore can be moved freely.
+   are the roots. This is achieved by embedding type information about objects in their headers,
+   which is far easier to do compared to the engineering effort of tracking stack pointers exactly,
+   and hence is a popular choice for many language implementations.
+
+   Other references are exactly known, and therefore can be moved freely.
 
 ## Existing Conservative Collectors
 
@@ -88,7 +92,9 @@ make them match exact collectors:
 non-moving tracing collector which uses a free-list to reclaim and reuse memory which can be used
 as a drop-in replacement for `malloc`. It filters ambiguous references by comparing them against
 live free-list cells. While it is very convenient to use, it suffers from bad mutator performance
-due to sparse allocations and the inability to defragment.
+due to sparse allocations and the inability to defragment. It is, by and large, one of the most
+popular collectors because of it's very drop-in, plug and play nature. For an instance of how easy
+it is to integrate it into an existing project see this [discussion](https://acha.ninja/blog/memory-safeish-hare/).
 
 **Mostly Copying Collectors (MCC)**[^3][^4][^5][^6][^7] strike a balance by only allowing roots to be
 ambiguous and freely moving the non-pinned references as an exact collector would. Additionally, they
@@ -164,7 +170,9 @@ The takeaways are as follows:
    were not known. The authors measured excess retention by comparing
    the sizes of transitive closures between the exact and conservative
    versions, and found that excess retention was, on average, only _0.02%_,
-   with the maximum being only _6.1%_, as a fraction of heap size.
+   with the maximum being only _6.1%_, as a fraction of heap size. This is
+   in line with Boehm's theoetical work on why excess retention can be
+   surprisingly small[^9].
 
 - *Pointer Filtering*: The authors compare the performances
   between their object map and the state-of-the-art BDW free-list
@@ -184,7 +192,7 @@ The takeaways are as follows:
    In the 256 bytes line granularity (used by the Immix family of
    collectors), where only the referent line is pinned, _0.2%_ of the
    live heap was impacted. Therefore, the authors concluded that
-   pinning at the line granularity is significantly less impact-full.
+   pinning at the line granularity is significantly less impactfull.
 
 ## Performance Evaluation
 
@@ -254,3 +262,5 @@ The takeaways from this analysis is as follows:
 [^7]: WebKit. The WebKit open source project, 2014. [URL](http://trac.webkit.org/browser/trunk/Source/JavaScriptCore/heap).
 
 [^8]: S. M. Blackburn and K. S. McKinley. Immix: A mark-region garbage collector with space efficiency, fast collection, and mutator locality. In ACM Conference on Programming Language Design and Implementation, PLDI'08, Tucson, AZ, USA, June 2008, pages 22--32. ACM, 2008. doi: 10.1145/1379022.1375586.
+
+[^9]: Hans-J. Boehm. 2002. Bounding space usage of conservative garbage collectors. SIGPLAN Not. 37, 1 (Jan. 2002), 93–100. https://doi.org/10.1145/565816.503282.
