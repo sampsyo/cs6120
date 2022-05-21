@@ -56,7 +56,7 @@ The original HeteroCL paper only discusses how to generate reuse buffers for a s
 ### Design
 The basic idea of reuse buffer is to reuse data between adjacent loop iterations so that the number of off-chip memory accesses can be reduced. If without special notification, we suppose the traversal order is the same as the memory access order in this report, i.e., always access the last dimension first and then access the second last, etc.
 
-The applications that have data reuse are mostly *stencil* kernels, so we follow SODA[^3] to give a similar definition. Consider a point $\mathbf{x}=(x_0,x_1,\ldots,x_m)\in\mathbb{N}^m$, a $n$-point stencil window defines a set of offsets $\\{\mathbf{a}^{(i)}\in\mathbb{N}^m\\}_{i=1}^n$ that describe the distance from $\mathbf{x}$. By adding the offset to a specific point, we can get the actual points $\\{\mathbf{y}=\mathbf{x}+\mathbf{a}^{(i)}\\}_{i=1}^n$ of a stencil in a specific iteration. The value of these points will be reduced (e.g., mean, summation) to one value in the output tensor.
+The applications that have data reuse are mostly *stencil* kernels, so we follow SODA[^3] to give a similar definition. Consider a point $\mathbf{x}=(x_0,x_1,\ldots,x_m)\in\mathbb{N}^m$, a $n$-point stencil window defines a set of offsets $\\{\mathbf{a}^{(i)}\in\mathbb{N}^m\\}\_{i=1}^{n}$ that describe the distance from $\mathbf{x}$. By adding the offset to a specific point, we can get the actual points $\\{\mathbf{y}=\mathbf{x}+\mathbf{a}^{(i)}\\}_{i=1}^n$ of a stencil in a specific iteration. The value of these points will be reduced (e.g., mean, summation) to one value in the output tensor.
 
 We further define the *span* $s_d$ of a dimension $d$ as the largest distance between two stencil points along that dimension.
 
@@ -112,10 +112,10 @@ For higher-dimensional cases, we can generalize the above idea and generate hype
 
 $
 \begin{aligned}
-\text{reuse at axis 0}: &[s_0,w_1,\ldots,w_m]\\
-\text{reuse at axis 1}: &[s_0,s_1,\ldots,w_m]\\
-\cdots &\\
-\text{reuse at axis m}: &[s_0,s_1,\ldots,s_m]\\
+\text{reuse at axis 0}: &[s_0,w_1,\ldots,w_m]\\\\
+\text{reuse at axis 1}: &[s_0,s_1,\ldots,w_m]\\\\
+\cdots &\\\\
+\text{reuse at axis m}: &[s_0,s_1,\ldots,s_m]\\\\
 \end{aligned}
 $
 
