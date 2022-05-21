@@ -3,7 +3,7 @@ title = "Memory Optimization and Profiling for MLIR-Based HeteroCL"
 [extra]
 bio = """
   [Hongzheng Chen](https://chhzh123.github.io/) is a first-year CS PhD student at the Computer Systems Laboratory, Cornell University. His research interests include domain-specific languages, compiler optimization, and heterogeneous computing systems.
-  [Niansong Zhang](https://www.zzzdavid.tech/) is a first-year ECE PhD student at Cornell.
+  [Niansong Zhang](https://www.zzzdavid.tech/) is a first-year ECE PhD student at the Computer Systems Laboratory. His research interests include electronic design automation, efficient machine learning, and high-level synthesis.
   [Jiajie Li](https://tonyjie.github.io/) is a first-year ECE PhD student at Cornell.
 """
 latex = true
@@ -28,10 +28,10 @@ link = "https://tonyjie.github.io/"
 ## Introduction
 [HeteroCL](https://github.com/cornell-zhang/heterocl)[^1] is a programming infrastructure composed of a Python-based domain-specific language (DSL) and a compilation flow that targets heterogeneous hardware platforms. It aims to provide a clean abstraction that decouples algorithm specification from hardware customizations, and a portable compilation flow (shown in Fig. 1) that compiles programs to CPU, GPU, FPGA, and beyond.
 
-<figure>
-<img src="compile_flow.png" alt="alt_text" title="image_tooltip" style="zoom:50%;"/>
-<figcaption><center>Fig. 1: HeteroCL supports compilation for various backends</center></figcaption>
-</figure>
+<p align="center">
+<img src="compile_flow.png">
+Fig. 1: HeteroCL supports compilation for various backends
+</p>
 
 The original HeteroCL uses Halide IR as an intermediate representation. However, Halide IR is difficult to extend and scales poorly to programs with hundreds of modules. Therefore, we are moving to the MLIR ecosystem for better scalability and extensibility. [MLIR](https://mlir.llvm.org/)[^2] stands for Multi-Level Intermediate Representation, which is a modular compiler infrastructure that enables different optimizations performed at different levels of abstraction.
 
@@ -45,10 +45,8 @@ In HeteroCL, we use *schedule* and *stage* to specify hardware customizations. A
 2. We propose a `.buffer_at()` primitive to generate write buffers so that the memory access overheads can be further reduced.
 3. We add a profiling tool to evaluate the operational intensity and automatically generate a roofline model to guide the optimization process.
 
-<figure>
-<img src="rw_mem.png" alt="alt_text" title="image_tooltip" style="zoom:50%;"/>
-<figcaption><center>Fig. 2: Reuse buffer and write buffer</center></figcaption>
-</figure>
+<center><img src="rw_mem.png" alt="alt_text" title="image_tooltip" style="zoom:30%;"></center>
+<center>Fig. 2: Reuse buffer and write buffer</center>
 
 Fig. 2 is an overview of reuse buffer and write buffer generation with `reuse_at` and `buffer_at` primitives. We will go into details in the following sections.
 
@@ -70,10 +68,8 @@ $\{\mathbf{a}^{(i)}\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$
 
 colored with red, and the span of each dimension is $s_0=s_1=2$.
 
-<figure>
-<img src="reuse_buffer.png" alt="alt_text" title="image_tooltip" style="zoom:50%;"/>
-<figcaption><center>Fig. 3: Hierarchical reuse buffer</center></figcaption>
-</figure>
+![](reuse_buffer.png)
+<center>Fig. 3: Hierarchical reuse buffer</center>
 
 Declaring this kernel in HeteroCL is easy. Users can leverage the declarative API `hcl.compute()` to explicitly write out the computation rule as follows.
 ```python
@@ -313,12 +309,12 @@ module {
 `.buffer_at()` only specifies the buffer we want to generate. To generate the buffer, we transform the IR through a pass and generate operations that allocate the buffer, initialize it, and write it back to tensor `C`. The above code snippet shows the MLIR assembly code with the row buffer generated. 
 
 ### Interleaving Accumulation
-We can combine `.buffer_at()` with loop reordering to achieve a technique called interleaving accumulation[^1]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. Fig. 4 shows the GEMM example after interleaving accumulation is applied. 
+We can combine `.buffer_at()` with loop reordering to achieve a technique called interleaving accumulation[^5]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. Fig. 4 shows the GEMM example after interleaving accumulation is applied. 
 
-<figure>
-<img src="interleave.png" alt="alt_text" title="image_tooltip" style="zoom:50%;"/>
-<figcaption><center>Fig. 4: Interleave accumulations to remove loop-carried dependency</center></figcaption>
-</figure>
+![](interleave.png)
+<center>
+Fig. 4: Interleave accumulations to remove loop-carried dependency
+</center>
 
 To implement the interleaving accumulation technique, we reorder the reduction loop with the outer loop in the GEMM example and add a write buffer for partial results:
 
@@ -398,7 +394,7 @@ MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM di
 <img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
 </center>
 <center>
-Figure 5. MLIR-based HeteroCL end-to-end compilation flow.
+Fig. 5: MLIR-based HeteroCL end-to-end compilation flow
 </center>
 
 From the affine dialect level, the IR either generates HLS code through a translation pass or keeps lowering to LLVM dialect level for CPU execution.
@@ -434,6 +430,6 @@ In conclusion, we enhance the memory customization ability and add performance p
 
 [^3]: Yuze Chi, Jason Cong, Peng Wei, Peipei Zhou, "*SODA: Stencil with Optimized Dataflow Architecture*", ICCAD, 2018.
 
-[^4]: Louis-Noel Pouchet, Peng Zhang, P. Sadayappan, Jason Cong, "*Polyhedral-Based Data Reuse Optimization for Configurable Computing*", FPGA, 2013
-
 [^5]: de Fine Licht, Johannes, Maciej Besta, Simon Meierhans, and Torsten Hoefler. "Transformations of high-level synthesis codes for high-performance computing." IEEE Transactions on Parallel and Distributed Systems 32, no. 5 (2020): 1014-1029.
+
+[^4]: Louis-Noel Pouchet, Peng Zhang, P. Sadayappan, Jason Cong, "*Polyhedral-Based Data Reuse Optimization for Configurable Computing*", FPGA, 2013
