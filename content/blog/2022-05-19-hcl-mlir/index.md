@@ -392,37 +392,63 @@ module {
 Other questions may be relevant depending on the project you choose. Consider the [SIGPLAN empirical evaluation guidelines](https://www.sigplan.org/Resources/EmpiricalEvaluation/) when you design your methodology. -->
 
 ### MLIR-based HeteroCL compilation flow
-MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Figure 5.
+MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Fig. 5.
 
-<center>
-<img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
-</center>
-<center>
-Figure 5. MLIR-based HeteroCL end-to-end compilation flow.
-</center>
+<figure>
+<img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:50%;"/>
+<figcaption><center>Fig. 1: HeteroCL supports compilation for various backends</center></figcaption>
+</figure>
 
 From the affine dialect level, the IR either generates HLS code through a translation pass or keeps lowering to LLVM dialect level for CPU execution.
 
-### Write buffer experiments
+We evaluate our memory optimizations on the open-source benchmarks[^6] written in HeteroCL. The [HCL dialect](https://github.com/cornell-zhang/hcl-dialect-prototype) is compiled with LLVM 14.0.0 with Python binding enabled. The evaluation machine equips with two Intel(R) Xeon(R) Silver 4214 CPU (48 logical cores in total), and we run the experiments using Vivado HLS v2019.1[^7]. In the following, we will describe the experimental results. All the code for experiments can be found [here](https://github.com/zzzDavid/hcl-memory-opt).
+
+### Reuse Buffer
+We evaluate `.reuse_at()` using the following benchmarks.
+* `conv2d-nchw`: baseline conv2d implementation with conventional (n,c,h,w) dimensions, and the kernel size is $3\times 3$.
+* `conv2d-nchw+LB/WB`: create line buffer (LB) and window buffer (WB) for conv2d kernel.
+* `5point`: the five-point stencil kernel as mentioned in the previous section (see Fig. 3).
+* `5point+LB+WB`: create line buffer (LB) and window buffer (WB) for 5-point stencil kernel.
+* `diag3d`: three-point stencil in 3D with $\\{\mathbf{a}^{(i)}\\}^{3}_{i=1}=\\{(0,0,0),(1,1,1),(2,2,2)\\}$.
+* `diag3d+xyz`: create three hyper-cubic reuse buffers for this three-point stencil.
+
+Kernel | Latency | Speedup | II | DSP | BRAM | LUT | FF
+-- | -- | -- | -- | -- | -- | -- | --
+`conv2d-nchw` | 0.69 ms | 1x | 27 | 10 | 0 | 5598 | 7051
+`conv2d-nchw+LB` | 0.70 ms | 0.99x | 1 | 270 | 0 | 69477 | 55401
+`conv2d-nchw+LB+WB` | 43.72 us | **15.78x** | **1** | 270 | 0 | 42420 | 28387
+`5point` | 27.03 us | 1x | 3 | 0 | 0 | 470 | 202
+`5point+LB+WB` | 10.27 us | **2.63x** | **1** | 0 | 2 | 524 | 307
+`diag3d` | 0.538 ms | 1x | 2 | 0 | 0 | 814 | 240
+`diag3d+xyz` | 0.326ms | **1.65x** | **1** | 0 | 4 | 861 | 755
+
+We can see from the result that creating hierarchical reuse buffers can always achieve an initial interval (II) of 1, and shows a large speedup for different stencil kernels. Specifically, the `conv2d` kernel with line buffer and window buffer achieves the fastest speedup of 15.78x. The loop fusion and pipelining contribute most to the high throughput.
+
+Also, we notice that only adding a line buffer is not enough, which may introduce extra processing overheads. Creating hierarchical buffers can help hide the memory access overheads and obtain the best performance.
+
+### Write Buffer
 We evaluate `.buffer_at()` on the FPGA backend with Vivado HLS. Since creating a write buffer between PE and off-chip memory is essentially customizing memory hierarchy, and we don't have such freedom on CPU, we omit the experiments on the LLVM backend.
 
 Experiment | Latency | Speedup | DSP | BRAM | LUT | FF
 -- | -- | -- | -- | -- | -- | --
 `gemm` | 25.778 sec | 1x | 5 | 0 | 525 | 576
-`gemm_buffer` | 23.639 sec | 1.1x | 5 | 2 | 677 | 617
-`gemm_acc` | 2.156 sec | 11.9x | 5 | 2 | 783 | 745
-`conv` | 6.978 ms | 1x | 5 | 0 | 739 | 619
-`conv_acc` | 0.639 ms | 10.9x | 5 | 2 | 858 | 1586
+`gemm+buffer` | 23.639 sec | 1.1x | 5 | 2 | 677 | 617
+`gemm+acc` | 2.156 sec | **11.9x** | 5 | 2 | 783 | 745
+`conv2d` | 6.978 ms | 1x | 5 | 0 | 739 | 619
+`conv2d+acc` | 0.639 ms | **10.9x** | 5 | 2 | 858 | 1586
 
 - `gemm`: baseline, without any hardware customization.
-- `gemm_buffer`: buffering a row of output tensor with `hcl.buffer_at`.
-- `gemm_acc`: interleaving accumulation with loop reordering and write buffer.
-- `conv`: 2D convolution baseline, without any hardware customization.
-- `conv_acc`: 2D convolution with interleaving accumulation.
+- `gemm+buffer`: buffering a row of output tensor with `hcl.buffer_at`.
+- `gemm+acc`: interleaving accumulation with loop reordering and write buffer.
+- `conv2d`: 2D convolution baseline, without any hardware customization.
+- `conv2d+acc`: 2D convolution with interleaving accumulation.
 
 We observe that buffering a row of output tensor alone brings 1.1x speedup, with some BRAM overhead. Using interleaving accumulation to remove loop-carried dependency delivers 11.9x speedup compared to baseline. 
 
 In addition to the GEMM example, we add 2D convolution experiments with interleaving accumulation. Similarly, we first reorder the reduction loops and their outer loop, then create a write buffer and add pipelining. The complete implementation is [here](https://github.com/zzzDavid/hcl-memory-opt/blob/main/buffer_at/conv_acc.mlir). Convolution with interleaving accumulation has 10.9x speedup to baseline, also with some BRAM and FF overhead.
+
+### Roofline Model
+
 
 ## Conclusion
 In conclusion, we enhance the memory customization ability and add performance profiling infrastructure to MLIR-based HeteroCL. We extend the `.reuse_at()` primitive to generate reuse buffers for 3D and higher dimention tensors. We propose a `.buffer_at()` primitive to generate write buffers and demonstrate its use cases with interleaving accumulation. Finally, we add a profiling tool to evaluate operational intensity and plot a roofline model to guide users to make optimizations.
@@ -437,3 +463,7 @@ In conclusion, we enhance the memory customization ability and add performance p
 [^4]: Louis-Noel Pouchet, Peng Zhang, P. Sadayappan, Jason Cong, "*Polyhedral-Based Data Reuse Optimization for Configurable Computing*", FPGA, 2013
 
 [^5]: de Fine Licht, Johannes, Maciej Besta, Simon Meierhans, and Torsten Hoefler. "Transformations of high-level synthesis codes for high-performance computing." IEEE Transactions on Parallel and Distributed Systems 32, no. 5 (2020): 1014-1029.
+
+[^6]: HeteroCL test programs, https://github.com/cornell-zhang/heterocl/tree/hcl-mlir/tests/mlir
+
+[^7]: Vivado HLS, https://www.xilinx.com/support/documentation-navigation/design-hubs/dh0012-vivado-high-level-synthesis-hub.html
