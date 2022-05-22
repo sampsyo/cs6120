@@ -405,6 +405,8 @@ We evaluate our memory optimizations on the open-source benchmarks[^6] written i
 
 ### Reuse Buffer
 We evaluate `.reuse_at()` using the following benchmarks.
+* `blur`: a simple three-point 2D blur filter with $\\{\mathbf{a}^{(i)}\\}^{3}_{i=1}=\\{(0,0),(0,1),(0,2)\\}$.
+* `blur+LB`: blur filter with line buffer of size $3$.
 * `conv2d-nchw`: baseline conv2d implementation with conventional $(n,c,h,w)$ dimensions, and the kernel size is $3\times 3$.
 * `conv2d-nchw+LB/WB`: create line buffer (LB) and window buffer (WB) for conv2d kernel.
 * `5point`: the five-point stencil kernel as mentioned in the previous section (see Fig. 3).
@@ -414,6 +416,8 @@ We evaluate `.reuse_at()` using the following benchmarks.
 
 Kernel | Latency | Speedup | II | DSP | BRAM | LUT | FF
 -- | -- | -- | -- | -- | -- | -- | --
+`blur` | 20.93 ms | 1x | 2 | 0 | 0 | 451 | 389
+`blur+LB` | 10.486 ms | **2.00x** | **1** | 0 | 0 | 451 | 406
 `conv2d-nchw` | 0.69 ms | 1x | 27 | 10 | 0 | 5598 | 7051
 `conv2d-nchw+LB` | 0.70 ms | 0.99x | 1 | 270 | 0 | 69477 | 55401
 `conv2d-nchw+LB+WB` | 43.72 us | **15.78x** | **1** | 270 | 0 | 42420 | 28387
@@ -422,9 +426,9 @@ Kernel | Latency | Speedup | II | DSP | BRAM | LUT | FF
 `diag3d` | 0.538 ms | 1x | 2 | 0 | 0 | 814 | 240
 `diag3d+xyz` | 0.326ms | **1.65x** | **1** | 0 | 4 | 861 | 755
 
-We can see from the result that creating hierarchical reuse buffers can always achieve an initial interval (II) of 1, and shows a large speedup for different stencil kernels. Specifically, the `conv2d` kernel with line buffer and window buffer achieves the fastest speedup of 15.78x. The loop fusion and pipelining contribute most to the high throughput.
+We can see from the result that creating hierarchical reuse buffers can always achieve an initial interval (II) of 1, and shows a large speedup for different stencil kernels with different memory access patterns. Specifically, the `conv2d` kernel with line buffer and window buffer achieves the fastest speedup of 15.78x. The loop fusion and pipelining contribute most to the high throughput.
 
-Also, we notice that only adding a line buffer is not enough, which may introduce extra processing overheads. Creating hierarchical buffers can help hide the memory access overheads and obtain the best performance.
+Also, we notice that only adding a line buffer is not enough for high-dimensional cases, which may introduce extra processing overheads. Creating hierarchical buffers can help hide the memory access overheads and obtain the best performance.
 
 ### Write Buffer
 We evaluate `.buffer_at()` on the FPGA backend with Vivado HLS. Since creating a write buffer between PE and off-chip memory is essentially customizing memory hierarchy, and we don't have such freedom on CPU, we omit the experiments on the LLVM backend.
