@@ -56,9 +56,9 @@ We also discuss in class why GA144 is not widely adopted nowadays and what makes
 
 ## Motivation
 Based on the background we discussed above, the authors propose the following challenges that motivate them to develop a compiler for GA144:
-1. <u>Spatial architecture is hard to program.</u> The data placement, communication, and computation all need to be manually specified by the programmers using very low-level language.
-2. <u>Classical compiler may not be able to bridge the abstraction gap of low-power computing.</u> For one thing, designing compilers for new hardware is hard since no well-known optimizations can be applied. For the other, the GA144 architecture was still evolving at that time, so the compiler should also evolve fast to keep up with the pace.
-3. <u>Program synthesis is hard to scale to large programs.</u>
+1. **Spatial architecture is hard to program.** The data placement, communication, and computation all need to be manually specified by the programmers using very low-level language.
+2. **Classical compiler may not be able to bridge the abstraction gap of low-power computing.** For one thing, designing compilers for new hardware is hard since no well-known optimizations can be applied. For the other, the GA144 architecture was still evolving at that time, so the compiler should also evolve fast to keep up with the pace.
+3. **Program synthesis is hard to scale to large programs.**
 
 Therefore, the authors propose a synthesis-aided compiler Chlorophyll to solve the above challenges. 
 
@@ -87,7 +87,7 @@ For distributed arrays, users can annotate which part of data should be put on w
 
 <img src="distributed-arrays.png" alt="alt_text" title="image_tooltip" style="zoom:18%;" />
 
-The authors mention this programming model has several limitations. For instance, it cannot support recursive calls, multi-dimensional arrays, and non-loop-variable indices. These limitations are reasonable. Even for nowadays HLS tools, they still cannot support recursive function calls[^2].
+The authors mention this programming model has several limitations. For instance, it cannot support recursive calls, multi-dimensional arrays, and non-loop-variable indices. These limitations are reasonable. Even for nowadays HLS tools, they still cannot support recursive function calls.[^2]
 
 #### Partition Type
 > "Partitioning a program can be thought of as a type inference on the partition types."
@@ -101,7 +101,7 @@ I think this is the most interesting part of the paper. The authors add partitio
 #### Partition Process
 The partition process in the paper is a bit messy, so I reorganize it in a more clear way. We have the following steps:
 
-1. <u>Loop splitting.</u> Since array data are distributed among partitions, we also need to split the control flow (the loop) to ensure the computation access the correct data. The code snippet shows how to split the loop for two partitions.
+1. **Loop splitting.** Since array data are distributed among partitions, we also need to split the control flow (the loop) to ensure the computation access the correct data. The code snippet shows how to split the loop for two partitions.
   ```cpp
   // before splitting
   int@{[0:5]=0, [5:10]=1} x[10];
@@ -112,7 +112,7 @@ The partition process in the paper is a bit messy, so I reorganize it in a more 
   for (i from 6 to 10) x[i] = x[i] + x[i-1]; // x[i] at 1, x[i-1] at 1
   ```
 
-2. <u>Create symbolic variables for unannotated variables.</u> If the partition type can be inferenced from the user-annotated types, then the compiler will directly add that type after the operator or variable. Otherwise, it will generate a symbolic variable for those unannotated variables like `sym0` shown below.
+2. **Create symbolic variables for unannotated variables.** If the partition type can be inferenced from the user-annotated types, then the compiler will directly add that type after the operator or variable. Otherwise, it will generate a symbolic variable for those unannotated variables like `sym0` shown below.
   ```cpp
   // before annotating
   int@6 r = 0;
@@ -130,7 +130,7 @@ The partition process in the paper is a bit messy, so I reorganize it in a more 
   }
   ```
 
-3. <u>Construct communication count and partition space constraints with [Rosette](http://emina.github.io/rosette/) synthesizer.</u> The overall memory space should satisfy the following constraints:
+3. **Construct communication count and partition space constraints with [Rosette](http://emina.github.io/rosette/) synthesizer.** The overall memory space should satisfy the following constraints:
 
 \\[ \text{Space} (\text{operation}) + \text{Space} (\text{statement}) + \text{Space} (\text{maxComm}) < \text{Memory per core} \\]
 
@@ -145,7 +145,7 @@ The next stage is to map the logical representation to physical cores. We can de
 
 \\[ \sum_{f_1\in F, f_2\in F} t(f_1,f_2) \cdot d(a(f_1),a(f_2)) \\]
 
-This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing#:~:text=Simulated%20annealing%20(SA)%20is%20a,space%20for%20an%20optimization%20problem.).
+This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing).
 
 ### Code Separation
 After the layout mapping is generated, we can generate code for each core, which consists of the data storage, computation, and communication part. For basic statements, we can directly put the variable to the corresponding partition and generate the communication between different partitions.
@@ -202,7 +202,7 @@ Therefore, the authors propose modular superoptimization to tackle the above cha
 <img src="superopt.png" alt="alt_text" title="image_tooltip" style="zoom:45%;" />
 </center>
 
-Traditionally, if the superoptimizer uses a strict equivalence form, to prove two programs $P\equiv P'$, we require the programs to have the same behavior and generate the same output. For the following stack example, we want to remove $\beta$ from the top of the stack and add $\gamma$ to the stack. The strict form requires the programs to have the same behavior, i.e. for $P$ and $P'$, we have $\alpha\mid\beta \to \alpha\mid\gamma$, but actually we do not strictly require $\alpha$ to be on the bottom of the stack.
+Traditionally, if the superoptimizer uses a strict equivalence form, to prove two programs $P\equiv P'$, we require the programs to have the same behavior and generate the same output. For the following stack example, we want to remove $\beta$ from the top of the stack and add $\gamma$ to the stack. The strict form requires the programs to have the same behavior, i.e., for $P$ and $P'$, we have $\alpha\mid\beta \to \alpha\mid\gamma$, but actually we do not strictly require $\alpha$ to be on the bottom of the stack.
 
 <center>
 <img src="stack-spec.png" alt="alt_text" title="image_tooltip" style="zoom:45%;" />
@@ -242,9 +242,9 @@ Since the above four steps are not aware of each other, it may be possible that 
 
 ### Optimization Opportunity Loss
 Since the authors decompose the problem into four subproblems and solve them individually, which may lead to possible optimization opportunity loss:
-1. <u>Partition before superoptimization.</u> For example, A, B, and C are three code segments. A+B may have the lowest communication cost, but B+C may have the lowest computation cost if they are put on the same core. The partition algorithm is not aware of that.
-2. <u>Schedule-oblivious routing strategy.</u> The routing algorithm does not know which core is busy and may still send messages to the busy core.
-3. <u>Scope of the superoptimizer.</u> The superoptimizer leverages a greedy algorithm, which works well for local code segments but is not the best for the whole program.
+1. **Partition before superoptimization.** For example, A, B, and C are three code segments. A+B may have the lowest communication cost, but B+C may have the lowest computation cost if they are put on the same core. The partition algorithm is not aware of that.
+2. **Schedule-oblivious routing strategy.** The routing algorithm does not know which core is busy and may still send messages to the busy core.
+3. **Scope of the superoptimizer.** The superoptimizer leverages a greedy algorithm, which works well for local code segments but is not the best for the whole program.
 
 
 ## Performance Evaluation
@@ -257,7 +257,7 @@ The authors evaluate their compiler on different benchmarks and compare the perf
 They do compare their generated code with handwritten code and give the following statement:
 > "Compared to the experts' implementation, it is **only 65% slower, 70% less energy-efficient and uses 2.2x more cores**. This result confirms that our generated programs are comparable with experts’ not only on small programs but also on a real application."
 
-The authors are somehow proud of this result. Considering Chlorophyll is the first high-level compiler for GA144, if it indeed reduces the programming effort, then even the performance is not good, it is useful for more applications running on GA144.
+Considering Chlorophyll is the first high-level compiler for GA144, if it indeed reduces the programming effort, then even the performance is not good, it is useful for more applications running on GA144.
 
 ### Productivity
 The authors also mention that a graduate student spent one summer learning arrayForth to program GA144 but only implemented 2 benchmarks. With Chlorophyll, authors can implement 5 benchmarks within one afternoon, and the 2-core version is better than the expert's implementation.
@@ -277,10 +277,10 @@ It seems the compilation time is not count into the development time mentioned a
 ### Synthesis and Compilation
 Prof. Armando Solar-Lezama at MIT mentions in his course, "One distinguishing feature between a compiler and a synthesizer is the element of **search**"[^3]. Traditional compiler only does some simple transformation to the program, while synthesizer may have lots of valid programs but need to search for the best one. However, we can see the boundary between compiler and synthesizer nowadays is becoming blurry. A trend of domain-specific compiler is to decouple the *schedule* (how to optimize the program) from the *algorithm* (what to compute). Using this new interface, some compilers may be equipped with auto-tuning methods, which is essentially what the synthesizer does for searching. Examples include Halide[^4] for image processing, TVM[^5] for deep learning, HeteroCL[^6] for software-defined hardware, and GraphIt[^7] for graph processing, etc.
 
-Recently, we can also see some efforts in deploying program synthesis techniques for deep learning model optimization. For example, Cowan et al.[^8] provide compute sketch and reduction sketch to synthesize high-performance quantized machine learning kernels. Xie et al.[^9] uses program synthesis to generate an optimal parallelism plan for distributed training. Those examples prove that program synthesis can be a powerful tool for a compiler to generate high-performance code. We need to strike a balance between compilation and synthesis.
+Recently, we can also see some efforts in deploying program synthesis techniques for deep learning model optimization. For example, Cowan et al.[^8] provide compute sketch and reduction sketch to synthesize high-performance quantized machine learning kernels. Xie et al.[^9] use program synthesis to generate an optimal parallelism plan for distributed training. Those examples prove that program synthesis can be a powerful tool for a compiler to generate high-performance code. We need to strike a balance between compilation and synthesis.
 
 ### Programming Model
-Someone also mentions we should rethink about the [high-level programming abstraction](https://github.com/sampsyo/cs6120/discussions/321#discussioncomment-2651248) for these spatial architecture. One recent effort to reduce the programming burden for data placement is HeteroFlow[^10]. It proposes the `.to()` interface to conduct host-to-accelerator, inter-kernel, and intra-kernel communication. Users can easily specify the data communication between different kernels or different devices without rewriting the algorithm.
+Someone also mentions we should rethink about the [high-level programming abstraction](https://github.com/sampsyo/cs6120/discussions/321#discussioncomment-2651248) for these spatial architecture. One recent effort to reduce the programming burden for data placement is HeteroFlow[^10], which I was lucky to contribute to it. It proposes the `.to()` interface to conduct host-to-accelerator, inter-kernel, and intra-kernel communication. Users can easily specify the data communication between different kernels or different devices without rewriting the algorithm.
 
 <center>
 <img src="heteroflow.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
