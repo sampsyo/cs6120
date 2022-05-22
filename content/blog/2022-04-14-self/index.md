@@ -2,9 +2,9 @@
 title = "Efficient SELF Implementation"
 [extra]
 bio = """
-	Charles Sherk is an junior studying Computer Science & Mathematics at
-	Cornell university, interested in compilers and programming language
-	implementation.
+Charles Sherk is an junior studying Computer Science & Mathematics at
+Cornell university, interested in compilers and programming language
+implementation.
 """
 [[extra.authors]]
 name = "Charles Sherk"
@@ -53,16 +53,16 @@ contents are evaluated and returned. A data slot would just return it's value,
 whereas a method slot would have to run some Self code, potentially with
 arguments provided in the message.
 
+#### Example
+
 Let's look at an example from the paper:
 
 <p align="center">
 <img src="point.png" />
 </p>
 
-#### Example
-
-Here is an object hierarchy for cartesian and polar points, that allows
-conversion between. If we want to get the `x` coordinate of a cartesian point,
+Here is an object hierarchy for Cartesian and polar points, that allows
+conversion between. If we want to get the `x` coordinate of a Cartesian point,
 we send an `x` message, and Self will find the matching slot, and return 3 in
 this case. Now imagine we send the `x` message to the polar point shown. There
 is no slot named `x` so the parent slots are traversed. The `x` slot in polar
@@ -70,9 +70,9 @@ point traits is found, and evaluated. This results in more message passing,
 looking up `rho` and `theta`, and also a `cos` slot which works on floats, and
 multiplication. Finally, this will evaluate to `1.25` which is then returned. We
 can see how this means that all points regardless of representation will be
-printed as cartesian, as the `print` method uses the `x` and `y` methods. Also,
-the `+` slot which allows adding points will all work in cartesian space, so if
-you add two polar points, you will get a cartesian one.
+printed as Cartesian, as the `print` method uses the `x` and `y` methods. Also,
+the `+` slot which allows adding points will all work in Cartesian space, so if
+you add two polar points, you will get a Cartesian one.
 
 Some other object features are object arrays and byte arrays. Object arrays are
 exactly what they sound like, and byte arrays allow for a more compressed data
@@ -85,7 +85,7 @@ representation, which is helpful for strings.
 At a glance you may see a problem with the prototyping model that has no
 classes: a lot of data will be duplicated across objects. If we think about the
 point example above, there is some inherently shared structure between a bunch
-of cartesian points: in this case, the parent and the assignment slot. This is
+of Cartesian points: in this case, the parent and the assignment slot. This is
 why the paper introduces _maps_, which are a memory layout that if you squint,
 looks like it mimics a more class based system.
 
@@ -129,12 +129,12 @@ tag. The reason for this is that the integer tag tells the GC never to relocate
 these, and it isn't going to be relocating VM addresses either.
 
 Self heap objects also get their own tags, as these are the ones that the GC
-will deal with. Floats need to be tagged differently than integers, as self
+will deal with. Floats need to be tagged differently than integers, as Self
 supports operators like `+` and `<` which are polymorphic on numeric types, and
 use different machine instructions.
 
 There is one more tag available, and it is used for the mark header word, which
-is the beginning of a self object, and contains some metadata for the GC as well
+is the beginning of a Self object, and contains some metadata for the GC as well
 as some immutable bits that are used by the hashing primitive.
 
 #### The actual objects
@@ -187,7 +187,7 @@ machine code to run.
 
 Sometimes messages lookups can be resolved at compile time[^1], and in this case
 they are inlined. Methods are inlined as code if they are short enough and
-non-recursive. Constant data can have it's value inlined, whereas mutable reads
+non-recursive. Constant data can have its value inlined, whereas mutable reads
 and writes can be inlined as a single machine instruction (either load or
 store), since the offset is known. This is where the maps come in handy for
 giving the compiler information that is easy to work with.
@@ -197,10 +197,14 @@ giving the compiler information that is easy to work with.
 
 A lot of the efficiency of this implementation comes from this specialized
 compilation that allows message inlining, but this nice type information is lost
-at cfg merge points, as you may have two specializations that merge together and
+at CFG merge points, as you may have two specializations that merge together and
 then share code. The idea of message splitting is to push those merge points
 later, and then optimize the resulting code that has more type information,
-resulting in more specialized code. This may seem in general compilers not to be
+resulting in more specialized code. The reason we get more type information is
+that say you have two branches of an if statement where on one `x` has type `A`
+and on the other type `B`. Then, after the merge point you don't know whether
+`x` is an `A` or a `B`, but if you push the merge point down, you can specialize
+the code for each type. This may seem in general compilers not to be
 a great idea, as there would be too much of an icache penalty, but in this case
 the message inlining results in such drastic reductions in code size it is worth
 it to give more opportunities.
@@ -208,19 +212,19 @@ it to give more opportunities.
 #### Type prediction
 
 Even when types are known for customized compilation, they might change as
-everything is dynamic in self, so the above customized compilation has an
+everything is dynamic in Self, so the above customized compilation has an
 element of optimism to it. Type prediction takes that optimism one step further,
 and uses static heuristics to "guess" the types at compile time, and insert
 specialized code. This allows the compiler to have very efficient code for
-common cases like `if else` without special casing them out. This also means
+common cases like `if`/`else` without special casing them out. This also means
 that users can define their own custom control flow like methods and get similar
 performance: you aren't beholden to use certain "built in" features.
 
 ## The programming environment
 
 Self has a very difficult to support programming environment. It is highly
-interactive, allowing users to incrementally recompile and old code needs to be
-invalidated. Source level debugging is also a must, which means there needs to
+interactive, allowing users to incrementally recompile invalidate old code.
+Source level debugging is also a must, which means there needs to
 be a way to recover the original control flow after optimization.
 
 ### Incremental recompilation
