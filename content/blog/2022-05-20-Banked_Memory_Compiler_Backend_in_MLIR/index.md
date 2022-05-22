@@ -16,7 +16,7 @@ link = "https://www.nikita.tech/"  # Links are optional.
 
 ### Introduction
 
-Banked memories, or logical memories that are divided into multiple physical memories, are an important part of achieving high performance FPGA designs. Unfortunately, neither RTL- not HLS-based languages provide sufficient abstractions to express banked memories. This results in tremendous efforts that programmers need to put when designing memory sub-systems for their hardware architectures. The problem is especially hard given the diverse set of applications with different memory access patterns and performance requirements, as well as numerous hardware primitives the memory can be map onto (e.g. LUTRAM, BRAM, ULTRARAM, etc.) available in today's FPGAs. Without these abstractions, designers have to manually plan the microarchitecture of the memories with all the necessary optimizations in order to make them meeting target design requirements.
+Banked memories, or logical memories that are divided into multiple physical memories, are an important part of achieving high performance FPGA designs. Unfortunately, neither RTL- nor HLS-based languages provide sufficient abstractions to express banked memories. This results in tremendous efforts that programmers need to put when designing memory sub-systems for their hardware architectures. The problem is especially hard given the diverse set of applications with different memory access patterns and performance requirements, as well as numerous hardware primitives the memory can be map onto (e.g. LUTRAM, BRAM, ULTRARAM, etc.) available in today's FPGAs. Without these abstractions, designers have to manually plan the microarchitecture of the memories with all the necessary optimizations in order to make them meeting target design requirements.
 
 To address the aforementioned challenges and simplify the process of designing banked memories, we propose AMC -- a novel MLIR dialect built on top of CIRCT and Calyx that enables compilation of arbitrary memory structures. Our contribution lies in the following three aspects:
 
@@ -27,7 +27,7 @@ To address the aforementioned challenges and simplify the process of designing b
 
 ### The AMC dialect
 
-We build the AMC dialect on top of Calyx. Calyx is an IR for compilers generating hardware accelerators. Banked memory specification in our AMC dialect involves four parts: (1) interface specification, (2) memory allocation specification, (3) port specification, and (4) port-interface mapping.
+We build the AMC dialect on top of Calyx. Calyx is an IR for compilers generating hardware accelerators. The banked memory specification in the AMC dialect involves four parts: (1) interface specification, (2) memory allocation specification, (3) port specification, and (4) port-interface mapping.
 
 *The memory interface* specifies all read and write interfaces to a unit of banked memory with the corresponding set of arguments. The arguments include the address space size, data width, read/write semantics, and memory access latency in cycles. Example of an interface definition is shown in the listing bellow. Here we define a memory component *@test1* that implements a banked memory with four ports (two on read, two on write), each having 512 32-bit words and 1 cycle of guaranteed access latency.
 ```
@@ -67,7 +67,7 @@ TODO: Andrew
 
 ### Optimization Pass: Memory Aggregation
 
-We implemented the memory aggregation pass. This pass allows to reduce the memory depth in favor of the word length. For example, a memory of type ```!amc.memref<1024xf32>``` can be converted to ```!amc.memref<512xf64>```. This optimization can be useful when it helps to better pack memory in the available hardware units. In particular, if the FPGAs block RAM units have the width of 72 bits, it might be beneficial to aggregate memory as we showed in the above example.
+We implemented the memory aggregation pass. This pass allows to reduce the memory depth in favor of the word length. For example, a memory of type ```!amc.memref<1024xi32>``` can be converted to ```!amc.memref<512xi64>```. This optimization can be useful when it helps to better pack memory in the available hardware units. In particular, if the FPGAs ultra-RAM units have the width of 72 bits, it might be beneficial to aggregate memory as we showed in the above example.
 
 The aggregation pass consists of four steps. The pass first replaces the type of memory allocation with another memory type of reduced depth. It then fixes all references to that memory for the `create_port` operations for all ports that use this memory. Then the pass injects a new operation `split_aggregate` that transforms ports of aggregated types into the ports of the original types as shown in the example bellow:
 ```
@@ -109,6 +109,6 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
 
 ### Future Work
 
-One of the biggest limitations we faced when lowering AMC dialect to Calyx is the limited support of certain memory operations in Calyx itself. TODO: give an example.
+One of the biggest limitations we faced when lowering AMC dialect to Calyx is the limited support of certain memory operations in Calyx itself. In particular, Calyx lacks support for multi-ported memories, memories with a specific access latency, and memories that will map to a specific FPGA primitive. These should be able to be added using an external Calyx library, but this is not currently supported by by the Calyx MLIR dialect which we are lowering to.
 
-As the future work we are planning to extend Calyx to support these operations so we can implement more functionality in AMC dialect and showcase more benefits of it over existing HLS tools. Comprehensive evaluation of AMC dialect and implementation of more optimizations is another major part of the future work.
+As the future work we are planning to extend Calyx to support these operations so we can implement more functionality in AMC dialect and showcase more benefits of it over existing HLS tools. The lowering pass will also need to be more robust to support a wide range of optimizations and the memory interface will need to be interfaced with a scheduler of some sort to actual generate full designs. Comprehensive evaluation of AMC dialect and implementation of more optimizations is another major part of the future work.
