@@ -127,14 +127,14 @@ The synthesizer will solve the constraint, use that solution as an additional co
 
 ![](fully-annotated.png)
 
-One question here is where is the boundary between programmers and compilers. For this programming model, programmers do not exactly know where they should annotate the partition types. Some may benefit for the synthesizer to quickly solve the constraint, but others may have a negative impact or even cause an infeasible solution. This actually can be a burden for programmers since they still have to have a good understanding of the underlying architecture and annotate the partition in a right way.
+One question here is where is the boundary between programmers and compilers. For this programming model, programmers do not exactly know where they should annotate the partition types. Some may benefit for the synthesizer to quickly solve the constraint, but others may have a negative impact or even cause an infeasible solution. This actually can be a burden for programmers since they still have to have a good understanding of the underlying architecture and annotate the partition in the right way.
 
 ### Layout and Routing
 The next stage is to map the logical representation to physical cores. We can denote $F$ as the logical facilities or the code partition, $L$ as the physical core locations (represented in a 2D tuple), $t:F\times F\to\mathbb{R}$ as the flow function (i.e., the number of messages between two partitions), and $d:L\times L\to\mathbb{R}$ as the distance function (use Manhattan distance as a measurement). Thus, the layout and routing problem becomes finding the assignment that minimizes the following communication function:
 
 \\[ \sum_{f_1\in F, f_2\in F} t(f_1,f_2) \cdot d(a(f_1),a(f_2)) \\]
 
-This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing).
+This is a [Quadratic Assignment Problem (QAP)](https://en.wikipedia.org/wiki/Quadratic_assignment_problem) and can be efficiently solved by [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing).
 
 ### Code Separation
 After the layout mapping is generated, we can generate code for each core, which consists of the data storage, computation, and communication part. For basic statements, we can directly put the variable to the corresponding partition and generate the communication between different partitions.
@@ -197,7 +197,7 @@ Traditionally, if the superoptimizer uses a strict equivalence form, to prove tw
 <img src="stack-spec.png" alt="alt_text" title="image_tooltip" style="zoom:45%;" />
 </center>
 
-If we want to calculate $b-a$ in the following example, we need to retrieve $b$ and $a$'s value, calculate the difference, and push the result back to the stack. Since the stack is circular, leaving garbage value at the bottom of the stack does not harm. We do not require $a$ to be popped, so the optimized version only has 5 instructions.
+If we want to calculate $b-a$ in the following example, we need to retrieve $b$ and $a$'s values, calculate the difference, and push the result back to the stack. Since the stack is circular, leaving garbage value at the bottom of the stack does not harm. We do not require $a$ to be popped, so the optimized version only has 5 instructions.
 
 <center>
 <img src="stack-example.png" alt="alt_text" title="image_tooltip" style="zoom:45%;" />
@@ -257,18 +257,18 @@ The authors provide the compilation time of different benchmarks. We can see fro
 ### Productivity
 The authors also mention that a graduate student spent one summer learning arrayForth to program GA144 but only implemented 2 benchmarks. With Chlorophyll, authors can implement 5 benchmarks within one afternoon, and the 2-core version is better than the expert's implementation.
 
-It seems the compilation time is not count into the development time mentioned above. If compiling a program costs such a long time, it is hard for a programmer to debug. It is also impossible to write a program and verify its correctness in just one afternoon.
+It seems the compilation time is not counted into the development time mentioned above. If compiling a program costs such a long time, it is hard for a programmer to debug. It is also impossible to write a program and verify its correctness in just one afternoon.
 
 Moreover, we also agree this coding sample is too small to show the efficiency of writing code with Chlorophyll. Perhaps it would be better to have more people involved in the research project and compare the efforts of mapping different applications onto GA144 using different approaches (e.g., using Chlorophyll or directly writing arrayForth).
 
 ## Further Discussion
 ### Synthesis and Compilation
-Prof. Armando Solar-Lezama at MIT mentions in his course, "One distinguishing feature between a compiler and a synthesizer is the element of **search**"[^3]. Traditional compiler only does some simple transformation to the program, while synthesizer may have lots of valid programs but need to search for the best one. However, we can see the boundary between compiler and synthesizer nowadays is becoming blurry. A trend of domain-specific compiler is to decouple the *schedule* (how to optimize the program) from the *algorithm* (what to compute). Using this new interface, some compilers may be equipped with auto-tuning methods, which is essentially what the synthesizer does for searching. Examples include Halide[^4] for image processing, TVM[^5] for deep learning, HeteroCL[^6] for software-defined hardware, and GraphIt[^7] for graph processing, etc.
+Prof. Armando Solar-Lezama at MIT mentions in his course, "One distinguishing feature between a compiler and a synthesizer is the element of **search**"[^3]. Traditional compiler only does some simple transformation to the program, while synthesizer may have lots of valid programs but need to search for the best one. However, we can see the boundary between compiler and synthesizer nowadays is becoming blurry. A trend of domain-specific compilers is to decouple the *schedule* (how to optimize the program) from the *algorithm* (what to compute). Using this new interface, some compilers may be equipped with auto-tuning methods, which is essentially what the synthesizer does for searching. Examples include Halide[^4] for image processing, TVM[^5] for deep learning, HeteroCL[^6] for software-defined hardware, and GraphIt[^7] for graph processing, etc.
 
 Recently, we can also see some efforts in deploying program synthesis techniques for deep learning model optimization. For example, Cowan et al.[^8] provide compute sketch and reduction sketch to synthesize high-performance quantized machine learning kernels. Xie et al.[^9] use program synthesis to generate an optimal parallelism plan for distributed training. Those examples prove that program synthesis can be a powerful tool for a compiler to generate high-performance code. We need to strike a balance between compilation and synthesis.
 
 ### Programming Model
-Someone also mentions we should rethink about the [high-level programming abstraction](https://github.com/sampsyo/cs6120/discussions/321#discussioncomment-2651248) for these spatial architecture. One recent effort to reduce the programming burden for data placement is HeteroFlow[^10], which I was lucky to contribute to it. It proposes the `.to()` interface to conduct host-to-accelerator, inter-kernel, and intra-kernel communication. Users can easily specify the data communication between different kernels or different devices without rewriting the algorithm.
+Someone also mentions we should rethink the [high-level programming abstraction](https://github.com/sampsyo/cs6120/discussions/321#discussioncomment-2651248) for these spatial architectures. One recent effort to reduce the programming burden for data placement is HeteroFlow[^10], to which I was lucky to get involved and contribute. It proposes the `.to()` interface to conduct host-to-accelerator, inter-kernel, and intra-kernel communication. Users can easily specify the data communication between different kernels or different devices without rewriting the algorithm.
 
 <center>
 <img src="heteroflow.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
