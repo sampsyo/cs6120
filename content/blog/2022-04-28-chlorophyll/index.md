@@ -248,19 +248,18 @@ They do compare their generated code with handwritten code and give the followin
 
 Considering Chlorophyll is the first high-level compiler for GA144, if it indeed reduces the programming effort, then even the performance is not good, it is useful for more applications running on GA144.
 
-### Productivity
-The authors also mention that a graduate student spent one summer learning arrayForth to program GA144 but only implemented 2 benchmarks. With Chlorophyll, authors can implement 5 benchmarks within one afternoon, and the 2-core version is better than the expert's implementation.
-
-We all agree this coding sample is too small. The authors can hold an undergraduate class to gather more coding examples and compare the efficiency of their proposed compiler.
-
 ### Compilation Time
-The authors also provide the compilation time of different benchmarks. We can see from the following figure, it takes more than 16 hours to compile the largest benchmark. Most of the time is spent in the superoptimization part.
+The authors provide the compilation time of different benchmarks. We can see from the following figure, it takes more than 16 hours to compile the largest benchmark. Most of the time is spent in the superoptimization part.
 <center>
 <img src="compilation-time.png" alt="alt_text" title="image_tooltip" style="zoom:45%;" />
 </center>
 
+### Productivity
+The authors also mention that a graduate student spent one summer learning arrayForth to program GA144 but only implemented 2 benchmarks. With Chlorophyll, authors can implement 5 benchmarks within one afternoon, and the 2-core version is better than the expert's implementation.
+
 It seems the compilation time is not count into the development time mentioned above. If compiling a program costs such a long time, it is hard for a programmer to debug. It is also impossible to write a program and verify its correctness in just one afternoon.
 
+Moreover, we also agree this coding sample is too small to show the efficiency of writing code with Chlorophyll. Perhaps it would be better to have more people involved in the research project and compare the efforts of mapping different applications onto GA144 using different approaches (e.g., using Chlorophyll or directly writing arrayForth).
 
 ## Further Discussion
 ### Synthesis and Compilation
