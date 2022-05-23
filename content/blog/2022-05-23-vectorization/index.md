@@ -22,7 +22,7 @@ The vector language is simulated in the Bril interpreter. I implemented the vect
 
 Vectorization is broken into several stages. The first stage is to preprocess the code, which enables the vectorization algorithms to have greater opportunities to create vectors. The preprocessing stage is comprised of several passes that attempt to create larger basic blocks with more consecutive vectorizable instructions. 
 
-The second stage is to create runs of vectorizable instructions. A run of instructions is a sequence of Bril instructions that are all have the same opcode and are independent. A vectorizable instruction is independent if its arguments to do not depend on any other destination variables from the same run of insturctions. For example, the sequence of Bril instructions
+The second stage is to create runs of vectorizable instructions. A run of instructions is a sequence of Bril instructions that are all have the same opcode and are independent. A vectorizable instruction is independent if its arguments to do not depend on any other destination variables from the same run of instructions. The definitions of independence and same opcode come from Larsen and Amarasinghe's work on superword level parallelism. [^1]. For example, the sequence of Bril instructions
 
 ```bril
 w: int = add a b;
