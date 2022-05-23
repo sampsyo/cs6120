@@ -11,14 +11,6 @@ link = "https://andrewb1999.github.io/"  # Links are optional.
 [[extra.authors]]
 name = "Nikita Lazarev"
 link = "https://www.nikita.tech/"  # Links are optional.​
-204
-​
-205
-​
-206
-​
-207
-
 +++
 
 ### Code
