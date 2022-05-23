@@ -291,7 +291,17 @@ calyx.program "test1" {
 
 ### Challenges
 
+The majority of the time spent in this project was on designing the IR to represent a wide range of banked memories. We considered a large number of sketched out examples ranging from simple array partitions to caches and data buffers that are way out of the scope of this project. Overall, we are happy with our decision to spend time on the IR itself and believe the resulting design can be extended in future research. Specifically, the separation between memories and ports along with latency-sensitive and latency-insensitive we believe are good decisions that expose optimization opportunities.
+
+As mentioned above, the lowering from AMC to Calyx was also much more challenging than expected. Improving the robustness of this lowering pass will be one of the first steps before continuing research in other areas.
+
 ### Evaluation
+
+Evaluation was another area that ended up being more challenging than expected. We have a flow to generate some subset of banked memories in Vitis HLS and measure their area results, but we have not reached a point on the AMC dialect side to get comparable area results. The major limiting factors here are the Calyx primitive issues described earlier and the lack of an optimization pass that maps to memory primitives.
+
+As a result, the majority of our evaluation is more qualitative than quantitative. Every lowering pass and optimization is verified by the MLIR verifiers to be syntactically valid. We also checked all of our test cases to ensure each of the lowering passes makes sense.
+
+The quality of our IR is evaluated by it's expressiveness and ability to provide optimization opportunities. The wide range of memory types shown as examples above shows the expressiveness of our interface. One could also imagine any arbitrary combination of these concepts, such as a memory that has both latency-sensitive and latency-insensitive ports accessing the same banks. The memory aggregation optimization shows one such simple optimization which could potentially significantly improve area results for ultraRAMs that have a fixed 72b data width.
 
 ### Future Work
 
