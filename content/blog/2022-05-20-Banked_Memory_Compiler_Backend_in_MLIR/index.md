@@ -75,10 +75,70 @@ We will start with the simplest lowering step. This should be viewed as the fina
 
 Here is an example of bank lowering:
 ```mlir
+// Input
+amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32,
+  %0 = amc.alloc : !amc.memref<1024xf32, bank [2]>
+  %1 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [0] : !amc.port<512xf32, r, 1>
+  %2 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [0] : !amc.port<512xf32, w, 1>
+  %3 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [1] : !amc.port<512xf32, r, 1>
+  %4 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [1] : !amc.port<512xf32, w, 1>
+   
+  amc.extern %1, %2, %3, %4 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.p
+}
 
+// Output after bank lowering
+amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>) {
+  %0 = amc.alloc : !amc.memref<512xf32>
+  %1 = amc.alloc : !amc.memref<512xf32>
+  %2 = amc.create_port(%0 : !amc.memref<512xf32>) : !amc.port<512xf32, r, 1>
+  %3 = amc.create_port(%0 : !amc.memref<512xf32>) : !amc.port<512xf32, w, 1>
+  %4 = amc.create_port(%1 : !amc.memref<512xf32>) : !amc.port<512xf32, r, 1>
+  %5 = amc.create_port(%1 : !amc.memref<512xf32>) : !amc.port<512xf32, w, 1>
+  amc.extern %2, %3, %4, %5 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>
+}
 ```
 
 ### Merge Lowering
+
+The purpose of merge lowering is to translate latency-sensitive port creations that access more than one bank on a memory into multiple ports that access individual banks. These smaller ports are then combined with the merge operator to produce a port of the original size. This is analogous to how a port of this type would actually be implemented in hardware and allows future lowering and optimization passes to have a better idea of how many ports are actually accessing each bank.
+
+The merge operator is a new primitive that takes multiple latency-sensitive ports and produces one larger latency-sensitive port. This can be thought of as a type of mux, which based on the top ceil(log_2(n)) bits of the address will select one of the n ports to forward the access to.
+
+Here is an example of merge lowering:
+```mlir
+// Input
+amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>) {   
+  %0 = amc.alloc : !amc.memref<1024xf32, bank [2]>   
+  %1 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [0] : !amc.port<512xf32, r, 1>   
+  %2 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [1] : !amc.port<512xf32, r, 1>   
+  %3 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [0, 1] : !amc.port<1024xf32, w, 1>   
+
+  amc.extern %1, %2, %3 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>   
+}
+
+// Output after merge lowering
+amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>) {
+  %0 = amc.alloc : !amc.memref<1024xf32, [2]>
+  %1 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [0] : !amc.port<512xf32, r, 1>
+  %2 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [1] : !amc.port<512xf32, r, 1>
+  %3 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [0] : !amc.port<512xf32, w, 1>
+  %4 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [1] : !amc.port<512xf32, w, 1>
+  %5 = amc.merge(%3, %4 : !amc.port<512xf32, w, 1>, !amc.port<512xf32, w, 1>) : !amc.port<1024xf32, w, 1>
+  amc.extern %1, %2, %5 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>
+}
+
+// Output after merge lowering and bank lowering
+amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>) {
+  %0 = amc.alloc : !amc.memref<512xf32>
+  %1 = amc.alloc : !amc.memref<512xf32>
+  %2 = amc.create_port(%0 : !amc.memref<512xf32>) : !amc.port<512xf32, r, 1>
+  %3 = amc.create_port(%1 : !amc.memref<512xf32>) : !amc.port<512xf32, r, 1>
+  %4 = amc.create_port(%0 : !amc.memref<512xf32>) : !amc.port<512xf32, w, 1>
+  %5 = amc.create_port(%1 : !amc.memref<512xf32>) : !amc.port<512xf32, w, 1>
+  %6 = amc.merge(%4, %5 : !amc.port<512xf32, w, 1>, !amc.port<512xf32, w, 1>) : !amc.port<1024xf32, w, 1>
+  amc.extern %2, %3, %6 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>
+}
+```
 
 ### Handshake Lowering
 
@@ -140,16 +200,9 @@ amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
 
 Here we can see what is meant by lowering in the most naive way. Each handshake port has its own arbiter which functionally just ties the valid signal high as each handshake port can always access the underlying latency-sensitive port. A future pass could co-optimize the underlying memory primitives and the handshake ports by merging together some arbiters to reduce the number of underlying ports.
 
-
-
-### Lowering AMC Dialect down to Calyx
-
-
-
-
 ### Optimization Pass: Memory Aggregation
 
-We implemented the memory aggregation pass. This pass allows to reduce the memory depth in favor of the word length. For example, a memory of type ```!amc.memref<1024xi32>``` can be converted to ```!amc.memref<512xi64>```. This optimization can be useful when it helps to better pack memory in the available hardware units. In particular, if the FPGAs ultra-RAM units have the width of 72 bits, it might be beneficial to aggregate memory as we showed in the above example.
+After handshake, merge, and bank lowering we have a consistent way to optimize the underlying memory banks. To demonstrate optimization potentials, we implemented s memory aggregation pass. This pass allows to reduce the memory depth in favor of the word length. For example, a memory of type ```!amc.memref<1024xi32>``` can be converted to ```!amc.memref<512xi64>```. This optimization can be useful when it helps to better pack memory in the available hardware units. In particular, if the FPGAs ultra-RAM units have the width of 72 bits, it might be beneficial to aggregate memory as we showed in the above example.
 
 The aggregation pass consists of four steps. The pass first replaces the type of memory allocation with another memory type of reduced depth. It then fixes all references to that memory for the `create_port` operations for all ports that use this memory. Then the pass injects a new operation `split_aggregate` that transforms ports of aggregated types into the ports of the original types as shown in the example bellow:
 ```mlir
@@ -187,6 +240,9 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
   amc.extern %3, %5, %7, %9 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>
 }
 ```
+
+### Lowering AMC Dialect down to Calyx
+
 ### Challenges
 
 ### Evaluation
