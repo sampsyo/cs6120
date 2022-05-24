@@ -3,13 +3,13 @@ title = "Formal Verification of a Realistic Compiler"
 [extra]
 latex = true
 bio = """
-  [Anshuman Mohan](https://www.cs.cornell.edu/~amohan/) is a second-year PhD 
-  student at Cornell CS. He thinks mostly about food, and then snaps out of it 
-  and thinks about PL.
+  [Anshuman Mohan](https://www.cs.cornell.edu/~amohan/) is a Ph.D. student. He thinks mostly about food, and occasionally snaps out of it and thinks about programming languages.
 
   [Alaia Solko-Breslin](https://alaiasolkobreslin.github.io/) is an M.Eng.
   student interested in programming languages. She also enjoys playing 
   volleyball and cooking.
+  
+  They are both based at [Cornell CS](https://www.cs.cornell.edu/).
 """
 [[extra.authors]]
 name = "Anshuman Mohan"
@@ -19,11 +19,19 @@ name = "Alaia Solko-Breslin"
 link = "https://alaiasolkobreslin.github.io/"
 +++
 
-### Background: Formal Verification
+### Background: The Landscape of Formal Verification
 
-A key reason for the success of the CompCert project is that it foresaw – and triggered – an increasing interest in the formal verification of software. Proponents of formal verification argue that traditional testing is often unsafe and untrustworthy, and that we need more mathematically sound assurances of what our code does. This is generally agreed to be a good idea; the strongest detractors of verification mostly argue that it is too expensive (in time, in maintainability, and therefore in money) to be put into use.
+A thorough explanation of formal verification is beyond the scope of our discussion; the [Wikipedia article](https://en.wikipedia.org/wiki/Formal_verification) is a reasonable starting point. We will, however, make a brief comment about the landscape that we are entering.
 
-Some of this criticism is totally fair, and no one project can change the landscape. However, CompCert lowers the barrier to entry significantly. Programmers can state and prove claims about their code as written, in the source language. This is far from easy; it is a whole domain of research in CS. However, CompCert then guarantees that these hard-won claims still hold true even after the source code is compiled to an executable. The effect is multiplicative and powerful.
+Proponents of formal verification argue that traditional testing is unsafe and untrustworthy, and that we often need more mathematically sound assurances of what our code does. While verification is generally agreed to be a good idea, some of the strongest arguments against it are that:
+* Verification is too expensive (in time, in maintainability, and therefore in money) to be put into common use.
+* Verification means very little if the verified code is modified before it is executed.
+
+The standard response to the first argument is:
+* Selectively verify code that is particularly delicate or mission-critical. Use traditional testing elsewhere.
+* Use techniques from programming languages and software engineering to reduce the cost of verification. This is a whole domain of research in CS; see the [CAV](http://i-cav.org/) community for an example.
+
+The second argument is harder to defend against. Most verification happens at the source language, and so most verified code needs to undergo an _enormous_ modification – compilation – before it is run! This is where CompCert, a formally verified C compiler, comes in. Rather than treating compilation as a black-box transformation, CompCert state and proves, with mathematical precision, how it transforms the code. Programmers can state and prove claims about their code as written, in the source language. CompCert then guarantees that these hard-won claims still hold true even after the source code is compiled to an executable. The effect is multiplicative and powerful.
 
 
 ### Trusting Your Compiler
@@ -32,16 +40,20 @@ In a sense a compiler is very easy to specify: it should transform code without 
 
 This is intentionally open-ended. Loosely speaking, choosing a strong definition of “close enough” leads to more work and stronger guarantees, while a more relaxed choice leads to less work and weaker guarantees. In class we discussed that this vagueness, in addition to the vagueness about “going wrong”, is a feature of this work. 
 
-The author provides five ways to think about a compiler from a semantic perspective:
+The author provides five ways to think about a compiler from a semantic perspective. In the statements below, $S$ is the source program, $C$ is the compiled program, and $B$ is the observable behavior of a program. $S \Downarrow B$ means that $S$ executes with observable behavior $B$. The open-ended set of "going wrong" behaviors is written $\mathtt{wrong}$, and a program satisfies the predicate $\mathtt{safe}$ if none of its behaviors "go wrong".
 
 1. $ \forall B, S \Downarrow B \Leftrightarrow C \Downarrow B $
-2. $ S \text{ safe} \Rightarrow (\forall B, C \Downarrow B \Rightarrow S \Downarrow B) $
-3. $ \forall B \notin \text{Wrong}, S \Downarrow B \Rightarrow C \Downarrow B $ 
+2. $ S \mathtt{ safe} \Rightarrow (\forall B, C \Downarrow B \Rightarrow S \Downarrow B) $
+3. $ \forall B \notin \mathtt{wrong}, S \Downarrow B \Rightarrow C \Downarrow B $ 
 4. $ S \vDash \text{Spec} \Rightarrow C \vDash \text{Spec} $
-5. $ S \text{ safe} \Rightarrow C \text{ safe} $ 
+5. $ S \mathtt{ safe} \Rightarrow C \mathtt{ safe} $ 
 
+These are not interchangeable, but the author explains how they relate to each other and points out features (such as transitivity) that they have in common. For a taste, property 2 says that, if none of $S$'s possible behaviors are "wrong", then any behavior observed during the execution of $C$ must have also been observed during the execution of $S$. Property 3 additionally assumes that the programs and their execution environments are deterministic: when we say $S \Downarrow B$, the behavior $B$ is uniquely determined. Intuitively, property 3 says that, for all behaviors that are not "wrong", if $S$ demonstrates that behavior, so will $C$. This is the property that CompCert actually establishes in its proofs. The choice of property 3 makes sense:
+* CompCert is indeed working in a deterministic setting, so there is no need to contend with the complexities of nondeterministic behavior.
+* Establishing property 3 is easier than establishing some others: in a mechanized setting like Coq, one can `intro`duce (1) some specific behavior $B$, (2) the assumption $B \notin \mathtt{wrong}$, and (3) the assumption $S \Downarrow B$, and then perform structural induction on the execution of $S$. 
 
-These are not interchangeable, but the author explains how they relate to each other and points out features (such as transitivity) that they have in common. In class we took a deeper look at $ S \vDash \text{Spec} \Rightarrow C \vDash \text{Spec} $. While CompCert does not explicitly use that flavor of semantic preservation in its proof, this is arguably the easiest way to appreciate CompCert’s overall goal.
+Additionally, we remarked in class that definition 4 is a helpful way to appreciate CompCert's overall goal: given a predicate $\text{Spec}$ on behaviors, and assuming that (1) $S$ cannot go wrong and (2) all behaviors of $S$ satisfy $\text{Spec}$, this property tell us that (1) ${C}$ cannot go wrong and (2) all behaviors of $C$ *also* satisfy $\text{Spec}$. With reference to the background section above, it should be clear that this property is a powerful and clean way of viewing a compiler.
+
 
 The author surveys three ways to arrive at this trust.
 
@@ -104,6 +116,9 @@ CompCert's performance turns out to be adequate for critical embedded code. Comp
 </p>
 
 ### The Story Since 2009
+
+A key reason for the success of the CompCert project is that it foresaw – and triggered – an increasing interest in the formal verification of software.
+
 
 CompCert has been received warmly by the community; the day after our presentation it won the 2021 ACM Software System Award. It remains in active development not only in the research community but also, in partnership with AbsInt, in a commercial setting. It now supports five target languages and not just one, and efforts have been made to extend the verification upwards to the parsing phase and downwards to the assembling phase.
 
