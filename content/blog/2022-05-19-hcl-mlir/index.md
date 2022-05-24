@@ -388,7 +388,7 @@ Fig. 5: Roofline Model
 </center>
 
 <!-- What we do to access the memory access / ops -->
-We add a profiling tool to evaluate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip count in current loop is added. 
+We add a profiling tool to evaluate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. 
 
 Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. This is implemented by comparing the `memref` value. The detailed experiment results are shown in the next section. 
 
@@ -465,9 +465,9 @@ We observe that buffering a row of output tensor alone brings 1.1x speedup, with
 In addition to the GEMM example, we add 2D convolution experiments with interleaving accumulation. Similarly, we first reorder the reduction loops and their outer loop, then create a write buffer and add pipelining. The complete implementation is [here](https://github.com/zzzDavid/hcl-memory-opt/blob/main/buffer_at/conv_acc.mlir). Convolution with interleaving accumulation has 10.9x speedup to baseline, also with some BRAM and FF overhead.
 
 ### Roofline Model
-We draw the roofline model for all the kernels above to show the effect of optimizations. The computing platform we select is Avnet Ultra96-V2, which includes Xilinx ZU3EG board and 2GB LPDDR4 Memory. The peak performance is 18GFLOPs, and the peak bandwidth is 25.6GB/s. The diagonal roof and horizontal roof can be drawn using these two parameters. Each kernel is represented as one point in the figure.
+We draw the roofline model for all the kernels above to show the effect of optimizations. The computing platform is Avnet Ultra96-V2, which includes Xilinx ZU3EG board and 2GB LPDDR4 Memory. The peak performance is 18GFLOPs, and the peak bandwidth is 25.6GB/s. The diagonal roof and horizontal roof can be drawn using these two parameters. Each kernel is represented as one point in the figure.
 
-Fig. 7 shows the roofline model for each of two optimizations we implement. Fig. 7(a) shows 4 kernels with and without reuse buffer optimization, and Fig. 7(b) shows 2 kernels with and without write buffer optimizations. All the points move upper right in the roofline model after optimizations. Note that some points overlap with the baseline in this figure because of the scaling ratio. The detailed analysis for each kernel is illustrated as follows. 
+Fig. 7 shows the roofline model for each of the two optimizations we implement. Fig. 7(a) shows 4 kernels with and without reuse buffer optimization, and Fig. 7(b) shows 2 kernels with and without write buffer optimizations. All the points move upper right in the roofline model after optimizations. Note that some points overlap with the baseline in this figure because of the scaling ratio. The detailed analysis for each kernel is illustrated as follows. 
 
 <center>
 <img src="roofline_all.png" alt="alt_text" title="image_tooltip" style="zoom:80%;">
@@ -477,7 +477,7 @@ Fig. 7: Roofline Model: (a) Reuse Buffer Optimizations; (b) Write Buffer Optimiz
 </center>
 
 
-Fig. 8(a) shows Roofline Model analysis on Blur kernel with reuse buffer optimization. With adding line buffer, we decrease both the number of off-chip memory access and latency, making the point move upper right. Fig. 8(b) shows reuse buffer optimization on Conv2D kernel. With line buffer, redundant off-chip memory access is eliminated. But only with another window buffer, the performance can be largely improved. Fig. 8(c) and (d) shows similar trends when adding reuse buffer. 
+Fig. 8(a) shows Roofline Model analysis on Blur kernel with reuse buffer optimization. By adding line buffer, we decrease both the number of off-chip memory access and latency, making the point move upper right. Fig. 8(b) shows reuse buffer optimization on Conv2D kernel. With line buffer, redundant off-chip memory access is eliminated. But only with another window buffer, the performance can be largely improved. Fig. 8(c) and (d) show similar trends when adding reuse buffer. 
 
 <center>
 <img src="roofline_reuse_at.png" alt="alt_text" title="image_tooltip" style="zoom:80%;">
@@ -507,7 +507,7 @@ In conclusion, we enhance the memory customization ability and add performance p
 
 [^4]: Johannes de Fine Licht, Maciej Besta, Simon Meierhans, Torsten Hoefler, "*Transformations of high-level synthesis codes for high-performance computing*", TPDS, 2020.
 
-[^5]: Williams, Samuel, Andrew Waterman, and David Patterson. "Roofline: an insightful visual performance model for multicore architectures." Communications of the ACM 52.4 (2009): 65-76.
+[^5]: Williams, Samuel, Andrew Waterman, and David Patterson, "*Roofline: an insightful visual performance model for multicore architectures*", Communications of the ACM, 2009.
 
 [^6]: HeteroCL test programs, https://github.com/cornell-zhang/heterocl/tree/hcl-mlir/tests/mlir
 
