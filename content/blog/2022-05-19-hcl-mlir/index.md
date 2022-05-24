@@ -4,7 +4,7 @@ title = "Memory Optimization and Profiling for MLIR-Based HeteroCL"
 bio = """
   [Hongzheng Chen](https://chhzh123.github.io/) is a first-year CS PhD student at the Computer Systems Laboratory, Cornell University. His research interests include domain-specific languages, compiler optimization, and heterogeneous computing systems.<br/>
   [Niansong Zhang](https://www.zzzdavid.tech/) is a first-year ECE PhD student at the Computer Systems Laboratory. His research interests include electronic design automation, efficient machine learning, and high-level synthesis.<br/>
-  [Jiajie Li](https://tonyjie.github.io/) is a first-year ECE PhD student at Cornell.
+  [Jiajie Li](https://tonyjie.github.io/) is a first-year ECE PhD student at the Computer Systems Laboratory. His research interests include system optimization for graph learning and other emerging applications.
 """
 latex = true
 [[extra.authors]]
@@ -309,7 +309,7 @@ module {
 `.buffer_at()` only specifies the buffer we want to generate. To generate the buffer, we transform the IR through a pass and generate operations that allocate the buffer, initialize it, and write it back to tensor `C`. The above code snippet shows the MLIR assembly code with the row buffer generated. 
 
 ### Interleaving Accumulation
-We can combine `.buffer_at()` with loop reordering to achieve a technique called interleaving accumulation[^5]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. Fig. 4 shows the GEMM example after interleaving accumulation is applied. 
+We can combine `.buffer_at()` with loop reordering to achieve a technique called interleaving accumulation[^4]. Interleaving accumulation resolves loop-carried dependency by reordering the loops to transpose iteration space. Fig. 4 shows the GEMM example after interleaving accumulation is applied. 
 
 ![](interleave.png)
 <center>
@@ -378,6 +378,19 @@ module {
 ```
 
 ## Roofline Model
+The Roofline Model[^5] is an intuitive visual performance model used to provide performance estimates of a given compute kernel running on a computing platform. The hardware limitation is illustrated as the "ceiling" in the roofline model, as shown in Fig. 5. The diagonal roof describes the peak bandwidth, and the horizontal line describes the peak performance of the specific architecture. Performance saturates at the ridge point where the diagonal and horizontal roof meet. 
+
+<center>
+<img src="roofline_intro.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
+</center>
+<center>
+Fig. 5: Roofline Model
+</center>
+
+<!-- What we do to access the memory access / ops -->
+We add a profiling tool to evaluate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip count in current loop is added. 
+
+Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. This is implemented by comparing the `memref` value. The detailed experiment results are shown in the next section. 
 
 ## Experiments
 <!-- A major part of your project is an empirical evaluation. To design your evaluation strategy, you will need to consider at least these things:
@@ -390,13 +403,13 @@ Other questions may be relevant depending on the project you choose. Consider th
 In this section, we will first talk about the MLIR-based HeteroCL compilation flow and the experimental setup. We will later discuss the results of our memory optimizations.
 
 ### MLIR-Based HeteroCL Compilation Flow
-MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Fig. 5.
+MLIR-based HeteroCL supports two backends for now: a CPU backend through LLVM dialect, and an FPGA backend through Vivado HLS. A HeteroCL program first generates HCL dialect IR, with HCL operations to represent hardware customizations. Then, a transformation pass implements hardware customizations and erases HCL operations, and the IR is converted to affine dialect, as shown in Fig. 6.
 
 <center>
 <img src="hcl-flow.png" alt="alt_text" title="image_tooltip" style="zoom:20%;">
 </center>
 <center>
-Fig. 5: MLIR-based HeteroCL end-to-end compilation flow
+Fig. 6: MLIR-based HeteroCL end-to-end compilation flow
 </center>
 
 From the affine dialect level, the IR either generates HLS code through a translation pass or keeps lowering to LLVM dialect level for CPU execution.
@@ -452,7 +465,35 @@ We observe that buffering a row of output tensor alone brings 1.1x speedup, with
 In addition to the GEMM example, we add 2D convolution experiments with interleaving accumulation. Similarly, we first reorder the reduction loops and their outer loop, then create a write buffer and add pipelining. The complete implementation is [here](https://github.com/zzzDavid/hcl-memory-opt/blob/main/buffer_at/conv_acc.mlir). Convolution with interleaving accumulation has 10.9x speedup to baseline, also with some BRAM and FF overhead.
 
 ### Roofline Model
+We draw the roofline model for all the kernels above to show the effect of optimizations. The computing platform we select is Avnet Ultra96-V2, which includes Xilinx ZU3EG board and 2GB LPDDR4 Memory. The peak performance is 18GFLOPs, and the peak bandwidth is 25.6GB/s. The diagonal roof and horizontal roof can be drawn using these two parameters. Each kernel is represented as one point in the figure.
 
+Fig. 7 shows the roofline model for each of two optimizations we implement. Fig. 7(a) shows 4 kernels with and without reuse buffer optimization, and Fig. 7(b) shows 2 kernels with and without write buffer optimizations. All the points move upper right in the roofline model after optimizations. Note that some points overlap with the baseline in this figure because of the scaling ratio. The detailed analysis for each kernel is illustrated as follows. 
+
+<center>
+<img src="roofline_all.png" alt="alt_text" title="image_tooltip" style="zoom:80%;">
+</center>
+<center>
+Fig. 7: Roofline Model: (a) Reuse Buffer Optimizations; (b) Write Buffer Optimization
+</center>
+
+
+Fig. 8(a) shows Roofline Model analysis on Blur kernel with reuse buffer optimization. With adding line buffer, we decrease both the number of off-chip memory access and latency, making the point move upper right. Fig. 8(b) shows reuse buffer optimization on Conv2D kernel. With line buffer, redundant off-chip memory access is eliminated. But only with another window buffer, the performance can be largely improved. Fig. 8(c) and (d) shows similar trends when adding reuse buffer. 
+
+<center>
+<img src="roofline_reuse_at.png" alt="alt_text" title="image_tooltip" style="zoom:80%;">
+</center>
+<center>
+Fig. 8: Reuse Buffer Optimization: (a) Blur; (b) Conv2D; (c) 5point; (d) Diag3D
+</center>
+
+Fig. 9(a) shows Roofline Model analysis on GEMM kernel with write buffer optimization. Adding write buffer could decrease off-chip memory access, but the performance is largely improved after applying interleaving accumulation. Fig. 9(b) shows similar results on Conv2D kernel. 
+
+<center>
+<img src="roofline_buffer_at.png" alt="alt_text" title="image_tooltip" style="zoom:80%;">
+</center>
+<center>
+Fig. 9: Write Buffer Optimization: (a) GEMM; (b) Conv2D
+</center>
 
 ## Conclusion
 In conclusion, we enhance the memory customization ability and add performance profiling infrastructure to MLIR-based HeteroCL. We extend the `.reuse_at()` primitive to generate reuse buffers for 3D and higher dimention tensors. We propose a `.buffer_at()` primitive to generate write buffers and demonstrate its use cases with interleaving accumulation. Finally, we add a profiling tool to evaluate operational intensity and plot a roofline model to guide users to make optimizations.
@@ -464,7 +505,9 @@ In conclusion, we enhance the memory customization ability and add performance p
 
 [^3]: Yuze Chi, Jason Cong, Peng Wei, Peipei Zhou, "*SODA: Stencil with Optimized Dataflow Architecture*", ICCAD, 2018.
 
-[^5]: Johannes de Fine Licht, Maciej Besta, Simon Meierhans, Torsten Hoefler, "*Transformations of high-level synthesis codes for high-performance computing*", TPDS, 2020.
+[^4]: Johannes de Fine Licht, Maciej Besta, Simon Meierhans, Torsten Hoefler, "*Transformations of high-level synthesis codes for high-performance computing*", TPDS, 2020.
+
+[^5]: Williams, Samuel, Andrew Waterman, and David Patterson. "Roofline: an insightful visual performance model for multicore architectures." Communications of the ACM 52.4 (2009): 65-76.
 
 [^6]: HeteroCL test programs, https://github.com/cornell-zhang/heterocl/tree/hcl-mlir/tests/mlir
 
