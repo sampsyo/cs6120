@@ -5,7 +5,7 @@ name = "Orko Sinha"
 link = ""
 [[extra.authors]]
 name = "Michael Maitland"
-link = "https://michaelmaitland.com"
+link = "https://michaelmaitland.com" latex = true
 +++
 
 # Introduction
@@ -14,7 +14,8 @@ Some programming languages have dynamic memory management. Tracing and reference
 # Background
 
 ## Garbage Collection
-Languages like C and C++ take a manual memory management approach, requiring programmers to explicitly allocate and deallocate memory using `malloc` and `free`. This approach is extremely error prone and has led to many bugs. Languages such as Java or Python use dynamic memory management where the programming language runtime automatically frees memory that is no longer being used by the programmer. This approach however comes at a runtime cost since the language must be able to keep track of which objects are no longer being used. This has led to the research of high performance garbage collectors. There are two main types of collectors: reference counting collectors and tracing collectors. Until the ideas in this paper were presented, many believed that they were unrelated algorithms that accomplished the same task.
+Languages like C and C++ take a manual memory management approach, requiring programmers to explicitly allocate and deallocate memory using `malloc` and `free`. This approach is extremely error prone and has led to many bugs. Languages such as Java or Python use dynamic memory management where the programming language runtime automatically frees memory that is no longer being used by the programmer. This approach however comes at a runtime cost since the language must be able to keep track of which objects are no longer being used. This has led to the research of high performance garbage collectors. There are two main types of collectors: reference counting collectors and tracing collectors. Until the ideas in this paper were presented, the two can seem 
+like unrelated algorithms that accomplished the same task.
 
 ## Reference Counting
 
@@ -32,7 +33,7 @@ Tracing and reference counting collectors each have their pros and cons. Researc
 
 ## Fix-Point Formulation
 
-Garbage collection is first defined using a fixed point formulation. Later in the paper, it is shown how tracing, reference counting, and hybrids of tracing and reference counting satisfy this fixed point formulation. We start out with a characterization of memory:
+Garbage collection is first defined using a fixed point formulation. Later in the paper, it is shown how tracing, reference counting, and hybrids of tracing and reference counting find solutions that satisfy this fixed point formulation. We start out with a characterization of memory:
 * $V$ is the set of all objects. This includes objects that are still in use, objects that are no longer in use but not yet freed, and objects that have been freed. 
 * $E$ is the multiset of edges in the graph. In other words, the references between one object and another. It is a multi-set because an object can have multiple pointers to another node. Consider the case where object $a$ has fields $f1$ and $f2$ which both point to the same object $b$.
 * $R$ is the multiset of objects that are roots in the graph.
@@ -58,11 +59,11 @@ The tracing garbage collection and reference counting algorithms are shown below
 <img src="TAndRC.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
 </p>
 
-Tracing initially sets the reference counts of all objects to 0 and initializes the worklist to be the root set $R$. The $scan-by-tracing()$ function scans through the worklist and increments the reference counts of the objects it encounters, and adds all of the objects referenced by it to the worklist to be recursively processed as well. When this function terminates, the reference counts for live objects will have non-zero counts and all other objects will have a count of zero. From here the $sweep-for-tracing()$ function can free all objects of count zero so their memory can be reused.
+Tracing initially sets the reference counts of all objects to 0 and initializes the worklist to be the root set $R$. The `scan-by-tracing()` function scans through the worklist and increments the reference counts of the objects it encounters, and adds all of the objects referenced by it to the worklist to be recursively processed as well. When this function terminates, the reference counts for live objects will have non-zero counts and all other objects will have a count of zero. From here the `sweep-for-tracing()` function can free all objects of count zero so their memory can be reused.
 
-Reference counting need not do any initialization work at the start of the algorithm because initialization is handled for each time when an object is allocated. When an object is allocated, its reference count is set to 0. When an object is assigned to a pointer, the reference count of the object is incremented by one since a pointer now has a reference to it, and the object that was previously referenced by that pointer, if any, is added to the worklist to have its count decremented by one since the pointer no longer references it. The $scan-by-counting()$ function processes this  worklist of objects who need to have their count decremented by one and recursively adds objects it references to the worklist, similar to the tracing algorithm. The $sweep-for-counting()$ function acts exactly like the one for tracing, as it frees all objects of count zero so their memory can be reused.
+Reference counting need not do any initialization work at the start of the algorithm because initialization is handled for each time when an object is allocated. When an object is allocated, its reference count is set to 0. When an object is assigned to a pointer, the reference count of the object is incremented by one since a pointer now has a reference to it, and the object that was previously referenced by that pointer, if any, is added to the worklist to have its count decremented by one since the pointer no longer references it. The `scan-by-counting()` function processes this  worklist of objects who need to have their count decremented by one and recursively adds objects it references to the worklist, similar to the tracing algorithm. The `sweep-for-counting()` function acts exactly like the one for tracing, as it frees all objects of count zero so their memory can be reused.
 
-It is important to note that when we want to decrement the count of an object in this formalization of reference counting, we delay the actual decrement operation by placing it in a worklist so that it is decremented in the $sweep-for-counting()$ function. In a real world implementation this may seem silly, but it is structured in this way to show the relationship between tracing and reference counting as duals. The actual complexity of the algorithm remains the same between both versions.
+It is important to note that when we want to decrement the count of an object in this formalization of reference counting, we delay the actual decrement operation by placing it in a worklist so that it is decremented in the `sweep-for-counting()` function. In a real world implementation this may seem silly, but it is structured in this way to show the relationship between tracing and reference counting as duals. The actual complexity of the algorithm remains the same between both versions.
 
 Now that tracing and referencing counting algorithms have been presented, it is possible to compare the two. Revisiting the idea of duals, we again acknowledge that tracing increments the reference counts of objects on the worklist whereas RC decrements them. Now, it becomes clear that they are also duals in the manner that tracing checks if the reference count is 1 when deciding whether to add to the worklist and reference counting checks if the reference count is 0 when deciding whether to add to the worklist. Lastly, for tracing the worklist initially included roots of the graph, but for reference counting the worklist contains objects that had a reference removed since the last time the algorithm ran. Tracing begins with an underestimate of counts while reference counting starts with an overestimate and both converge towards a true value.
 
@@ -70,7 +71,7 @@ When comparing the two algorithms side by side, we see how similar the two are. 
 
 ## Deferred Reference Counting vs Partial Tracing
 
-In making optimizations to the traditional methods of garbage collection such as reference counting and tracing, we have deferred reference counting and, its converse, partial tracing. In deferred reference counting we maintain a Zero Count Table (ZCT) which maintains objects with reference count 0. We also save some overhead in not counting mutations to root references. At collection time, elements in the ZCT that are pointed to by roots are removed from the ZCT and the remaining elements are collected. In partial tracing, we count root references and then perform tracing from those root references. Note that partial tracing is not a fast optimization, instead it is brought up to illustrate how we can create converses of tracing or reference counting based algorithms and consider their performance within the design space. This is illustrated in the following figure.
+In making optimizations to the traditional methods of garbage collection such as reference counting and tracing, we have deferred reference counting and its converse, partial tracing. In deferred reference counting we maintain a Zero Count Table (ZCT) which maintains objects with reference count 0. We also save some overhead in not counting mutations to root references. At collection time, elements in the ZCT that are pointed to by roots are removed from the ZCT and the remaining elements are collected. In partial tracing, we count root references and then perform tracing from those root references. Note that partial tracing is not a fast optimization, instead it is brought up to illustrate how we can create converses of tracing or reference counting based algorithms and consider their performance within the design space. This is illustrated in the following figure.
 
 <p align="center">
 <img src="def_rc_partial_tracing.png" alt="alt_text" title="image_tooltip" style="zoom:50%;" />
@@ -88,7 +89,7 @@ The paper presents and compares three generational garbage collector algorithms:
 
 ## Cycle Collection
 
-One of the key disadvantages of reference counting is the lack of cycle collection. The authors propose two solutions, one is to run reference counting without cycle collection, and occasionally run a tracing algorithm to detect cycles. The other solution proposed was reference counting with trial deletion. In this algorithm, objects with suspiciouslly high references are traced to check for cycles.
+One of the key disadvantages of reference counting is the lack of cycle collection. The authors propose two solutions: (1) run reference counting without cycle collection, and occasionally run a tracing algorithm to detect cycles, or (2) use reference counting with trial deletion. In this algorithm, objects with suspiciouslly high references are traced to check for cycles.
 
 ## Multi-Heap Collectors
 
@@ -112,4 +113,4 @@ The paper then goes onto computing these factors for various collectors, paramat
 The paper concludes with some general recommendations to those looking to implement collectors. They state to consider three key decisions in implmenting collectors: how to paritition memory, how to traverse that memory and the trade-offs associated with the partition scheme.
 
 # Analysis of Contributions and Impact
-The paper itself does not present any new ideas on how to perform garbage collection. Instead the paper introduces a new methodology of how to develop collectors by creating a design space and evaluation method. This methodology is inspired by the idea that reference counting and tracing are algorithmic duals of one another. This key, and very cool, insight is the underlying motivation for the methodology. The paper also seems to be best for an engineer looking to build a garabage collector than a formal method in evaluating collectors. The cost analysis they give is much more practical, using "real" values for evaluation rather than estimates with a Big-Oh analysis.
+The paper itself does not present any new ideas on how to perform garbage collection. Instead the paper introduces a new methodology of how to develop collectors by creating a design space and evaluation method. This methodology is inspired by the idea that reference counting and tracing are algorithmic duals of one another. This key, and very cool, insight is the underlying motivation for the methodology. The paper also seems to be best for an engineer looking to build a garabage collector than a formal method in evaluating collectors. The cost analysis they give is much more practical, using "real" values for evaluation rather than estimates with a Big-O analysis.
