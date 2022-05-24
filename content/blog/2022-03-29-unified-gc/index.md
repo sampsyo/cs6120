@@ -5,7 +5,8 @@ name = "Orko Sinha"
 link = ""
 [[extra.authors]]
 name = "Michael Maitland"
-link = "https://michaelmaitland.com" latex = true
+link = "https://michaelmaitland.com"
+latex = true
 +++
 
 # Introduction
