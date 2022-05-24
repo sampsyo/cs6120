@@ -31,7 +31,7 @@ The standard response to the first argument is:
 * Selectively verify code that is particularly delicate or mission-critical. Use traditional testing elsewhere.
 * Use techniques from programming languages and software engineering to reduce the cost of verification. This is a whole domain of research in CS; see the [CAV](http://i-cav.org/) community for an example.
 
-The second argument is harder to defend against. Most verification happens at the source language, and so most verified code needs to undergo an _enormous_ modification – compilation – before it is run! This is where CompCert, a formally verified C compiler, comes in. Rather than treating compilation as a black-box transformation, CompCert state and proves, with mathematical precision, how it transforms the code. Programmers can state and prove claims about their code as written, in the source language. CompCert then guarantees that these hard-won claims still hold true even after the source code is compiled to an executable. The effect is multiplicative and powerful.
+The second argument is harder to defend against. Most verification happens at the source language, and so most verified code needs to undergo an _enormous_ modification – compilation – before it is run! This is where CompCert, a formally verified C compiler, comes in. Rather than treating compilation as a black-box transformation, CompCert states and proves, with mathematical precision, how it transforms the code. Programmers can state and prove claims about their code as written, in the source language. CompCert then guarantees that these hard-won claims still hold true even after the source code is compiled to an executable. The effect is multiplicative and powerful.
 
 
 ### Trusting Your Compiler
@@ -39,6 +39,8 @@ The second argument is harder to defend against. Most verification happens at th
 In a sense a compiler is very easy to specify: it should transform code without changing its behavior. However, as the author shows, it is critical that we take a more flexible stance to allow for undefined behavior, nondeterminism, and permissible changes to the behavior of the source code. Indeed, the wise programmer is aiming not for identical behavior, but rather for behavior that is close enough to the original, for some choice of “close enough”. 
 
 This is intentionally open-ended. Loosely speaking, choosing a strong definition of “close enough” leads to more work and stronger guarantees, while a more relaxed choice leads to less work and weaker guarantees. In class we discussed that this vagueness, in addition to the vagueness about “going wrong”, is a feature of this work. 
+
+#### Five Notions of Trust
 
 The author provides five ways to think about a compiler from a semantic perspective. In the statements below, $S$ is the source program, $C$ is the compiled program, and $B$ is the observable behavior of a program. $S \Downarrow B$ means that $S$ executes with observable behavior $B$. The open-ended set of "going wrong" behaviors is written $\mathtt{wrong}$, and a program satisfies the predicate $\mathtt{safe}$ if none of its behaviors "go wrong".
 
@@ -49,38 +51,38 @@ The author provides five ways to think about a compiler from a semantic perspect
 5. $ S \mathtt{ safe} \Rightarrow C \mathtt{ safe} $ 
 
 These are not interchangeable, but the author explains how they relate to each other and points out features (such as transitivity) that they have in common. For a taste, property 2 says that, if none of $S$'s possible behaviors are "wrong", then any behavior observed during the execution of $C$ must have also been observed during the execution of $S$. Property 3 additionally assumes that the programs and their execution environments are deterministic: when we say $S \Downarrow B$, the behavior $B$ is uniquely determined. Intuitively, property 3 says that, for all behaviors that are not "wrong", if $S$ demonstrates that behavior, so will $C$. This is the property that CompCert actually establishes in its proofs. The choice of property 3 makes sense:
-* CompCert is indeed working in a deterministic setting, so there is no need to contend with the complexities of nondeterministic behavior.
+* CompCert does indeed work in a deterministic setting, so there is no need for it to deal with the messiness of nondeterministic behavior.
 * Establishing property 3 is easier than establishing some others: in a mechanized setting like Coq, one can `intro`duce (1) some specific behavior $B$, (2) the assumption $B \notin \mathtt{wrong}$, and (3) the assumption $S \Downarrow B$, and then perform structural induction on the execution of $S$. 
 
 Additionally, we remarked in class that definition 4 is a helpful way to appreciate CompCert's overall goal: given a predicate $\text{Spec}$ on behaviors, and assuming that (1) $S$ cannot go wrong and (2) all behaviors of $S$ satisfy $\text{Spec}$, this property tell us that (1) ${C}$ cannot go wrong and (2) all behaviors of $C$ *also* satisfy $\text{Spec}$. With reference to the background section above, it should be clear that this property is a powerful and clean way of viewing a compiler.
 
+#### Three Ways of Getting There
 
-The author surveys three ways to arrive at this trust.
+Having established the overall goal of a trustworthy compiler, the the author surveys three ways to arrive at this trust.
+In the discussion below, the compiler $Comp$ is a total function on source programs $S$. It either executes without going wrong, giving $\mathtt{OK}(C)$ where $C$ is the compiled program, or goes wrong and gives an $\mathtt{error}$. When we write $S \approx C$, we mean that any of the five notions of trust can be substituted in.
+
 
 1. Verify the compiler:
-<p align="center">
-    $ \forall S, C, Comp(S) = \text{OK}(C) \Rightarrow S \approx C $
-</p>
+    $$ \forall S, C, Comp(S) = \mathtt{OK}(C) \Rightarrow S \approx C $$
+    That is to say, use techniques from formal methods on the source code of the compiler $Comp$ itself. For the formal specification of the compiler, choose one of the five properties discussed above.
 
-2. Don’t trust the compiler. Verify the validator:
-<p align="center">
-    $ \forall S, C, Validate(S, C) = \text{true} \Rightarrow S \approx C $
-</p>
+2. Verify the validator:
+    $$ \forall S, C, Validate(S, C) = \mathtt{true} \Rightarrow S \approx C $$
+    That is to say, use a (possibly untrusted) compiler to convert $S$ to $C$, and then employ a separate *validator* that can check, after the fact, whether $S \approx C$. Use techniques from formal methods on the source code of the validator to prove that the validator returns no false positives: whenever it returns $\mathtt{true}$, it is indeed the case that $S \approx C$.
 
-3. Don’t trust the (certificate-generating) compiler. Verify the certificate-checker:
-<p align="center">
-    $ \forall S, C, Check(S, C, Spec, \pi) = \text{true} \Rightarrow S \approx C $
-</p>
+3. Verify the certificate-checker:
+    $$ \forall S, C, Check(S, C, Spec, \pi) = \mathtt{true} \Rightarrow S \approx C $$
+    That is to say, modify the compiler to return not only a compiled program $C$ but also a proof $\pi$ that $C$ satisfies some specification $Spec$. Do not trust this compiler. Employ a separate *checker* that can ensure, after the fact, that $\pi$ convincingly shows that $C$ satisfies $Spec$. As above, use techniques from formal methods on the source code of the checker to prove its soundness.
 
-Again, these are not interchangeable. They share a deep connection and are, from a formal perspective, equally convincing. This was confusing to the class, with a bit of a sentiment that a certificate-generating untrusted compiler combined with a verified certificate-checker was the best option. We spent some time clarifying this confusion.
+Again, these are not interchangeable. They share a deep connection and are, from a formal perspective, equally convincing. This was confusing to the class, with a bit of a sentiment that the third option was the best. We spent some time clarifying this confusion in class, and have attempted to thread that discussion into the individual explanations above. The big takeaway is that none of these techniques offers a free lunch. One must still do the work of formal verification; one simply has some flexibility as to what one verifies. Depending on the context, one choice may be preferable to another. 
 
-For the most part CompCert makes one choice of “trust” and achieves this trust in one way:
-<p align="center">
-    $ \forall S, C, B \notin \text{Wrong}, Comp(S) = \text{OK}(C) \land S \Downarrow B \Rightarrow C \Downarrow B $
-</p>
+For instance, CompCert uses the second approach in one of its last passes, when performing instruction scheduling to go from Mach to PPC. As we discussed in class, this may just because the algorithm in use is complicated while checking it after the fact is easy. 
+<!-- Alaia, do you remember any more of this discussion from class? -->
 
-However, it uses the untrusted code + verified validator approach in one step, and we discussed the merits of this design decision in class. 
+For the most part, CompCert makes one choice of “trust” and achieves this trust in one way:
+    $$ \forall S, C, B \notin \mathtt{wrong}, Comp(S) = \text{OK}(C) \land S \Downarrow B \Rightarrow C \Downarrow B $$
 
+That is: if CompCert compiles program $S$ without error into program $C$, and program $S$ had non-error behavior $B$, then program $C$ will also have behavior $B$.
 
 ### Overview of the CompCert Compiler
 
@@ -117,11 +119,11 @@ CompCert's performance turns out to be adequate for critical embedded code. Comp
 
 ### The Story Since 2009
 
-A key reason for the success of the CompCert project is that it foresaw – and triggered – an increasing interest in the formal verification of software.
+CompCert foresaw – and triggered – an increasing interest in the formal verification of software.
+CompCert has been received warmly by the community; the day after our presentation it won the 2021 [ACM Software System Award](https://awards.acm.org/software-system). It remains in active development not only in the research community but also, in partnership with [AbsInt](https://www.absint.com/compcert/index.htm), in a commercial setting. It now supports five target languages and not just one, and efforts have been made to extend the verification upwards to the parsing phase and downwards to the assembling phase.
 
+Many outside projects have taken advantage of CompCert’s design choice of several well-specified intermediate languages. The presence of a formal specification at each level means that external projects have an easier time “hopping on” and “hopping off” CompCert. The ready hook into the Coq proof assistant means that external projects can prove that their work is reasonable. A few examples:
+* [A certified framework for compiling and executing garbage-collected languages](https://dl.acm.org/doi/10.1145/1932681.1863584). The authors present a new machine-checked framework for compiling garbage-collected languages. They design a new intermediate language, GCminor, where one has to clarify the mutator/collector interface and make the root set explicit. They then write CompCert-style passes to compile GCminor to Cminor, and verify this compilation in Coq. They link the compiled code with a generic memory manager also written in Cminor. From then on, they trust CompCert to get them to assembly. To use this framework, a user needs to compile their source language to GCminor.
+* [Certified and efficient instruction scheduling: application to interlocked VLIW processors](https://dl.acm.org/doi/10.1145/3428197). The authors extend CompCert, allowing the reordering of instructions for optimization. They meet CompCert at a low level, adding three new passes between Mach and assembly. The reward is that the compiler now targets VLIW (very long instruction word) processors, which can parallelize instructions so long as they are annotated as parallelizable. The authors do this scheduling and annotation during their compilation passes. They use an untrusted transformation along with a Coq-checked verifier, i.e., the "second way" of establishing trust.
 
-CompCert has been received warmly by the community; the day after our presentation it won the 2021 ACM Software System Award. It remains in active development not only in the research community but also, in partnership with AbsInt, in a commercial setting. It now supports five target languages and not just one, and efforts have been made to extend the verification upwards to the parsing phase and downwards to the assembling phase.
-
-Many outside projects have taken advantage of CompCert’s design choice of several well-specified intermediate languages. The presence of a formal specification at each level means that external projects have an easier time “hopping on” and “hopping off” CompCert. The ready hook into the Coq proof assistant means that external projects can prove that their work is reasonable.
-
-Somewhat surprisingly, CompCert does not dominate the field of safety-critical software. Many users use languages like Ada, Rust, and Go, which provide safety guarantees at the source level but do not have verified compilers. It is not clear that everyone should immediately stop writing safety-critical code until their compiler is verified, but at the same time it is interesting to note this stark contrast in preference. 
+In an applied context, the main use of CompCert is in the compilation of safety-critical software. The alternate approach is to use languages like Ada, Rust, or Go, which provide safety guarantees at the source level but do not have formally verified compilers. Both approaches appear to be in active use. The trade-offs are clear: the CompCert approach forces the use of C but guarantees correct compilation; the alternate approach opens the floor to safer programming languages but lacks a trusted compiler. A fun closing thought from class was to get the best of both worlds by writing a verified compiler from Rust to CompCert Clight.   
