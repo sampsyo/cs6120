@@ -388,7 +388,9 @@ Fig. 5: Roofline Model
 </center>
 
 <!-- What we do to access the memory access / ops -->
-We add a profiling tool to calculate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. 
+We add a profiling tool to calculate the operational intensity by statically analyzing the MLIR code to count the number of memory access (Bytes) and arithmetic operations (FLOPs). Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. The limitation is that we only support constant loop bounds now. If complex control flow is involved, we need to do some instrumentation to dynamically count the numbers. 
+
+A roofline model is generated to guide the optimization process. The performance in the y-axis is computed by $\text{FLOPs}/\text{Latency}$, where latency is obtained by running the HLS and cannot be statically determined. The operational intensity in the x-axis is computed by $\text{FLOPs}/\text{Bytes}$. 
 
 Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. The detailed experiment results are shown in the next section. 
 
