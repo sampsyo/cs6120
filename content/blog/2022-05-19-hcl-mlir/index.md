@@ -54,17 +54,17 @@ Fig. 2 is an overview of reuse buffer and write buffer generation with `reuse_at
 The original HeteroCL paper only discusses how to generate reuse buffers for a simple 2D convolutional kernel, while real-life applications generally have high-dimensional arrays with complex access patterns. In this project, we try to extend the idea of reuse buffer in the MLIR framework to support more applications. In this section, we will first discuss the high-level design of reuse buffer and detail the implementation.
 
 ### Design
-The basic idea of reuse buffer is to reuse data between adjacent loop iterations so that the number of off-chip memory accesses can be reduced. If without special notification, we suppose the traversal order is the same as the memory access order in this report, i.e., always access the last dimension first and then access the second last, etc.
+The basic idea of reuse buffer is to reuse data between adjacent loop iterations so that the number of off-chip memory accesses can be reduced. Unless otherwise noted, we suppose the traversal order is the same as the memory access order in this report, i.e., always access the last dimension first and then access the second-to-last, etc.
 
 The applications that have data reuse are mostly *stencil* kernels, so we follow SODA[^3] to give a similar definition. Consider a point $\mathbf{x}=(x_0,x_1,\ldots,x_m)\in\mathbb{N}^m$, a $n$-point stencil window defines a set of offsets $\\{\mathbf{a}^{(i)}\in\mathbb{N}^m\\}\_{i=1}^{n}$ that describe the distance from $\mathbf{x}$. By adding the offset to a specific point, we can get the actual points $\\{\mathbf{y}=\mathbf{x}+\mathbf{a}^{(i)}\\}_{i=1}^n$ of a stencil in a specific iteration. The value of these points will be reduced (e.g., mean, summation) to one value in the output tensor.
 
 We further define the *span* $s_d$ of a dimension $d$ as the largest distance between two stencil points along that dimension.
 
-$s_d=\max_{i}(\mathbf{a}^{(i)}_d)-\min_i(\mathbf{a}^{(i)}_d)+1$
+$$s_d=\max_{i}(\mathbf{a}^{(i)}_d)-\min_i(\mathbf{a}^{(i)}_d)+1$$
 
 In the Fig. 3(a) example, we consider a five-point stencil
 
-$\\{\mathbf{a}^{(i)}\\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$
+$$\\{\mathbf{a}^{(i)}\\}^{5}_{i=1}=\{(0,1),(1,0),(1,1),(1,2),(2,1)\}$$
 
 colored with red, and the span of each dimension is $s_0=s_1=2$.
 
@@ -96,11 +96,11 @@ def test_stencil():
 
 From the memory access pattern above, we can see that when the stencil window is moved from the previous iteration (<font color="blue">blue grids</font> in Fig. 3(a)) to the next iteration in the same row (<font color="red">red grids</font> in Fig. 3(a)), there exist two replicated data in these two iterations (highlighted with dash line). If all the data are loaded from off-chip memory, it may cause contention and introduce large memory access overheads. To exploit this data reuse opportunity, HeteroCL provides a push-button primitive `.reuse_at()` for users to declare reuse buffers. By specifying the dimension, users can exactly control the location of reuse buffers.
 
-The minimal size of the reuse buffer consists of small rectangular strips whose total length is equal to the reuse distance of the stencil [^3]. In the five-point stencil example, this requires generate buffer covering elements from $(0,1)$ to $(2,1)$. The total size of the buffer is $4+6+3=13$. However, this may introduce complicated control logic when implemented on FPGA. Thus, for simplicity, we use the *rectangular hull* of the stencil as the reuse buffer, which is labeled as <font color="red">red frame</font> in Fig. 3(a). We call it *window buffer*. The shape of this buffer is $[s_0,s_1,\ldots,s_m]$. We can always reuse data when the buffer moves along the same row.
+The minimal size of the reuse buffer consists of small rectangular strips whose total length is equal to the reuse distance of the stencil.[^3] In the five-point stencil example, this requires generating buffer covering elements from $(0,1)$ to $(2,1)$. The total size of the buffer is $4+6+3=13$. However, this may introduce complicated control logic when implemented on FPGA. Thus, for simplicity, we use the *rectangular hull* of the stencil as the reuse buffer, which is labeled as <font color="red">red frame</font> in Fig. 3(a). We call it *window buffer*. The shape of this buffer is $[s_0,s_1,\ldots,s_m]$. We can always reuse data when the buffer moves along the same row.
 
 While this works well for one dimension, when the stencil window moves from the end of previous row to the front of the next row, there will be no elements that can be reused, which may incur extra latency to load data from off-chip memory. A traditional way to tackle this problem is leveraging another load process to prefetch the data, so the reuse buffer can always be prepared with data. This method again complicates the control logic and requires an extra prefetching function to work concurrently. To be consistent with the API that HeteroCL proposed, we can further create hierarchical reuse buffers to hide memory access overheads. As shown in Fig. 3(b), we can create a *line buffer* to reuse data along the column dimension. Basically, only one element needs to be fetched from off-chip memory to line buffer in each iteration. The original elements in the line buffer need to be shifted up for one grid as depicted in <font color="blue">blue arrows</font>. After the elements are loaded to the line buffer, they are further copied to window buffer as shown in <font color="red">red arrows</font> in Fig. 3(c). In this way, the data loading pipeline can work perfectly without stall. Finally the kernel can simply use the indices in $\\{\mathbf{a}^{(i)}\\}^{5}_{i=1}$ to access the elements in the window buffer.
 
-The programming interface is also easy-to-use, users only need to attach the following two lines of code to their schedule. Our compiler will automatically generate the buffer and implement the reuse logic.
+The programming interface is also easy-to-use. Users only need to attach the following two lines of code to their schedule. Our compiler will automatically generate the buffer and implement the reuse logic.
 
 ```python
 # schedule.reuse_at(tensor, stage, axis)
@@ -110,17 +110,17 @@ WB = s.reuse_at(LB, s[B], B.axis[1])
 
 For higher-dimensional cases, we can generalize the above idea and generate hyper-cubic buffers. Currently we only support stride-one reuse patterns. Suppose the input tensor has shape $[w_0,w_1,\ldots,w_m]$, the hierarchical buffers may have the following shape (if the corresponding axis has reuse pattern).
 
-$
+$$
 \begin{aligned}
 \text{reuse at axis 0}: &[s_0,w_1,\ldots,w_m]\\\\
 \text{reuse at axis 1}: &[s_0,s_1,\ldots,w_m]\\\\
 \cdots &\\\\
 \text{reuse at axis m}: &[s_0,s_1,\ldots,s_m]\\\\
 \end{aligned}
-$
+$$
 
 ### Implementation
-The above description seems straightforward, but the actual implementation in MLIR is intractable. There are two main challenges here:
+The above description seems straightforward, but the actual implementation in MLIR is difficult. There are two main challenges here:
 1. The affine dialect decouples the expression from actual variables making analysis indirect. For example, the `affine.load` operation accepts block arguments as operands, the `AffineMapAttr` that describes the memory access is attached to the attribute. The actual indices are calculated by applying the `AffineMapAttr` to the operands. For `affine.load %1[0, %arg2 + 1]`, there is only two operands `%1` and `%arg2`. The attached `AffineMapAttr` is `(d0)->(0, d0+1)`.
 2. MLIR uses a strict SSA form, meaning the computation rule is not written in one line and requires us to traverse the use-def chain to obtain the actual memory access operations. We also need to distinguish between off-chip memory access and on-chip memory access.
 
@@ -388,9 +388,9 @@ Fig. 5: Roofline Model
 </center>
 
 <!-- What we do to access the memory access / ops -->
-We add a profiling tool to evaluate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. 
+We add a profiling tool to calculate the operational intensity by analyzing the MLIR code to count the number of memory access and arithmetic operations. Then a roofline model is generated to guide the optimization process. Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. 
 
-Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. This is implemented by comparing the `memref` value. The detailed experiment results are shown in the next section. 
+Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. The detailed experiment results are shown in the next section. 
 
 ## Experiments
 <!-- A major part of your project is an empirical evaluation. To design your evaluation strategy, you will need to consider at least these things:
@@ -414,10 +414,10 @@ Fig. 6: MLIR-based HeteroCL end-to-end compilation flow
 
 From the affine dialect level, the IR either generates HLS code through a translation pass or keeps lowering to LLVM dialect level for CPU execution.
 
-We evaluate our memory optimizations on the open-source benchmarks[^6] written in HeteroCL. The [HCL dialect](https://github.com/cornell-zhang/hcl-dialect-prototype) is compiled with LLVM 14.0.0 with Python binding enabled. The evaluation machine equips with two Intel(R) Xeon(R) Silver 4214 CPU (48 logical cores in total), and we run the experiments using Vivado HLS v2019.1[^7]. In the following, we will describe the experimental results. All the code for experiments can be found [here](https://github.com/zzzDavid/hcl-memory-opt).
+We evaluate our memory optimizations on the open-source benchmarks[^6] written in HeteroCL. The [HCL dialect](https://github.com/cornell-zhang/hcl-dialect-prototype) is compiled with LLVM 14.0.0 with Python binding enabled. The evaluation machine equips with two Intel(R) Xeon(R) Silver 4214 CPU (48 logical cores in total), and we run the experiments using Vivado HLS v2019.1[^7]. We target Avnet Ultra96-V2, which includes a Xilinx ZU3EG FPGA and 2GB LPDDR4 memory. In the following, we will describe the experimental results. All the code for experiments can be found [here](https://github.com/zzzDavid/hcl-memory-opt).
 
 ### Reuse Buffer
-We evaluate `.reuse_at()` using the following benchmarks.
+We evaluate `.reuse_at()` using the following benchmarks, and read the results from HLS reports.
 * `blur`: a simple three-point 2D blur filter with $\\{\mathbf{a}^{(i)}\\}^{3}_{i=1}=\\{(0,0),(0,1),(0,2)\\}$.
 * `blur+LB`: blur filter with line buffer of size $3$.
 * `conv2d-nchw`: baseline conv2d implementation with conventional $(n,c,h,w)$ dimensions, and the kernel size is $3\times 3$.
@@ -465,7 +465,7 @@ We observe that buffering a row of output tensor alone brings 1.1x speedup, with
 In addition to the GEMM example, we add 2D convolution experiments with interleaving accumulation. Similarly, we first reorder the reduction loops and their outer loop, then create a write buffer and add pipelining. The complete implementation is [here](https://github.com/zzzDavid/hcl-memory-opt/blob/main/buffer_at/conv_acc.mlir). Convolution with interleaving accumulation has 10.9x speedup to baseline, also with some BRAM and FF overhead.
 
 ### Roofline Model
-We draw the roofline model for all the kernels above to show the effect of optimizations. The computing platform is Avnet Ultra96-V2, which includes Xilinx ZU3EG board and 2GB LPDDR4 Memory. The peak performance is 18GFLOPs, and the peak bandwidth is 25.6GB/s. The diagonal roof and horizontal roof can be drawn using these two parameters. Each kernel is represented as one point in the figure.
+We draw the roofline model for all the kernels above to show the effect of optimizations. The peak performance of our target Ultra96-V2 is 18GFLOPs, and the peak bandwidth is 25.6GB/s. The diagonal roof and horizontal roof can be drawn using these two parameters. Each kernel is represented as one point in the figure.
 
 Fig. 7 shows the roofline model for each of the two optimizations we implement. Fig. 7(a) shows 4 kernels with and without reuse buffer optimization, and Fig. 7(b) shows 2 kernels with and without write buffer optimizations. All the points move upper right in the roofline model after optimizations. Note that some points overlap with the baseline in this figure because of the scaling ratio. The detailed analysis for each kernel is illustrated as follows. 
 
