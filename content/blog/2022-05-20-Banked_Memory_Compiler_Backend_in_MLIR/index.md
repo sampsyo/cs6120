@@ -3,14 +3,14 @@ title = "Banked Memory Compiler Backend in MLIR"
 [extra]
 bio = """
   [Andrew Butt](https://andrewb1999.github.io/) is a first-year PhD student at Cornell's ECE department;
-  [Nikita Lazarev](https://www.nikita.tech/) is a third-year PhD student at Cornell's ECE department;
+  [Nikita Lazarev](https://www.nikita.tech/) is a third-year PhD student at Cornell's ECE department.
 """
 [[extra.authors]]
 name = "Andrew Butt"
 link = "https://andrewb1999.github.io/"  # Links are optional.
 [[extra.authors]]
 name = "Nikita Lazarev"
-link = "https://www.nikita.tech/"  # Links are optional.​
+link = "https://www.nikita.tech/"  # Links are optional.
 +++
 
 ### Code
@@ -19,7 +19,7 @@ Unfortunately, as this work is related to ongoing research, we are not yet ready
 
 ### Introduction
 
-Banked memories, or logical memories that are divided into multiple physical memories, are an important part of achieving high performance FPGA designs. Unfortunately, neither RTL- nor HLS-based languages provide sufficient abstractions to express banked memories. This results in tremendous efforts that programmers need to put when designing memory sub-systems for their hardware architectures. The problem is especially hard given the diverse set of applications with different memory access patterns and performance requirements, as well as numerous hardware primitives the memory can be map onto (e.g. LUTRAM, BRAM, ULTRARAM, etc.) available in today's FPGAs. Without these abstractions, designers have to manually plan the microarchitecture of the memories with all the necessary optimizations in order to make them meeting target design requirements.
+Banked memories, or logical memories that are divided into multiple physical memories, are an important part of achieving high performance FPGA designs. Unfortunately, neither RTL- nor HLS-based languages provide sufficient abstractions to express banked memories. This results in tremendous efforts that programmers need to put when designing memory sub-systems for their hardware architectures. The problem is especially hard given the diverse set of applications with different memory access patterns and performance requirements, as well as numerous hardware primitives the memory can be map onto (e.g., LUTRAM, BRAM, ULTRARAM, etc.) available in today's FPGAs. Without these abstractions, designers have to manually plan the microarchitecture of the memories with all the necessary optimizations in order to meet the target design requirements.
 
 To address the aforementioned challenges and simplify the process of designing banked memories, we propose AMC -- a novel MLIR dialect built on top of CIRCT and Calyx that enables compilation of arbitrary memory structures. Our contribution lies in the following three aspects:
 
@@ -37,13 +37,13 @@ We build the AMC dialect on top of Calyx. Calyx is an IR for compilers generatin
 amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>);
 ```
 
-*The memory allocation description* specifies how the memory is divided into banks. For example, ```%0 = amc.alloc : !amc.memref<1024xf32, bank [2]>``` says that the memory contains two equivalent banks with 1024 32-bit words in total, and it uses \%0 as a reference.
+*The memory allocation description* specifies how the memory is divided into banks. For example, ```%0 = amc.alloc : !amc.memref<1024xf32, bank [2]>``` says that the memory contains two equivalent banks with 1024 32-bit words in total, and the result is assigned to SSA value \%0.
 
-*Port specification* allows to assign read/write ports to the memory banks described earlier. For example,
+*The port specification* assigns read/write ports to the memory banks described earlier. For example,
 ```mlir
 %3 = amc.create_port(%0 : !amc.memref<1024xf32, bank [2]>) banks [1] : !amc.port<512xf32, r, 1>
 ```
-describes a read port connected to the bank 2 of the memory referred by \%0. Here, port attributes have the same meaning as in the interface description.
+describes a read port connected to the bank 2 of the memory referred by \%0. The `amc.port` type has three argument attributes, the geometry of the port, the read/write semantics, and the port access latency in cycles.
 
 Finally, *port-interface mapping* specifies how exactly the bank ports are mapped onto the memory interface ports defined earlier. A completed example of possible banked memory definition with our AMC dialect is shown in the listing bellow:
 ```mlir
@@ -61,9 +61,12 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
   amc.extern %1, %2, %3, %4 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>
 }
 ```
+
+The `amc.extern` operation, used in the example above, maps internal SSA values to the top level ports specified in the interface. This can be thought of similar to a return operator, where internal operations are made accesible to some external user. All top level ports specified in the interface must be mapped to an internal port via the `amc.extern` operator. There is no such thing as an "input" port to the module at this level of the representation.
+
 ### Lowering
 
-The general lowering pipeline can be view as follows:
+The goal of lowering is to eventually convert the specification above into hardware. There already exists a lowering method from Calyx to Verilog, so all we need to do is lower the specification to Calyx. The general lowering pipeline can be view as follows:
 
 Handshake Lowering -> Merge Lowering -> Bank Lowering -> Optimization -> AmcToCalyx
 
@@ -71,7 +74,7 @@ Our general goal here is to perform the straight forward lowering passes first, 
 
 ### Bank Lowering
 
-We will start with the simplest lowering step. This should be viewed as the final lowering pass pre-optimization and simply translated a banked memref into multiple unbanked memref. This step requires that all create ports only access a single bank and create only latency-sensitive ports.
+We will start with the simplest lowering step. This should be viewed as the final lowering pass pre-optimization and simply translates a banked memref into multiple unbanked memref. This step requires that all create ports only access a single bank and create only latency-sensitive ports.
 
 Here is an example of bank lowering:
 ```mlir
@@ -102,7 +105,7 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
 
 The purpose of merge lowering is to translate latency-sensitive port creations that access more than one bank on a memory into multiple ports that access individual banks. These smaller ports are then combined with the merge operator to produce a port of the original size. This is analogous to how a port of this type would actually be implemented in hardware and allows future lowering and optimization passes to have a better idea of how many ports are actually accessing each bank.
 
-The merge operator is a new primitive that takes multiple latency-sensitive ports and produces one larger latency-sensitive port. This can be thought of as a type of mux, which based on the top ceil(log_2(n)) bits of the address will select one of the n ports to forward the access to.
+The merge operator is a new primitive that takes multiple latency-sensitive ports and produces one larger latency-sensitive port. This can be thought of as a type of mux, which based on the top `ceil(log_2(n))` bits of the address will select one of the `n` ports to forward the access to.
 
 Here is an example of merge lowering:
 ```mlir
@@ -118,7 +121,7 @@ amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port
 
 // Output after merge lowering
 amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port<1024xf32, w, 1>) {
-  %0 = amc.alloc : !amc.memref<1024xf32, [2]>
+  %0 = amc.alloc : !amc.memref<1024xf32, bank [2]>
   %1 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [0] : !amc.port<512xf32, r, 1>
   %2 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [1] : !amc.port<512xf32, r, 1>
   %3 = amc.create_port(%0 : !amc.memref<1024xf32, [2]>) banks [0] : !amc.port<512xf32, w, 1>
@@ -146,13 +149,13 @@ Throughout the design of the AMC dialect, we discovered that it is important to 
 
 Hanshake ports must be lowered before being fed into the rest of the lowering pipeline. Currently, we lower handshake ports in the most naive way possible, assuming that a future optimization pass will combine arbiters in a sensible way. This pass has not yet been implemented.
 
-To support handshake ports we must introduce a new primitive, the arbiter. The job of an arbiter is to take in some number of latency-senstive port ssa value and produce some number of latency-insensitive handshake port ssa values. These handshake port ssa values can then be passed with amc.extern to the top level IO. At this level, the job of the arbiter is to prevent multiple handshake ports from trying to access the same latency-sensitive port at the same time. We will later have to choose a specific arbitration scheme (fixed-priority, round-robin, etc.) to meet the needs to the memory interface.
+To support handshake ports we must introduce a new primitive, the arbiter. The job of an arbiter is to take in some number of latency-senstive port ssa value and produce some number of latency-insensitive handshake port SSA values. These handshake port ssa values can then be passed with amc.extern to the top level IO. At this level, the job of the arbiter is to prevent multiple handshake ports from trying to access the same latency-sensitive port at the same time. We will later have to choose a specific arbitration scheme (fixed-priority, round-robin, etc.) to meet the needs to the memory interface.
 
 Here is an example of handshake lowering:
 ```mlir
 // Input
 amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
-  %0 = amc.alloc : !amc.memref<1024xi32, [2]>
+  %0 = amc.alloc : !amc.memref<1024xi32, bank [2]>
   %1 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [0, 1] : !amc.port_hs<1024xi32, rw>
   %2 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [0, 1] : !amc.port_hs<1024xi32, rw>
   amc.extern %1, %2 : !amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>
@@ -160,7 +163,7 @@ amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
 
 // Output after only handshake lowering
 amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
-  %0 = amc.alloc : !amc.memref<1024xi32, [2]>
+  %0 = amc.alloc : !amc.memref<1024xi32, bank [2]>
   %1 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [0, 1] : !amc.port<1024xi32, rw, 1>
   %2 = amc.arbiter(%1 : !amc.port<1024xi32, rw, 1>) banks [0, 1] : !amc.port_hs<1024xi32, rw>
   %3 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [0, 1] : !amc.port<1024xi32, rw, 1>
@@ -170,7 +173,7 @@ amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
 
 // Output after handshake lowering and merge lowering
 amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
-  %0 = amc.alloc : !amc.memref<1024xi32, [2]>
+  %0 = amc.alloc : !amc.memref<1024xi32, bank [2]>
   %1 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [0] : !amc.port<512xi32, rw, 1>
   %2 = amc.create_port(%0 : !amc.memref<1024xi32, [2]>) banks [1] : !amc.port<512xi32, rw, 1>
   %3 = amc.merge(%1, %2 : !amc.port<512xi32, rw, 1>, !amc.port<512xi32, rw, 1>) : !amc.port<1024xi32, rw, 1>
@@ -243,7 +246,7 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
 
 ### Lowering AMC Dialect down to Calyx
 
-Lowering AMC to Calyx is currently the least developed part of the lowering flow, for a number of reasons. Lowering to Calyx turned out to be much more challenging than expected, especially when handling merge and arbitrate operations. Directly lowering merge and arbitrate operations to Calyx requires generators that can generate optimized Calyx components for each possible version of these primitives (address size, bit width, number of input and output ports, etc.). For these reasons, we are considering a more abstract intermediary language that arbitrate and merge can be lowered to before calyx to simplify the process. This would also be helpful when supporting new primitives such as split_aggregated.
+Lowering AMC to Calyx is currently the least developed part of the lowering flow, for a number of reasons. Lowering to Calyx turned out to be much more challenging than expected, especially when handling merge and arbitrate operations. Directly lowering merge and arbitrate operations to Calyx requires generators that can generate optimized Calyx components for each possible version of these primitives (address size, bit width, number of input and output ports, etc.). For these reasons, we are considering a more abstract intermediary language that arbitrate and merge can be lowered to before Calyx to simplify the process. This would also be helpful when supporting new primitives such as `split_aggregated`.
 
 Calyx and the Calyx dialect also need some modifications to support a wider range of memories that can be generated by AMC. For example, Calyx does not currently support multiported memories or memories that generate verilog with a specific memory primtive (BRAM, UltraRAM, etc.). In theory, these primtives could be added through a Calyx library, but this is also currently unsupported by the Calyx MLIR Dialect.
 
@@ -293,7 +296,7 @@ Evaluation was another area that ended up being more challenging than expected. 
 
 As a result, the majority of our evaluation is more qualitative than quantitative. Every lowering pass and optimization is verified by the MLIR verifiers to be syntactically valid. We also checked all of our test cases to ensure each of the lowering passes makes sense.
 
-The quality of our IR is evaluated by it's expressiveness and ability to provide optimization opportunities. The wide range of memory types shown as examples above shows the expressiveness of our interface. One could also imagine any arbitrary combination of these concepts, such as a memory that has both latency-sensitive and latency-insensitive ports accessing the same banks. The memory aggregation optimization shows one such simple optimization which could potentially significantly improve area results for ultraRAMs that have a fixed 72b data width.
+The quality of our IR is evaluated by its expressiveness and ability to provide optimization opportunities. The wide range of memory types shown as examples above shows the expressiveness of our interface. One could also imagine any arbitrary combination of these concepts, such as a memory that has both latency-sensitive and latency-insensitive ports accessing the same banks. The memory aggregation optimization shows one such simple optimization which could potentially significantly improve area results for UltraRAMs that have a fixed 72b data width.
 
 ### Future Work
 
