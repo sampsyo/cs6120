@@ -6,6 +6,7 @@ link = ""
 [[extra.authors]]
 name = "Michael Maitland"
 link = "https://michaelmaitland.com"
+[extra]
 latex = true
 +++
 
