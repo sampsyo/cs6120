@@ -390,7 +390,7 @@ Fig. 5: Roofline Model
 <!-- What we do to access the memory access / ops -->
 We add a profiling tool to calculate the operational intensity by statically analyzing the MLIR code to count the number of memory access (Bytes) and arithmetic operations (FLOPs). Specifically, we visit each operation and record the current loop nest. When an arithmetic operation or load/store operation is visited, the number of trip counts in the current loop is added. The limitation is that we only support constant loop bounds now. If complex control flow is involved, we need to do some instrumentation to dynamically count the numbers. 
 
-A roofline model is generated to guide the optimization process. The performance in the y-axis is computed by $\text{FLOPs}/\text{Latency}$, where latency is obtained by running the HLS and cannot be statically determined. The operational intensity in the x-axis is computed by $\text{FLOPs}/\text{Bytes}$. 
+A roofline model is generated to guide the optimization process. The performance in the y-axis is computed by $\text{FLOPs}/\text{Latency}$, where latency is obtained from the HLS report and cannot be statically determined. The operational intensity in the x-axis is computed by $\text{FLOPs}/\text{Bytes}$. 
 
 Note that we only care about off-chip memory access, so here we need to match the operands of load/store operations with the input arguments and the return argument. The detailed experiment results are shown in the next section. 
 
@@ -416,7 +416,7 @@ Fig. 6: MLIR-based HeteroCL end-to-end compilation flow
 
 From the affine dialect level, the IR either generates HLS code through a translation pass or keeps lowering to LLVM dialect level for CPU execution.
 
-We evaluate our memory optimizations on the open-source benchmarks[^6] written in HeteroCL. The [HCL dialect](https://github.com/cornell-zhang/hcl-dialect-prototype) is compiled with LLVM 14.0.0 with Python binding enabled. The evaluation machine equips with two Intel(R) Xeon(R) Silver 4214 CPU (48 logical cores in total), and we run the experiments using Vivado HLS v2019.1[^7]. We target Avnet Ultra96-V2, which includes a Xilinx ZU3EG FPGA and 2GB LPDDR4 memory. In the following, we will describe the experimental results. All the code for experiments can be found [here](https://github.com/zzzDavid/hcl-memory-opt).
+We evaluate our memory optimizations on the open-source benchmarks[^6] written in HeteroCL. The [HCL dialect](https://github.com/cornell-zhang/hcl-dialect-prototype) is compiled with LLVM 14.0.0 with Python binding enabled. The evaluation machine equips with two Intel(R) Xeon(R) Silver 4214 CPU (48 logical cores in total), and we run the experiments using Vivado HLS v2019.1[^7] targeting Avnet Ultra96-V2, which includes a Xilinx ZU3EG FPGA and 2GB LPDDR4 memory. In the following, we will describe the experimental results. All the code for experiments can be found [here](https://github.com/zzzDavid/hcl-memory-opt).
 
 ### Reuse Buffer
 We evaluate `.reuse_at()` using the following benchmarks, and read the results from HLS reports.
