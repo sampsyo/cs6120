@@ -39,6 +39,51 @@ very compressed representation of Bril instructions: (almost) all of them are
 represented in 64 bits, with some taking multiple 64 bit words as needed. See
 the [documentation](https://github.coecis.cornell.edu/cs897/fast-bril/blob/master/doc/brb.pdf).
 
+The first component of the bytecode translation is variable names. We translate
+variables to 16 bit numbers in the order that they appear in the function. For
+functions with arguments, the first argument is 0, then 1 et cetera, and the
+variables used in the body follow. This allows the following encoding of "most"
+instructions:
+
+<p align="center">
+	<img src="insn-layout.png"/>
+</p>
+
+By "most" instructions we mean the instructions of the form `t1 = t2 op
+t3`. `arg1`, `arg2`, and `arg3` are the aforementioned numbers of the
+variables.
+
+We also have to translate labels, as strings don't fit into our representation
+very well. We will have the instructions of a function in an array of 64 bit
+bytecode instructions, so we represent labels as indices in this array. We also
+have to keep track of which instructions had a label in the original program so
+that we can interpret the φ instruction efficiently.
+
+We notice that nearly all operations are coincidentally encodings of type
+information. For example, `add` only operates on `int`
+operands/results. However, the `id` instruction is an exception to this, but it
+only has one argument so we encode the type in the space for the second
+argument. See the more detailed docs for the type encoding.
+
+We also have a translation from operations to numbers. These are provided in
+config files in our repo, as well as our documentation PDF.
+
+Some Bril instructions simply won't fit into a 64 bit (or even constant sized)
+word, so they have variable length encoding. The `call` instruction is a prime
+example of this. Function calls may have any number of arguments, so the first
+word contains the information about how many words following it are part of this
+instruction. Everything is always a multiple of 64 in order to maintain
+alignment.
+
+#### Functions & more
+
+We "encode" function names as their index in a program. So, the first function
+is `0`, then `1`, et cetera. This is all well and good for the current state of
+Bril, but it would be nice for the compiled programs to be linkable, so we
+preserve the function names in our function type. We have not specified a format
+for the bytecode other than the instruction encoding, as we feel that this is
+the more important contribution.
+
 In order to appease the C typechecker and not rely on undefined behavior, we use
 a union type to internally represent instructions, but most have the first 16
 bits as the opcode, so we can pull this out and then determine how to decode the
