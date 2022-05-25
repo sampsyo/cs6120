@@ -100,6 +100,7 @@ amc.memory @test1(!amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<
   amc.extern %2, %3, %4, %5 : !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>, !amc.port<512xf32, r, 1>, !amc.port<512xf32, w, 1>
 }
 ```
+We can see that the original `amc.memref` is split into two smaller memrefs. This corresponds to lowering the logical banks of the original memory to physical, distinct banks. As the original memory contains 1024 elements with a bank factor of 2, the output contains two 512 element memories (representing each of the original 2 banks). The `amc.create_port` operators are also retargeted to the new memories. `create_port` operators that accessed bank 0 in the input now take memref 0 as input and operators that accessed bank 1 in the input now take memref 1 as input. These are semantically equivalent, but the output provides a representation closer to the implementation in hardware.
 
 ### Merge Lowering
 
@@ -143,6 +144,8 @@ amc.memory @test2(!amc.port<512xf32, rw, 1>, !amc.port<512xf32, r, 1>, !amc.port
 }
 ```
 
+Comparing the input to the output after merge lowering, we can see that the write port (SSA value \%3 in the input) has been lowered to two smaller ports that are merged together. The two read ports are not lowered because they already access only a single bank. The newly created write ports in the output are only 512 elements instead of the original 1024 elements, but are then merged back together into a 1024 element port. This lowered stucture is again closer to how a port that accesses multiple banks is realized in hardware. We can also see that the `amc.extern` types have not changed and the port produced by the merge is now the one externalized.
+
 ### Handshake Lowering
 
 Throughout the design of the AMC dialect, we discovered that it is important to distinguish between latency-sensitive and latency-insensitive (handshake) ports. Unlike latency-sensitive ports that provide a fixed latency between a read request and data availability, handshake ports must wait for a valid signal before data is available. Handshake ports are useful for irregular paralleism, where the access patterns are not known at compile time. This allows for memories that can provide a consistent latency in most cases, but stall one or more accesses in the case of a bank conflict.
@@ -170,7 +173,15 @@ amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
   %4 = amc.arbiter(%3 : !amc.port<1024xi32, rw, 1>) banks [0, 1] : !amc.port_hs<1024xi32, rw>
   amc.extern %2, %4 : !amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>
 }
+```
 
+Here we can see that each handshake port is lowered to a `create_port` that creates a latency-sensitive port and an arbiter. The arbiter in this case is just acting as a converter between handshake and latency-sensitive port, taking the latency-sensitive port as input and producing a handshake port. We can also see that the `amc.extern` still maintains the same type signatures, lining up with the top level handshake ports.
+
+This example also shows what is meant by lowering in the most naive way. Each handshake port has its own arbiter which functionally just ties the valid signal high as each handshake port can always access the underlying latency-sensitive port. A future pass could co-optimize the underlying memory primitives and the handshake ports by merging together some arbiters to reduce the number of underlying ports.
+
+We can then continue lowering the rest of the way:
+
+```mlir
 // Output after handshake lowering and merge lowering
 amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
   %0 = amc.alloc : !amc.memref<1024xi32, bank [2]>
@@ -200,8 +211,6 @@ amc.memory @test2(!amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>) {
   amc.extern %5, %9 : !amc.port_hs<1024xi32, rw>, !amc.port_hs<1024xi32, rw>
 }
 ```
-
-Here we can see what is meant by lowering in the most naive way. Each handshake port has its own arbiter which functionally just ties the valid signal high as each handshake port can always access the underlying latency-sensitive port. A future pass could co-optimize the underlying memory primitives and the handshake ports by merging together some arbiters to reduce the number of underlying ports.
 
 ### Optimization Pass: Memory Aggregation
 
@@ -283,6 +292,8 @@ calyx.program "test1" {
   }
 }
 ```
+
+After lowering to Calyx, a final RTL design can be generated either through the native Calyx compiler or the experimental Calyx lowering within the CIRCT project.
 
 ### Challenges
 
