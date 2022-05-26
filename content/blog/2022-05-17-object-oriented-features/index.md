@@ -7,7 +7,7 @@ link = ""
 name = "Michael Maitland"
 link = "https://michaelmaitland.com"
 +++
-Building a compiler for Xi is the main project in [CS 4120](https://www.cs.cornell.edu/courses/cs4120/) at Cornell. The final assignment, now discontinued, is to extend the compiler to support feaures of the [Xi++ Language Specification](https://www.cs.cornell.edu/courses/cs4120/2019sp/project/oolang.pdf) such as object-oriented programing. Our project is an implementation of these features on Michael's compiler created for CS 4120. Our project is [here](https://github.com/Yasgur99/xic/tree/oo). The changes introduced by this project work in the `IRSimulator` that was part of the code released by CS 4120, but also work for the x86 code generated.
+Building a compiler for Xi is the main project in [CS 4120](https://www.cs.cornell.edu/courses/cs4120/) at Cornell. The final assignment, now discontinued, is to extend the compiler to support features of the [Xi++ Language Specification](https://www.cs.cornell.edu/courses/cs4120/2019sp/project/oolang.pdf) such as object-oriented programming. Our project is an implementation of these features on Michael's compiler created for CS 4120. Our project is [here](https://github.com/Yasgur99/xic/tree/oo). The changes introduced by this project work in the `IRSimulator` that was part of the code released by CS 4120, but also work for the x86 code generated.
 
 # Lexing and Parsing
 For lexing, there are 5 new syntax elements that we need to handle, listed below:
@@ -53,7 +53,7 @@ The parser handles the new semantics and allow parsing of the following:
 
 # Symbol Tables
 
-We extend the old symbol table that previously included entries for function declarations into a symbol table that includes both function declarations, class declarations and object fields. Recall that fields are not defined in a class declaration. Instead, they are defined only by the class definition. This is why we must track object fields seperate from class declarations. 
+We extend the old symbol table that previously included entries for function declarations into a symbol table that includes both function declarations, class declarations and object fields. Recall that fields are not defined in a class declaration. Instead, they are defined only by the class definition. This is why we must track object fields separate from class declarations. 
 
 While the symbol tables are built up, we also check for a certain class of semantic errors. These types of errors include redefinition of the same class and redefinition of fields. Consider the following examples:
 
@@ -77,7 +77,7 @@ class B {
 ```
 The snippet above is a class definition that erroneously defines the field `x` twice with the same type and also erroneously defines x with another type.
 
-When building these symbol tables, the code collects all errors and does the best it can to finish building the table. If there are any errors at the end of the entire semantic analysis, which includes typechecking, all errors are reported and the compilation process is terminated. This allows the programmer to debug their programs much more efficiently. 
+When building these symbol tables, the code collects all errors and does the best it can to finish building the table. If there are any errors at the end of the entire semantic analysis, which includes type checking, all errors are reported and the compilation process is terminated. This allows the programmer to debug their programs much more efficiently. 
 
 As a side note `.ixi` is the file extension for interfaces and `.xi` is the file extension for programs.
 
@@ -102,7 +102,7 @@ class B extends A { f(); h(); }
 
 `A` and `B` should share the same call to `f`, `B` should inherit `g` from `A`, and `B` should also define `h`.
 
-We can put `f` and `g` in indicies 0 and 1 respectivley for both dispatch vectors and `h` is put in index 2 for the dispatch vector of `B`. Then, if there is a call to `f`, `g`, or `h`, we can get the pointer to the correct function in `O(1)` time by generating IR that resembles the following:
+We can put `f` and `g` in indices 0 and 1 respectively for both dispatch vectors and `h` is put in index 2 for the dispatch vector of `B`. Then, if there is a call to `f`, `g`, or `h`, we can get the pointer to the correct function in `O(1)` time by generating IR that resembles the following:
 
 ```
 MOV dv_ptr, o // Get the pointer to the dispatch vector since it is at index 0 of the object o
@@ -116,7 +116,7 @@ First we need to figure out when given some class `A`, and some function `f`, wh
 
 The next thing we need is given all methods for a given class, what index do they go in in the dispatch vector. For example if `A` defines `f` and subclass `B` also defines `f` they must be at the same index. The `DispatchVectorIndexResolver` handles this.
 
-The `DispatchVectorClassResolver` and `DispatchVectorIndexResolver` both take the symbol tables that were constructed during semantic analysis and calculate which class name owns the function that should be invoked and which index it is in the dispatch vector respectivley. Then, the `NodeToIRConverter` can make calls to the resolvers to get this information on a method by method occurence.
+The `DispatchVectorClassResolver` and `DispatchVectorIndexResolver` both take the symbol tables that were constructed during semantic analysis and calculate which class name owns the function that should be invoked and which index it is in the dispatch vector respectively. Then, the `NodeToIRConverter` can make calls to the revolvers to get this information on a method by method occurrence.
 
 Both of these classes have been unit tested to see what happens in the following instances:
 * No methods and no super class
@@ -129,11 +129,11 @@ Both of these classes have been unit tested to see what happens in the following
 
 When generating the actual IR for the dispatch vectors, we tried a few different approaches. First, we converted the mangled function names into strings by representing them as an array of characters in the IR, and then tried to call the function by loading the string. We quickly realized that this would be difficult because the strings are often multiple characters and when we do `call [dv + index]`, we're really calling a function with the name corresponding the the first character in the mangled function name. We quickly scrapped this approach and tried to build them using static data.
 
-In Xi, static data is represented by an `IRData` class. Out of the box, `IRData` is not a traditional `IRNode` (it does not extend `IRNode`). This means its children nodes are not `IRNode`s. Instead, it has a field `long[] data`. We tried to encode the dispatch vector as the concatenation of function names seperated by the null terminator. Again, we ran into the problem that when we do `call classNameDVLabel` it only reads the first word of data which corresponds to the first character. Even worse, the interpreter tried to jump to the instruction at the address corresponding to that character instead of looking up that character in the function definition to address table and jumping there. I wrote a version of the interpreter that read until the next null terminator and then did the correct lookup. This got things to worked but it felt hacky because we could no longer write IR that jumped to an address---it required we jumped to a function that was named as the string starting at that memory address until the next null terminator byte in memory.
+In Xi, static data is represented by an `IRData` class. Out of the box, `IRData` is not a traditional `IRNode` (it does not extend `IRNode`). This means its children nodes are not `IRNode`s. Instead, it has a field `long[] data`. We tried to encode the dispatch vector as the concatenation of function names separated by the null terminator. Again, we ran into the problem that when we do `call classNameDVLabel` it only reads the first word of data which corresponds to the first character. Even worse, the interpreter tried to jump to the instruction at the address corresponding to that character instead of looking up that character in the function definition to address table and jumping there. I wrote a version of the interpreter that read until the next null terminator and then did the correct lookup. This got things to worked but it felt hacky because we could no longer write IR that jumped to an address---it required we jumped to a function that was named as the string starting at that memory address until the next null terminator byte in memory.
  
 Both of these approaches stem from a core conceptual confusion: we were putting strings where we wanted to put addresses.
 
-We explored trying to put the memory address of the function in the `IRData` instead of the name. That way, we would only need to read one word and the interpeter would jump there as it wanted to do. The problem with this approach is that when we convert to the IR, we have no idea about the memory layout. The memory addresses are defined by the interpeter and would be different than the memory scheme if we went all the way to assembley. Additionally, there was no way to know about the memory layout of the simulator when converting to IR because it does not initialize its memory until after the IR is created.
+We explored trying to put the memory address of the function in the `IRData` instead of the name. That way, we would only need to read one word and the interpreter would jump there as it wanted to do. The problem with this approach is that when we convert to the IR, we have no idea about the memory layout. The memory addresses are defined by the interpreter and would be different than the memory scheme if we went all the way to assembly. Additionally, there was no way to know about the memory layout of the simulator when converting to IR because it does not initialize its memory until after the IR is created.
 
 We had two options: 
 
@@ -143,16 +143,16 @@ We had two options:
 The first approach requires changes to the IR and the IR simulator. The second approach requires no changes to the IR or the simulator. We opted for approach 2 for simplicity, although approach 1 is better from an efficiently perspective. Approach 2 requires a new dispatch vector to be constructed every time we allocate a new object instead of reusing one copy for a given class type. If the dispatch vectors are large, this can become costly. We discuss this more in future work section.
 
 # Desugaring
-The Xi++ specification states that fields and methods in a class are brought into scope automatically. To supplement this, we refer to fields as `this.x` and methods `this.f()`.  However, as per the language specifiction, we also need to support `x` and `f()` respectively from the examples prior. This is syntactic sugar. The `ThisAugmentor` created is a visitor that converts unqualified field accesses and method calls to qualified ones. Simply, it takes `x` or `f()` into `this.x` or `this.f()` respectively.
+The Xi++ specification states that fields and methods in a class are brought into scope automatically. To supplement this, we refer to fields as `this.x` and methods `this.f()`.  However, as per the language specification, we also need to support `x` and `f()` respectively from the examples prior. This is syntactic sugar. The `ThisAugmentor` created is a visitor that converts unqualified field accesses and method calls to qualified ones. Simply, it takes `x` or `f()` into `this.x` or `this.f()` respectively.
 
 ## `ThisAugmentor`
 This class keeps track of the current class (since we do not allow nested classes yet, but when we do we will just keep track of stack of classes), and a stack of contexts. We enter a new context when we see a new block of code, a new function, or enter into a new loop block. Any declarations or function arguments add a new binding to the current context. Then the `ThisAugmenter` can check to see if the binding is in a context. If it is, we know its not a field because the variables in the context would shadow all the fields. But if its not in any of those contexts, then we can lookup the fields in the current class context.
 
 ### Function Expressions
 
-A function expression corresponds to a function call. For example, `x = f() + 1` is an assignment that contains a function expression `f()`. If a function expression `f()` does not occur within a function definition within a class (a method), then we know that no augmentation is needed since `this` can only be used in methods. Otherwise `f()` is occuring in a method. If there is a function with the name `f` in the class it is being called in, then we must convert it to a method call where the object of the method call is `this`.
+A function expression corresponds to a function call. For example, `x = f() + 1` is an assignment that contains a function expression `f()`. If a function expression `f()` does not occur within a function definition within a class (a method), then we know that no augmentation is needed since `this` can only be used in methods. Otherwise `f()` is occurring in a method. If there is a function with the name `f` in the class it is being called in, then we must convert it to a method call where the object of the method call is `this`.
 
-### Function Declarations, Function Defninitions, Function Expressions
+### Function Declarations, Function Definitions, Function Expressions
 
 Methods take a reference to the object as a hidden first argument. If the function declaration is a method we add this as the first argument. A function definition consists of a function declaration and a function body in a program. A function declaration can also exist without a body in an interface. Therefore, as long as we augment all programs and all interfaces, all function declarations will agree.
 
@@ -182,7 +182,7 @@ class A {
  g(this : A, x:int) { ... }
 ```
 
-Notice that since type checking has already occured before augmentation, then after we augment we do not introduce any new semantic errors since `f` and `g` got the augmented in both the interface and the program.
+Notice that since type checking has already occurred before augmentation, then after we augment we do not introduce any new semantic errors since `f` and `g` got the augmented in both the interface and the program.
 
 For all function expressions that are method calls, qualified or unqualified must add this as the first argument. 
 
@@ -248,9 +248,9 @@ Our project also supports declaration shadowing where the declarations have diff
 We introduce three new changes to the IR:
 
 1. Addition of `IRClassDefn` which represents a class name and the list `IRFuncDefn` which represents its methods.
-2. Add list of `IRClassDefn` to `IRCompUnit`. The `IRCompUnit` represents the root of the IR tree. It also contains all the functions that are not methods, static data, and functions to be executed by the runtime before calling the main function, similiar to [crt0](https://en.wikipedia.org/wiki/Crt0) in the C language.
+2. Add list of `IRClassDefn` to `IRCompUnit`. The `IRCompUnit` represents the root of the IR tree. It also contains all the functions that are not methods, static data, and functions to be executed by the runtime before calling the main function, similar to [crt0](https://en.wikipedia.org/wiki/Crt0) in the C language.
 
-## Function Defninitions and Class Definitions
+## Function Definitions and Class Definitions
 
 Function definitions must be converted differently depending on whether that function is a method or not. When we convert a function that is a method to IR we must treat it differently than a normal function because the ABI naming convention is different for functions and methods. We will discuss this convention below. But because of the difference between functions and methods, we do not convert to IR for methods and let the owning class definition do the conversion. 
 
@@ -278,19 +278,19 @@ This class is also responsible for building the dispatch vector and getting the 
 
 # Future Work
 
-## Typechecking
+## Type checking
 
-This project skipped over the type checking phase so that more time could be spent focusing on the actual object oriented features. Obviously, this allows Xi programs that are not well typed and would likley crash or misbehave if these types of programs are used. Additionally, type checking would allow programs that involve more than one class. At the moment, it is impossible to figure out what class a variable `o` belongs to in situations such as `o.f()` and `o.x`. Currently, they are hardcoded to assume that all objects are of type `A`. Type checking would allow the compiler to identify what type a variable has and therefore make decisions based on class layout for any class type.
+This project skipped over the type checking phase so that more time could be spent focusing on the actual object oriented features. Obviously, this allows Xi programs that are not well typed and would likely crash or misbehave if these types of programs are used. Additionally, type checking would allow programs that involve more than one class. At the moment, it is impossible to figure out what class a variable `o` belongs to in situations such as `o.f()` and `o.x`. Currently, they are hard coded to assume that all objects are of type `A`. Type checking would allow the compiler to identify what type a variable has and therefore make decisions based on class layout for any class type.
 
 ## Fields
 
-All fields are private to a class. This means that if a class `A` has field `x` and class `B` entends `A`, then class `B` cannot refer to `x`. However, `B` can call methods of `A` and those methods may refer to `x`. Currently, subclasses do not allocate fields that belong to their parent classes. Therefore when a method of a super class is called, it has no way to get those fields. In the current implementation it will try and get the variable from the expected index which will really be an undefined memory access.
+All fields are private to a class. This means that if a class `A` has field `x` and class `B` extends `A`, then class `B` cannot refer to `x`. However, `B` can call methods of `A` and those methods may refer to `x`. Currently, subclasses do not allocate fields that belong to their parent classes. Therefore when a method of a super class is called, it has no way to get those fields. In the current implementation it will try and get the variable from the expected index which will really be an undefined memory access.
 
-In order to remedy this problem, we must allocate fields belonging to super classes at runtime since fields are not part of class declarations and are only part of class definitions by the Xi++ specification. This means that we could have pre-compiled code for module `A` and code that imports `A` with a `use` statement. The problem is that the interface for `A` does not mention any fields that `A` has. Therefore, if our code creates a `class B extends A`, the compiler has no idea how to create an object B that has the fields that belong to `A`. C++ solves this problem by requiring public and private fields to be declared in the header files (the class declaration) so this information is known at compile time. Java on the otherhand does this at runtime by having a bytecode instruction that refers to the variables index. In Xi, we could accomplish this by creating a static table that allows us to determine what index a field name is at, similiar to Java's approach.
+In order to remedy this problem, we must allocate fields belonging to super classes at runtime since fields are not part of class declarations and are only part of class definitions by the Xi++ specification. This means that we could have pre-compiled code for module `A` and code that imports `A` with a `use` statement. The problem is that the interface for `A` does not mention any fields that `A` has. Therefore, if our code creates a `class B extends A`, the compiler has no idea how to create an object B that has the fields that belong to `A`. C++ solves this problem by requiring public and private fields to be declared in the header files (the class declaration) so this information is known at compile time. Java on the other hand does this at runtime by having a byte code instruction that refers to the variables index. In Xi, we could accomplish this by creating a static table that allows us to determine what index a field name is at, similar to Java's approach.
 
 ## Static Dispatch Vectors
 
-As discussed above, much of the work that went into this project was with respect to the representation of dispatch vectors in the IR. I met with Professer Myers and he agreed that his intention is for these dispatch vectors to be static data but there is no way to represent them using the current version of `IRData` since `IRData` requires the physical address of functions but these are not determined until runtime. The solution is to create a different `IRData` class which can represent static data that is of the form `IRNode` instead of physical addresses. This would allow us to say the data is an array of `IRName`s which would be converted to the address of the correct function at runtime. Compared with the solution we chose to implement, this would create a single dispatch vector for each class definitions, while our solution creates a dispatch vector for every single object allocated. The time it takes to create one dispatch vector as static data is proportional to the number of class definitions while our solution must take time to create it for every single object allocated. In terms of implementation effort, the actual conversion to IR is equivalent, but modifying the `IRData` class, modifying the interpreter, and testing the interpreter for those changes was the real effort.
+As discussed above, much of the work that went into this project was with respect to the representation of dispatch vectors in the IR. I met with Professor Myers and he agreed that his intention is for these dispatch vectors to be static data but there is no way to represent them using the current version of `IRData` since `IRData` requires the physical address of functions but these are not determined until runtime. The solution is to create a different `IRData` class which can represent static data that is of the form `IRNode` instead of physical addresses. This would allow us to say the data is an array of `IRName`s which would be converted to the address of the correct function at runtime. Compared with the solution we chose to implement, this would create a single dispatch vector for each class definitions, while our solution creates a dispatch vector for every single object allocated. The time it takes to create one dispatch vector as static data is proportional to the number of class definitions while our solution must take time to create it for every single object allocated. In terms of implementation effort, the actual conversion to IR is equivalent, but modifying the `IRData` class, modifying the interpreter, and testing the interpreter for those changes was the real effort.
 
 ## Private Methods
 
@@ -305,4 +305,4 @@ These integration tests include:
 3. `class_method.xi` - A test for methods working for classes using a field
 4. `field_access.xi` - A test for fields working for classes
 5. `method_call.xi` - A test for methods working for classes without a field
-6. `point.xi` - A comprehensive test using inheritence and various field and methods of classes
+6. `point.xi` - A comprehensive test using inheritance and various field and methods of classes
