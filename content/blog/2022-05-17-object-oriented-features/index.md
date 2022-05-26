@@ -1,11 +1,11 @@
 +++
 title = "Xi++: Object Oriented Features for Xi"
 [[extra.authors]]
-name = "Orko Sinha"
-link = ""
-[[extra.authors]]
 name = "Michael Maitland"
 link = "https://michaelmaitland.com"
+[[extra.authors]]
+name = "Orko Sinha"
+link = ""
 +++
 Building a compiler for Xi is the main project in [CS 4120](https://www.cs.cornell.edu/courses/cs4120/) at Cornell. The final assignment, now discontinued, is to extend the compiler to support features of the [Xi++ Language Specification](https://www.cs.cornell.edu/courses/cs4120/2019sp/project/oolang.pdf) such as object-oriented programming. Our project is an implementation of these features on Michael's compiler created for CS 4120. Our project is [here](https://github.com/Yasgur99/xic/tree/oo). The changes introduced by this project work in the `IRSimulator` that was part of the code released by CS 4120, but also work for the x86 code generated.
 
