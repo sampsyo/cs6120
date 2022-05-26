@@ -77,7 +77,6 @@ In the discussion below, the compiler $Comp$ is a total function on source progr
 Again, these are not interchangeable. They share a deep connection and are, from a formal perspective, equally convincing. This was confusing to the class, with a bit of a sentiment that the third option was the best. We spent some time clarifying this confusion in class, and have attempted to thread that discussion into the individual explanations above. The big takeaway is that none of these techniques offers a free lunch. One must still do the work of formal verification; one simply has some flexibility as to what one verifies. Depending on the context, one choice may be preferable to another. 
 
 For instance, CompCert uses the second approach in one of its last passes, when performing instruction scheduling to go from Mach to PowerPC. As we discussed in class, this may just because the algorithm in use is complicated while checking it after the fact is easy. 
-<!-- Alaia, do you remember any more of this discussion from class? -->
 
 For the most part, CompCert makes one choice of “trust” and achieves this trust in one way:
     $$ \forall S, C, B \notin \mathtt{wrong}, Comp(S) = \mathtt{OK}(C) \land S \Downarrow B \Rightarrow C \Downarrow B $$
@@ -106,7 +105,9 @@ At the time when this paper was written, the target language of CompCert was the
 
 ### Proof of Correctness
 
-The source, intermediate, and target languages of CompCert all have formally defined semantics. The Coq proof assistant was used to prove that the transformations between these languages preserve semantics. The Coq formalization and proof amounts to 42,000 lines of Coq and approximately 3 person-years of work. 14% of these lines define compilation algorithms, 10% specify language semantics, and 76% correspond to the correctness proof.
+The source, intermediate, and target languages of CompCert all have formally defined semantics. The Coq proof assistant was used to prove that the transformations between these languages preserve semantics. For example, the semantics of C#minor is typeless and features infinite loops only. The transformation from Clight to C#minor needs to not only fit the Clight program into these restricted semantics, but also ensure the semantics preservation of behavior.
+
+The Coq formalization and proof amounts to 42,000 lines of Coq and approximately 3 person-years of work. 14% of these lines define compilation algorithms, 10% specify language semantics, and 76% correspond to the correctness proof.
 
 Coq's extraction facility was used to generate an executable compiler. This process involves translating functional specifications in Coq into Caml code and then running the Caml code through the Caml compiler. Note that the correctness of CompCert relies on trust in this compilation chain since it has not been formally verified.
 
