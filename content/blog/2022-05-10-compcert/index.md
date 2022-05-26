@@ -76,7 +76,7 @@ In the discussion below, the compiler $Comp$ is a total function on source progr
 
 Again, these are not interchangeable. They share a deep connection and are, from a formal perspective, equally convincing. This was confusing to the class, with a bit of a sentiment that the third option was the best. We spent some time clarifying this confusion in class, and have attempted to thread that discussion into the individual explanations above. The big takeaway is that none of these techniques offers a free lunch. One must still do the work of formal verification; one simply has some flexibility as to what one verifies. Depending on the context, one choice may be preferable to another. 
 
-For instance, CompCert uses the second approach in one of its last passes, when performing instruction scheduling to go from Mach to PPC. As we discussed in class, this may just because the algorithm in use is complicated while checking it after the fact is easy. 
+For instance, CompCert uses the second approach in one of its last passes, when performing instruction scheduling to go from Mach to PowerPC. As we discussed in class, this may just because the algorithm in use is complicated while checking it after the fact is easy. 
 <!-- Alaia, do you remember any more of this discussion from class? -->
 
 For the most part, CompCert makes one choice of “trust” and achieves this trust in one way:
@@ -91,7 +91,8 @@ That is: if CompCert compiles program $S$ without error into program $C$, and pr
 </p>
 
 The CompCert compiler is composed of 14 passes that go through 8 intermediate languages.
-The source language of CompCert is Clight, a large subset of the C programming language. Although Clight omits several C features such as extended-precision arithmetic and goto statements, it turns out to be sufficient for writing critical embedded software. The target language of CompCert is PPC, a subset of the PowerPC assembly language. This translation from Clight to PPC is formally verified. However, some parts of the compiler are not verified yet including parsing, assembling, and linking. CompCert's intermediate languages are described below in more detail.
+The source language of CompCert is Clight, a large subset of the C programming language. Although Clight omits several C features such as extended-precision arithmetic and goto statements, it turns out to be sufficient for writing critical embedded software. 
+At the time when this paper was written, the target language of CompCert was the PowerPC assembly language. This translation from Clight to PowerPC was formally verified. However, some parts of the compiler were not verified yet including parsing, assembling, and linking. CompCert's intermediate languages are described below in more detail.
 
 * **C#minor** is a typeless variant of Clight. To go from Clight to C#minor, normal arithmetic operators are replaced by distinct arithmetic operators for integers, pointers, and floats. C loops are replaced by infinite loops (blocks and multi-level exits from enclosing blocks are added).
 * **Cminor** is very similar to C#minor but omits the & operator, meaning addresses cannot be taken.
@@ -101,7 +102,7 @@ The source language of CompCert is Clight, a large subset of the C programming l
 * **LTLin** is the result of CFG linearization which produces a list of instructions with labels and branches.
 * **Linear** is the next IR after LTLin. Spill and reload instructions are placed around instructions that reference pseudo-registers allocated to stack locations. Move instructions are inserted to enforce calling conventions.
 * **Mach** is the result of laying out the activation records of functions.
-* **PPC** is similar to the PowerPC assembly language. Instruction scheduling is performed to go from Mach to PPC. Note that this pass uses the verified validator approach.
+* **PowerPC** is the target assembly language. Instruction scheduling is performed to go from Mach to PowerPC. Note that this pass uses the verified validator approach.
 
 ### Proof of Correctness
 
@@ -111,7 +112,8 @@ Coq's extraction facility was used to generate an executable compiler. This proc
 
 ### Performance
 
-CompCert's performance turns out to be adequate for critical embedded code. CompCert was benchmarked against the GCC 4.0.1 compiler at optimization levels 0, 1, and 2. CompCert generates code that is twice as fast as code generated with GCC without optimization. CompCert code is 7% slower than gcc-01 and 12% slower than gcc-02 on average. Compilation times of CompCert are within a factor of 2 of those of gcc-01. Although CompCert's compilation times are higher than GCC's, and CompCert code runs slower than GCC code on average, this is a small price to pay for CompCert's correctness guarantees.
+CompCert's performance turns out to be adequate for critical embedded code. CompCert was benchmarked against the GCC 4.0.1 compiler at optimization levels 0, 1, and 2. CompCert generates code that is twice as fast as code generated with GCC without optimization. CompCert code is 7% slower than gcc-01 and 12% slower than gcc-02 on average. Compilation times of CompCert are within a factor of 2 of those of gcc-01. On the one hand, CompCert's compilation times are higher than GCC's, and CompCert code runs slower than GCC code on average. On the other hand, we think that in certain settings, such as compiling safety-critical software, this is a small price to pay for CompCert's correctness guarantees.
+
 
 <p align="center">
 <img src="fig2.png" alt="alt_text" title="image_tooltip" style="zoom:25%;" />
