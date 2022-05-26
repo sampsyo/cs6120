@@ -1,0 +1,12 @@
++++
+title = "Type Preserving Compilation"
+[extra]
+latex = true
+[[extra.authors]]
+name = "Andrey Yao"
+link = "https://github.com/andreyyao"
++++
+
+## Introduction
+
+When it comes to program verification, there are two approaches that offer correctness guarantee which are somewhat dual to each other. 
