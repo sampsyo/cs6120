@@ -202,8 +202,7 @@ I evaluated the vectorization algorithms for correctness on my own tests, as wel
 Using Brench, I verified that my passes operated correctly on all the benchmarks, by comparing the outputs with and without my passes as a check of correctness. I also evaluated the vectorization algorithms to see how many vectors were created at run time. To do so, I instrumented the `brili-vc` interpreter to count the number of `veczero` calls that were created. The results are shown in the graph below:
 
 <p align="center">
-<img src="vectors_created.png">
-title="Vectors Dynamically Created" style="zoom:25%;"
+<img src="vectors_created.png" title="Vectors Dynamically Created" style="zoom:25%;">
 </p>
 
 As the graph shows, when most benchmarks are run through my vectorization pass, no vector instructions are created. The only benchmarks in which vector instructions were created were `quadratic`, `ackermann`, `pythagorean-triple`, `fib`, `eight-queens`, and `fizz-buzz`. These benchmarks have sequences of two or more vectorizable instructions, which made it trivial to vectorize. The inflated number of vectors dynamically created in the `ackermann` function, is due to the tremendous amount of recursive calls that this function makes, while for `eight-queens` and `pythagorean-triple`, the number of vectors dynamically created are largely dependent on the iterative search over a large search space. `quadratic`, `fib` and `fizz-buzz` have much less vectors dynamically created due to less iteration or recursion.
@@ -211,8 +210,7 @@ As the graph shows, when most benchmarks are run through my vectorization pass, 
 I also track the number of vectors created statically. These results are perhaps more revealing of the ability of the vectorization pass to find opportunities to create vector instructions. 
 
 <p align="center">
-<img src="static_vector_creation.png">
-title="Vectors Statically Created" style="zoom:25%;"
+<img src="static_vector_creation.png" title="Vectors Statically Created" style="zoom:25%;">
 </p>
 
 Most of the benchmarks have no vector instructions created statically, but for those that do, between 1 and 4 vector instructions are created. The pass most useful for allowing creating of these vector instructions was the canonicalization pass, which was able to create small runs of vectorizable instructions. Other passes were not useful to find runs of  instructions. 
@@ -233,11 +231,11 @@ Another problem is that I completely fail to account for the costs for each Bril
 
 Additionally, the algorithms that I implemented in this project were very simple. There are more complex ways to allow for further vector reuse across basic blocks, and across entire functions. For instance, Mendis and Amarasinghe's goSLP project uses integer linear programming (ILP) to encode conditions that each vector pack must satisfy in a valid vectorization scheme.[^2] After using an ILP solver, an optimal solution can be found for creating vector packs across an entire function. goSLP also minimizes the number of vector shuffles required, by using a dynamic programming approach. While I never tried any ideas from the goSLP paper, I did try brute force techniques to enumerate every possible permutation of instructions in a vector pack, considering packs of size two, three and four. This attempt failed to scale to five vector packs, and even on four vector packs, produced too many possible vector packs that could be valid vectorization outcomes. This made me realize that I had to be more clever with my brute force technique to create more tractable solutions. I also tried enumerating combinations, rather than permutations, as well, and the results were fairly poor. This process of trial and error has taught me that further thought and sophistication need to be applied to the problem of reusing vector packs. 
 
-Finally, I have no true way of evaluating the vectorization, because there is no Bril backend to target a real-life architecture. If I compiled Bril code down to x86 assembly, then I could evaluate the true optimization impact of the vectorization via measurements of the running time. However, the measurements I currently make are poor approximations for the actual optimization potential of vectorization, because there is no running time estimate for each Bril instruction executed, and because there are many other factors that could play a role in the success of vectorization, such as instruction cache performance.
+Finally, I have no true way of evaluating the vectorization, because I did not use a Bril backend to target a real-life architecture. If I compiled Bril code down to x86 assembly, then I could evaluate the true optimization impact of the vectorization via measurements of the running time. However, the measurements I currently make are poor approximations for the actual optimization potential of vectorization, because there is no running time estimate for each Bril instruction executed, and because there are many other factors that could play a role in the success of vectorization, such as instruction cache performance.
 
 ## Conclusion
 
-I implemented vectorization for Bril, by first preprocessing programs to allow for more opportunity to vectorize, then using two approaches of vectorization, including a naive and opportunistic method. I found that not many vectors were able to be created statically across the Bril benchmarks, and recognized several major issues with my approaches. Improving several of the preprocessing passes, and incorporating main ideas from other approaches, such as from the SLP paper, would result in better vectorization.[^1] In total, I have created a foundation from which further approaches for vectorizing Bril code can be investigated. 
+I implemented vectorization for Bril, by first preprocessing programs to allow for more opportunity to create vectors, then using two approaches of vectorization, including a naive and opportunistic method. I found that not many vectors were able to be created statically across the Bril benchmarks, and recognized several major issues with my approaches. Improving several of the preprocessing passes, and incorporating main ideas from other approaches, such as from the SLP paper, would result in better vectorization.[^1] In total, I have created a foundation from which further approaches for vectorizing Bril code can be investigated. 
 
 [^1] Samuel Larsen, and Saman Amarasinghe. 2000. Exploiting Superword Level Parallelism with Multimedia Instruction Sets. In Proceedings of the ACM SIGPLAN 2000 conference on Programming language design and implementation (PLDI ‘00), August 2000. ACM Inc., New York, NY, 145-156. https://dl.acm.org/doi/10.1145/349299.349320
 
