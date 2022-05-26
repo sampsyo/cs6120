@@ -219,7 +219,7 @@ I had initially tried to use inlining to discover longer runs of vectorizable in
 
 Likewise, I had wanted to use the loop unrolling pass to create longer sequences of instructions that could potentially be vectorized. However, the loop unrolling pass never actually unrolled any loops in any benchmark, because loops in the benchmarks were more complex than what my loop unrolling pass could handle, or because the benchmarks did not hard code the iteration bounds for the loop, meaning my loop unrolling pass would not work either.
 
-Finally, no benchmark actually had code that utilized `vecmove`, indicating that sharing and reusing of vectors is much more complex to achieve, compared to the basic schemes I devised. Only `pythagorean-triple` reused a vector. 
+Finally, no benchmark actually had code that used `vecmove`, indicating that sharing and reusing of vectors is much more complex to achieve, compared to the basic schemes I devised. Only `pythagorean-triple` reused a vector. 
 
 ## Shortcomings in the Vectorization Schemes
 
