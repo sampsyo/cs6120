@@ -157,7 +157,9 @@ let sum = lambda P:Type -> lambda Q:Type -> forall x:Type,
     forall _:(forall _:P, x), forall _:(forall _:Q, x), x in
 ```
 
-Here are a few of the proofs I was able to successfully typecheck.
+Here are a few of the proofs I was able to successfully typecheck. I came up
+with some of these proofs on my own and some with the help of a friend.
+These proofs were not translated from SF solutions.
 ```
 (* P /\ Q -> P *)
 Theorem conj_implies_fst: forall P:Type, forall Q:Type, 
@@ -199,7 +201,7 @@ Proof. lambda A:Type -> lambda B:Type -> lambda p:((sum A) B) ->
 ```
 
 As a comparison, consider the equivalent lemma and proof for 
-`p_implies_q_implies_conj` in Coq:
+`p_implies_q_implies_conj` (the third example above) in Coq:
 
 ```
 Lemma and_intro : forall A B : Prop, A -> B -> A /\ B.
@@ -213,7 +215,7 @@ Notice how much cleaner this proof is than my code. It is no wonder that Coq has
 tactics to make it more usable!
 
 My goal was to prove as many one-star exercises in this chapter as possible.
-Out of the eight one-star exercises, these were the ones I was able to prove
+Out of the eight one-star exercises, these were the ones I was able to prove:
 
 ```
 Lemma proj2 : forall P Q : Prop,
@@ -225,21 +227,23 @@ Theorem or_commut : forall P Q : Prop,
 
 This means I was only able to prove 25% of the one-star exercises. I was not able to prove
 some of the other exercises for a variety of reasons. One exercise, `iff_refl`
-asks you to prove `forall P : Prop, P <-> P` I tried to write this
-proof but for some reason found iff too hard to reason about in CoC. Another exercise, `eqb_neq`,
-asks you to prove `forall x y : nat, x =? y = false <-> x <> y.`. This theorem
-is impossible to prove without defining equality and inequality over the natural 
-numbers, which I did not know how to do. 
+asks you to prove `forall P : Prop, P <-> P`. While this seems like it should be
+a fairly simple proof involving just conjunction and implication, we spent 
+about 20 minutes trying to solve it and couldn't.
+Another exercise, `eqb_neq`, asks you to prove 
+`forall x y : nat, x =? y = false <-> x <> y.`. To prove this theorem you would
+need to inductively define the natural numbers, but my implementation does
+not support inductive definitions.
 
 
 ## Experience
 
 This project was more challenging than I expected. The most difficult thing to
 get right was beta reduction. For example, the process of beta reducing a function
-application took me some time to get right- the process is to first typecheck
+application took me some time to get right --- the process is to first typecheck
 the argument. Then you make sure that the term on the left hand side is actually
 a lambda term. Now you can't just check whether the types of the parameter and
-argument are equal, you have to check that they are *alpha equivalent*.
+argument are equal; you have to check that they are *alpha equivalent*.
 Then you can perform substitution and continue beta-reducing the term. My beta
 reduction bugs caused many issues elsewhere. A common bug I was having 
 is that typechecking a function application would fail
@@ -250,7 +254,30 @@ The other difficult part of this project was the evaluation. I found
 it difficult to reason about proofs in CoC because all of the lambda and forall
 terms made my code really messy and hard to understand. I definitely have
 a greater appreciation for of Coq for having code that is easy to read and 
-reason about.
+reason about. For example, some tactics you see a lot in Coq are `intros`, which
+introduces variables and hypotheses, and `apply`, which uses implications to
+transform goals and hypotheses. You could write the following proof in Coq:
+
+```
+Theorem p_implies_p : forall P : Prop, P -> P.
+Proof.
+  intros P H.
+  apply H.
+Qed.
+```
+
+The line `intros P H` is introducing the proposition `P` and the hypothesis `H`, 
+which is `P` (the left-hand side of the implication). The resulting goal is `P`. 
+The line `apply H` applies `H` to the current goal, completing the proof. Here
+is the same proof in CoC.
+
+```
+Theorem p_implies_p: forall P:Type, forall _:P, P.
+Proof. lambda P:Type -> lambda x:P -> x.
+```
+
+Compared to Coq, it is much more difficult to understand what is happening
+in this CoC proof because it lacks tactics.
 
 ## Future Work
 
