@@ -1,5 +1,5 @@
 +++
-title = "Implementing The Calculus of Constructions"
+title = "Implementing the Calculus of Constructions"
 [extra]
 latex = true
 bio = """
@@ -12,7 +12,8 @@ name = "Alaia Solko-Breslin"
 link = "https://alaiasolkobreslin.github.io/"
 +++
 
-Code: [here](https://github.com/alaiasolkobreslin/CoC)
+The code for all the work in this blog post is 
+[open source on GitHub](https://github.com/alaiasolkobreslin/CoC).
 
 ## Background
 
@@ -35,8 +36,10 @@ Definition v1 : vec bool 1 := vcons bool true 0 v0.
 Fail Definition v0 : vec bool 1 := vnil bool.
 ```
 
-Notice how the last definition fails because using the number 1 in `v0`'s type
-makes the term ill-typed.
+Notice how the last definition fails because `vnil bool` has type `vec bool 0`.
+This makes sense because `vnil` represents the empty list, which has length 0.
+Attempting to assign `v0` with type `vec bool 1` to the expression `vnil bool`
+fails because the types `vec bool 1` and `vec bool 0` are incompatible.
 
 CoC is part of the Calculus of Inductive Constructions (CiC), which adds inductive
 types to CoC, and CiC is the basis of Gallina! But for the purposes of this
@@ -49,10 +52,9 @@ project, we only implemented CoC.
 
 Unlike most other languages, CoC eliminates the distinction between types and terms. 
 We describe the CoC syntax below. We use $ M, N, ... $ for terms in general
-and $ x, y, z $ for variables.
-<p align="center">
-    $ M ::= x \; | \; (\lambda x:M) N \; | \; (M N) \; | \; [x:M] N \; | \; * $
-</p>
+and $ x, y, z $ for variables:
+
+$$ M ::= x \mid (\lambda x:M) N \mid (M N) \mid [x:M] N \mid * $$
 
 $ [x:M] N $ is called a product, and $ * $ is the universe of all types, but is not a
 type itself. For an explanation of why, see the [Bonus section](#bonus).
@@ -75,7 +77,7 @@ for substituting $N$ for $x$ in $Q$. The inference rules are below.
 ### Design
 
 When I started this project, I was writing my implementation based off of
-some notes written by Professor Clarkson, and this was the syntax of CoC that he used.
+some notes written by [Professor Clarkson](https://sites.coecis.cornell.edu/clarkson/), and this was the syntax of CoC that he used.
 
 <p align="center">
     $ t := x \; | \; \lambda x:t_1 \rightarrow t_2 \; | \; (t_1 \; t_2) \; | \; \forall x:t_1, t_2 \; | \; \text{Type} $
@@ -107,7 +109,7 @@ and prog =
 | Expr of t
 ```
 
-Here is an example of a valid program
+Here is an example of a valid program:
 ```
 let Nat = forall N:Type, (forall _:N, (forall _:(forall _:N, N), N)) in
 let zero = lambda N:Type -> (lambda x:N -> (lambda _:(forall _:N, N) -> x)) in
