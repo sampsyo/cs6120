@@ -58,6 +58,8 @@ $$ M ::= x \mid (\lambda x:M) N \mid (M N) \mid [x:M] N \mid * $$
 
 $ [x:M] N $ is called a product, and $ * $ is the universe of all types, but is not a
 type itself. For an explanation of why, see the [Bonus section](#bonus).
+Note that the universe symbol is not to be confused with the kleene star, and
+all instances of $ * $ throughout this blog post refer to the universe of all types.
 *Contexts* (denoted by $ \Gamma, \Delta $) are products over $*$ and have the
 form $[x_1:M_1] ... [x_n:M_n] *$. The inference system defines two judgements:
 
@@ -86,8 +88,13 @@ some notes written by [Professor Clarkson](https://sites.coecis.cornell.edu/clar
 I will be using this syntax throughout the rest of the blog post to go over examples,
 but the inference rules remain the same as before.
 
-I wanted the ability to write proofs in my programs, so I designed the AST with
-this in mind:
+Although the concept of theorems and proofs is not involved in the formalism 
+above, CoC becomes even more powerful when it is incorporated with
+theorems and proofs. I wanted to be able to write proofs in my programs as
+one can do in Coq, so I designed the AST with this in mind. I tried to model
+the theorem type off of Coq theorems, which contain an identifier, a term that
+represents the theorem to be proved, and a proof term. Here is the AST:
+
 ```
 type t = 
   | Id of id
@@ -118,7 +125,7 @@ let succ = lambda nat:Nat -> (lambda N:Type -> (lambda x:N ->
 (succ (succ zero))
 (* output: (fun N:Type -> (fun x:N -> (fun f:(forall _:N , N) -> (f (f x))))) *)
 ```
-and this is an example of a valid (unrelated) proof.
+and this is an example of a valid (unrelated) proof:
 ```
 Theorem p_implies_p: forall P:Type, forall _:P, P.
 Proof. lambda P:Type -> lambda x:P -> x.
@@ -128,18 +135,28 @@ Proof. lambda P:Type -> lambda x:P -> x.
 
 The main implementation task was implementing a typechecker. To typecheck
 a term, we first check whether that term is a context. If it is, we typecheck
-the context to ensure that it is well-typed. Otherwise, the term is typechecked
-according to the typing rules above.
+the context to ensure that it is well-typed (according to the "Valid Contexts"
+and "Product Formation" rules above). Otherwise, the term is typechecked
+according to the "Product Formation" and "Variables, Abstraction, and Application"
+rules above.
 
 Typechecking also needs to happen for entire programs. When typechecking
 a `Let` statement, beta reduction is performed on the term, and that result
 is substituted for the corresponding identifier throughout the rest of the program.
-Then the rest of the program is typechecked. When typechecking a `Theorem`,
+Then the rest of the program is typechecked. 
+
+When typechecking a `Theorem`, 
 beta reduction is performed on the theorem term, and the proof term is typechecked.
 Then the typechecker checks if these two resulting terms are alpha equivalent.
-If they are, then the proof is valid. The proof term is then beta reduced
-and this term is substituted in for the corresponding identifier throughout the
-rest of the program. Then the rest of the program is typechecked.
+If they are, then the proof is valid. This is because the type of a CoC term is
+the theorem that it proves, which is why the first step is to typecheck the proof
+term. Since there are many ways a proof can be written (such as using different
+identifiers in lambda terms), the next step is to check that the 
+beta-reduced theorem term is alpha-equivalent to the type of the proof. The proof 
+term is then beta-reduced and this term is substituted in for the corresponding 
+identifier throughout the rest of the program. Then the rest of the program is 
+typechecked.
+
 When the typechecker sees an `Expr`, it typechecks the
 term to make sure it is well-typed and then returns the beta-reduced term.
 
