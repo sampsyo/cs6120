@@ -31,8 +31,11 @@ Real 6120 also has an end-of-semester course project—in the self-guided versio
 The instructor is a video production neophyte, so please excuse the production values, especially in the early lessons.
 CS 6120 is [open source and on GitHub][gh], so please file bugs if you find problems.
 
+When you finish the course, please fill out [this feedback form][form].
+
 [gh]: https://github.com/sampsyo/cs6120
 [cs]: https://www.cs.cornell.edu/
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [bril]: https://capra.cs.cornell.edu/bril/
 [llvm]: https://llvm.org/
+[form]: https://forms.gle/GuRiMa728DUvTbZQ7
