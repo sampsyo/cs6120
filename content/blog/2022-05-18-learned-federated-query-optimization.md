@@ -1,5 +1,5 @@
 +++
-title = "A Learned Query Compiler"
+title = "A Learned Federated Query Compiler"
 [extra]
 latex = true
 [[extra.authors]]
@@ -7,25 +7,29 @@ name = "Victor Giannakouris"
 link = "https://www.linkedin.com/in/vgian/"
 +++
 
-# What was the goal?
-The goal of this project was to create an optimizer for a cross-database query compiler. A cross-database query, also 
-known as federated query, is an SQL query that consists of tables that span across different, individual database 
-systems. The main weakness with the already existing federated query optimization approaches is of the complexity
-of integration, as the existing solutions need to obtain specific knowledge from the externally connected databases
-by writing complex drivers. We propose a solution based on a machine learning model that enables the easy integration of
-any SQL-based system, with less than 10 loc.
+# Intro
+The goal of this project was to develop an optimizer for a _federated query_ compiler. A federated query, is an SQL 
+query that consists of tables that span across different, individual database systems. One of the main drawbacks with 
+the already existing federated query optimization approaches is the complexity of integration with new systems. 
+The main reason is that the existing solutions need to obtain specific knowledge from the  externally connected 
+databases by writing complex drivers (wrappers).
+
+We propose a machine learning based solution that enables the easy integration of any SQL-based system, with _less than 
+10 LoC_.
 
 ## Federated Query Compilation Challenges
-A lot of interesting challenges are arising in cross-database query compilation, due to the heterogeneity of the underlying 
-infrastructure. An interesting challenge that arises is the following: How could the query plan be split to further subqueries and how the execution of these subqueries could be orchestrated across the different data sources in order to utilize the external data systems and take advantage of their powerful implementations (e.g. access methods and join algorithms)? 
+A lot of interesting challenges arise in federated query compilation, due to the heterogeneous nature of the 
+underlying infrastructure. One of the main challenges is the following: 
+1. How could the query plan be split to further subqueries 
+2. How the execution of these subqueries could be orchestrated across the different data sources in order utilize the external data systems and take advantage of their powerful implementations 
+   (e.g., access methods and join algorithms)? 
 
-In this project, we experimented with a cross-database query system called Spark SQL, and we developed a cross-database query compiler that takes into account the 
-heterogeneity of the underlying infrastructure and it's able to optimize the query with respect to each table location.
+In this project, we used Spark SQL as our baseline. We developed a federated
 
 # What did you do?
 We mainly focused on the optimizer of our federated query compiler. We implemented a federated query compiler which is
 able to do optimize federated queries by splitting the execution of the initial query into individual, smaller parts
-that are pushed-down to the external database systems, achieving significant performance improvements. The optimizer
+that are pushed down to the external database systems, achieving significant performance improvements. The optimizer
 of our query compiler is based on a machine learning approach which treats the external systems as black-boxes,
 profiles them and learns how to estimate the query execution cost of each individual system. Thus, our federated query
 compiler is able to easily connect with any system that supports SQL, without needing any expertise of the underlying 
@@ -45,12 +49,16 @@ AND B.id = C.id
 This query consists of a join between three tables: A, B and C. Let's assume three different data sources, namely DS1 
 and DS2 and assume the following table locations:
 
+- A -> DS1
+- B -> DS2
+- C -> DS2
+
 In relational algebra, this join would look like the following: 
 `A ⋈ B ⋈ C`. By default, a federation engine (like Spark SQL) would first transfer all tables A, B and C to its system
 and then, it would execute the query its execution engine. However, more complex strategies could be followed for a query 
 like this. For example, `A ⋈ B ⋈ C` could be split into two complement subqueries, `A` (scan) and `B ⋈ C` (join), where 
 the first query which is just a scan would be executed as a simple scan from DS1. However, the second query (`B ⋈ C`) 
-could be pushed-down for local execution in `DS2`. But how do we know if pushing-down `B ⋈ C` to `DS2` would result to
+could be pushed down for local execution in `DS2`. But how do we know if pushing-down `B ⋈ C` to `DS2` would result to
 a better performance compared to just fetching tables `B` and `C` to the federation engine (Spark SQL) and executing the 
 join there?
 
@@ -63,7 +71,7 @@ optimizer is able to leverage this machine learning model in order to decide whi
 or not.
 
 ## Query Compiler Design
-Let's take a look at how our cross-database query compiler works. Similarly to any other compiler, we have a syntax parser
+Let's take a look at how our federated query compiler works. Similarly to any other compiler, we have a syntax parser
 which takes as input an SQL query in raw text and produces and intermediate representation. Then, we perform further 
 optimizations to this intermediate representation and then we pass the output optimized plan to the executor in order to 
 evaluate the query and get the resulting rows.
@@ -118,7 +126,7 @@ that joins together the collocated tables. Then, we use our machine learning mod
 of joining the collocated tables in the machine that they reside on in the federation engine. We then produce the final
 query execution plan which also contains information about where each node of the tree will be executed.
 
-# What were the hardest parts to get right?
+# Challenges
 The trickiest part of the project, which is still not completely resolved is the cost estimation. The average accuracy of 
 our model in predicting the cost of a given query is around 60%. However, in most of the cases in which we mispredict
 the cost, the final plan that splits end distribues the query execution across the different engines is still better
@@ -153,7 +161,7 @@ and to showcase that even in the case of multiple mispredictions, the final perf
 
 ## Performance
 In order to measure the performance, we used the Join-Order-Benchmark. For those queries, we trained by changing the
-number of the maximum tables (`table_limit`) that can be included in a subquery that is pushed-down for local execution to an external 
+number of the maximum tables (`table_limit`) that can be included in a subquery that is pushed down for local execution to an external 
 engine. For example, assuming that tables `A`, `B` and `C` in the query `A ⋈ B ⋈ C` reside in the same engine, a 
 `table_limit` 2 would enforce our optimizer to push-down to the external engine subquery like  `B ⋈ C` and a scan of `A`.
 Then, the join between `A` and the result of `B ⋈ C` could be executed in the federation engine. The reason that we need
@@ -165,7 +173,7 @@ queries to the ~ 60% of time, compared to the vanilla implementation of Spark SQ
 very immature stage. We believe that our ongoing extension in which the `table_limit`, as well as the selection
 of the actual tables that will be included to a join will improve even better improvements.
 
-## Conclusions and Feature Steps
+## Conclusions and Future Steps
 We presented a compiler that accelerates the execution of federated queries. We presented an intermediate
 representation that follows a graph structure, includes location information about each table and we showed how 
 we can leverage this structure in order to produce query execution plans that leverage the individual systems of the underlying
