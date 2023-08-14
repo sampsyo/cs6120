@@ -1,4 +1,4 @@
-base_url = "https://www.cs.cornell.edu/courses/cs6120/2022sp"
+base_url = "https://www.cs.cornell.edu/courses/cs6120/2023fa"
 compile_sass = true
 build_search_index = false
 
