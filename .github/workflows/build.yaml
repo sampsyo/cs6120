@@ -1,10 +1,10 @@
 on:
   push:
     branches:
-      - 2023sp
+      - 2023fa
   pull_request:
     branches:
-      - 2023sp
+      - 2023fa
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{github.event_name=='push' && github.ref=='refs/heads/2023sp'}}
+    if: ${{github.event_name=='push' && github.ref=='refs/heads/2023fa'}}
     steps:
       - name: Setup Tailscale
         uses: tailscale/github-action@main
