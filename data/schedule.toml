@@ -65,6 +65,7 @@ mon = true
 
 [[days]]
 date = "October 19"
+notes = ["Due: [Project](../syllabus/#project) proposal."]
 
 [[days]]
 date = "October 24"
@@ -111,3 +112,11 @@ mon = true
 
 [[days]]
 date = "November 30"
+
+# To be announced, when we have a finals schedule.
+# [[days]]
+# date = "TK"
+# event = "Final project deadline"
+# canceled = true
+# mon = true
+# notes = ["Due: [Project](../syllabus/#project)."]
