@@ -31,7 +31,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "Niansong Zhang, Jiajie Li"
+leader = "TK"
 readings = ["ball-larus"]
 
 [[classes]]
@@ -45,7 +45,7 @@ lesson = 7
 
 [[classes]]
 title = "Automatic Verification"
-leader = "Aaron Tucker"
+leader = "TK"
 readings = ["alive"]
 
 
@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Andrew Butt, Andrey Yao"
+leader = "TK"
 readings = ["tbaa"]
 
 
@@ -73,12 +73,12 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Michael Maitland and Orko Sinha"
+leader = "TK"
 readings = ["ugc"]
 
 [[classes]]
 title = "Modern GC"
-leader = "Shubham Chaudhary and Ayaka Yorihiro"
+leader = "TK"
 readings = ["consgc"]
 
 
@@ -89,12 +89,12 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "Charles Sherk"
+leader = "TK"
 readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "Yulun Yao"
+leader = "TK"
 readings = ["tracemonkey"]
 
 
@@ -105,12 +105,12 @@ lesson = 13
 
 [[classes]]
 title = "Superoptimization"
-leader = "Victor Giannakouris and Jonathan Tran"
+leader = "TK"
 readings = ["super"]
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
-leader = "Hongzheng Chen"
+leader = "TK"
 readings = ["chlorophyll"]
 
 
@@ -121,7 +121,7 @@ lesson = 14
 
 [[classes]]
 title = "Safe Parallelism"
-leader = "Nikita Lazarev and Susan Garry"
+leader = "TK"
 readings = ["dpj"]
 
 
@@ -129,5 +129,5 @@ readings = ["dpj"]
 
 [[classes]]
 title = "Interactive Verification"
-leader = "Anshuman Mohan and Alaia Solko-Breslin"
+leader = "TK"
 readings = ["compcert"]

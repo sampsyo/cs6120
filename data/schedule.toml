@@ -1,127 +1,113 @@
 [[days]]
-date = "January 25"
+date = "August 22"
 month = true
 
 [[days]]
-date = "January 27"
+date = "August 24"
 
 [[days]]
-date = "February 1"
-lesson_due = "1"
+date = "August 29"
+mon = true
+
+[[days]]
+date = "August 31"
+
+[[days]]
+date = "September 5"
 mon = true
 month = true
 
 [[days]]
-date = "February 3"
+date = "September 7"
 
 [[days]]
-date = "February 8"
-mon = true
-# TK first in-person class
-
-[[days]]
-date = "February 10"
-
-[[days]]
-date = "February 15"
+date = "September 12"
 mon = true
 
 [[days]]
-date = "February 17"
+date = "September 14"
 
 [[days]]
-date = "February 22"
+date = "September 19"
 mon = true
 
 [[days]]
-date = "February 24"
+date = "September 21"
 
 [[days]]
-date = "March 1"
+date = "September 26"
+mon = true
+
+[[days]]
+date = "September 28"
+
+
+[[days]]
+date = "October 3"
+mon = true
+month = true
+
+[[days]]
+date = "October 5"
+
+[[days]]
+date = "October 10"
 mon = true
 canceled = true
-event = "February break"
+event = "Fall break"
+
+[[days]]
+date = "October 12"
+
+[[days]]
+date = "October 17"
+mon = true
+
+[[days]]
+date = "October 19"
+
+[[days]]
+date = "October 24"
+mon = true
+
+[[days]]
+date = "October 26"
+
+
+[[days]]
+date = "October 31"
+mon = true
+
+[[days]]
+date = "November 2"
 month = true
 
 [[days]]
-date = "March 3"
-
-[[days]]
-date = "March 8"
+date = "November 7"
 mon = true
 
 [[days]]
-date = "March 10"
+date = "November 9"
 
 [[days]]
-date = "March 15"
+date = "November 14"
 mon = true
 
 [[days]]
-date = "March 17"
+date = "November 16"
 
 [[days]]
-date = "March 22"
+date = "November 21"
 mon = true
 
 [[days]]
-date = "March 24"
-notes = ["Due: [Project](../syllabus/#project) proposal."]
-
-[[days]]
-date = "March 29"
-mon = true
-
-[[days]]
-date = "March 31"
-
-[[days]]
-date = "April 5"
-mon = true
+date = "November 23"
 canceled = true
-event = "Spring break"
-month = true
+event = "Thanksgiving"
 
 [[days]]
-date = "April 7"
-canceled = true
-event = "Spring break"
-
-[[days]]
-date = "April 12"
+date = "November 28"
 mon = true
 
 [[days]]
-date = "April 14"
-
-[[days]]
-date = "April 19"
-mon = true
-
-[[days]]
-date = "April 21"
-
-[[days]]
-date = "April 26"
-mon = true
-
-[[days]]
-date = "April 28"
-
-[[days]]
-date = "May 3"
-mon = true
-month = true
-
-[[days]]
-date = "May 5"
-
-[[days]]
-date = "May 10"
-mon = true
-
-[[days]]
-date = "May 19"
-event = "Final project due (no class)"
-canceled = true
-mon = true
+date = "November 30"
