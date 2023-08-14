@@ -14,7 +14,10 @@ You can also clone the [source code][gh] for this course.
 While you're at it, check out the old blogs from [2019][blog2019], [2020][blog2020], and [2022][blog2022].
 The videos are also available on [Kaltura][] and [Box][box].
 
+## Self-Guided Version
+
 Anyone can follow along with [a self-guided version of the course][self-guided].
+If you do, please fill out [this feedback survey][form] when you're done.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [zulip]: https://cs6120.zulipchat.com
@@ -30,3 +33,4 @@ Anyone can follow along with [a self-guided version of the course][self-guided].
 [lesson]: @/lesson/_index.md
 [self-guided]: @/self-guided.md
 [hollister]: https://www.fs.cornell.edu/fs/facinfo/fs_facilInfo.cfm?facil_cd=2046
+[form]: https://forms.gle/GuRiMa728DUvTbZQ7
