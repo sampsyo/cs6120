@@ -224,15 +224,19 @@ Occasional multi-star work yields an A+, and missing stars leads to incrementall
 
 ### Non-PhD Enrollment
 
-CS 6120 is for PhD students at Cornell.
-If that doesn’t describe you, you can still apply to take the course.
+CS 6120 is for PhD students.
+If that doesn't describe you, you can still apply to take the course.
 Write short answers to these two questions:
 
 1. What is CS 6120 about?
 2. Why do you want to take the course?
 
 Submit your responses as a one-page PDF to Adrian via [Zulip][].
-Please do this by the second day of class, i.e., August 24, 2023.
+Please do this after the first class session, so you have some context about the course, and before the second (i.e., by August 24, 2023).
+I will approve your application via Zulip, and then you can ask [the registration office][reg] to enroll you.
+The registration office would appreciate it if you add yourself to the waitlist before contacting them, but I think this is not strictly necessary.
+
+[reg]: mailto:courses@cis.cornell.edu
 
 ### Academic Integrity
 
