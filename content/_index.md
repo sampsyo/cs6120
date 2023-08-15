@@ -21,7 +21,7 @@ If you do, please fill out [this feedback survey][form] when you're done.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
 [zulip]: https://cs6120.zulipchat.com
-[zoom]: https://www.cs.cornell.edu/courses/cs6120/2022sp/private/zoom.html
+[zoom]: https://www.cs.cornell.edu/courses/cs6120/2023fa/private/zoom.html
 [blog]: @/blog/_index.md
 [rss]: rss.xml
 [gh]: https://github.com/sampsyo/cs6120
