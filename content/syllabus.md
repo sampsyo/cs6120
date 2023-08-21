@@ -257,6 +257,24 @@ You may not turn in any writing that you did not do yourself or misrepresent exi
 
 The projects in this course are open source, and you may use existing code in your implementation—including code written by other students in this course. You must, however, make it clear which code is yours and which code is borrowed from where.
 
+### Generative AI
+
+The work you do for CS 6120 consists of writing code and natural language descriptions.
+To some extent, the new crop of ["generative AI" (GAI)][gai] tools can do both of these things for you.
+In this class, you can choose---for every assignment---between two options:
+
+1. Avoid all GAI tools. Disable [GitHub Copilot][copilot] in your editor, do not ask chatbots any questions related to the assignment, etc. If you choose this option, you have nothing more to do.
+2. Use GAI tools, and include a one-paragraph description of everything you used them for along with your writeup. This paragraph must:
+    * Link to exactly which tools you used.
+    * Give at least one concrete example (e.g., generated code or Q&A output) that you think is particularly illustrative of the "help" you got from the tool.
+    * Describe any times when the tool was *unhelpful*, especially if it was wrong in a particularly hilarious way.
+    * Conclude with your current opinion about the strengths and weaknesses of the tools you used for real-world compiler implementation.
+
+Remember that you can pick whether to use GAI tools *for every assignment*, so using them on one set of tasks doesn't mean you have to keep using them forever.
+
+[gai]: https://teaching.cornell.edu/generative-artificial-intelligence/cu-committee-report-generative-artificial-intelligence-education#Recommendations
+[copilot]: https://github.com/features/copilot/
+
 ### Respect in Class
 
 Everyone—the instructor, TAs, and students—must be respectful of everyone else in this class. All communication, in class and online, will be held to a high standard for inclusiveness: it may never target individuals or groups for harassment, and it may not exclude specific groups. That includes everything from outright animosity to the subtle ways we phrase things and even our timing.
