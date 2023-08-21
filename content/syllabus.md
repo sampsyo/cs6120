@@ -265,7 +265,7 @@ In this class, you can choose---for every assignment---between two options:
 
 1. Avoid all GAI tools. Disable [GitHub Copilot][copilot] in your editor, do not ask chatbots any questions related to the assignment, etc. If you choose this option, you have nothing more to do.
 2. Use GAI tools, and include a one-paragraph description of everything you used them for along with your writeup. This paragraph must:
-    * Link to exactly which tools you used.
+    * Link to exactly which tools you used and describe how you used each of them, for which parts of the work.
     * Give at least one concrete example (e.g., generated code or Q&A output) that you think is particularly illustrative of the "help" you got from the tool.
     * Describe any times when the tool was *unhelpful*, especially if it was wrong in a particularly hilarious way.
     * Conclude with your current opinion about the strengths and weaknesses of the tools you used for real-world compiler implementation.
