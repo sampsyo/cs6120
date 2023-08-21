@@ -32,6 +32,11 @@ name = "Fast Conservative Garbage Collection"
 link = "http://www.cs.utexas.edu/~mckinley/papers/conservative-gc-oopsla-2014.pdf"
 details = "Rifat Shahriyar, Stephen M. Blackburn, and Kathryn S. McKinley. OOPSLA 2014."
 
+[mesh]
+name = "Mesh: Compacting Memory Management for C/C++ Applications"
+link = "https://dl.acm.org/doi/10.1145/3314221.3314582"
+details = "Bobby Powers, David Tench, Emery D. Berger, and Andrew McGregor. PLDI 2019."
+
 [self]
 name = "An Efficient Implementation of SELF, a Dynamically-Typed Object-Oriented Language Based on Prototypes"
 link = "http://portal.acm.org/citation.cfm?id=74884"
@@ -71,3 +76,8 @@ details = "Robert L. Bocchino, Vikram S. Adve, Danny Dig, Sarita V. Adve, Stephe
 name = "Formal Verification of a Realistic Compiler"
 link = "https://dl.acm.org/citation.cfm?id=1538814"
 details = "Xavier Leroy. CACM in 2009."
+
+[mlir]
+name = "MLIR: A Compiler Infrastructure for the End of Moore’s Law"
+link = "https://arxiv.org/abs/2002.11054"
+details = "Chris Lattner, Mehdi Amini, Uday Bondhugula, Albert Cohen, Andy Davis, Jacques Pienaar, River Riddle, Tatiana Shpeisman, Nicolas Vasilache, and Oleksandr Zinenko. arXiv preprint, 2020."

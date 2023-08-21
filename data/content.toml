@@ -77,9 +77,9 @@ leader = "TK"
 readings = ["ugc"]
 
 [[classes]]
-title = "Modern GC"
+title = "Fancy Memory Management"
 leader = "TK"
-readings = ["consgc"]
+readings = ["mesh"]
 
 
 # Dynamic languages.
@@ -120,13 +120,13 @@ readings = ["chlorophyll"]
 [[classes]]
 lesson = 14
 
-[[classes]]
-title = "Safe Parallelism"
-leader = "TK"
-readings = ["dpj"]
-
 
 # Potpourri.
+
+[[classes]]
+title = "Compiler Frameworks"
+leader = "TK"
+readings = ["mlir"]
 
 [[classes]]
 title = "Interactive Verification"
