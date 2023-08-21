@@ -103,10 +103,11 @@ readings = ["tracemonkey"]
 [[classes]]
 lesson = 13
 
-[[classes]]
-title = "Superoptimization"
-leader = "TK"
-readings = ["super"]
+# Replaced with guest lecture.
+# [[classes]]
+# title = "Superoptimization"
+# leader = "TK"
+# readings = ["super"]
 
 [[classes]]
 title = "Synthesis-Aided Compilers"

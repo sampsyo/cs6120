@@ -96,6 +96,7 @@ mon = true
 
 [[days]]
 date = "November 16"
+event = "Guest Lecture by Thierry Lavoie, Oracle"
 
 [[days]]
 date = "November 21"
