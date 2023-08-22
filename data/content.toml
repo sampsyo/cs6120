@@ -111,7 +111,7 @@ lesson = 13
 
 [[classes]]
 title = "Synthesis-Aided Compilers"
-leader = "Yixiao Du"
+leader = "Yixiao Du and Matthew Hofmann"
 readings = ["chlorophyll"]
 
 
