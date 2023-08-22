@@ -28,13 +28,12 @@ Everything happens on Zoom (please join [Zulip][] for the link).
 Check the [schedule][] for each day of class—it will fall into one of two categories:
 
 * *"Lesson" days:*
-  Before class, watch the (required) video and, if you like, do the optional associated reading.
-  While or after watching the video, ask questions in the associated GitHub Discussions thread or on Zulip.
-  The class will be a quiet hacking session and an opportunity to ask questions and work together with the rest of the class on [implementation tasks](#implementation-tasks).
-  To participate virtually, hang out on Zulip and ask questions while you work.
+  Before class, optionally watch the video and/or do any associated reading.
+  The video covers approximately the same stuff as we'll talk about in class.
+  The class may also include a quiet hacking session and an opportunity to ask questions and work together with the rest of the class on [implementation tasks](#implementation-tasks).
 * *"Discussion" days:*
   Before class, do the (required) reading and answer the (required) discussion questions on the associated GitHub Discussions thread.
-  We will discuss the reading synchronously (on Zoom or in person).
+  We will discuss the reading synchronously.
   After the discussion wraps up, there may be time for more hanging around and hacking.
 
 
