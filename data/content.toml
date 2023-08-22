@@ -125,7 +125,7 @@ lesson = 14
 
 [[classes]]
 title = "Compiler Frameworks"
-leader = "John Rubio"
+leader = "John Rubio, Arjun Shah"
 readings = ["mlir"]
 
 [[classes]]
