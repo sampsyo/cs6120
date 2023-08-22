@@ -45,7 +45,7 @@ lesson = 7
 
 [[classes]]
 title = "Automatic Verification"
-leader = "TK"
+leader = "Benjamin Carleton, Surendra Ghentiyala"
 readings = ["alive"]
 
 
@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TK"
+leader = "Kei Imada"
 readings = ["tbaa"]
 
 
@@ -73,12 +73,12 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TK"
+leader = "Omkar Bhalerao, Sanjit Basker"
 readings = ["ugc"]
 
 [[classes]]
 title = "Fancy Memory Management"
-leader = "TK"
+leader = "Evan, Andy"
 readings = ["mesh"]
 
 
@@ -94,7 +94,7 @@ readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "TK"
+leader = "Vivian Ding and William Wang"
 readings = ["tracemonkey"]
 
 
@@ -125,10 +125,10 @@ lesson = 14
 
 [[classes]]
 title = "Compiler Frameworks"
-leader = "TK"
+leader = "John Rubio"
 readings = ["mlir"]
 
 [[classes]]
 title = "Interactive Verification"
-leader = "TK"
+leader = "Zak"
 readings = ["compcert"]
