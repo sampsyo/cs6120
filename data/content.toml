@@ -78,7 +78,7 @@ readings = ["ugc"]
 
 [[classes]]
 title = "Fancy Memory Management"
-leader = "Benny Rubin & Matthew Hofmann"
+leader = "TK"
 readings = ["mesh"]
 
 
@@ -89,7 +89,7 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "TK"
+leader = "Benny Rubin"
 readings = ["self"]
 
 [[classes]]
