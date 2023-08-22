@@ -130,5 +130,5 @@ readings = ["mlir"]
 
 [[classes]]
 title = "Interactive Verification"
-leader = "TK"
+leader = "Stephen V, Ali"
 readings = ["compcert"]
