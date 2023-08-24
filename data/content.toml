@@ -94,7 +94,7 @@ readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "Vivian Ding and William Wang"
+leader = "Vivian Ding and William Wang and Enoch Chen"
 readings = ["tracemonkey"]
 
 
