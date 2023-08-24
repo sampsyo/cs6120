@@ -73,7 +73,7 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Omkar Bhalerao, Sanjit Basker"
+leader = "Omkar Bhalerao, Sanjit Basker, Justin Ngai"
 readings = ["ugc"]
 
 [[classes]]
