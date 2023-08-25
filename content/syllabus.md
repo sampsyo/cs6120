@@ -24,8 +24,6 @@ You will need [this magical, Cornell-authenticated invitation link][zulip-signup
 
 ## Class Sessions
 
-The scheduled class sessions for 6120 have a funky flipped format this year.
-Everything happens on Zoom (please join [Zulip][] for the link).
 Check the [schedule][] for each day of class—it will fall into one of two categories:
 
 * *"Lesson" days:*
