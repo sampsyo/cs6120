@@ -58,6 +58,12 @@ To reinforce the specific compiler techniques we learn about in class, you will 
 The usual pattern is that we will come up with the high-level idea and the pseudocode in lessons; your job is to turn it into real, working code and collect empirical evidence that it's working.
 Going through the complete implementation will teach you about realities that you cannot get by thinking at a high level.
 
+*Testing* your implementation is a critical component.
+Your job is to make a convincing case that your implementation does what you intended it to do: for example, an optimization is supposed to make programs faster, most of the time, and never break any programs.
+A formal proof of these properties is probably out of scope, so you will need to find some other way to gather evidence.
+In particular, *don't (just) use existing test cases you find in the Bril git repository,* which are never thorough enough.
+One good tactic can be to use [all the benchmarks in the repo][bench], however.
+
 You can work individually or in groups of 2–3 students.
 When you finish an implementation, do this:
 
@@ -65,7 +71,7 @@ When you finish an implementation, do this:
 * Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
 * Write a brief post in the lesson's associated GitHub Discussions thread covering the following topics (just a paragraph or so is fine):
     * Summarize what you did.
-    * Explain how you know your implementation works---how did you test it? Did you use any qualitative or quantitative experiments? (Please don't use existing test cases in the Bril repository; these are never thorough enough. But feel free to use all the benchmarks, if that kind of breadth is appropriate.)
+    * Explain how you know your implementation works---how did you test it? Which test inputs did you use? Do you have any quantitative results to report?
     * What was the hardest part of the task? How did you solve this problem?
 
 Do all your own work (with your group) on implementation tasks.
@@ -73,6 +79,8 @@ I have sample implementations for many of the tasks in the 6120 GitHub repositor
 Past 6120 students have open-sourced their implementations; you may not use this either.
 I recommend not looking at my or others' implementations at all while working on tasks, so you actually learn how to do it---but it's not hiding if you absolutely need it.
 You are an adult, presumably, and can control your own impulse to skip the hard work.
+
+[bench]: https://capra.cs.cornell.edu/bril/tools/bench.html
 
 ### Paper Reading & Discussion
 
