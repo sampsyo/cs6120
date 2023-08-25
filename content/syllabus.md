@@ -13,6 +13,7 @@ The class focuses on hacking, reading papers, and writing [blog][] posts.
 
 Please [sign up][zulip-signup] for the [course Zulip][zulip].
 All course communication will happen there (not on email).
+You will need [this magical, Cornell-authenticated invitation link][zulip-signup] to register for Zulip.
 
 (Zulip is an open-source Slack-like chat tool with a few unique features that make it a good fit for class discussion. Thanks to [the Zulip folks][zulip-co] for donating a plan for 6120!)
 
