@@ -62,14 +62,13 @@ You can work individually or in groups of 2–3 students.
 When you finish an implementation, do this:
 
 * I recommend (but do not require) that you put all your code online in an open-source source code repository, e.g., on GitHub.
-* Include a short README (just a paragraph is fine) describing what you did and how you know your implementation works.
 * Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
 * Write a brief post in the lesson's associated GitHub Discussions thread covering the following topics (just a paragraph or so is fine):
     * Summarize what you did.
-    * Explain how you know your implementation works---how did you test it? Did you use any qualitative or quantitative experiments?
+    * Explain how you know your implementation works---how did you test it? Did you use any qualitative or quantitative experiments? (Please don't use existing test cases in the Bril repository; these are never thorough enough. But feel free to use all the benchmarks, if that kind of breadth is appropriate.)
     * What was the hardest part of the task? How did you solve this problem?
 
-Do all your own work on implementation tasks.
+Do all your own work (with your group) on implementation tasks.
 I have sample implementations for many of the tasks in the 6120 GitHub repository; you may not use this code.
 Past 6120 students have open-sourced their implementations; you may not use this either.
 I recommend not looking at my or others' implementations at all while working on tasks, so you actually learn how to do it---but it's not hiding if you absolutely need it.
