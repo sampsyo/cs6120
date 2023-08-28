@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Kei Imada"
+leader = "Kei Imada, Jan-Paul Ramos"
 readings = ["tbaa"]
 
 
