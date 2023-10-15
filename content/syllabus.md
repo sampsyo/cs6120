@@ -127,8 +127,11 @@ Due *one week after* the discussion day:
     Feel free to incorporate the best ideas you heard during the online and in-class discussion.
     You can represent your own opinions, ones from the class as a whole, or both.
 
+    While the second item above entails recapping some of the paper, please resist the temptation to let direct summary make up the bulk of your blog post. Keep this kind of technical explanation under around a quarter of the length. (To make this work, you will need to prioritize breadth over depth in your summary, and you'll have to pick and choose specific contributions to highlight instead of hoping to convey the entire paper.)
+
+    Focus most of your writing on your own commentary: context, criticism, and discussion. To emphasize this focus, consider choosing a title for your blog post that is not the title of the paper---instead, it should reflect the main point *you want to make* about the paper.
+
     If you need inspiration for the style of post to write, check out [last year's blog][blog2020]. But probably avoid reading posts about your paper, if they exist!
-* Optionally, you can record a video to go along with your blog post that people should watch to get the discussion started.
 * Publish the post to the [course GitHub repository][gh] by opening a pull request.
   The repository README has instructions.
 * When your PR is open, announce it on the appropriate GitHub Discussions thread to let other people take a look.
