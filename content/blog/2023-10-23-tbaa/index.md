@@ -1,14 +1,5 @@
 +++
 title = "How Type Systems Optimize Optimizers"
-[extra]
-authors = "Albert Xiao, Jan-Paul Ramos, Kei Imada, and Ryan Mao"
-latex = true
-bio = """
-    Kei Imada is a first-year Ph.D. student. He is interested in applying
-    mathematical structures to type systems and formal verification to
-    efficiently develop parallel and distributed systems and software
-    defined networks.
-"""
 [[extra.authors]]
 name = "Albert Xiao"
 [[extra.authors]]
@@ -18,6 +9,14 @@ name = "Kei Imada"
 link = "https://keikun555.github.io/"
 [[extra.authors]]
 name = "Ryan Mao"
+[extra]
+latex = true
+bio = """
+    Kei Imada is a first-year Ph.D. student. He is interested in applying
+    mathematical structures to type systems and formal verification to
+    efficiently develop parallel and distributed systems and software
+    defined networks.
+"""
 +++
 [Slides from the discussion](https://docs.google.com/presentation/d/17exjq4corO3WoJOblv7BwcrzJ_x4F7MHgPyCCNGfV8k/edit?usp=sharing).
 ## Background
@@ -44,7 +43,9 @@ Alias analysis lets us reason about which load instructions are necessary and wh
 
 ### Problems with alias analysis
 The paper cites that before, alias analysis wasn’t used as much because (1) it was slow, (2) had a closed-world assumption, and (3) was only evaluated statically.
+
 ![alt_text](images/image1.png "image_tooltip")
+
 Just static analysis didn’t tell compiler developers how effective the analyses would be in a real-world environment, in other words, applied to an optimization.
 The closed-world assumption meant that the entire program was needed to do these analyses which meant that we couldn’t use them on compiled libraries, which meant we wouldn’t be getting modularity of code.
 And slowness meant that the analyses were, well, slow.
@@ -52,10 +53,14 @@ And slowness meant that the analyses were, well, slow.
 ### Type-based alias analysis
 So that’s why Diwan, McKinley, and Moss thought of leveraging fast type systems of typed languages to enhance alias analysis.
 Hence the name type-based alias analysis.
+
 ![alt_text](images/image2.png "image_tooltip")
 ![alt_text](images/image3.png "image_tooltip")
+
 And they ended up with a near-optimal algorithm that is O(Instructions * Types).
+
 ![alt_text](images/image4.png "image_tooltip")
+
 The main contributions of this paper come in three forms.
 
 * Three implementations of type-based alias analysis, built on top of one another.
@@ -72,6 +77,7 @@ There are three topics of background information we need to cover: Modula-3, the
 
 ### Modula-3
 ![alt_text](images/image5.png "image_tooltip")
+
 Excerpt of Modula-3 code from [here](https://github.com/modula3/cm3/blob/4e0b3df126b34db781039e6fd55449850d88ebec/m3-libs/bitvector/src/BitVector.m3#L208C29-L208C29)
 
 Introduced in 1988, Modula-3 is a versatile programming language designed for both simplicity and power. It evolved from Modula-2, retaining its strong typing while incorporating much of C’s power. Key features of Modula-3 include object-oriented programming, generic programming, and garbage collection. Unlike languages like Java, Modula-3 compiles directly to machine code, eliminating expensive virtual machine overheads. Its record types offer direct memory representation, similar to C's structs. While it has an automatic garbage collector, pointers in Modula-3 can be designated as either visible or hidden to this collector. Due to these features and others, Modula-3 can be employed at the systems-level. In fact, an operating system called SPIN was even developed using Modula-3.
@@ -88,9 +94,13 @@ The paper uses these expressions in its analyses.
 ### Redundant load elimination (RLE)
 
 Redundant load elimination, as proposed by the paper, is a combination of loop-invariant code motion and common subexpression elimination of memory references, which are both subsumed by partial redundancy elimination. It illustrates the optimization with the two examples below.
+
 ![alt_text](images/image6.png "image_tooltip")
+
 In the program before optimization, the expression `a.b` (a field memory access) is loop invariant and can be hoisted to the loop’s preheader, as shown in the transformed control flow.
+
 ![alt_text](images/image7.png "image_tooltip")
+
 In the before control flow, the expression `a.b` (also a field memory access) is computed on all paths with respect to block 4, so the redundant computation performed in block 4 is removed.
 
 These optimizations, especially loop-invariant code motion, are particularly powerful since memory references are expensive and removing any redundancy can provide a huge speedup. Redundant load elimination uses may-alias pairs as its input to inform what expressions are loop-invariant or redundant. 
@@ -118,18 +128,15 @@ This is the simplest analysis and can be implemented with only the knowledge of 
 
 Consider the following Java example to see why this simple analysis works. Assume B and C are subtypes of A, and D is a class that has a single field x of type A array.
 
-
 ```
 C[] array = otherArray;
 B b = otherB;
 D d = otherD;
 ```
 
-
 We can simply reason that b, d, and any array[i] cannot alias since none of these expressions’ types are compatible, but it is possible that d.x[i] aliases with b or any array[j], with the intuition that the types of these expressions are compatible. 
 
 For type-unsafe languages, this simple expression is not necessarily true, since, for example, arbitrary type casting can occur. Consider the following snippet of C++ code with the same type hierarchies of the previous example.
-
 
 ```
 C* array = otherArray;
@@ -137,9 +144,7 @@ B* b = otherB;
 D* d = otherD;
 ```
 
-
 If before this code, `otherArray[0] = (C*) otherB;` appeared, C[i] may alias B, despite the incompatibility between types C and B. (If the same cast was performed in Java, there would be a runtime cast exception, which will not allow any potentially unsafe code like this to be run.)
-
 
 #### Type Compatibility and Field Names (FieldTypeDecl)
 
@@ -156,6 +161,7 @@ The second analysis introduced by the paper is FieldTypeDecl, an extension of Ty
 |p|q|TypeDecl (p, q)|
 
 The simplest rules that incorporate language information is the second one: if two access paths are field member accesses of compatible objects, they can only alias if the fields have the same name. This is clear to see for the simple case of p = q: then, p.f can only alias p.g if f = g. The other rules follow similar principles and have simple explanations to them. See the following from the paper:
+
 ![alt_text](images/image8.png "image_tooltip")
 
 ##### AddressTaken
@@ -167,7 +173,7 @@ B* b = &a.b_field;
 A* otherA = a;
 ```
 
-In this somewhat complex example, otherA.b_field aliases *b! However, if b was instead assigned to something else and A.b_field never has its address taken, then b and otherA.b_field may not alias (assuming nothing type-unsafe occurs in the program).
+In this somewhat complex example, `otherA.b_field` aliases `*b`! However, if `b` was instead assigned to something else and `A.b_field` never has its address taken, then `b` and `otherA.b_field` may not alias (assuming nothing type-unsafe occurs in the program).
 
 #### Type Compatibility + Field Names + Flow-Insensitive Analysis (SMTypeRefs)
 The third and final analysis is a combination of type compatibility and field names. This new analysis – SMTypeRefs – improves the previous by incorporating a flow insensitive pass to include the effects of variable assignments and references. This is called _Selectively Merge Type References_. 
