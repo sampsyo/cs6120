@@ -125,6 +125,9 @@ table {
 .schedule {
   .canceled {
     background: $exception-color;
+    .month {
+      color: inherit;
+    }
   }
   .event {
     font-weight: bold;
@@ -144,7 +147,7 @@ table {
   .num {
     text-align: right;
   }
-  .month{
+  .month {
     color: $exception-color;
     &.first {
       color: inherit;

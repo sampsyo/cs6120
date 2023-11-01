@@ -26,7 +26,7 @@
       </th>
       <td>
       {% if day.event %}
-      <strong>{{ day.event }}</strong>
+      <strong>{{ day.event | markdown(inline=true) | safe }}</strong>
       {% else %}
       {% if class_idx < class_count %}
       {% set collapse = day.collapse | default(value=1) %}

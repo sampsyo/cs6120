@@ -62,7 +62,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Kei Imada"
+leader = "Kei Imada, Jan-Paul Ramos, Ryan Mao, Albert Xiao"
 readings = ["tbaa"]
 
 
@@ -73,7 +73,7 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Omkar Bhalerao, Sanjit Basker, Justin Ngai"
+leader = "Omkar Bhalerao, Sanjit Basker, Justin Ngai, Melinda Fang"
 readings = ["ugc"]
 
 [[classes]]
@@ -89,12 +89,12 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "Benny Rubin"
+leader = "Benny Rubin, Collin Zhang, Alice Sze"
 readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "Vivian Ding and William Wang"
+leader = "Vivian Ding and William Wang and Enoch Chen"
 readings = ["tracemonkey"]
 
 
@@ -125,7 +125,7 @@ lesson = 14
 
 [[classes]]
 title = "Compiler Frameworks"
-leader = "John Rubio, Arjun Shah"
+leader = "John Rubio, Arjun Shah, Jiahan Xie"
 readings = ["mlir"]
 
 [[classes]]

@@ -13,6 +13,7 @@ The class focuses on hacking, reading papers, and writing [blog][] posts.
 
 Please [sign up][zulip-signup] for the [course Zulip][zulip].
 All course communication will happen there (not on email).
+You will need [this magical, Cornell-authenticated invitation link][zulip-signup] to register for Zulip.
 
 (Zulip is an open-source Slack-like chat tool with a few unique features that make it a good fit for class discussion. Thanks to [the Zulip folks][zulip-co] for donating a plan for 6120!)
 
@@ -23,8 +24,6 @@ All course communication will happen there (not on email).
 
 ## Class Sessions
 
-The scheduled class sessions for 6120 have a funky flipped format this year.
-Everything happens on Zoom (please join [Zulip][] for the link).
 Check the [schedule][] for each day of class—it will fall into one of two categories:
 
 * *"Lesson" days:*
@@ -59,22 +58,29 @@ To reinforce the specific compiler techniques we learn about in class, you will 
 The usual pattern is that we will come up with the high-level idea and the pseudocode in lessons; your job is to turn it into real, working code and collect empirical evidence that it's working.
 Going through the complete implementation will teach you about realities that you cannot get by thinking at a high level.
 
+*Testing* your implementation is a critical component.
+Your job is to make a convincing case that your implementation does what you intended it to do: for example, an optimization is supposed to make programs faster, most of the time, and never break any programs.
+A formal proof of these properties is probably out of scope, so you will need to find some other way to gather evidence.
+In particular, *don't (just) use existing test cases you find in the Bril git repository,* which are never thorough enough.
+One good tactic can be to use [all the benchmarks in the repo][bench], however.
+
 You can work individually or in groups of 2–3 students.
 When you finish an implementation, do this:
 
 * I recommend (but do not require) that you put all your code online in an open-source source code repository, e.g., on GitHub.
-* Include a short README (just a paragraph is fine) describing what you did and how you know your implementation works.
 * Submit the assignment on [CMS][]. Just submit a text file with a URL to your open-source implementation if it's available. If you for some reason don't want to open-source your code, you can instead upload the code itself.
 * Write a brief post in the lesson's associated GitHub Discussions thread covering the following topics (just a paragraph or so is fine):
     * Summarize what you did.
-    * Explain how you know your implementation works---how did you test it? Did you use any qualitative or quantitative experiments?
+    * Explain how you know your implementation works---how did you test it? Which test inputs did you use? Do you have any quantitative results to report?
     * What was the hardest part of the task? How did you solve this problem?
 
-Do all your own work on implementation tasks.
+Do all your own work (with your group) on implementation tasks.
 I have sample implementations for many of the tasks in the 6120 GitHub repository; you may not use this code.
 Past 6120 students have open-sourced their implementations; you may not use this either.
 I recommend not looking at my or others' implementations at all while working on tasks, so you actually learn how to do it---but it's not hiding if you absolutely need it.
 You are an adult, presumably, and can control your own impulse to skip the hard work.
+
+[bench]: https://capra.cs.cornell.edu/bril/tools/bench.html
 
 ### Paper Reading & Discussion
 
@@ -121,8 +127,11 @@ Due *one week after* the discussion day:
     Feel free to incorporate the best ideas you heard during the online and in-class discussion.
     You can represent your own opinions, ones from the class as a whole, or both.
 
+    While the second item above entails recapping some of the paper, please resist the temptation to let direct summary make up the bulk of your blog post. Keep this kind of technical explanation under around a quarter of the length. (To make this work, you will need to prioritize breadth over depth in your summary, and you'll have to pick and choose specific contributions to highlight instead of hoping to convey the entire paper.)
+
+    Focus most of your writing on your own commentary: context, criticism, and discussion. To emphasize this focus, consider choosing a title for your blog post that is not the title of the paper---instead, it should reflect the main point *you want to make* about the paper.
+
     If you need inspiration for the style of post to write, check out [last year's blog][blog2020]. But probably avoid reading posts about your paper, if they exist!
-* Optionally, you can record a video to go along with your blog post that people should watch to get the discussion started.
 * Publish the post to the [course GitHub repository][gh] by opening a pull request.
   The repository README has instructions.
 * When your PR is open, announce it on the appropriate GitHub Discussions thread to let other people take a look.
