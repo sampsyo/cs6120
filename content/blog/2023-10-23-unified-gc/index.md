@@ -38,11 +38,9 @@ However, optimizing them leads to similarities. The cost of updating reference c
     <img src="tracing-vs-rc3.png" alt="alt_text" style="zoom:50%;" />
 </p>
 
-The Tracing algorithm centers around the "scan-by-tracing()" function. It does so by scanning forward from elements in a work-list, incrementing reference counts as it encounters vertices. When a previously unvisited vertex is encountered, it recursively processes its out-edges by adding them to the work-list. The loop continues until all live nodes in R are found, and their reference counts are set to the number of in-edges they have. 
+The primary difference between the algorithm and a standard tracing collector is that it maintains a full reference count instead of a boolean flag indicating visited status. This difference doesn't change the algorithm's complexity.
 
-The primary difference between this algorithm and a standard tracing collector is that it maintains a full reference count instead of a boolean flag indicating visited status. This difference doesn't change the algorithm's complexity.
-
-Similarly, “scan-by-counting” is the most important algorithm as well. It scans forward from elements in "W," decreasing reference counts of encountered vertices. When it identifies a garbage vertex, it recursively processes its edges by adding them to "W." This formulation of the algorithm buffers decrement operations instead of executing them immediately as described in the original approach. This buffering approach doesn't affect the algorithm's complexity but helps understand its relationship with other garbage collection algorithms.
+Similarly, the proposed formulation of the counting algorithm buffers decrement operations instead of executing them immediately as described in the original approach. This buffering approach doesn't affect the algorithm's complexity but helps understand its relationship with other garbage collection algorithms.
 
 To sum up, viewing reference counting as a delayed batched operation where decrements are performed at "collection time," and tracing as a process that reconstructs actual reference counts instead of just marking objects, both algorithms exhibit striking parallels. Tracing collects live data by traversing the object graph forward from the roots, while reference counting identifies dead data by starting with the anti-roots (objects with decremented reference counts). In essence, reference counting computes the graph complement of tracing, assuming there are no cycles. Tracing initializes reference counts to zero and increments them during traversal, while reference counting starts with counts exceeding the true value and decrements as needed.
 
@@ -58,6 +56,9 @@ $$\rho(x) = |\left[x : x \in R\right]| + | \left[ \left(w,x\right):\left(w,x \ri
 Once reference counts have been assigned, vertices with a reference count of 0 are reclaimed
 
 Given an object graph, there exist different fixed-point formulations. To be specific, the Tracing finds the least fix-point and counting finds the greatest fix-point, and their difference comprises the cyclic garbage. 
+
+Viewing the two algorithms as duals introduces the possibility of creating a lattice containing all of the garbage collection algorithms, and using orderings imposed by the 5 quantities relating to cost analysis. This leads to discussions like if there exist compilers to automatically generate garbage collectors given a program at runtime, or less ambitiously, given program characteristic parameters, using such lattice.
+
 
 ## Tracing-Counting Hybrids:
 After drawing the equivalence and symmetric dual structure of pure reference counting and pure tracing algorithms, the authors apply the unified framework they described to various algorithms that can be seen as a hybrid approach between reference counting and tracing.
