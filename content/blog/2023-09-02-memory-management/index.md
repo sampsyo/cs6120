@@ -1,14 +1,16 @@
 +++
 title = "MESH: Fancy Memory Management"
+[[extra.authors]]
+name = "Emily Wang"
+[[extra.authors]]
+name = "Evan Willians"
+[[extra.authors]]
+name = "Andy He"
 [extra]
+latex = true
 bio = """
-  Grace Hopper made the first compiler. [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an assistant professor of computer science, so that's pretty cool too I guess.
+	Evan is a senior/M.Eng student studying CS and ECE, Andy is an undergraduate junior student studying CS and Mathematics, and Emily is an M.Eng student studying CS. We are all broadly interested in systems, compilers, and performance engineering! 
 """
-[[extra.authors]]
-name = "Adrian Sampson"
-link = "https://www.cs.cornell.edu/~asampson/"  # Links are optional.
-[[extra.authors]]
-name = "Grace Hopper"
 +++
 
 MESH: Compacting Memory Management for C/C++
@@ -29,7 +31,7 @@ On the surface, MESH is a run-time library that acts as a plug-in replacement fo
 
 The key idea is that the allocator merges (or “meshes”) spans of pages when they have non-overlapping allocations in virtual memory. Crucially, the physical pages that are reclaimed after meshing can be returned to the operating system, but **no modification of the virtual addresses occurs**. 
 
-![Meshing](fragmentation.png "Figure 2. Meshing memory")
+![Meshing](mesh.png "Figure 2. Meshing memory")
 
 To make this allocation scheme not only correct, but efficient, MESH heavily leverages randomization. Broadly, MESH can be broken down into three main components:
 
