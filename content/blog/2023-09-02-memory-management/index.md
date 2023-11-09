@@ -16,6 +16,9 @@ bio = """
 MESH: Compacting Memory Management for C/C++
 =======
 
+[Slides from the discussion](https://docs.google.com/presentation/d/1jXN5Mw2OoxTb2xZIWJ99IOZckettdM7JpnBsvT5G6s8/edit?usp=sharing).
+
+
 One of C++’s greatest strengths is perhaps its complete command over memory. Pointers, addresses, and integers can all be manipulated like numbers, and memory can be allocated and freed on command. This comes with some tradeoffs; over time, memory becomes more and more fragmented, as space that is deallocated is re-allocated less efficiently. 
 
 ![Fragmentation](fragmentation.png "Figure 1. Memory fragmentation, from er.yuvayana.org")
