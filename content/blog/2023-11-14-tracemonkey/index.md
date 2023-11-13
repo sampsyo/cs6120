@@ -113,7 +113,8 @@ Meta-tracing is a technique in which tracing is applied to an interpreter itself
 <p align="center">
 	<img src="MetaTracing.png" alt="meta-tracing" width=300 />
 </p>
-*figure from [King’s College London](soft-dev.org)*
+
+*figure from [King’s College London](https://soft-dev.org/)*
 
 For a large language like Python, the high amount of edge cases means that writing a correct and efficient tracing compiler is especially hard. Meta-tracing is preferable in such cases because of the separation between tracing logic and interpreter logic.
 
