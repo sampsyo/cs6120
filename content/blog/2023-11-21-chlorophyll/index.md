@@ -40,14 +40,29 @@ TODO
 
 ## Modular Superoptimization
 
-TODO
+Chlorophyll uses an initial pass to generate machine code as a baseline. Then, the authors use an SMT solver to carry out all their superoptimization steps on a sliding window of instructions:
+
+1. Load the optimizatin window up with enough segments from the input to fill the minimum size
+2. Run the SMT solver.
+    - Was a solution found? Emit the optimized output and go back to step #1 if there is more input.
+    - If a solution is not found, pop the first segment from the window to the output and go to step #2.
+    - If the solver times out, remove the last segment, place it back into the input, and go to step #2.
+3. Use this loop until the input is empty.
+
+Figure 3 has a more detailed diagram of the modular superoptimization loop operating on a CFG:
+
+![Figure 3](fig3.png)
+
+Program equivalence is encoded into the SMT formulas by tracking the encapsulating state of the program: the data stack, the call stack, data memory, and stack pointer. For a candidate optimization to be a solution, the live region of the stack must be equivalent (the authors elaborate what this means in section 6.1). As a result, the relaxed constraints do not require the entire core end state be equivalent, allowing the synthesizer to do its job.
 
 ## Evaluation
 
-Overall the superoptimization technique shows improvements over the initial code generation. However, the synthesis-aided compiler still does not meet the performance of the hand-optimized benchmarks. In the single core benchmarks tested, the superoptimized program was still closer to initial code generator rather than the hand-written programs. In order to show a positive result, the authors needed to record results with synthetic benchmarks. They show that the superoptimizer can discover bit-twiddling optimizations, using examples from [Hacker's Delight](https://en.wikipedia.org/wiki/Hacker%27s_Delight). However, the time needed to compile is on the order of hours, and this is another shortcoming of the paper. The superoptimization time largely hinges on the program length, meaning the max segment size is another parameter that needs to be balanced.
+The superoptimization technique *does* show improvements over the initial code generation. However, the synthesis-aided compiler still does not meet the performance of the hand-optimized benchmarks. In the single core benchmarks tested, the superoptimized program was still closer to initial code generator rather than the hand-written programs. In order to show a positive result, the authors needed to record results with synthetic benchmarks. They show that the superoptimizer can discover bit-twiddling optimizations, using examples from [Hacker's Delight](https://en.wikipedia.org/wiki/Hacker%27s_Delight). However, the time needed to compile is on the order of hours, and this is another shortcoming of the paper. The superoptimization time largely hinges on the program length, meaning the max segment size is another parameter that needs to be balanced.
 
 The finite impulse response (FIR) benchmark is their best result, because the compiler is able to automatically parallelize the application to more cores. Judging by this case, it seems like the best use case for Chlorophyll is for applications which are embarrasingly parallel. This allows developers to quickly explore the sequential / parallel tradeoffs on PPA. For more sequential tasks that use fewer cores, the merits of this paper fall a bit flat.
 
 ## Discussion
 
-TODO
+Overall, a lot of the novelty of this paper stems from the challenges in compiling to such a unique spatial architecture. The authors' methods are a vertical slice of everything you would need to automate in order to map a legacy language like C to a reconfigurable overlay. Even though the authors specifically target a GreenArrays chip, the compiler description is generic enough to be able to extract the theory out and compare it to modern high-level synthesis for FPGAs and ASICs.
+
+As for their superoptimization technique, we think the problem formulatio is too narrowly scoped to be useful. We think the very limited results are evidence that compiling to spatial architectures requires some higher-level reasoning other than peephole optimizations. By limiting optimization to code segments within communication boundaries, there is are not many ways for the compiler to parallelize the computation. As long as communication across the chip is held constant, that heavily constains the types of optimizations that can be found. In any case, the paper still has value in how it breaks down the subproblems of compiling to spatial architectures.
