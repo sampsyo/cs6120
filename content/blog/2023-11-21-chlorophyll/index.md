@@ -38,7 +38,7 @@ int@0 mult(int@2 x, int@1 y)
 }
 ```
 
-With just these modifications to C, the compiler has enough information to map the code to the spatial layout of the GreenArray chip. The compilation is broken down into the following 
+With just these modifications to C, the compiler has enough information to map the code to the spatial layout of the GreenArray chip. The compilation is broken down into the following steps:
 
 1. Design Partitioning
     * In this step, the locations of the data and compute operations are inferred from the source program. Given some initial partitioning annotations, the compiler synthesizes the rest of the annotations as a type-inference problem. Every high level operation, variable read, and variable write is partitioned with a location index.
