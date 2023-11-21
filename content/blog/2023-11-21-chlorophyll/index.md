@@ -24,6 +24,8 @@ Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah
 
 ## Background
 
+Here is a quick background on some of the terms and concepts used by the paper:
+
 **Spatial Architecture** is a type of computer architecture where the computation is broken down into separate components that run in parallel on distinct physical modules.
 The term "spatial" refers to the fact that the data flows from one module to another to get processed,
 rather than the traditional architecture where the data is stored in a single location
@@ -106,12 +108,6 @@ The finite impulse response (FIR) benchmark is their best result, because the co
 
 Overall, a lot of the novelty of this paper stems from the challenges in compiling to such a unique spatial architecture. The authors' methods are a vertical slice of everything you would need to automate in order to map a legacy language like C to a reconfigurable overlay. Even though the authors specifically target a GreenArrays chip, the compiler description is generic enough to be able to extract the theory out and compare it to modern high-level synthesis for FPGAs and ASICs. More elaborate high-level (HLS) synthesis compilers try not to lean on code annotations so much, support some C++ classes, and compile to a hardware netlist instead of binaries. If the reader is curious, we would recommend reading an intro to [high-level hardware synthesis](https://ieeexplore.ieee.org/document/6838614) or taking a look at [ECE6775](https://www.csl.cornell.edu/courses/ece6775/index.html).
 
-As for their superoptimization technique, we think the problem formulation is too narrow to be useful. We think the very limited results are evidence that compiling to spatial architectures requires some higher-level reasoning other than peephole optimizations. By limiting the superoptimization to code segments within communication boundaries, there is are not many ways for the compiler to parallelize the computation. As long as communication across the chip is held constant, that heavily constrains the types of optimizations that can be found.
+As for their superoptimization technique, we think the problem formulation is too narrow to be useful. We think the very limited results are evidence that compiling to spatial architectures requires some higher-level reasoning other than peephole optimizations. By limiting the superoptimization to code segments within communication boundaries, there is are not many ways for the compiler to parallelize the computation. As long as communication across the chip is held constant, that heavily constrains the types of optimizations that can be found. We're left to speculating on this, because of the lack of benchmarks in the paper. The authors only picked five programs that has an expert-level code on the target chip, without explaining the selection criteria. We think this is understandable, because of the uniqueness of the target architecture. Moreover, the authors position their work as a way of kickstarting the compilation framework for a new architecture; in other words, they are serving as the baseline. We do want to note that the authors also tried to hack an existing compiler, STOKE, to target the GA144. However, the performance was too poor to serve as a meaningful baseline. When evaluating a new architecture, justifying the selection of benchmarks is a recurring problem.
 
 In any case, the paper still has value in demonstrating how to create a optimizing compiler for novel architectures. As the authors state, the main contribution of the paper is to show how simple program synthesis can be and still be useful. While such a method will not produce the highest performing compilers, this paper demonstrates the value of program synthesis as a quick way to 'kickstart' the evaluation of a new architecture.
-
-A notable shortcoming of the paper is the lack of benchmarks. The authors only picked five programs that has an expert-level code on the target chip,
-without explaining the selection criteria. We think this is understandable. The uniqueness of the target architecture is the main factor,
-and the authors place their work as a way of kickstarting the compilation framework for a new architecture; in other words, they are serving as the baseline.
-The authors also tried to hack an existing compiler, STOKE, to target GA144 but the performance was too poor to be a meaningful baseline.
-In general, when evaluating a new architecture, justifying the selection of benchmarks is an important but difficult problem.
