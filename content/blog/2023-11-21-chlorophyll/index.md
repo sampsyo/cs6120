@@ -2,7 +2,8 @@
 title = "Chlorophyll: synthesis-aided compiler for low-power spatial architectures"
 [extra]
 bio = """
-  Matthew Hofmann is a 2nd year Ph.D. student researching design automation for reconfigurable hardware. Yixiao Du ... TODO(yxd).
+  Matthew Hofmann is a 2nd year Ph.D. student researching design automation for reconfigurable hardware.
+  Yixiao Du is a 3rd year Ph.D. student researching hardware acceleration for graph processing and sparse linear algebra.
 """
 [[extra.authors]]
 name = "Matthew Hofmann"
@@ -21,11 +22,23 @@ Phitchaya Mangpo Phothilimthana, Tikhon Jelvis, Rohin Shah, Nishant Totla, Sarah
 
 ## Background
 
-TODO
+**Spatial Architecture** is a type of computer architecture where the computation is broken down into separate components that run in parallel, sharing intermediate results. The term "spatial" refers to the fact that the data flows from one location to another, rather than the traditional architecture where the data is stored in a single location and the computation is performed on it. Spatial architectures are also known as dataflow architectures.
+
+**Stack-Based ISA** describes an instruction set architecture where the instructions can only access the top of a stack.
+Eliminating the random addressablity of registers allows for a simpler and more power-efficient design.
+
+**Type Inference** is the process of automatically deducing the types of expressions in a program. In this paper, the authors use type inference to infer the partitioning annotations of the input C code.
 
 ## The Architecture
 
-TODO
+The target architecture of the Chlorophyll compiler is the GA144 from GreenArrarys. It contains 144 F18A processor cores.
+Each core only has 64 18b words of memory, and employs a stack-based ISA for lower power consumption.
+The cores are layed out in a 8x18 mesh grid, where one core can only communicate with its neighbors.
+Designed to be simple and low power, GA144 does not support any global synchronization mechanisms
+such as locks and barriers that are common on an ordinary shared-memory multicore machine.
+
+GA144's uniqie architecture greatly differ from traditional computers. Different tasks of a program are mapped to different cores
+with explicit data movement pritimitives. During execution, the data flows from one location to another, hence the name of "spatial architecture" (aka. dataflow architecture).
 
 ## The Compiler
 
