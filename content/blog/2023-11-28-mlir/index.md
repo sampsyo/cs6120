@@ -1,1 +1,28 @@
++++
+title = "MLIR: A Compiler Infrastructure for the End of Moore’s Law"
+[[extra.authors]]
+name = "John Rubio"
+[[extra.authors]]
+name = "Jiahan Xie"
+[[extra.authors]]
+name = "Arjun Shah"
+[extra]
+latex = true
++++
 
+# Summary
+[Slides from discussion](https://docs.google.com/presentation/d/1dHY8Xrk-VhUodql-06egCotdDWsIoiNOgEzlmSc0coM/edit?usp=sharing)
+
+The main motivator behind MLIR is the problem that arises when we want to deal with langugage-specific optimizations during compilation. LLVM does not include any high level semantics into its IR, which allows it to be so great at general optimziations regardless of the domain. However, this utility comes with the downside of being unable to easily deal with domain specific optimizations. A solution (which was adopted by several high langages such as Swift and Rust), included inventing a specialized IR for a given domain that would incldue high level aspects of the language before compiling down to LLVM IR.
+
+<img width="699" alt="Screenshot 2023-12-01 at 5 23 21 PM" src="https://github.com/20ashah/cs6120/assets/33373825/2f2e2a84-4e57-4446-aa0d-31a5a9d1a495">
+
+An issue with this approach is that it requires a lot of redundency when creating a new specialized IR that may make it not worth the engineering effort. MLIR is a more generalized infrastructure to avoid this duplication while still allowing for the inclusion of high level semantics through customization to support domain specific optimizations.
+
+# MLIR Design Principles
+
+
+# Applications
+
+
+# Conclusions / Future Research
