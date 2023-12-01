@@ -21,8 +21,22 @@ An issue with this approach is that it requires a lot of redundency when creatin
 
 # MLIR Design Principles
 
+A few important design principles of MLIR that were highlighted in the discussion were the following:
 
-# Applications
+#### Customizability
+
+#### Nested regions
+
+#### Maintaining High Level Semantics
+
+#### Progressive Lowering
+
+# MLIR Infrastructure
+
+A common question after discussing the goals of MLIR is walking through how the actual implementation of MLIR actually accomplishes these goals.  
+
+
+# Applications of MLIR
 
 
 # Conclusions / Future Research
