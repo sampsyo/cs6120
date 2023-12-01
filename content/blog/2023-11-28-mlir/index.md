@@ -23,17 +23,29 @@ An issue with this approach is that it requires a lot of redundency when creatin
 
 A few important design principles of MLIR that were highlighted in the discussion were the following:
 
-#### Customizability
+### Customizability
 
-#### Nested regions
+### Nested regions
 
-#### Maintaining High Level Semantics
+### Maintaining High Level Semantics
 
-#### Progressive Lowering
+### Progressive Lowering
 
 # MLIR Infrastructure
 
-A common question after discussing the goals of MLIR is walking through how the actual implementation of MLIR actually accomplishes these goals.  
+A common question after discussing the goals of MLIR is walking through how the actual implementation of MLIR actually accomplishes these goals. 
+
+First, let's take a look at the difference between the overal structure of LLVM and MLIR and how the subtle changes allow for more flexibility and customization.
+
+LLVM IR vs MLIR Structure
+
+<img width="290" alt="Screenshot 2023-12-01 at 6 18 10 PM" src="https://github.com/20ashah/cs6120/assets/33373825/65c87ead-7630-4748-bc3d-570cdc8ac1c1"> 
+
+<img width="368" alt="Screenshot 2023-12-01 at 6 18 35 PM" src="https://github.com/20ashah/cs6120/assets/33373825/a4f9bc37-3ad7-46de-98d6-727e752b8ec0">
+
+These structures are very similar in that both structure programs into modules, functions, and blocks, but the way they are implemented in MLIR as "Ops" is an important distinction that contributes to MLIR's extensibility.
+
+### Ops
 
 
 # Applications of MLIR
