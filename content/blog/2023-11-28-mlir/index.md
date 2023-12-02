@@ -25,7 +25,12 @@ A few important design principles of MLIR that were highlighted in the discussio
 
 ### Customizability
 
+MLIR has minimal number of built-in features, with things primarily being customizable. Given the goal of creating a generalized IR infrastructure to support high level features of any given domain, this makes sense. MLIR strives to only have a few abstractions which are flexible enough to be reused and express everything that we need. By doing this, we can express a diverse set of abstractions that encompass everything useful in a given domain language, all without hard-coding any of them. 
+
 ### Nested regions
+
+Another interesting principle of the paper that we discussed in depth was the idea that MLIR is moving away from flat CFGs by allowing a nested IR structure.
+
 
 ### Maintaining High Level Semantics
 
@@ -37,7 +42,7 @@ A common question after discussing the goals of MLIR is walking through how the 
 
 First, let's take a look at the difference between the overal structure of LLVM and MLIR and how the subtle changes allow for more flexibility and customization.
 
-LLVM IR vs MLIR Structure
+### LLVM IR vs MLIR Structure
 
 <img width="290" alt="Screenshot 2023-12-01 at 6 18 10 PM" src="https://github.com/20ashah/cs6120/assets/33373825/65c87ead-7630-4748-bc3d-570cdc8ac1c1"> 
 
@@ -50,5 +55,12 @@ These structures are very similar in that both structure programs into modules, 
 
 # Applications of MLIR
 
+### TensorFlow
+
+### Fortran IR
+
+### ClangIR
 
 # Conclusions / Future Research
+
+Limitations?
