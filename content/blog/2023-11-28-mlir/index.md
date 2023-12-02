@@ -34,6 +34,7 @@ Another interesting principle of the paper that we discussed in depth was the id
 
 ### Maintaining High Level Semantics
 
+
 ### Progressive Lowering
 
 # MLIR Infrastructure
@@ -63,4 +64,4 @@ These structures are very similar in that both structure programs into modules, 
 
 # Conclusions / Future Research
 
-Limitations?
+A lot of our discussion focused on the future of MLIR given that this is a relatively new idea. An interesting point that was brought up in the discussion was that to an outside perspective of someone not in compilers, MLIR seems like a groundbreaking tool that makes all compiler development trivial, when in reality this is not the case. An important part of the paper that we discussed was the mention of how there was little guidance in best practices of using MLIR given that there is so much developer freedom. The consensus was that to exploit the full potential of MLIR is going to require more research and finding a balance between expressiveness and performance.
