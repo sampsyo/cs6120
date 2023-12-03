@@ -50,15 +50,15 @@ First, let's take a look at the difference between the overal structure of LLVM 
 These structures are very similar in that both structure programs into modules, functions, and blocks, but the way they are implemented in MLIR as "Ops" is an important distinction that contributes to MLIR's extensibility.
 
 ### Ops
+TODO
 
+### Dialects
+TODO
 
 # Applications of MLIR
 
 ### TensorFlow
-
-### Fortran IR
-
-### ClangIR
+TODO
 
 # Conclusions / Future Research
 
