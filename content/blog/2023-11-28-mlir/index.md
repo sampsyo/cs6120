@@ -35,11 +35,11 @@ MLIR has minimal number of built-in features, with things primarily being custom
 
 ### Nested regions
 
-Another interesting principle that led to discussion was the shift towards a nested IR over the traditional flat IR implementation. The nested region described in the paper refers to the idea that instead of simply having a sequence of instructions in a flat CFG, we can take a nested approach by having sub-graphs attached to any instruction. A point was brought up in discussion that it seems strange to do it this way and almost seems like a step back by going against the traditional flat IR. However, when we consider the overall progressive lowering approach happening that multiple abstraction levels, it starts to make perfect sense. In addition, a point was made that this also doesn't mean we are moving away from flat IRs, but rather introducing an IR that is in between to express high level control flow easier.
+Another interesting principle that led to discussion was the shift towards a nested IR over the traditional flat IR implementation. The nested region described in the paper refers to the idea that instead of simply having a sequence of instructions in a flat CFG, we can take a nested approach by having sub-graphs attached to any instruction, allowing for the ability to easily express high level control flow.
 
 ### Progressive Lowering
 
-In our discussion, a lot of people brought up some interesting points regarding the lowering approach in MLIR and its advantages over a traditional sequential lowering implementation. It was a consensus that the key here is the fact that MLIR maintains high level semantics. By having lowering take place at multiple abstraction levels allows us to unlock optimizations that would not have been possible with a fixed sequence of passes like in LLVM. There were lots of good talking points surrounding this idea during the discussion in that given that we have high level semantics in MLIR, it makes perfect sense to not only gradually lower at these abstraction levels but also mix and match between these abstraction levels before going down to generic LLVM IR. This idea is made possible through how MLIR is actually designed, which the paper then transitions to.
+In our discussion, a lot of people brought up some interesting points regarding the lowering approach in MLIR and its advantages over a traditional sequential lowering implementation. It was a consensus that the key here is the fact that MLIR maintains high level semantics. By having lowering take place at multiple abstraction levels allows us to unlock optimizations that would not have been possible with a fixed sequence of passes.
 
 # MLIR Infrastructure
 
@@ -56,7 +56,7 @@ First, let's take a look at the difference between the overal structure of LLVM 
 These structures are very similar in that both structure programs into modules, functions, and blocks, but the way they are implemented in MLIR as "Ops" is an important distinction that contributes to MLIR's extensibility.
 
 ### Ops
-TODO
+Ops serve as fundamental computation units within the MLIR. They encapsulate specific functionalities or transformations, offering a high level of abstraction. Ops provide a flexible way to define and customize operations, enabling the representation of diverse domain-specific functionalities and enhancing MLIR's adaptability and expressiveness compared to LLVM's fixed set of instructions. In MLIR, everything is defined as an Op and they can exist at any level of the IR at any time, an advantage that is exploited during progressive lowering.
 
 ### Dialects
 TODO
@@ -66,6 +66,20 @@ TODO
 ### TensorFlow
 TODO
 
-# Conclusions / Future Research
 
-A lot of our discussion focused on the future of MLIR given that this is a relatively new idea. An interesting point that was brought up in the discussion was that to an outside perspective of someone not in compilers, MLIR seems like a groundbreaking tool that makes all compiler development trivial, when in reality this is not the case. An important part of the paper that we discussed was the mention of how there was little guidance in best practices of using MLIR given that there is so much developer freedom. The consensus was that to exploit the full potential of MLIR is going to require more research and finding a balance between expressiveness and performance.
+# Discussion
+
+[Discussion thread](https://github.com/sampsyo/cs6120/discussions/419)
+
+There were several discussion topics that came up in class that we will explore further here.
+
+### Role of MLIR in Hardware Heterogeneity
+
+MLIR doesn't directly solve the challenge of heterogeneous hardware, but it paves the way for a potential solution. By providing a uniform intermediate representation, MLIR serves as a bridge between diverse hardware targets and languages. While it doesn't inherently resolve the intricacies of varying hardware architectures, MLIR's modular and extensible nature allows for the creation of custom dialects and transformations. These dialects can encapsulate hardware-specific optimizations, enabling developers to express and apply optimizations relevant to different hardware targets within a unified framework. This approach doesn't eliminate the complexity of heterogeneous hardware but provides a platform where solutions tailored to specific hardware can be developed and integrated more seamlessly. This ties in with several discussion posts about the idea along with its connections to the title regarding the End of Moore's Law. As the industry grapples with the challenge of increasing procesor speed, hardware accelerators emerge as a solution. By enabling the creation of custom dialects and optimizations, MLIR allows developers to harness the full potential of these accelerators while working within the constraints posed by the plateauing of traditional CPU performance growth. Overall, the dicussion on this topic concluded with saying how MLIR opens pathways for tailored solutions across diverse hardware, while stressing that it doesn't resolve the complexities of heterogeneous hardware architectures.
+
+
+### How good of a solution is MLIR?
+
+MLIR presents a promising avenue for compiler development, offering a versatile framework for expressing diverse transformations and optimizations across different hardware targets. Its modularity and extensibility contribute to its appeal, allowing developers the freedom to craft custom solutions tailored to specific needs. However, amidst its potential, MLIR also comes with limitations. While it seems like a cure for all compiler challenges, it's far from a definitive solution. The abundance of developer freedom within MLIR leads to a lack of standardized best practices, posing a challenge for newcomers navigating its intricacies. To exploit the full potential of MLIR, future research is vital to strike a balance between the expressiveness MLIR offers and the need for optimized performance. Finding this equilibrium will be key to harnessing the full capabilities of MLIR and defining its role in advancing compiler development. However, in certain instances, while MLIR offers a powerful framework for expressing complex transformations, it doesn't always directly reduce overall complexity. Instead, it might shift the intricacies to another layer or domain within compilation. Discussions in class delved into this aspect, introducing a note of pessimism and critiques amidst the recognition of MLIR's strengths.
+
+### Future research
