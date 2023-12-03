@@ -29,13 +29,11 @@ MLIR has minimal number of built-in features, with things primarily being custom
 
 ### Nested regions
 
-Another interesting principle of the paper that we discussed in depth was the idea that MLIR is moving away from flat CFGs by allowing a nested IR structure.
-
-
-### Maintaining High Level Semantics
-
+Another interesting principle that led to discussion was the shift towards a nested IR over the traditional flat IR implementation. The nested region described in the paper refers to the idea that instead of simply having a sequence of instructions in a flat CFG, we can take a nested approach by having sub-graphs attached to any instruction. A point was brought up in discussion that it seems strange to do it this way and almost seems like a step back by going against the traditional flat IR. However, when we consider the overall progressive lowering approach happening that multiple abstraction levels, it starts to make perfect sense. In addition, a point was made that this also doesn't mean we are moving away from flat IRs, but rather introducing an IR that is in between to express high level control flow easier.
 
 ### Progressive Lowering
+
+In our discussion, a lot of people brought up some interesting points regarding the lowering approach in MLIR and its advantages over a traditional sequential lowering implementation. It was a consensus that the key here is the fact that MLIR maintains high level semantics. By having lowering take place at multiple abstraction levels allows us to unlock optimizations that would not have been possible with a fixed sequence of passes like in LLVM. There were lots of good talking points surrounding this idea during the discussion in that given that we have high level semantics in MLIR, it makes perfect sense to not only gradually lower at these abstraction levels but also mix and match between these abstraction levels before going down to generic LLVM IR. This idea is made possible through how MLIR is actually designed, which the paper then transitions to.
 
 # MLIR Infrastructure
 
