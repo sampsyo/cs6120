@@ -13,13 +13,19 @@ latex = true
 # Summary
 [Slides from discussion](https://docs.google.com/presentation/d/1dHY8Xrk-VhUodql-06egCotdDWsIoiNOgEzlmSc0coM/edit?usp=sharing)
 
-The main motivator behind MLIR is the problem that arises when we want to deal with langugage-specific optimizations during compilation. LLVM does not include any high level semantics into its IR, which allows it to be so great at general optimziations regardless of the domain. However, this utility comes with the downside of being unable to easily deal with domain specific optimizations. A solution (which was adopted by several high langages such as Swift and Rust), included inventing a specialized IR for a given domain that would incldue high level aspects of the language before compiling down to LLVM IR.
+The designers of MLIR claim that their primary motivations for creating this new tool were to solve the problems of software fragmentation and heterogeneous hardware targets. By software fragmentation, the authors mean that compiler engineers working on modern, high-level languages such as Swift, Rust, and Julia have begun creating their own custom, high-level IRs in front of LLVM. This allows compiler engineers to more easily implement source-level optimizations that are significantly more difficult to implement at a lower-level IR. This is because lower-level IRs such as LLVM do not preserve the higher-level semantics that are necessary to more easily implement source-level optimizations. According to the authors, this approach requires excessive engineering resources to build compiler infrastructure that does not generalize to other languages - this is where MLIR comes in. MLIR aims to provide compiler engineers with the freedom to design high-level IRs that allow for source-level optimizations while being able to progressively lower to the typical lower-level IRs such as LLVM, all the while using the same compiler infrastructure.
 
 <img width="699" alt="Screenshot 2023-12-01 at 5 23 21 PM" src="https://github.com/20ashah/cs6120/assets/33373825/2f2e2a84-4e57-4446-aa0d-31a5a9d1a495">
 
-An issue with this approach is that it requires a lot of redundency when creating a new specialized IR that may make it not worth the engineering effort. MLIR is a more generalized infrastructure to avoid this duplication while still allowing for the inclusion of high level semantics through customization to support domain specific optimizations.
+The authors add:
 
-# MLIR Design Principles
+>At the same time, the LLVM community frequently struggled with questions about how to best represent parallel constructs, how to share implementation of common front-end lowering infrastructure (e.g. for C calling conventions, or cross-language features like OpenMP) with no satisfactory solutions being available.
+
+Essentially, the authors were already wrestling with the problem of creating a better compiler infrastructure for machine learning applications when they noticed the fragmentation of high-level IRs. According to the authors, their options were to either develop _N_ improved compiler instances for each source language using a custom, high-level IR or they could develop a new, more general solution. Unsurprisingly, the authors chose the latter.
+
+# TODO: Let's keep each of the below sections brief since according to the blog post guidelines, the summary portion should only be about 25 % of the content and the rest should be our commentary
+
+# MLIR Design Principles 
 
 A few important design principles of MLIR that were highlighted in the discussion were the following:
 
