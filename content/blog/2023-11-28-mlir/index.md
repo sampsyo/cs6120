@@ -10,8 +10,6 @@ name = "Arjun Shah"
 latex = true
 +++
 
-# ***Recap begins here***
-
 # Summary
 [Slides from discussion](https://docs.google.com/presentation/d/1dHY8Xrk-VhUodql-06egCotdDWsIoiNOgEzlmSc0coM/edit?usp=sharing)
 
@@ -65,32 +63,61 @@ Operations, or Ops, serve as the fundamental semantic unit within the MLIR. Ever
 ### Dialects
 MLIR's extensibility and support for an arbitrary number of IRs is realized through the use of _Dialects_. Dialects serve as logical groupings for Ops, attributes, and types, analogous to modular libraries in programming languages like C++. Part of MLIR's strength lies in its ability to mix dialects, enabling the coexistence of Ops from different dialects with Ops from any level IR. This facilitates the preservation of higher-level semantics throughout the compilation pipeline until they are no longer required.
 
-# Applications of MLIR
-
-### TensorFlow
+### MLIR & TensorFlow
 TODO - Jiahan
-
-# ***Recap ends here***
-
-# TODO: Revise / add on below
-
-Possible Talking Points - 
-
-1) Despite the title, MLIR is useful for more than just "post-Moore's Law" challenges (e.g. Rust's borrow checking, polyhedral compilation, how MLIR makes it easier for functional languages to compile to LLVM IR)
-2) How much does MLIR really help with the machine learning applications it was (partially) designed to help solve?
-3) With MLIR available, is there still a place for custom, high-level IRs?
-4) What do we think of MLIR using nested IRs which is a divergence from the more recent trend of flat IRs?
 
 # Discussion
 
-[Discussion thread](https://github.com/sampsyo/cs6120/discussions/419)
+### MLIR is more than a solution to post-Moore's Law challenges
 
-There were several discussion topics that came up in class that we will explore further here.
+Despite the title of the paper, MLIR's use cases are far broader than a solution to "post-Moore's Law" challenges such as heterogeneous hardware compilation. Here, we discuss two applications of MLIR which are simply scenarios in which having a flexible, extensible IR comes in handy - nothing about these applications relates to the end of Moore's Law.
 
-### Role of MLIR in Hardware Heterogeneity <- Maybe we should provide a brief description of what the challenges of heterogeneous compilation are and why MLIR doesn't necessarily solve them but perhaps will make it easier to solve this problem
+#### MLIR for Polyhedral Compilation
+
+Polyhedral compilation is an advanced compilation technique that focuses on optimizing programs with multidimensional arrays and loop nests. It is particularly effective for scientific and numerical computing applications that involve regular, dense computations, such as simulations, image processing, and linear algebra operations.
+
+Since polyhedral compilation uses many high-level abstractions, it has often been useful to define custom, high-level IRs in front of LLVM IR to help bridge the semantic gap. Polyhedral-specific dialects can be created within MLIR to capture the semantics and transformations associated with polyhedral compilation. This allows for a clean and expressive representation of polyhedral concepts which can be progressively lowered and optimized over several passes before reaching a low-level IR such as LLVM IR.
+
+#### MLIR for Compiling Functional Languages
+
+MLIR can be beneficial for compiling functional languages due to its flexibility, extensibility, and support for expressing high-level abstractions. For example, it is not difficult to imagine how MLIR's custom dialects make it easier for compiler engineers to represent high-level, abstract features such as immutability, higher-order functions, and closures. Additionally, functional languages often have unique constructs like algebraic data types, pattern matching, and lazy evaluation. Such abstract, language-specific features are perfect examples of when it is a good idea to define a dialect in MLIR. Another challenge of implementing functional languages is lowering high-level, abstract, functional constructs to a lower level IR such as LLVM IR. LLVM IR is more suitable for imperative source languages since LLVM was originally designed with C and C++ in mind. Thus, MLIR's progressive lowering capability can make the job of lowering to LLVM IR from a functional language much less daunting.
+
+### MLIR's Role in Heterogeneous Compilation 
+
+#### What is Heterogeneous Compilation?
+Heterogeneous compilation refers to the process of compiling code that is designed to run on different types of hardware architectures or devices. In a heterogeneous computing environment, various types of processing units, such as CPUs, GPUs, FPGAs, and specialized accelerators, may be present. Heterogeneous compilation aims to generate optimized code for each specific hardware target within the same program or application.
+
+The goal is to take advantage of the strengths and capabilities of different hardware architectures, optimizing the code for parallelism, concurrency, and specific features of each processing unit. This approach allows developers to harness the full potential of diverse hardware components within a single application, enhancing performance and efficiency.
+
+Suppose you have a gradient descent program written in C++ that you want to compile and optimize for both a CPU and a GPU, leveraging the strengths of each architecture. This scenario exemplifies heterogeneous compilation.
+
+In a heterogeneous compilation workflow:
+
+1. **CPU Compilation:**
+   - The original C++ code is first compiled into an intermediate representation suitable for a CPU. This might involve optimizing for the architecture-specific features of the CPU.
+   - CPU-specific optimizations are applied to improve performance on traditional central processing units.
+
+2. **GPU Compilation:**
+   - The same C++ code can be compiled into a different intermediate representation suitable for a GPU.
+   - GPU-specific optimizations are applied to exploit parallelism and take advantage of the massively parallel architecture of the GPU.
+
+3. **Heterogeneous Execution:**
+   - The compiled CPU and GPU code can be combined into a single executable or run as separate components within the same program.
+   - The program can dynamically decide at runtime which portions of the computation are best suited for execution on the CPU or GPU, based on the available hardware resources.
+
+In this example, heterogeneous compilation enables the generation of optimized code for both CPU and GPU architectures, allowing the program to run efficiently on diverse hardware. The ability to express and optimize for different hardware targets is crucial in modern computing environments where applications may need to leverage a variety of processing units for performance gains.
+
+#### Where does MLIR come in?
 
 MLIR doesn't directly solve the challenge of heterogeneous hardware, but it paves the way for a potential solution. By providing a uniform intermediate representation, MLIR serves as a bridge between diverse hardware targets and languages. While it doesn't inherently resolve the intricacies of varying hardware architectures, MLIR's modular and extensible nature allows for the creation of custom dialects and transformations. These dialects can encapsulate hardware-specific optimizations, enabling developers to express and apply optimizations relevant to different hardware targets within a unified framework. This approach doesn't eliminate the complexity of heterogeneous hardware but provides a platform where solutions tailored to specific hardware can be developed and integrated more seamlessly. This ties in with several discussion posts about the idea along with its connections to the title regarding the End of Moore's Law. As the industry grapples with the challenge of increasing processor speed, hardware accelerators emerge as a solution. By enabling the creation of custom dialects and optimizations, MLIR allows developers to harness the full potential of these accelerators while working within the constraints posed by the plateauing of traditional CPU performance growth. Overall, the discussion on this topic concluded with saying how MLIR opens pathways for tailored solutions across diverse hardware while stressing that it doesn't resolve the complexities of heterogeneous hardware architectures.
 
+###  Nested IRs vs. Flat IRs
+
+The addition of a nested IR approach within MLIR is due to the need for greater expressivity and domain-specific optimizations, allowing for the ability to represent complex semantics and control flow that is difficult to do in a traditional flat IR. The nested approach in lowering facilitates gradual transformations across various abstraction levels, enabling tailored optimizations for diverse domains. Importantly, this shift towards nested IRs doesn't mean completely moving away from flat IRs but rather introducing a middle layer that allows us to go from MLIR to a traditional flat IR, leveraging the advantages of both. This hybrid approach balances expressivity with computational efficiency, offering a middle ground that allows for tailored optimizations without disregarding the benefits of flat IRs.
+
+### Does MLIR eliminate the need for custom, high-level IRs?
+
+Despite all of the strengths of MLIR and how it solves the problem of having to introduce high-level IRs for each domain, this doesn't mean that high-level IRs no longer have a place in compiler development. There are plenty of instances where it may make sense to use a custom IR rather than MLIR - one being in the design of specialized hardware. Designing custom hardware may require precise control over low-level details. Having a custom IR tailored to the specific needs of the IR may provide a level of control at the hardware level that is hard to accomplish with MLIR. While MLIR offers a flexible framework for representing different IRs, its focus might not align perfectly with the intricacies and low-level optimizations required in hardware description. Designing a custom IR tailored specifically for hardware description could provide developers with the precise control and optimizations needed to generate efficient hardware designs.
 
 ### How good of a solution is MLIR?
 
@@ -98,4 +125,12 @@ MLIR presents a promising avenue for compiler development, offering a versatile 
 
 ### Limitations
 
-A point of discussion that was brought up in the threads that continued live had to do with certain limitations of MLIR, introducing a note of pessimism and critiques amidst the recognition of MLIR's strengths. These limitations revolved around the idea that oftentimes there is a trade-off between expressiveness and performance. In certain instances, while MLIR offers a powerful framework for expressing complex transformations, it doesn't always directly reduce overall complexity. Instead, it might shift the intricacies to another layer or domain within compilation. The trade-offs between expressiveness and performance often constitute a crucial aspect in compiler design and optimization. While enhanced expressiveness within a compiler framework like MLIR allows developers to articulate intricate transformations and optimizations tailored to specific requirements, it might inadvertently introduce complexities that impact performance. This trade-off involves finding a delicate balance: the more expressive the framework, the greater the potential for sophisticated optimizations, but this might come at the cost of increased compilation time or overhead in the generated code.
+MLIR is not a silver bullet and it does have its limitations. These limitations revolve around the idea that oftentimes there is a trade-off between expressiveness and performance. In certain instances, while MLIR offers a powerful framework for expressing complex transformations, it doesn't always directly reduce overall complexity. Instead, it might shift the intricacies to another layer or domain within the compilation process. The trade-offs between expressiveness and performance often constitute a crucial aspect in compiler design and optimization. While enhanced expressiveness within a compiler framework like MLIR allows developers to articulate intricate transformations and optimizations tailored to specific requirements, it might inadvertently introduce complexities that impact performance. This trade-off involves finding a delicate balance: the more expressive the framework, the greater the potential for sophisticated optimizations, but this might come at the cost of increased compilation time or overhead in the generated code.
+
+---
+
+_John Rubio is a 2nd year MS student at Cornell University. He is interested in compilers, programming languages, and hardware._
+
+_Arjun Shah is a senior undergraduate at Cornell University. He is interested in working on compilers in industry._
+
+_Jiahan Xie is a 1st year MS student at Cornell University. He is interested in compilers and LLVM._
