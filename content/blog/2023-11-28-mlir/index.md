@@ -63,7 +63,7 @@ These structures are very similar in that both structure programs into a hierarc
 Operations, or Ops, serve as the fundamental semantic unit within the MLIR. Everything in MLIR is an Op. This includes every structure in MLIR's hierarchy including modules, functions, blocks, and instructions. Ops were specifically designed to allow for user-defined extensions and the structure of an Op is how MLIR's customizability design principle is achieved. 
 
 ### Dialects
-MLIR's extensibility and support for an arbitrary number of IRs is realized through the use of _Dialects_. Dialects serve as logical groupings for Ops, attributes, and types, analogous to modular libraries in programming languages like C++. Part of MLIR's strength lies in its ability to seamlessly mix dialects, enabling the coexistence of Ops from different dialects with Ops from any level IR. This facilitates the preservation of higher-level semantics throughout the compilation pipeline until they are no longer required.
+MLIR's extensibility and support for an arbitrary number of IRs is realized through the use of _Dialects_. Dialects serve as logical groupings for Ops, attributes, and types, analogous to modular libraries in programming languages like C++. Part of MLIR's strength lies in its ability to mix dialects, enabling the coexistence of Ops from different dialects with Ops from any level IR. This facilitates the preservation of higher-level semantics throughout the compilation pipeline until they are no longer required.
 
 # Applications of MLIR
 
