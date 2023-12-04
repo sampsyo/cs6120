@@ -10,10 +10,12 @@ name = "Arjun Shah"
 latex = true
 +++
 
+# ***Recap begins here***
+
 # Summary
 [Slides from discussion](https://docs.google.com/presentation/d/1dHY8Xrk-VhUodql-06egCotdDWsIoiNOgEzlmSc0coM/edit?usp=sharing)
 
-The designers of MLIR claim that their primary motivations for creating this new tool were to solve the problems of software fragmentation and heterogeneous hardware targets. By software fragmentation, the authors mean that compiler engineers working on modern, high-level languages such as Swift, Rust, and Julia have begun creating their own custom, high-level IRs in front of LLVM. This allows compiler engineers to more easily implement source-level optimizations that are significantly more difficult to implement at a lower-level IR. This is because lower-level IRs such as LLVM do not preserve the higher-level semantics that are necessary to more easily implement source-level optimizations. According to the authors, this approach requires excessive engineering resources to build compiler infrastructure that does not generalize to other languages - this is where MLIR comes in. MLIR aims to provide compiler engineers with the freedom to design high-level IRs that allow for source-level optimizations while being able to progressively lower to the typical lower-level IRs such as LLVM, all the while using the same compiler infrastructure.
+The designers of MLIR claim that their primary motivations for creating this new tool were to solve the problems of software fragmentation and heterogeneous hardware targets. By software fragmentation, the authors mean that compiler engineers working on modern, high-level languages such as Swift, Rust, and Julia have begun creating their own custom, high-level IRs in front of LLVM. This allows compiler engineers to more easily implement source-level optimizations that are significantly more difficult to implement using a lower-level IR. This is because lower-level IRs such as LLVM IR do not preserve the higher-level semantics that are necessary to more easily implement source-level optimizations. According to the authors, this approach requires excessive engineering resources to build compiler infrastructure that does not generalize to other languages - this is where MLIR comes in. MLIR aims to provide compiler engineers with the freedom to design high-level IRs that allow for source-level optimizations while being able to progressively lower to the typical lower-level IRs such as LLVM IR, all the while using the same compiler infrastructure.
 
 <img width="699" alt="Screenshot 2023-12-01 at 5 23 21 PM" src="https://github.com/20ashah/cs6120/assets/33373825/2f2e2a84-4e57-4446-aa0d-31a5a9d1a495">
 
@@ -21,31 +23,33 @@ The authors add:
 
 >At the same time, the LLVM community frequently struggled with questions about how to best represent parallel constructs, how to share implementation of common front-end lowering infrastructure (e.g. for C calling conventions, or cross-language features like OpenMP) with no satisfactory solutions being available.
 
-Essentially, the authors were already wrestling with the problem of creating a better compiler infrastructure for machine learning applications when they noticed the fragmentation of high-level IRs. According to the authors, their options were to either develop _N_ improved compiler instances for each source language using a custom, high-level IR or they could develop a new, more general solution. Unsurprisingly, the authors chose the latter.
-
-# TODO: Let's keep each of the below sections brief since according to the blog post guidelines, the summary portion should only be about 25 % of the content and the rest should be our commentary
+Essentially, the authors were already wrestling with the problem of figuring out how to create a better compiler infrastructure for machine learning applications when they noticed the fragmentation of high-level IRs. According to the authors, their options were to either develop _N_ improved compiler instances for each source language using a custom, high-level IR or they could develop a new, more general solution. Unsurprisingly, the authors chose the latter.
 
 # MLIR Design Principles 
 
-A few important design principles of MLIR that were highlighted in the discussion were the following:
+MLIR was constructed based on a set of core design principles. A few key design principles that were highlighted in the discussion were the following:
 
 ### Customizability
 
-MLIR has minimal number of built-in features, with things primarily being customizable. Given the goal of creating a generalized IR infrastructure to support high level features of any given domain, this makes sense. MLIR strives to only have a few abstractions which are flexible enough to be reused and express everything that we need. By doing this, we can express a diverse set of abstractions that encompass everything useful in a given domain language, all without hard-coding any of them. 
+To allow compiler engineers to design a wide range of IRs, MLIR needed to be sufficiently customizable. Therefore, MLIR has very little built-in. The idea is that the built-in features are extremely flexible, providing users with a high degree of expressivity in the IRs they build. In theory, customizability promotes code reuse and allows MLIR users to work with "dialects" that maintain the high-level semantics which make source-level optimizations easier to implement. 
 
-### Nested regions
+### Nested Regions
 
-Another interesting principle that led to discussion was the shift towards a nested IR over the traditional flat IR implementation. The nested region described in the paper refers to the idea that instead of simply having a sequence of instructions in a flat CFG, we can take a nested approach by having sub-graphs attached to any instruction, allowing for the ability to easily express high level control flow.
+A key approach the authors take to promoting the flexibility of MLIR is the _nested regions_ feature. The authors state:
+
+>While many existing IRs use a [flat]([url](https://www.cs.cornell.edu/~asampson/blog/flattening.html)), linearized CFG, representing higher level abstractions push introducing _nested regions_ as a first-class concept in the IR. This goes beyond the traditional region formation to lift higher level abstractions (e.g., loop trees), speeding up the compilation process or extracting instruction, or SIMD parallelism. To support heterogeneous compilation, the system has to support the expression of structured control flow, concurrency constructs, closures in source languages, and many other purposes. One specific challenge is to make CFG-based analyses and transformations compose over nested regions.
+
+In short, MLIR's focus on nested regions allows for the representation of higher-level abstractions, such as loop trees, in a structured manner. The challenge lies in ensuring that CFG-based analyses and transformations can effectively compose over these nested regions, especially to support heterogeneous compilation for various purposes like structured control flow, concurrency constructs, and closures in source languages.
 
 ### Progressive Lowering
 
-In our discussion, a lot of people brought up some interesting points regarding the lowering approach in MLIR and its advantages over a traditional sequential lowering implementation. It was a consensus that the key here is the fact that MLIR maintains high level semantics. By having lowering take place at multiple abstraction levels allows us to unlock optimizations that would not have been possible with a fixed sequence of passes.
+MLIR emphasizes flexibility as one of its core design principles, enabling compiler engineers to create multiple high-level IRs in front of lower-level IRs like LLVM IR. The approach to supporting an arbitrary number of IRs is through a concept called "progressive lowering." In the compilation pipeline, each higher-level IR, or dialect, undergoes a gradual lowering process to the next level, simplifying the task of writing passes. Of note, many existing compilers supported progressive lowering across a _fixed_ number of IRs at the time of MLIR's development. Part of what sets MLIR apart from previous compilers is its ability to support progressive lowering across an arbitrary number of IRs.
 
 # MLIR Infrastructure
 
-A common question after discussing the goals of MLIR is walking through how the actual implementation of MLIR actually accomplishes these goals. 
+How does the implementation of MLIR achieve its design principles? 
 
-First, let's take a look at the difference between the overal structure of LLVM and MLIR and how the subtle changes allow for more flexibility and customization.
+First, let's take a look at the difference between the overall structure of LLVM and MLIR and how subtle changes allow for more flexibility and customization.
 
 ### LLVM IR vs MLIR Structure
 
@@ -53,20 +57,22 @@ First, let's take a look at the difference between the overal structure of LLVM 
 
 <img width="368" alt="Screenshot 2023-12-01 at 6 18 35 PM" src="https://github.com/20ashah/cs6120/assets/33373825/a4f9bc37-3ad7-46de-98d6-727e752b8ec0">
 
-These structures are very similar in that both structure programs into modules, functions, and blocks, but the way they are implemented in MLIR as "Ops" is an important distinction that contributes to MLIR's extensibility.
+These structures are very similar in that both structure programs into a hierarchy of modules, functions, and blocks, but the way they are implemented in MLIR as "Operations" is an important distinction that contributes to MLIR's extensibility.
 
-### Ops
-Ops serve as fundamental computation units within the MLIR. They encapsulate specific functionalities or transformations, offering a high level of abstraction. Ops provide a flexible way to define and customize operations, enabling the representation of diverse domain-specific functionalities and enhancing MLIR's adaptability and expressiveness compared to LLVM's fixed set of instructions. In MLIR, everything is defined as an Op and they can exist at any level of the IR at any time, an advantage that is exploited during progressive lowering.
+### Operations
+Operations, or Ops, serve as the fundamental semantic unit within the MLIR. Everything in MLIR is an Op. This includes every structure in MLIR's hierarchy including modules, functions, blocks, and instructions. Ops were specifically designed to allow for user-defined extensions and the structure of an Op is how MLIR's customizability design principle is achieved. 
 
 ### Dialects
-TODO
+MLIR's extensibility and support for an arbitrary number of IRs is realized through the use of _Dialects_. Dialects serve as logical groupings for Ops, attributes, and types, analogous to modular libraries in programming languages like C++. Part of MLIR's strength lies in its ability to seamlessly mix dialects, enabling the coexistence of Ops from different dialects with Ops from any level IR. This facilitates the preservation of higher-level semantics throughout the compilation pipeline until they are no longer required.
 
 # Applications of MLIR
 
 ### TensorFlow
-TODO
+TODO - Jiahan
 
+# ***Recap ends here***
 
+# TODO: Revise / add on below
 # Discussion
 
 [Discussion thread](https://github.com/sampsyo/cs6120/discussions/419)
