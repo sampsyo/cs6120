@@ -2,7 +2,7 @@
 title = "Frontend Integration for AMC (Accelerator Memory Compiler)"
 [extra]
 bio = """
-  Matthew Hofmann is a 2nd year Ph.D. student researching design automation for reconfigurable hardware.
+  Matthew Hofmann is a 2nd year Ph.D. student researching design automation for reconfigurable hardware.<br>
   Yixiao Du is a 3rd year Ph.D. student researching hardware acceleration for graph processing and sparse linear algebra.
 """
 [[extra.authors]]
@@ -11,6 +11,160 @@ name = "Matthew Hofmann"
 name = "Yixiao Du"
 +++
 
-## Summary
+## Introduction
+
+### Custom Hardware Accelerators
 
 TODO
+
+### High Level Synthesis
+
+TODO
+
+### MLIR and Incubator Projects
+
+TODO(introduce MLIR, CIRCT, hcl, amc dialects)
+
+## Design Example
+
+To use Allo with AMC, the designer writes their kernel in Python. Then, then user can simply specify which Python function to build with the AMC backend. Moreover, AMC acts a drop-in replacement to the other backends in the Allo ecosystem, making functional testing and debugging seamless. In the far majority of cases, the [NumPy](https://numpy.org/) or the LLVM backend is suitable for use as a golden reference model. In this section, we walk through an example where we functionally verify a kernel built with AMC. Then, we will record some resource estimates and execution times. 
+
+Our illustrative example will be verifying matrix multiplication. What would ordinarily be a cumbersome task when using the vendor tools, like [Vitis HLS](https://www.xilinx.com/products/design-tools/vitis/vitis-hls.html), becomes a simple, 5 minute exercise. First, we specify some inputs initialized to random values. Then, `build()` the accelerator. Finally, we call both the software and hardware simulations and check their outputs. Compared to a C/C++ based tool flow, the amount of boilerplate code and scripting is reduced to near zero. In the end, we can represent this application with only 18 lines of code:
+
+```python
+def test_amc():
+    N = 16
+    # Initialize 2 input matricies to random integers
+    A = np.random.randint(0, 20, size=(N, N), dtype="int32")
+    B = np.random.randint(0, 20, size=(N, N), dtype="int32")
+
+    # Our kernel is just matrix multiplication
+    def kernel(A: int32[N, N], B: int32[N, N]) -> int32[N, N]:
+        return matmul(A, B)
+
+    # Build the accelerator with AMC backend
+    s = allo.customize(kernel)
+    f = s.build(target="amc")
+    # Run the software simulation by invoking directly
+    np_out = kernel(A, B)
+    # Now run the hardware simulation with AMC
+    allo_out = f(A, B)
+    np.testing.assert_array_equal(allo_out, np_out)
+```
+
+Additionally, we can also get an approximation of how much FPGA resources this design uses. Simply call `.get_resource_estimates()` after building:
+
+```python
+    print(f.get_resource_estimates()) 
+    # {
+    #   "BRAM36": 1,
+    #   "DSP": 3,
+    #   "FF": 255,
+    #   "LUT": 467,
+    #   "LUTL": 467,
+    #   "LUTM": 0,
+    #   "cycles": 15016,
+    #   "name": "kernel"
+    # }
+```
+
+This uses [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) RTL synthesis for Xilinx FPGAs, but it would only be a one-time effort to support other synthesis tools like [Yosys](https://yosyshq.net/yosys/). If errors arise, the AMC backend offers some options to help with debugging. To better understand what is going on under the hood, the first step would be to dump the underlying intermediate representation in MLIR with `print(f.module)`.
+
+```mlir
+// print(f.module)
+func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>) -> memref<16x16xi32> attributes {itypes = "ss", otypes = "s", top} {
+  %c0_i32 = arith.constant 0 : i32
+  %alloc = memref.alloc() : memref<16x16xi32>
+  affine.for %arg2 = 0 to 16 {
+    affine.for %arg3 = 0 to 16 {
+      affine.store %c0_i32, %alloc[%arg2, %arg3] : memref<16x16xi32>
+    }
+  }
+  affine.for %arg2 = 0 to 16 {
+    affine.for %arg3 = 0 to 16 {
+      affine.for %arg4 = 0 to 16 {
+        %0 = affine.load %arg0[%arg2, %arg4] : memref<16x16xi32>
+        %1 = affine.load %arg1[%arg4, %arg3] : memref<16x16xi32>
+        %2 = affine.load %alloc[%arg2, %arg3] : memref<16x16xi32>
+        %3 = arith.muli %0, %1 : i32
+        %4 = arith.addi %2, %3 : i32
+        affine.store %4, %alloc[%arg2, %arg3] : memref<16x16xi32>
+      }
+    }
+  }
+  return %alloc : memref<16x16xi32>
+}
+```
+
+To debug , we can inspect individual steps of the lowering pipline. For example, here is what this application would look like after AMC buffers are inserted:
+
+```mlir
+module {
+  amc.memory @amcMemory0(!amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>) {
+    %0 = amc.alloc : !amc.memref<16x16xi32>
+    %1 = amc.create_port(%0 : !amc.memref<16x16xi32>) : !amc.static_port<16x16xi32, w, 1>
+    %2 = amc.create_port(%0 : !amc.memref<16x16xi32>) : !amc.static_port<16x16xi32, rw, 1>
+    amc.extern %1, %2 : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
+  }
+  func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>, %arg2: memref<16x16xi32>) attributes {itypes = "ss", otypes = "s", top} {
+    %c0_i32 = arith.constant 0 : i32
+    %0:2 = amc.inst @amcMemory0_inst of @amcMemory0 : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
+    affine.for %arg3 = 0 to 16 {
+      affine.for %arg4 = 0 to 16 {
+        amc.affine_store %c0_i32, %0#0[%arg3, %arg4] : !amc.static_port<16x16xi32, w, 1>
+      } {hls.pipeline, hls.unroll = 1 : i64}
+    } {hls.unroll = 1 : i64}
+    affine.for %arg3 = 0 to 16 {
+      affine.for %arg4 = 0 to 16 {
+        affine.for %arg5 = 0 to 16 {
+          %1 = affine.load %arg0[%arg3, %arg5] : memref<16x16xi32>
+          %2 = affine.load %arg1[%arg5, %arg4] : memref<16x16xi32>
+          %3 = amc.affine_load %0#1[%arg3, %arg4] : !amc.static_port<16x16xi32, rw, 1>
+          %4 = arith.muli %1, %2 : i32
+          %5 = arith.addi %3, %4 : i32
+          amc.affine_store %5, %0#1[%arg3, %arg4] : !amc.static_port<16x16xi32, rw, 1>
+        } {hls.pipeline, hls.unroll = 1 : i64}
+      } {hls.unroll = 1 : i64}
+    } {hls.unroll = 1 : i64}
+    affine.for %arg3 = 0 to 16 {
+      affine.for %arg4 = 0 to 16 {
+        %1 = amc.affine_load %0#1[%arg3, %arg4] : !amc.static_port<16x16xi32, rw, 1>
+        affine.store %1, %arg2[%arg3, %arg4] : memref<16x16xi32>
+      } {hls.bufferize, hls.pipeline, hls.unroll = 1 : i64}
+    } {hls.unroll = 1 : i64}
+    return
+  }
+}
+```
+
+For more information on the motivation behin AMC and the dialect itself, you can visit the [Andrew Butt's blog post](https://www.cs.cornell.edu/courses/cs6120/2022sp/blog/banked-memory-compiler-backend-in-mlir/) from last year. As a last resort when debugging, the AMC backend has a `.dump_vcd()` method:
+
+```python
+    f.dump_vcd("waveform.vcd")
+    # You can now take the debugging to your favorite waveform viewer
+```
+
+## Tool flow
+
+To use Allo with AMC, The Allo frontend automates all the stages of the tool flow. Nonetheless, understanding each component
+
+### Overview
+
+### Allo
+
+### AMC
+
+TODO. Show pass pipeline
+
+## Results
+
+TODO
+
+## Future Work
+
+TODO
+- Fix how allow constructs affine for. Needs to Store to load forward
+
+## Conclusion
+
+The project was by and large a success, because we have achieved a much higher level of automation in evaluating the AMC+Calyx toolflow. Being able to write HLS kernels with `numpy` and run the RTL simulation as a normal function call greatly reduces the amount of effort in adding a new test case. Moreover, the `.dump_vcd()` and `.get_resource_estimates()` provide more tools for debugging without having to manually interact with the synthesis tools.
