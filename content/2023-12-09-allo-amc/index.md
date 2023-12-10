@@ -160,7 +160,13 @@ To conclude, we hope this example demonstrates the usefulness of the Allo fronte
 
 Under the hood, the Allo frontend is automating all the interactions with other tools, IRs, and frameworks. Nonetheless, understanding each component is important to understanding the novelty in our approach.
 
-TODO(explain all the steps)
+<center>
+<img src="allo_dependencies.png" alt="Diagram of build dependencies" title="Allo build dependencies" style="zoom:55%;">
+</center>
+
+The top row of dependencies are C++ codebases linked together as static libraries. We enter interact with this library with input MLIR generated from Allo. On the backend, we emit Calyx which is lowered to Verilog by a separate [Calyx compiler](https://github.com/cucapra/calyx) that is written in Rust.
+
+The HCL dialect and passes are primarily responsible for processing the customization directives of the Allo frontend. Then, AMC and CIRCT carry out the "traditional" steps of high-level synthesis: allocation, scheduling, and binding. Finally, the Calyx compiler generates the data paths and control logic for the scheduled program.
 
 ### Overview
 
