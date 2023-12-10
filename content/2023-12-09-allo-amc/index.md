@@ -15,21 +15,23 @@ name = "Yixiao Du"
 
 For our final course project, we have integrated our HLS (high-level sythesis) compiler, AMC, with a Python frontend, called Allo. In the end, we are able to compile and simulate custom hardware designs with extremely concise design descriptions and short compile times. As a consequence, we greatly reduce the design effort required for new accelerators as well as offer a convenient tool for functional verification. In this report, we walk through an example design with our tool flow, offer insight into how the underlying compiler works, and finally evaluate some benchmarks with latency and resource utilization measurements.
 
-### Custom Hardware Accelerators
+### Hardware Accelerators
 
-TODO
+Hardware accelerators have been a promising way of improving the performance and energy efficiency of compute intensive applications. However, the design effort required to create a new accelerator is often too high for the average programmer. This is because the design process requires a deep understanding of the underlying hardware architecture and the tools used to compile the design. For example, the designer must understand how to map their algorithm to the hardware, how to optimize for the target (e.g., FPGAs), and how to debug the design. Moreover, the designer must also understand the tool flow, which includes the hardware description language (HDL), the synthesis tools, and the simulation tools. In the end, the designer must be an expert in both hardware and software to create a new accelerator. As a result, bringing up a new accelerator is a slow and sometimes tedious process.
 
-### High Level Synthesis
+### High-Level Synthesis
 
-TODO
+High-Level Synthesis (HLS) is a rising solution to the problem of hardware design productivity. The idea is to raise the level of abstraction of HDLs from the commonly-used register transfer level (RTL) to a higher-level language like C/C++. This allows the designer to focus more on the algorithm and less on the hardware details such as interfacing and timing. The core part of HLS it a compiler which infers a mapping from the high-level language to the hardware, which is often done by scheduling, resource allocation, and binding. In the end, the HLS compiler outputs RTL code to be synthesized by downstream tools. However, current HLS tools are not able to fully free designers from understanding hardware architectures. They often rely on special directives (e.g., C++ pragmas) from the designer to guide the optimization process. Sometimes, the designer must even rewrite their code to fit the HLS compiler's model of computation.
 
 ### MLIR and Incubator Projects
 
-TODO(introduce MLIR, CIRCT, hcl, amc dialects)
+Improving HLS with advanced compiler techniques is a very active area of research. There are many outstanding HLS tools/frameworks such as [TAPA](https://tapa.readthedocs.io/en/release/overview/overview.html), [Dynamatic](https://dynamatic.epfl.ch/), and [HeteroCL](https://heterocl.csl.cornell.edu/). However, these tools are developed independently with different compilation flows, which brings difficulties of integrating them together. [MLIR](https://mlir.llvm.org/) is a new compiler design paradigm where the source language is compiled through multiple levels of modularized intermediate representations (IRs), also known as dialects. Dialects act like domain-specific languages (DSLs) and can capture the approprate details at each level of abstraction.
+
+The [CIRCT](https://circt.llvm.org/) project proposes an MLIR-based development methodology for hardware design. It represents key components of hardware as MLIR dialects such as finite state machines (FSM), pipelines, and interface handshaking. HeteroCL has been migrated to the MLIR ecosystem as a dialect, with a new Python frontend called Allo. Allo decouples algorithm, optimization, and backend targets to enable productive hardware design and testing. Accelerator Memory Compiler (AMC) is an MLIR dialect for representing memory architecture. It captures common memory constructs such as partitioning, banking, and arbitration. AMC can be further lowered to Calyx, which is a part of the CIRCT system, and finally to synthesizable Verilog. In this project, we integrate Allo and AMC to enable a Python frontend for AMC. This allows us to use Allo to describe the algorithm and AMC to describe the memory architecture. The resulting design can be compiled to Verilog and simulated with a single command. We hope that this integration will enable a more productive design flow for hardware accelerators.
 
 ## Design Example
 
-To use Allo with AMC, the designer only needs to write their kernel in Python. Then, then user can simply specify which Python function to build with the AMC backend. Moreover, AMC acts a drop-in replacement to the other backends in the Allo ecosystem, making functional testing and debugging seamless. In the far majority of cases, the [NumPy](https://numpy.org/) or the LLVM backend is suitable for use as a golden reference model. In this section, we walk through an example where we functionally verify a kernel built with AMC. Then, we will record some resource estimates and execution times. 
+To use Allo with AMC, the designer only needs to write their kernel in Python. Then, then user can simply specify which Python function to build with the AMC backend. Moreover, AMC acts as a drop-in replacement to the other backends in the Allo ecosystem, making functional testing and debugging seamless. In the far majority of cases, the [NumPy](https://numpy.org/) or the LLVM backend is suitable for use as a golden reference model. In this section, we walk through an example where we functionally verify a kernel built with AMC. Then, we will record some resource estimates and execution times.
 
 Our illustrative example will be matrix multiplication. What would ordinarily be a cumbersome task when using the vendor tools, like [Vitis HLS](https://www.xilinx.com/products/design-tools/vitis/vitis-hls.html), becomes a simple, 5 minute exercise. First, we specify some inputs initialized to random values. Then, `build()` the accelerator. Finally, we call both the software and hardware simulations and check their outputs. Compared to a C/C++ based tool flow, the amount of boilerplate code and scripting is reduced to near zero. In the end, we can represent this application with only 18 lines of code:
 
@@ -40,9 +42,9 @@ def test_amc():
     A = np.random.randint(0, 20, size=(N, N), dtype="int32")
     B = np.random.randint(0, 20, size=(N, N), dtype="int32")
 
-    # Our kernel is just matrix multiplication
+    # Our kernel is just matrix multiplication, Allo provides a primitive for this
     def kernel(A: int32[N, N], B: int32[N, N]) -> int32[N, N]:
-        return matmul(A, B)
+        return allo.matmul(A, B)
 
     # Build the accelerator with AMC backend
     s = allo.customize(kernel)
@@ -57,7 +59,7 @@ def test_amc():
 Additionally, we can also get an approximation of how much FPGA resources this design uses. Simply call `.get_resource_estimates()` after building:
 
 ```python
-    print(f.get_resource_estimates()) 
+    print(f.get_resource_estimates())
     # {
     #   "BRAM36": 1,
     #   "DSP": 3,
@@ -150,7 +152,7 @@ def vadd(A: uint32[N], B: uint32[N]) -> uint32[N]:
     return A + B
 ```
 
-Outside of what is shown here, the Allo DSL allows much more elaborate kernels and control over compute customizations, like loop tiling and reuse buffers. One again, you can get more information on Allo and its MLIR dialect by reading last years blog post by [Hongzheng Chen](https://www.cs.cornell.edu/courses/cs6120/2022sp/blog/hcl-mlir/). 
+Outside of what is shown here, the Allo DSL allows much more elaborate kernels and control over compute customizations, like loop tiling and reuse buffers. One again, you can get more information on Allo and its MLIR dialect by reading last years blog post by [Hongzheng Chen](https://www.cs.cornell.edu/courses/cs6120/2022sp/blog/hcl-mlir/).
 
 To conclude, we hope this example demonstrates the usefulness of the Allo frontend for high-level hardware design and further development of the AMC HLS compiler. As far as we are aware, the only other frameworks using Python to drive FPGA high-level synthesis are [LeFlow](https://arxiv.org/abs/1807.05317) and [PyLog](https://ieeexplore.ieee.org/document/9591456). However, neither of these efforts are using a homebrewed HLS compiler like us.
 
@@ -163,6 +165,34 @@ TODO(explain all the steps)
 ### Overview
 
 ### Allo
+Allo leverages an algorithm-optimization decoupled paradigm, which means users can first define the algorithm in a high-level language and then optimize the program with various hardware customization techniques (i.e., schedule primitives). Back to the matmul example, without using the provided primitive, the code would look like this:
+
+```python
+def matmul(A: int32[16, 16], B: int32[16, 16]) -> int32[16, 16]:
+    C: int32[16, 16] = 0
+    for i, j, k in allo.grid(16, 16, 16):
+        C[i, j] += A[i, k] * B[k, j]
+    return C
+```
+
+[This blog post](https://siboehm.com/articles/22/Fast-MMM-on-CPU) describes an effective way of optimizing matrix multiplication. The key idea is to reorder and tile the loops for a better data locality. The optimized loop order would be `i, k, j`. With Allo, we can easily achieve this with just two lines of code:
+
+```python
+schedule = allo.customize(matmul)
+schedule.reorder("i", "k", "j")
+```
+
+Loop tiling is supported by the `split()` directive:
+```python
+schedule.split("i", factor=4)
+```
+
+Finally, we can build the design for various backends:
+```python
+module = schedule.build(target="llvm") # can also be 'vlhs', 'amc'
+```
+
+TODO: what is the most important feature of Allo for this project?
 
 ### AMC
 
