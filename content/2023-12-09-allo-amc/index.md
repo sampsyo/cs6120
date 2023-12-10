@@ -108,9 +108,10 @@ module {
     %2 = amc.create_port(%0 : !amc.memref<16x16xi32>) : !amc.static_port<16x16xi32, rw, 1>
     amc.extern %1, %2 : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
   }
-  func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>, %arg2: memref<16x16xi32>) attributes {itypes = "ss", otypes = "s", top} {
+  func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>, %arg2: memref<16x16xi32>) {
     %c0_i32 = arith.constant 0 : i32
-    %0:2 = amc.inst @amcMemory0_inst of @amcMemory0 : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
+    %0:2 = amc.inst @amcMemory0_inst of @amcMemory0
+            : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
     affine.for %arg3 = 0 to 16 {
       affine.for %arg4 = 0 to 16 {
         amc.affine_store %c0_i32, %0#0[%arg3, %arg4] : !amc.static_port<16x16xi32, w, 1>
