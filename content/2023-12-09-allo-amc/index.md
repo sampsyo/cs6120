@@ -178,7 +178,12 @@ TODO. Show pass pipeline
 
 ## Results
 
-TODO
+| Benchmark     | Latency (Cycles) | LUTs | FFs | BRAM36s | DSPs |
+| ------------- | ---------------- | ---- | --- | ------- | ---- |
+| matmul16x16   | 15016            | 467  | 255 | 1       | 3    |
+| spmv20x20     | 48               | 183  | 309 | 0       | 3    |
+| vadd20        | 112              | 612  | 305 | 2       | 0    |
+| fibonacci20   | 77               | 120  | 151 | 0       | 0    |
 
 ## Future Work
 
