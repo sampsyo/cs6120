@@ -74,7 +74,7 @@ This uses [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) RTL
 
 ```mlir
 // print(f.module)
-func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>) -> memref<16x16xi32> attributes {itypes = "ss", otypes = "s", top} {
+func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>) -> memref<16x16xi32> {
   %c0_i32 = arith.constant 0 : i32
   %alloc = memref.alloc() : memref<16x16xi32>
   affine.for %arg2 = 0 to 16 {
