@@ -141,6 +141,7 @@ Writing other types of kernels is as easy as writing normal Python. For example,
 
 ```python
 def fibonnaci(A: uint32[N]):
+    A[0] = 1
     A[1] = 1
     for i in range(2, N):
         A[i] = A[i - 1] + A[i - 2]
@@ -181,12 +182,33 @@ The following diagram shows the full pass pipeline of compiling the core MLIR di
 
 ## Results
 
+In this section, we report the latency and resource measures of a select set of micro-benchmarks. By using small testcases, we have the best chance of understanding how the high-level constructs are being mapped to hardware and where the compiler inefficiencies lie. With that said, here are a table of benchmarks compiled with our toolflow versus Vitis C HLS.
+
+**AMC**
 | Benchmark     | Latency (Cycles) | LUTs | FFs | BRAM36s | DSPs |
 | ------------- | ---------------- | ---- | --- | ------- | ---- |
 | matmul16x16   | 15016            | 467  | 255 | 1       | 3    |
 | spmv20x20     | 48               | 183  | 309 | 0       | 3    |
 | vadd20        | 112              | 612  | 305 | 2       | 0    |
 | fibonacci20   | 77               | 120  | 151 | 0       | 0    |
+
+**Vitis 2022**
+| Benchmark     | Latency (Cycles) | LUTs | FFs | BRAM36s | DSPs |
+| ------------- | ---------------- | ---- | --- | ------- | ---- |
+| matmul16x16   | 5409             | 221  | 74  | 0       | 3    |
+| spmv20x20     | 42               | 249  | 145 | 0       | 3    |
+| vadd20        | 22               | 81   | 13  | 0       | 3    |
+| fibonacci20   | 41               | 226  | 50  | 0       | 0    |
+
+**Difference: AMC - Vitis**
+| Benchmark     | Latency (Cycles) | LUTs  | FFs    | BRAM36s | DSPs  |
+| ------------- | ---------------- | ----- | ------ | ------- | ----- |
+| matmul16x16   | +170%            | +110% | +240%  | -       | +0%   |
+| spmv20x20     | +14%             | -26%  | +110%  | -       | +0%   |
+| vadd20        | +410%            | +760% | +2200% | -       | -300% |
+| fibonacci20   | +88%             | -47%  | +200%  | -       | -     |
+
+The main story here is revealed when looking at the core MLIR dialects Allo is emitting after parsing the AST. Inefficiencies in how Allo infers data types and creates `affine.for` loop nests is creating way too many redundant memory operations. For example, Allo is not using store-to-load forwarding between loop iterations. Even worse, Allo tries to explicity infer data type conversions when using operations that change the data width (e.g. 32b + 32b = 33b). This for some reason is causing extra memory copy loops to convert an entire memory before it is used. We anticipate that fixing the Allo frontend to produce higher-quality loops will take some time, as it depends on some level of memory dependence analysis. Nonetheless, it will be a very important improvement to make in order to reach similar latencies as what Vitis can produce with C code.
 
 ## Future Work
 
