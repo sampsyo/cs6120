@@ -79,11 +79,6 @@ func.func @kernel(%arg0: memref<16x16xi32>, %arg1: memref<16x16xi32>) -> memref<
   %alloc = memref.alloc() : memref<16x16xi32>
   affine.for %arg2 = 0 to 16 {
     affine.for %arg3 = 0 to 16 {
-      affine.store %c0_i32, %alloc[%arg2, %arg3] : memref<16x16xi32>
-    }
-  }
-  affine.for %arg2 = 0 to 16 {
-    affine.for %arg3 = 0 to 16 {
       affine.for %arg4 = 0 to 16 {
         %0 = affine.load %arg0[%arg2, %arg4] : memref<16x16xi32>
         %1 = affine.load %arg1[%arg4, %arg3] : memref<16x16xi32>
@@ -112,11 +107,6 @@ module {
     %c0_i32 = arith.constant 0 : i32
     %0:2 = amc.inst @amcMemory0_inst of @amcMemory0
             : !amc.static_port<16x16xi32, w, 1>, !amc.static_port<16x16xi32, rw, 1>
-    affine.for %arg3 = 0 to 16 {
-      affine.for %arg4 = 0 to 16 {
-        amc.affine_store %c0_i32, %0#0[%arg3, %arg4] : !amc.static_port<16x16xi32, w, 1>
-      } {hls.pipeline, hls.unroll = 1 : i64}
-    } {hls.unroll = 1 : i64}
     affine.for %arg3 = 0 to 16 {
       affine.for %arg4 = 0 to 16 {
         affine.for %arg5 = 0 to 16 {
