@@ -204,11 +204,33 @@ TODO: what is the most important feature of Allo for this project?
 
 AMC (Accelerator Memory Compiler) is an entirely new plane of intermediate representation dedicated to representing memory architecture. To explain the need for such a dialect, the current state of conventional high-level synthesis compilers must be understood. As a brief summary, current HLS tools lacks an expressive model of memory, and it takes great manual effort to unlock the power of spatial architectures. This is by and large a consequence of the chosen source language. Most HLS compilers have a C/C++ frontend and LLVM middle end. As a consequence, every HLS compiler also has a set of compiler directives (`#pragma`'s) to fill in the semantic gaps of compiling to spatial hardware. For example, there are pragmas for partitioning memories, instantiating FIFOs, loop pipelining, and much more. By not having first class constructs for these design elements, optimization becomes tightly-coupled with source rewrites and HLS falls flat on its promises of high productivity. For the interested reader, we think this [blog post](https://specbranch.com/posts/fpgas-what-happened/) helps explain the current state of the FPGA accelerators for outsiders.
 
-Back to AMC, the custom dialect elaborates the *real* limiting resources of memory on spatial architectures: the ports. Each embedded block RAM on the FPGA has only two ports, and it takes an intelligent design methodology to utilize these memories in such a way that maximizes performance. AMC eliminates the guessing game by elaborating the description of the memory subsystem and optimizing it for the program at hand. To accompany the AMC dialect, we use [Calyx IR](https://calyxir.org/) to represent the control logic of the scheduled program.
+Back to AMC, the custom dialect elaborates the *real* limiting resources of memory on spatial architectures: the ports. Each embedded block RAM on the FPGA has only two ports, and it takes an intelligent design methodology to utilize these memories in such a way that maximizes performance. AMC eliminates the guessing game by elaborating the description of the memory subsystem and optimizing it for the program at hand. To accompany the AMC dialect, we use [Calyx IR](https://calyxir.org/) to represent the control logic of the scheduled program. Here is a very simple program allocated with an AMC memory:
 
-<!---
-TODO. Show an example of AMC IR
--->
+```mlir
+  amc.memory @amcMemory0(!amc.dynamic_port<256xi32, w>, !amc.dynamic_port<128xi32, r>, !amc.dynamic_port<128xi32, r>) {
+    %0 = amc.alloc : !amc.memref<256xi32>
+    %1 = amc.create_port(%0 : !amc.memref<256xi32>) : !amc.dynamic_port<256xi32, w>
+    %2 = amc.create_port(%0 : !amc.memref<256xi32>) : !amc.dynamic_port<256xi32, r>
+    amc.extern %1, %2, %2 : !amc.dynamic_port<256xi32, w>, !amc.dynamic_port<256xi32, r>, !amc.dynamic_port<256xi32, r>
+  }
+  func.func @main(%arg0: memref<256xi32>, %arg1: memref<256xi32>, %arg2: memref<256xi32>) {
+    %0:3 = amc.inst @amcMemory0_inst of @amcMemory0 : !amc.dynamic_port<256xi32, w>, !amc.dynamic_port<256xi32, r>,
+           !amc.dynamic_port<256xi32, r>
+    // Buffer data into a scratchpad
+    affine.for %arg3 = 0 to 256 {
+      %1 = affine.load %arg0[%arg3] : memref<256xi32>
+      amc.affine_store %1, %0#0[%arg3] : !amc.dynamic_port<256xi32, w>
+    }
+    // Split data into two separate outputs
+    affine.for %arg3 = 0 to 128 {
+      %1 = amc.affine_load %0#1[%arg3] : !amc.dynamic_port<256xi32, r>
+      %2 = amc.affine_load %0#2[%arg3 + 128] : !amc.dynamic_port<256xi32, r>
+      affine.store %1, %arg1[%arg3] : memref<128xi32>
+      affine.store %2, %arg2[%arg3 + 128] : memref<128xi32>
+    }
+    return
+  }
+```
 
 The following diagram shows the full pass pipeline of compiling the core MLIR dialects to Verilog:
 
