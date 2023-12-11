@@ -185,7 +185,7 @@ def matmul(A: int32[16, 16], B: int32[16, 16]) -> int32[16, 16]:
     return C
 ```
 
-[This blog post](https://siboehm.com/articles/22/Fast-MMM-on-CPU) describes an effective way of optimizing matrix multiplication. The key idea is to reorder and tile the loops for a better data locality. The optimized loop order would be `i, k, j`. With Allo, we can easily achieve this with just two lines of code:
+[This blog post](https://siboehm.com/articles/22/Fast-MMM-on-CPU) elaborates effective ways of optimizing matrix multiplication, which can be replicated in Allo. The key idea is to reorder and tile the loops for better data locality. The optimized loop ordering would be `i, k, j`. With Allo, we can easily achieve this with just two lines of code:
 
 ```python
 schedule = allo.customize(matmul)
@@ -202,7 +202,7 @@ Finally, we can build the design for various backends:
 module = schedule.build(target="llvm") # can also be 'vlhs', 'amc'
 ```
 
-TODO: what is the most important feature of Allo for this project?
+This is just one example of compute customizations with Allo, and there are several other hardware customization primitives that will play to AMC's strengths. We believe that with some additional work the Allo frotnend can provides hints for AMC to better infer FIFO streams, partitioned arrays, and banked memories. Such memory customizations will allow for more elaborate parallelization schemes, and ultimately we expect speedups that will beat the commercial tools.
 
 ### AMC
 
@@ -219,9 +219,7 @@ Back to AMC, the custom dialect elaborates the *real* limiting resources of memo
   }
 ```
 
-The role of the AMC compiler is to take in a high-level description of memory organization and figure out how to best compile it to the target architecture. It accounts for some of the properties of ... TODO finish.
-
-The following diagram shows the full pass pipeline of compiling the core MLIR dialects to Verilog:
+The role of the AMC compiler is to take in a high-level description of memory organization (as seen above) and figure out how to best compile it to the target architecture. It accounts for some of the properties of underlying architecture, like BRAM size and port count, as well as the context in which the memory is being used. It is a very gradual lowering process, and the explanation of the whole pass pipeline won't even start to fit in this post. However, the following diagram may offer a rough idea of how the core MLIR and AMC dialects to Verilog:
 
 <center>
 <img src="amc_passes.png" alt="Diagram for AMC pass pipeline" title="AMC pass pipeline" style="zoom:30%;">
@@ -271,4 +269,6 @@ Given that the focus of this project was primarily the software plumbing require
 
 ## Conclusion
 
-The project was by and large a success, because we have achieved a much higher level of automation in evaluating the AMC+Calyx toolflow. Being able to write HLS kernels with `numpy` and run the RTL simulation as a normal function call greatly reduces the amount of effort in adding a new test case. Moreover, the `.dump_vcd()` and `.get_resource_estimates()` provide more tools for debugging without having to manually interact with the synthesis tools.
+The project was by and large a success, because we have achieved a much higher level of automation in evaluating the AMC+Calyx toolflow. Being able to write HLS kernels with `numpy` and run the RTL simulation as a normal function call greatly reduces the amount of effort in adding test cases. Moreover, the `.dump_vcd()` and `.get_resource_estimates()` provide more tools for debugging without having to manually interact with the synthesis tools. We are optimistic that having Allo as a frontend will accelerate the development of AMC.
+
+Both Allo and AMC are ongoing developments that are not ready to be open sourced. However, [the HCL dialect](https://github.com/cornell-zhang/hcl-dialect), [CIRCT](https://github.com/llvm/circt), and [Calyx](https://github.com/cucapra/calyx) all have public GitHub repositories.
