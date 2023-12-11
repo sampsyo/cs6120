@@ -1,5 +1,5 @@
 +++
-title = "Frontend Integration for AMC (Accelerator Memory Compiler)"
+title = "Frontend Integration for Accelerator Memory Compiler"
 [extra]
 bio = """
   Matthew Hofmann is a 2nd year Ph.D. student researching design automation for reconfigurable hardware.<br>
