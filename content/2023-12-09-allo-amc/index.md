@@ -42,7 +42,8 @@ def test_amc():
     A = np.random.randint(0, 20, size=(N, N), dtype="int32")
     B = np.random.randint(0, 20, size=(N, N), dtype="int32")
 
-    # Our kernel is just matrix multiplication, Allo provides a primitive for this
+    # Our kernel is just matrix multiplication
+    # Allo provides a primitive for this
     def kernel(A: int32[N, N], B: int32[N, N]) -> int32[N, N]:
         return allo.matmul(A, B)
 
@@ -161,7 +162,7 @@ To conclude, we hope this example demonstrates the usefulness of the Allo fronte
 Under the hood, the Allo frontend is automating all the interactions with other tools, IRs, and frameworks. Nonetheless, understanding the interactions of each component is important to understanding the novelty in our approach.
 
 <center>
-<img src="allo_dependencies.png" alt="Diagram of build dependencies" title="Allo build dependencies" style="zoom:55%;">
+<img src="allo_dependencies.png" alt="Diagram of build dependencies" title="Allo build dependencies" style="zoom:45%;">
 </center>
 
 The top row of dependencies are C++ codebases linked together as static libraries. We enter interact with this library with input MLIR generated from Allo. On the backend, we emit Calyx which is lowered to Verilog by a separate [Calyx compiler](https://github.com/cucapra/calyx) that is written in Rust.
@@ -204,7 +205,7 @@ TODO: what is the most important feature of Allo for this project?
 
 AMC (Accelerator Memory Compiler) is an entirely new plane of intermediate representation dedicated to representing memory architecture. To explain the need for such a dialect, the current state of conventional high-level synthesis compilers must be understood. As a brief summary, current HLS tools lacks an expressive model of memory, and it takes great manual effort to unlock the power of spatial architectures. This is by and large a consequence of the chosen source language. Most HLS compilers have a C/C++ frontend and LLVM middle end. As a consequence, every HLS compiler also has a set of compiler directives (`#pragma`'s) to fill in the semantic gaps of compiling to spatial hardware. For example, there are pragmas for partitioning memories, instantiating FIFOs, loop pipelining, and much more. By not having first class constructs for these design elements, optimization becomes tightly-coupled with source rewrites and HLS falls flat on its promises of high productivity. For the interested reader, we think this [blog post](https://specbranch.com/posts/fpgas-what-happened/) helps explain the current state of the FPGA accelerators for outsiders.
 
-Back to AMC, the custom dialect elaborates the *real* limiting resources of memory on spatial architectures: the ports. Each embedded block RAM on the FPGA has only two ports, and it takes an intelligent design methodology to utilize these memories in such a way that maximizes performance. AMC eliminates the guessing game by elaborating the description of the memory subsystem and optimizing it for the program at hand. To accompany the AMC dialect, we use [Calyx IR](https://calyxir.org/) to represent the control logic of the scheduled program. Here is a very simple program allocated with an AMC memory:
+Back to AMC, the custom dialect elaborates the *real* limiting resources of memory on spatial architectures: the ports. Each embedded block RAM on the FPGA has only two ports, and it takes an intelligent design methodology to utilize these memories in such a way that maximizes performance. AMC eliminates the guessing game by elaborating the description of the memory subsystem and optimizing it for the program at hand. To accompany the AMC dialect, we use [Calyx IR](https://calyxir.org/) to represent the control logic of the scheduled program. Here is a very simple program allocated with a high-level AMC memory:
 
 ```mlir
   amc.memory @amcMemory0(!amc.dynamic_port<256xi32, w>, !amc.dynamic_port<128xi32, r>, !amc.dynamic_port<128xi32, r>) {
@@ -213,29 +214,14 @@ Back to AMC, the custom dialect elaborates the *real* limiting resources of memo
     %2 = amc.create_port(%0 : !amc.memref<256xi32>) : !amc.dynamic_port<256xi32, r>
     amc.extern %1, %2, %2 : !amc.dynamic_port<256xi32, w>, !amc.dynamic_port<256xi32, r>, !amc.dynamic_port<256xi32, r>
   }
-  func.func @main(%arg0: memref<256xi32>, %arg1: memref<256xi32>, %arg2: memref<256xi32>) {
-    %0:3 = amc.inst @amcMemory0_inst of @amcMemory0 : !amc.dynamic_port<256xi32, w>, !amc.dynamic_port<256xi32, r>,
-           !amc.dynamic_port<256xi32, r>
-    // Buffer data into a scratchpad
-    affine.for %arg3 = 0 to 256 {
-      %1 = affine.load %arg0[%arg3] : memref<256xi32>
-      amc.affine_store %1, %0#0[%arg3] : !amc.dynamic_port<256xi32, w>
-    }
-    // Split data into two separate outputs
-    affine.for %arg3 = 0 to 128 {
-      %1 = amc.affine_load %0#1[%arg3] : !amc.dynamic_port<256xi32, r>
-      %2 = amc.affine_load %0#2[%arg3 + 128] : !amc.dynamic_port<256xi32, r>
-      affine.store %1, %arg1[%arg3] : memref<128xi32>
-      affine.store %2, %arg2[%arg3 + 128] : memref<128xi32>
-    }
-    return
-  }
 ```
+
+The role of the AMC compiler is to take in a high-level description of memory organization and figure out how to best compile it to the target architecture. It accounts for some of the properties of ... TODO finish.
 
 The following diagram shows the full pass pipeline of compiling the core MLIR dialects to Verilog:
 
 <center>
-<img src="amc_passes.png" alt="Diagram for AMC pass pipeline" title="AMC pass pipeline" style="zoom:25%;">
+<img src="amc_passes.png" alt="Diagram for AMC pass pipeline" title="AMC pass pipeline" style="zoom:30%;">
 </center>
 
 ## Results
@@ -243,6 +229,7 @@ The following diagram shows the full pass pipeline of compiling the core MLIR di
 In this section, we report the latency and resource measures of a select set of micro-benchmarks. By using small testcases, we have the best chance of understanding how the high-level constructs are being mapped to hardware and where the compiler inefficiencies lie. With that said, here are a table of benchmarks compiled with our toolflow versus Vitis C HLS.
 
 **AMC**
+
 | Benchmark     | Latency (Cycles) | LUTs | FFs | BRAM36s | DSPs |
 | ------------- | ---------------- | ---- | --- | ------- | ---- |
 | matmul16x16   | 15016            | 467  | 255 | 1       | 3    |
@@ -251,6 +238,7 @@ In this section, we report the latency and resource measures of a select set of 
 | fibonacci20   | 77               | 120  | 151 | 0       | 0    |
 
 **Vitis 2022**
+
 | Benchmark     | Latency (Cycles) | LUTs | FFs | BRAM36s | DSPs |
 | ------------- | ---------------- | ---- | --- | ------- | ---- |
 | matmul16x16   | 5409             | 221  | 74  | 0       | 3    |
@@ -259,6 +247,7 @@ In this section, we report the latency and resource measures of a select set of 
 | fibonacci20   | 41               | 226  | 50  | 0       | 0    |
 
 **Difference: AMC - Vitis**
+
 | Benchmark     | Latency (Cycles) | LUTs  | FFs    | BRAM36s | DSPs  |
 | ------------- | ---------------- | ----- | ------ | ------- | ----- |
 | matmul16x16   | +170%            | +110% | +240%  | -       | +0%   |
