@@ -139,7 +139,7 @@ For more information on the motivation behind AMC and the dialect itself, you ca
     # You can now take the debugging to your favorite waveform viewer
 ```
 
-Writing other types of kernels is as easy as writing normal Python. For example, here are a handful of other kernels which are just a simple to get up and running:
+Writing other types of kernels is as easy as writing normal Python. For example, here are a couple of other kernels which are just a simple to get up and running:
 
 ```python
 def fibonnaci(A: uint32[N]):
@@ -158,7 +158,7 @@ To conclude, we hope this example demonstrates the usefulness of the Allo fronte
 
 ## Tool flow
 
-Under the hood, the Allo frontend is automating all the interactions with other tools, IRs, and frameworks. Nonetheless, understanding each component is important to understanding the novelty in our approach.
+Under the hood, the Allo frontend is automating all the interactions with other tools, IRs, and frameworks. Nonetheless, understanding the interactions of each component is important to understanding the novelty in our approach.
 
 <center>
 <img src="allo_dependencies.png" alt="Diagram of build dependencies" title="Allo build dependencies" style="zoom:55%;">
@@ -248,8 +248,12 @@ The main story here is revealed when looking at the core MLIR dialects Allo is e
 
 ## Future Work
 
-TODO
-- Fix how allow constructs affine for. Needs to Store to load forward
+Given that the focus of this project was primarily the software plumbing required to get things working end-to-end, there is still a lot of work needed to increase the quality of results. Right now, there are too many ways to accidentally create a slow design that has many redundant memory operations. Moreover, some designs just don't work, exposing bugs in our scheduling pass. Here is a list of features and fixes we intend to eventually implement:
+
+- Fix how Allo constructs `affine.for` loops. Right now Allo is not using inter-iteration arguments, meaning the data flow between loop iterations is through memory reads and writes. This is much slower, because it artificially increases the II of the pipeline.
+- Handle scalar values. Allo creates a memref cell to hold scalar values, and this once again limits performance. Every interaction with the variable is with loads and stores, instead of doing the proper SSA conversion.
+- Fix scheduler bugs.
+- Use Allo customization directives to assist AMC in inferring more efficient scratchpad memories. For example, array partitioning and memory access patterns are hints that Allo could provide to our allocation pass.
 
 ## Conclusion
 
