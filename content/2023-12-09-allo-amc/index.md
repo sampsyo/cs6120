@@ -14,6 +14,9 @@ name = "Yixiao Du"
 ## Introduction
 
 For our final course project, we have integrated our HLS (high-level sythesis) compiler, AMC, with a Python frontend, called Allo. In the end, we are able to compile and simulate custom hardware designs with extremely concise design descriptions and short compile times. As a consequence, we greatly reduce the design effort required for new accelerators as well as offer a convenient tool for functional verification. In this report, we walk through an example design with our tool flow, offer insight into how the underlying compiler works, and finally evaluate some benchmarks with latency and resource utilization measurements.
+<center>
+<img src="overview.svg" alt="Project Overview" title="Project Overview" style="zoom:120%;">
+</center>
 
 ### Hardware Accelerators
 
