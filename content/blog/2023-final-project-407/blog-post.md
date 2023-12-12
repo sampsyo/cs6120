@@ -62,8 +62,30 @@ without function calls early on, without having implemented lowering for functio
 Below is a brief description of the conversions from Bril instructions to RISC V instructions. We filled out this table prior to actually coding these functions to make sure 
 that logically, our conversions created RISC V instructions that were semantically equivalent to the Bril. Note that this is abstract assembly, so no actual RISC V registers are used.
 
-TODO: add table from google doc
 
+| Bril                            | RISCV Abstract Asm                |
+| ------------------------------- | --------------------------------- |
+| x: int = const 1                | addi x, x0, 1                     |
+| x: int = add y z                | add x, y, z                       |
+| x: int = mul y z                | mul x, y, z                       |
+| x: int = sub y z                | sub x, y, z                       |
+| x: int = div y z                | div x, y, z                       |
+| x: bool = eq y z                | beq y, z, .eq <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .eq: <br> addi x, x0, 1 <br> .exit_cond: |
+| x: bool = lt y z                | blt y, z, .lt <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .lt: <br> addi x, x0, 1 <br> .exit_cond: |
+| x: bool = gt y z                | blt z, y, .gt <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .gt: <br> addi x, x0, 1 <br> .exit_cond: |
+| x: bool = le y z                | bge z, y, .le <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .le: <br> addi x, x0, 1 <br> .exit_cond: |
+| x: bool = ge y z                | bge y, z, .ge <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .ge: <br> addi x, x0, 1 <br> .exit_cond: |
+| x: bool = not y                 | xori x, y, 1                      |
+| x: bool = and y z               | and x, y, z                       |
+| x: bool = or y z                | or x, y, z                        |
+| print x                         | nop                               |
+| jmp .label                      | jal x0, .label                    |
+| br cond .label1 .label2         | addi tmp, x0, 1 <br> beq cond, tmp, .label1 <br> jal x0, .label2 <br> .label1: <br> ... <br> jal x0 .exit <br> .label2: <br> ... <br> .exit: |
+| ret x                           | addi a0, x, 0 <br> jalr x0, x1, 0 |
+| ret                             | jalr x0, x1, 0                    |
+| x: int = id y                   | addi x, y, 0                      |
+ 
+                                  
 Note: An important note about the above chart that required some extra implementation had to deal with the case when the RISC V instructions needed to add in temps and labels 
 to match the behavior of the Bril instructions. An edge case here is that these labels and temp variables need to be generated fresh each time for semantic equivalence, and so 
 keeping track of this was a key part of the converter.
