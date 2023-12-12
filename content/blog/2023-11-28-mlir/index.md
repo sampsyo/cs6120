@@ -1,5 +1,5 @@
 +++
-title = "Implementing the Polyhedral Model"
+title = "Bril to RISC-V Lowering System"
 [extra]
 latex = true
 [[extra.authors]]
