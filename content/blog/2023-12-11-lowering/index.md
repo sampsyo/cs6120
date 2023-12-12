@@ -167,7 +167,7 @@ Our goal to generate runnable RISCV assembly from a Bril program was successful.
 
 Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
 
-Just to highlight our results in some way, [here](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/asm) are some examples that illustrate outputted RISCV assembly that we generated from Bril programs.
+Just to highlight our results in some way, [here](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/asm) are some examples that illustrate outputted RISCV assembly that we generated from Bril programs.
 
 ---
 _John Rubio is a 2nd year MSCS student interested in hardware and compilers. In his free-time, he trains Brazilian Jiu-Jitsu._
