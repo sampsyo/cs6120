@@ -1,5 +1,5 @@
 # Summary
-@jdr299 (John Rubio) and I wrote a python program that converts Bril to runnable RISC V assembly for our final project.
+@jdr299 (John Rubio) and I wrote a python program that converts Bril to runnable RISCV assembly for our final project.
 
 [Codebase](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project)
 
@@ -13,11 +13,11 @@
 
 # What was the goal?
 
-The goal for this project was to write the backend of a compiler that takes a bril program and lowers it to RISC V assembly - which ultimately 
-we could run on a RISC V emulator to verify that the outputted RISC V program behaved the same as the bril program. The goal was just 
-to get a working version of RISC V assembly. We thought if we had time after doing this, it might be nice to make the assembly more efficient, 
+The goal for this project was to write the backend of a compiler that takes a bril program and lowers it to RISCV assembly - which ultimately 
+we could run on a RISCV emulator to verify that the outputted RISCV program behaved the same as the bril program. The goal was just 
+to get a working version of RISCV assembly. We thought if we had time after doing this, it might be nice to make the assembly more efficient, 
 but our first goal was a working version. We wanted to implement this lowering as a 1-N approach, where each bril instruction would be mapped 
-to a certain number of RISC V instructions to get an abstract assembly. And then simply implementing calling conventions and trivial register allocation. 
+to a certain number of RISCV instructions to get an abstract assembly. And then simply implementing calling conventions and trivial register allocation. 
 Each of these parts are described in detail below.
 
 # What did you do? (Include both the design and the implementation.)
@@ -43,31 +43,31 @@ function in the Bril program:
 2. Insert missing labels on basic blocks
       - For basic blocks that didn’t have a label, a unique one was assigned - mainly for the purpose of creating a more complete CFG.
 3. Add underscore before every variable name
-      - In the event that the user defined a variable x1, we did not want this to be confused with the actual register in RISC V during register allocation, so we added an
+      - In the event that the user defined a variable x1, we did not want this to be confused with the actual register in RISCV during register allocation, so we added an
         underscore before every variable in the Bril program.
 4. Parse instructions in Bril json
       - The main part in this step includes going through each Bril instruction (which is a	json object), picking out certain parts of the instruction such as ‘op’, and
         identifying what kind of instruction it is. Once this was determined, we created an instance of the appropriate Bril class. By the end of this process, we have a
         list of Bril object instructions for each function in the bril program.
 
-## RISC V Instruction classes
+## RISCV Instruction classes
 
-TODO: add screenshot of hierarchy
+There was less of a hierarchy in our RISCV instruction classes, since there were not that many different types of instructions like there were in Bril. For these classes, we had a general RISCV instruction class that had method stubs such as emitting assembly, getting abstract registers, getting read / write register (explained in detail below), and converting registers from abstract to real that each of the RISCV classes would implement.
 
-## Convert Bril to RISC V Objects (Abstract Assembly)
+## Convert Bril to RISCV Objects (Abstract Assembly)
 
-Now that we have a list of Bril object instructions, and a hierarchy of RISC V classes, we ultimately want a list of RISC V object instructions that is semantically equivalent 
-to the list of Bril object instructions. To implement this, we had each Bril instruction class implement a function to convert itself into a series of RISC V objects. 
-As specified before, we implemented this as a 1-N approach, where each Bril instruction corresponds to N RISC V instructions. This is less efficient than a N-N approach, 
-where we try and look for Bril instructions we can combine for optimization, but the 1-N approach was the first step in generating working RISC V assembly, which was our first goal.
+Now that we have a list of Bril object instructions, and a hierarchy of RISCV classes, we ultimately want a list of RISCV object instructions that is semantically equivalent 
+to the list of Bril object instructions. To implement this, we had each Bril instruction class implement a function to convert itself into a series of RISCV objects. 
+As specified before, we implemented this as a 1-N approach, where each Bril instruction corresponds to N RISCV instructions. This is less efficient than a N-N approach, 
+where we try and look for Bril instructions we can combine for optimization, but the 1-N approach was the first step in generating working RISCV assembly, which was our first goal.
 
 An important note here is that in the first pass, we implemented this for every Bril instruction object except for function calls. The reason for this is because we wanted to save 
-the calling convention pass of lowering until the end, even after register allocation. We anticipated that this part would be the hardest, and so we wanted to get RISC V assembly 
+the calling convention pass of lowering until the end, even after register allocation. We anticipated that this part would be the hardest, and so we wanted to get RISCV assembly 
 without function calls working first before we added that whole layer of complexity. This worked out quite well, since we could test the correctness of the assembly we were generating
 without function calls early on, without having implemented lowering for function calls.
 
-Below is a brief description of the conversions from Bril instructions to RISC V instructions. We filled out this table prior to actually coding these functions to make sure 
-that logically, our conversions created RISC V instructions that were semantically equivalent to the Bril. Note that this is abstract assembly, so no actual RISC V registers are used.
+Below is a brief description of the conversions from Bril instructions to RISCV instructions. We filled out this table prior to actually coding these functions to make sure 
+that logically, our conversions created RISCV instructions that were semantically equivalent to the Bril. Note that this is abstract assembly, so no actual RISCV registers are used.
 
 
 | Bril                            | RISCV Abstract Asm                |
@@ -93,15 +93,15 @@ that logically, our conversions created RISC V instructions that were semantical
 | x: int = id y                   | addi x, y, 0                      |
  
                                   
-Note: An important note about the above chart that required some extra implementation had to deal with the case when the RISC V instructions needed to add in temps and labels 
+Note: An important note about the above chart that required some extra implementation had to deal with the case when the RISCV instructions needed to add in temps and labels 
 to match the behavior of the Bril instructions. An edge case here is that these labels and temp variables need to be generated fresh each time for semantic equivalence, and so 
 keeping track of this was a key part of the converter.
 
 ## Trivial Register Allocation (without calls)
 
-At this stage of compilation, we have lowered a Bril program to a list of instructions, all of which are RISC V class objects with abstract registers, with the exception of 
+At this stage of compilation, we have lowered a Bril program to a list of instructions, all of which are RISCV class objects with abstract registers, with the exception of 
 function calls, which still remain to be Bril objects (We saved dealing with calling conventions until the end). In this stage of lowering, we again ignore the function calls, 
-but with all of the RISC V objects, we get rid of the abstract registers and replace them with actual RISC V registers using trivial register allocation. Before discussing the 
+but with all of the RISCV objects, we get rid of the abstract registers and replace them with actual RISCV registers using trivial register allocation. Before discussing the 
 details of how this was implemented, we will first briefly describe how trivial register allocation works, in a non architecture specific way.
 
 ### Description of trivial register allocation
@@ -115,7 +115,7 @@ implementation is not very efficient, since this requires loads and stores for e
 ### How this was implemented
 
 The way this was implemented in our case was first creating a class that dealt with keeping track of stack offsets for each variable. What this class did was go through our list
-of RISC V instruction objects and for each one, pull out all of the abstract temps - variables that were not real RISC V registers and would need to be included in trivial register
+of RISCV instruction objects and for each one, pull out all of the abstract temps - variables that were not real RISCV registers and would need to be included in trivial register
 allocation. For each of these temps, this mapping class would assign it a unique offset in increments of 8 (starting from -8). 
 
 This was implemented as a dictionary in python. So, if we come across a variable that is already in this dictionary, this means that we have seen it before and had already assigned it
@@ -127,28 +127,42 @@ The next step is to actually perform the trivial register allocation for each in
 - For each temporary variable that X reads from, we must include loads before the instruction to load these variables from their stack locations  
 - For the temporary variable that X writes to, we must include a store after the instruction to store this variable to its appropriate stack location
 
-These conditions led us to implement functions for each RISC V instruction object - one to return the list of abstract temps that the instruction reads from, and one to return the list of abstract temps that the instruction writes to. Knowing these for each instruction would allow us to determine where to place surrounding instructions to shuttle temps on and off the stack.
+These conditions led us to implement functions for each RISCV instruction object - one to return the list of abstract temps that the instruction reads from, and one to return the list of abstract temps that the instruction writes to. Knowing these for each instruction would allow us to determine where to place surrounding instructions to shuttle temps on and off the stack.
 
-Now, we iterate through each RISC V instruction and get the list of abstract temps that it reads from and writes to. For each of the abstract temps that the instruction reads from, we use our mapper to look through the dictionary and find the stack offsets for each. Before this instruction, we add loads from these stack offsets into our RISCV registers. Then we perform the operation in the instruction, being sure to replace the abstract temps that are read from with the RISCV registers that we just loaded into. Now that he abstract temps in the instruction that we read from are taken care of, we move onto writes. We look at the abstract temp we write to, and replace that in the instruction with the next available RISCV register we haven't used for the reads yet. We then find using the mapper the stack location of this destination variable and we add an instruction after the operation that performs a store from the destination RISCV register into the appropriate stack offset the mapper gave us.
+Now, we iterate through each RISCV instruction and get the list of abstract temps that it reads from and writes to. For each of the abstract temps that the instruction reads from, we use our mapper to look through the dictionary and find the stack offsets for each. Before this instruction, we add loads from these stack offsets into our RISCV registers. Then we perform the operation in the instruction, being sure to replace the abstract temps that are read from with the RISCV registers that we just loaded into. Now that he abstract temps in the instruction that we read from are taken care of, we move onto writes. We look at the abstract temp we write to, and replace that in the instruction with the next available RISCV register we haven't used for the reads yet. We then find using the mapper the stack location of this destination variable and we add an instruction after the operation that performs a store from the destination RISCV register into the appropriate stack offset the mapper gave us.
 
-Doing this for each RISC V instruction gives us executable assembly that is complete without any abstract temps besides dealing with function calls / arguments / calling conventions. 
+Doing this for each RISCV instruction gives us executable assembly that is complete without any abstract temps besides dealing with function calls / arguments / calling conventions. 
 
 ## Calling Conventions
 
-TODO
+By far, the biggest implementation obstacle was implementing the RISC-V calling conventions. We based our implementation off of the RISC-V calling conventions taught in Cornell's CS 3410: Computer System Organization and Programming. To oversimplify four lectures' worth of material, the essence of RISC-V calling conventions can be distilled into three main phases:
+
+1. **Prologue (Function Entry Setup):** Before entering the function body, a set of preparatory actions, known as the prologue, take place. These include the creation of the stack frame. The size of the stack frame usually needs to be known ahead of time, considering the space needed to accommodate the return address, frame pointer, any overflow arguments, and local variables that must be pushed onto the stack. Additionally, all callee-save registers that will be utilized during the function execution should be pushed onto the stack at this stage.
+
+2. **Function Call Instruction Preparation:** Prior to a function call instruction, certain steps must be taken to ensure the proper transfer of control and data. This involves placing function arguments in designated registers, following the argument-passing registers convention. For additional arguments or those that don't fit into the designated registers, space on the stack is allocated to hold these values. The function call instruction is then executed, initiating the transfer of control to the callee.
+
+3. **Epilogue (Clean-up):** The third key piece of this calling convention puzzle is the clean-up step, or the epilogue. After the instructions in the function body have finished executing, the epilogue is responsible for restoring the stack to its original state and releasing any resources allocated during the prologue. This includes popping the stack frame, restoring the values of callee-save registers, and ensuring a smooth return to the calling function.
 
 # What were the hardest parts to get right?
 
 We found it surprisingly easy to convert a Bril program to abstract assembly and even perform trivial register allocation. Because Bril was already a flat set of instructions 
-with instructions very similar to RISC V, these initial passes to create RISC V instructions were fairly simple. Trivial register allocation was slightly more complicated, 
-but still was easily implemented with a mapper to assign and keep track of stack offsets.
-
-The hardest part to get right was definitely lowering function calls via RISC V calling conventions. 
-TODO: finish
-
+with instructions very similar to RISCV, these initial passes to create RISCV instructions were fairly simple. Trivial register allocation was slightly more complicated, 
+but still was easily implemented with a mapper to assign and keep track of stack offsets. The hardest part to get right was definitely lowering function calls via RISCV calling conventions. 
 
 # Were you successful? (Report rigorously on your empirical evaluation.)
 
-Yes - if we wanted to, we could say we hoped to finish a little earlier, so we could implement some optimizations, but we didn’t get to that point. But at least we got 
-working RISC V assembly.
+Our original goal was to implement a RISC-V lowering system, implement Bril-to-RISC-V lowering rules using Cranelift's ISLE DSL, and to use Crocus to verify the semantic equivalence of our lowering system against that of Cranelift. We were learned that we were a bit overambitious in these goals and learned that implementing the Bril-to-RISC-V lowering rules in Cranelift's ISLE DSL required enough overhead to be its own project. So we were unsuccessful in achieving goals (2) and (3), but we were successful in achieving goal (1).
+
+Our goal to generate runnable RISCV assembly from a Bril program was successful. We wanted to prioritize getting a working version of this assembly instead of fancier optimizations, which was achieved in this project. In terms of how we went about testing, we took a unit testing style approach, of testing individual modules (in this case Bril instructions) to make sure that the lowered RISCV instructions made sense and were semantically equivalent. After identifying that this lowering worked on instructions in isolation, we tested these instructions in various combinations.
+
+Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
+
+Here are a list of test cases that we considered:
+  - TODO: write out test cases
+
+Just to highlight our results in somew way, here is an example that shows a very simple Bril program, and the generated RISCV assembly once we run our program.
+
+TODO: add small example
+
+
 
