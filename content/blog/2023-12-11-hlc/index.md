@@ -1,5 +1,5 @@
 +++
-title = "Caiman front-end"
+title = "Heterogeneous Programming with the Caiman Front End"
 [[extra.authors]]
 name = "Stephen Verderame"
 link = "https://stephenverderame.github.io/"
@@ -11,8 +11,10 @@ programming languages and architecture.
 
 # Background
 
-Caiman is an IR designed for heterogeneous programming, with the current target
-being CPU/GPU computing. The goal of Caiman is to more easily explore the
+Caiman is an IR designed for 
+[heterogeneous programming](https://en.wikipedia.org/wiki/Heterogeneous_computing),
+with the current target being CPU/GPU computing. 
+The goal of Caiman is to more easily explore the
 immense design space developers have access to once they introduce multiple
 devices to run code on. 
 
