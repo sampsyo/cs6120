@@ -1,3 +1,5 @@
++++ title = "Bril to RISC-V Lowering System" [[extra.authors]] name = "John Rubio" [[extra.authors]] name = "Arjun Shah" [extra] latex = true +++
+
 # Summary
 @jdr299 (John Rubio) and I wrote a python program that converts Bril to runnable RISCV assembly for our final project.
 
