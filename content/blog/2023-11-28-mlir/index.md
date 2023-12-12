@@ -1,13 +1,11 @@
 +++
-title = "MLIR: A Compiler Infrastructure for the End of Moore’s Law"
+title = "Implementing the Polyhedral Model"
+[extra]
+latex = true
 [[extra.authors]]
 name = "John Rubio"
 [[extra.authors]]
-name = "Jiahan Xie"
-[[extra.authors]]
 name = "Arjun Shah"
-[extra]
-latex = true
 +++
 
 # Summary
