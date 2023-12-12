@@ -11,15 +11,15 @@ name = "Arjun Shah"
 # Summary
 @jdr299 (John Rubio) and I wrote a Python program that converts Bril to runnable RISCV assembly for our final project.
 
-[Codebase](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project)
+[Codebase](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering)
 
-- [Bril Insn Classes + convert to RISCV functions](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/BrilInsns)
-- [RISC Insn Classes](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/RVIRInsns)
-- [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/TrivialRegAlloc)
+- [Bril Insn Classes + convert to RISCV functions](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/BrilInsns)
+- [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/RVIRInsns)
+- [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/TrivialRegAlloc)
 - Calling Convention Logic
-  - [Prologue Inserter](https://github.com/JohnDRubio/CS6120_Lessons/blob/main/final_project/util/prologue.py)
-  - [Epilogue Inserter](https://github.com/JohnDRubio/CS6120_Lessons/blob/main/final_project/util/epilogue.py)
-  - [Lowering function call](https://github.com/JohnDRubio/CS6120_Lessons/blob/main/final_project/BrilInsns/BrilFunctionCallInsn.py)
+  - [Prologue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/util/prologue.py)
+  - [Epilogue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/util/epilogue.py)
+  - [Lowering function call](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/BrilInsns/BrilFunctionCallInsn.py)
 
 # The goal
 
@@ -165,7 +165,7 @@ Our original goal was to implement a RISC-V lowering system, implement Bril-to-R
 
 Our goal to generate runnable RISCV assembly from a Bril program was successful. We wanted to prioritize getting a working version of this assembly instead of fancier optimizations, which was achieved in this project. In terms of how we went about testing, we took a unit testing style approach, of testing individual modules (in this case Bril instructions) to make sure that the lowered RISCV instructions made sense and were semantically equivalent. After identifying that this lowering worked on instructions in isolation, we tested these instructions in various combinations.
 
-Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS6120_Lessons/tree/main/final_project/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
+Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
 
 Just to highlight our results in some way, [here](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/asm) are some examples that illustrate outputted RISCV assembly that we generated from Bril programs.
 
