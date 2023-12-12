@@ -35,8 +35,8 @@ We then implemented a “pre-circuit IR”. This is intended to be an updated ve
 The pre-circuit IR represents functions as a sequence of control flow statements and let-bindings. Circuits are not present in this IR. 
 
 The pre-circuit IR is different from the circuit IR in that:
-All let-bindings are annotated with a protocol. In the circuit IR, only let-bindings involving a “command” (input, output, and function/circuit calls) are annotated with protocols denoting where results are stored. Let-bindings involving computations occur within circuits, which are annotated with the associated protocol for all included statements. 
-It includes downgrade nodes. These are explicit violations of secure information flow, such as declassifying secret data or endorsing untrusted values. It is necessary that downgrade instructions are preserved in the precircuit IR, since they enforce a secure ordering on computations.
+1. All let-bindings are annotated with a protocol. In the circuit IR, only let-bindings involving a “command” (input, output, and function/circuit calls) are annotated with protocols denoting where results are stored. Let-bindings involving computations occur within circuits, which are annotated with the associated protocol for all included statements. 
+2. It includes downgrade nodes. These are explicit violations of secure information flow, such as declassifying secret data or endorsing untrusted values. It is necessary that downgrade instructions are preserved in the precircuit IR, since they enforce a secure ordering on computations.
 
 # Grouping
 The grouping procedure places statements of the same protocol together whenever possible. This will enable larger circuit blocks, reducing the overhead of communication between protocols.
