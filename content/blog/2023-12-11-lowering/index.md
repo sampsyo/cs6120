@@ -1,11 +1,11 @@
 +++
 title = "Bril to RISC-V Lowering System"
+[extra]
+latex = true
 [[extra.authors]]
 name = "John Rubio"
-link = "https://github.com/JohnDRubio" 
 [[extra.authors]]
 name = "Arjun Shah"
-link = "https://github.com/20ashah"
 +++
 
 # Summary
