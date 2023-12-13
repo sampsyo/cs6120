@@ -25,7 +25,10 @@ The eBPF hook we explored in our project is the XDP hook. XDP allows users to ru
 
 The use of a smartNIC can further accelerate this processing. A programmable smartNIC is a piece of networking hardware that operates as a NIC, but can be reprogrammed on the fly, rather than just implementing a fixed set of behaviors decided by the hardware vendor. By running an XDP program on a smartNIC, a packet fated to be dropped does not need to be DMA (Direct Memory Access) written to host memory, saving on end-to-end latency, and PCIe and memory bandwidth. We call this the Extra Express eXpress Data path. 
 An important piece of prior work is hXDP, which implements an eBPF interpreter on an fpga smartNIC, allowing it to run arbitrary XDP programs. While this is a great innovation, due to the complex and non-specialized hardware, they were not able to measure any significant throughput increases. This approach also does not allow for a program to be “split” between the CPU and the NIC – instead, all of the XDP program processing is happening on the NIC. 
-JITNIC System
+
+## JITNIC System
+
+![An architecture diagram of the JITNIC system, showing how a packet is traced if it misses the cache, and takes the fast path otherwise.](architecture.png)
 
 Our approach, JITNIC, dynamically compiles straight line traces of eBPF code to be run on a smartNIC. This allows program processing to be split by the CPU and the NIC - the compiler can dynamically change what is run on the NIC. Additionally, straight-line traces can be heavily optimized by the compiler. In a real implementation of this system, the eBPF trace will be lowered to a real ISA where the instructions could be further optimized. The hardware can also be specialized to run straight-line traces of code, which we believe would lead to dramatic speedups.  
 The JITNIC system can be seen in the diagram shown above. When a packet arrives at the NIC there are two possibilities: 
