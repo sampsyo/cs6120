@@ -51,25 +51,25 @@ The following C code is an XDP program that filters all non-ipv6 traffic. This w
 ```C
 int xdp_ipv6_filter_program(struct xdp_md *ctx) 
 { 
-Void *data_end = ctx->data_end; /* pointer to where the packet ends in memory */
-Struct ethhdr *eth = ctx->data; /* packet as an ethernet struct */
-If ((void *) eth + sizeof(*eth) > data_end) /* out of bounds check for packet read */
-	Return XDP_PASS;
-} 
+void *data_end = ctx->data_end; /* pointer to where the packet ends in memory */
+struct ethhdr *eth = ctx->data; /* packet as an ethernet struct */
+if ((void *) eth + sizeof(*eth) > data_end) /* out of bounds check for packet read */
+	return XDP_PASS;
 
-If (eth->protocol == 0x86dd) /* bytes of eth type ipv6 */
-	Return XDP_PASS;
-Else 
-	Return XDP_DROP;
+if (eth->protocol == 0x86dd) /* bytes of eth type ipv6 */
+	return XDP_PASS;
+else 
+	return XDP_DROP;
+}  
 ```
 
 For the sake of simplicity, and to avoid introducing eBPF assembly, we will keep this example at the level of C. Note every C instruction has an analogous few instructions in eBPF. 
 
 Starting from the beginning, let’s assume a packet arrives that has an ipv4 ethernet header. Taking the execution model from the diagram, this will be a cold miss as the cache is empty. The JIT compiler on the CPU will trace the program with the packet as input and produce the following trace:
 ```C
-Void *data_end = ctx->data_end; /* pointer to where the packet ends in memory */
-Struct ethhdr *eth = ctx->data;
-Return XDP_DROP; 
+void *data_end = ctx->data_end; /* pointer to where the packet ends in memory */
+struct ethhdr *eth = ctx->data;
+return XDP_DROP; 
 ```
 The path condition will be `eth + sizeof(*eth) <= data_end && eth->protocol != 0x86dd` – notice that when tracing conditions just become part of the path condition. (Also note: in C this is `eth->protocol` but in eBPF this becomes a lookup to an offset within the packet. Similarly sizeof(*eth) is a constant and eth and data_end are given as input). At this point, the CPU will drop the packet. 
 
