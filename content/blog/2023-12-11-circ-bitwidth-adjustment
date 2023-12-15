@@ -79,6 +79,37 @@ without optimization: 50105
 ```
 
 ## How to run the code
+To run the r1cs compiler, first clone the repo, and checkout our branch
 ```
-TODO
+git clone https://github.com/collinzrj/circ
+git checkout bitwidth_adjustment
 ```
+then `cd` into it,
+then run this command to build circ
+`cargo build --release --features r1cs,smt,zok,bellman --example circ`
+For proving and verifying you also need to build zk
+`cargo build --release --features r1cs,smt,zok,bellman --example zk`
+You can find them built in `./target/release/examples/zk` and `./target/release/examples/circ`
+
+Then you could pass a .zok file to circ and convert it into linear constraints. For instance this command counts the number of constraints produced by using our short integer adjustment optimization.
+`./target/release/examples/circ <path to .zok file> --short-int-adj r1cs --action count`
+
+Here is an example function in srcipt file to generate proof and verify them
+```
+MODE=release # debug or release
+BIN=./target/$MODE/examples/circ
+ZK_BIN=./target/$MODE/examples/zk
+
+function pf_test {
+    for proof_impl in groth16
+    do
+        ex_name=$1
+        $BIN <path to .zok file> r1cs --action setup --proof-impl $proof_impl
+        $ZK_BIN --inputs  <path to .zok file>.pin --action prove --proof-impl $proof_impl
+        $ZK_BIN --inputs <path to .zok file>.vin --action verify --proof-impl $proof_impl
+        rm -rf P V pi
+    done
+}
+```
+
+For more commands please check out our [test script](https://github.com/collinzrj/circ/blob/61fb7c0ee2946cf84b92d962236ffe9533cb6c53/scripts/short_int_adj_test.zsh)
