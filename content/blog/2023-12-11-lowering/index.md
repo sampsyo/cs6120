@@ -11,15 +11,15 @@ name = "Arjun Shah"
 # Summary
 @jdr299 (John Rubio) and I wrote a Python program that converts Bril to runnable RISCV assembly for our final project.
 
-[Codebase](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering)
+[Codebase](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend)
 
-- [Bril Insn Classes + convert to RISCV functions](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/BrilInsns)
-- [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/RVIRInsns)
-- [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/TrivialRegAlloc)
+- [Bril Insn Classes + convert to RISCV functions](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns)
+- [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/RVIRInsns)
+- [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc)
 - Calling Convention Logic
-  - [Prologue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/util/prologue.py)
-  - [Epilogue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/util/epilogue.py)
-  - [Lowering function call](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/BrilInsns/BrilFunctionCallInsn.py)
+  - [Prologue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/util/prologue.py)
+  - [Epilogue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/util/epilogue.py)
+  - [Lowering function call](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns/BrilFunctionCallInsn.py)
 
 # The goal
 
@@ -157,7 +157,7 @@ We found it surprisingly easy to convert a Bril program to abstract assembly and
 with instructions very similar to RISCV, these initial passes to create RISCV instructions were fairly simple. Trivial register allocation was slightly more complicated, 
 but still was easily implemented with a mapper to assign and keep track of stack offsets. The hardest part to get right was definitely lowering function calls via RISCV calling conventions. 
 
-A meta-problem we ran into was finding an environment that runs basic, 32-bit RISC-V assembly code. Due to a lack of foresight, we underestimated the amount of work required to get such an environment set up. In any case, we ended up settling on a few RISC-V interpreters that display the architectural state at the end of each program execution. Note that we did not add support for `print` instructions. Using an admittedly error-prone and somewhat monotonous procedure, we lowered Bril [programs](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/test) to RISC-V using our system. Next, we wrote C++ programs that were semantically equivalent to the same Bril programs and obtained the compiled RV32 code using [godbolt](https://godbolt.org/). Lastly, we ran both our RISC-V program and the godbolt RISC-V program on RISC-V interpreters and compared the end architectural state of each program. On the programs we tested, our RISC-V programs yielded identical architectural states to the godbolt programs, save quite a few more items on the stack in our case since we used trivial register allocation. Obviously, there are some issues with this approach - it does not provide a high degree of coverage and it does not provide any details on performance. We concede these two points. This approach does show that, at the very least, our lowering system can produce RISC-V programs that are semantically equivalent to non-trivial Bril programs. We would've liked to explore performance speedups in further detail but ultimately information on the performance of the Javascript runtime and that of compiled RISC-V programs is not difficult to find.
+A meta-problem we ran into was finding an environment that runs basic, 32-bit RISC-V assembly code. Due to a lack of foresight, we underestimated the amount of work required to get such an environment set up. In any case, we ended up settling on a few RISC-V interpreters that display the architectural state at the end of each program execution. Note that we did not add support for `print` instructions. Using an admittedly error-prone and somewhat monotonous procedure, we lowered Bril [programs](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/test) to RISC-V using our system. Next, we wrote C++ programs that were semantically equivalent to the same Bril programs and obtained the compiled RV32 code using [godbolt](https://godbolt.org/). Lastly, we ran both our RISC-V program and the godbolt RISC-V program on RISC-V interpreters and compared the end architectural state of each program. On the programs we tested, our RISC-V programs yielded identical architectural states to the godbolt programs, save quite a few more items on the stack in our case since we used trivial register allocation. Obviously, there are some issues with this approach - it does not provide a high degree of coverage and it does not provide any details on performance. We concede these two points. This approach does show that, at the very least, our lowering system can produce RISC-V programs that are semantically equivalent to non-trivial Bril programs. We would've liked to explore performance speedups in further detail but ultimately information on the performance of the Javascript runtime and that of compiled RISC-V programs is not difficult to find.
 
 # Were we successful?
 
@@ -165,9 +165,9 @@ Our original goal was to implement a RISC-V lowering system, implement Bril-to-R
 
 Our goal to generate runnable RISCV assembly from a Bril program was successful. We wanted to prioritize getting a working version of this assembly instead of fancier optimizations, which was achieved in this project. In terms of how we went about testing, we took a unit testing style approach, of testing individual modules (in this case Bril instructions) to make sure that the lowered RISCV instructions made sense and were semantically equivalent. After identifying that this lowering worked on instructions in isolation, we tested these instructions in various combinations.
 
-Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
+Since we implemented trivial register allocation before function call lowering, we first tested our compiler thoroughly with [test cases](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/test/trivial-reg-alloc) that encompassed every Bril instruction minus function calls / arguments. Once we verified that this worked, we moved on to testing with function calls once the calling conventions part was implemented. The main thing we tested was that we could execute this RISCV assembly and it was semantically equivalent to the Bril program.
 
-Just to highlight our results in some way, [here](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/lowering/asm) are some examples that illustrate outputted RISCV assembly that we generated from Bril programs.
+Just to highlight our results in some way, [here](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/asm) are some examples that illustrate outputted RISCV assembly that we generated from Bril programs.
 
 ---
 _John Rubio is a 2nd year MSCS student interested in hardware and compilers. In his free-time, he trains Brazilian Jiu-Jitsu._
