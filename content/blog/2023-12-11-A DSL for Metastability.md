@@ -133,7 +133,7 @@ Time for an example.
 This example is from an old paper that was trying to study a real-world phenomenon in routing networks.
 We have identified the phenomenon as being metastable, which is good news for the DSL's ability to express systems in which metastability is observed.
 There are other examples as well (the retry storm and a membership scenario from an industry setup), but for the sake of brevity I have not included them here.
-Note that I have heavily used sugaring, as you can imaging it is not pleasant to write actual code in the specified grammar.
+Note that I have heavily used sugaring, as you can imagine it is not pleasant to write actual code in the specified grammar.
 The sugaring should be self-explanatory.
 Let us first see the code, and then I will explain the scenario.
 
