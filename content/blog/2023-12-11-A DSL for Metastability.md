@@ -207,7 +207,7 @@ In a nutshell, this is what happens:
 4. There is a special message of the type "update", that can be injected anytime by the environment. This message abruptly takes the agent to the listening state, no matter the value of the timers.
 
 Metastability in this example happens when a triggering update message is injected into one of the agents, possibly by a network operator playing the role of the environment.
-As a result, all of the agents are eventually synchronized, meaning that they send their routing messages at axactly the same time.
+As a result, all of the agents are eventually synchronized, meaning that they send their routing messages at exactly the same time.
 This is undesired behavior in a realistic network, as it introduces bursts of packets periodically.
 As an analogy to the retry storm example, the self-sustaining loop here is the synchronous firing of routing messages.
 
