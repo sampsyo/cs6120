@@ -219,7 +219,7 @@ The main reason was that I wanted to learn Rust, and after spending countless ho
 I am, by the way, still wrestling as we speak.
 
 The bulk of the interpretation part of the system is ready.
-If you remember the [Typescript Bril interpreter](https://github.com/sampsyo/bril/blob/main/brili.ts), this is essentially similar to that: an infrastructure to define and hold a program, and a long list of "what to do" for each action.
+If you remember the [TypeScript Bril interpreter](https://github.com/sampsyo/bril/blob/main/brili.ts), this is essentially similar to that: an infrastructure to define and hold a program, and a long list of "what to do" for each action.
 The pipeline first receives a piece of code written in the DSL, parses it according to a parser that I have written using [Lark](https://lark-parser.readthedocs.io/en/stable/) in python, and then uses the interpreter written in Rust to return a result.
 The execution engine, on the other hand, is currently missing because the borrow-checker does not like me.
 
