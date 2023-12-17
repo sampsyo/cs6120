@@ -1,11 +1,12 @@
 +++
-title = "title TBD"
+title = "An Eficient Implementation of SELF"
 
 
 
 [extra]
 bio = """
   Alice is an M.Eng student studying Computer Science. She is broadly interested in compilers, systems and algorithm design.
+  Benny is a Junior studying Computer Science. He is interested in networking and operating systems.
 """
 [[extra.authors]]
 name = "Benny Rubin"
@@ -14,6 +15,56 @@ name = "Collin Zhang"
 [[extra.authors]]
 name = "Alice Sze"
 +++
+
+SELF was a pioneer langauge in the development of Dynamic Languages and just-in-time (JIT) compilers. It is no surprise that the developers utilize interesting and fairly complex optimizations to get their language to run as fast as static languages, despite their use of the prototype model instead of traditional classes and design choice that every operation is a message pass. 
+
+## Language Design
+
+In SELF, there is a disconnect between the behavior given to the programer (message passing, slots, etc.) and how these objects are efficiently implemented in the compiler. This gives a clean semantics while compiling to fast and efficient code. In this section, we focus on the language design itself. 
+
+Instead of constructing instances of classes (as in a familiar OO-language), all SELF objects are created by cloning a prototype and setting the original prototype to the parent. All fields of objects are implemented as slots (including the parent). When evaluating a message pass that corresponds to a field or method, all slots of the receiving object are searched, before recursively searching the parents. SELF contains different kinds of slots: parents, methods, data (read-only and mutable). SELF supports multiple inheritance, and allows for the funky ability to dynamically rewrite parent slots. This means that inheritance is dynamic can change at runtime.
+
+Below is an example of a SELF object: 
+
+<!-- <p align="center"> -->
+<img src="self_example.png" width=411 height=300/>
+<!-- </p> -->
+
+In this example, point contains a single parent, a number of fields (data fields and method fields). One thing to note is that even the assignment operator for fields x and y of a cartesian point (and similarly for a polar point), are impemented as slots. As an example, imagine the rho message is passed to a cartesian point. After not finding the slot in the cartesian point it will look in the parent, and find rho. It will this clone this method, setting a special "self" slot to the cartesian point. Thus, when it looks for x and y it will find them with values 3 and 4 respectively, returning 5. 
+
+## Language Implementation
+
+In this section, we will peak behind the curtain at how SELF is implemented efficiently. 
+
+### Maps
+
+Maps are used to avoid storing redundant information for cloned objects. Cloning creates many duplicates of slots that are the same among members of the same family (same slot structure, modulo assignable slot values). All shared data is factored into a map object, so objects can be implemented simply as arrays with assignable data and a pointer to the map of its clone family. Below is an example of two cartesian points implemented without using a map:
+
+<!-- <p align="center"> -->
+<img src="self_no_maps.png" width=411 height=300/>
+<!-- </p> -->
+
+And the implementation with maps: 
+
+<!-- <p align="center"> -->
+<img src="self_maps.png" width=411 height=300/>
+<!-- </p> -->
+
+
+In this simple example, the assignable slots x and y, and the parent slots are implemented twice, which is factored out in the maps example. In a more complex object there could be a lot of read-only data and method/parent slots that are factored out. 
+
+## Heap Scanning
+
+Heap scanning is an operation the compiler needs to do often for a number of reasons: 
+* Garbage Collection
+* Object has to be moved
+* GUI environment browser
+
+The first design point in heap scanning is the segregation of memory into the byte array section and objects section. This avoids the classic problem of byte arrays looking like pointer objects. Now, we know when scanning the heap which slots are bytes and which are pointers. 
+
+The second approach is the use of sentinels to efficiently check when the scanner has reached the end of the object space. Instead of checking if we have reached the end of the object space after every read, the SELF compiler adds a *sentinal* reference at the end of the object space that matches the scanning criteria. Thus, we only need to check for the sentinal on every matching reference instead of every word of memory.
+
+Finally, a scanner often must find objects that *contain* a matching reference rather than the object itself. To efficiently implement this, the compiler begins every object with a *mark* word. Once the scanner finds a matching reference, it simply needs to scan backwards to find the mark word and find out what the object is. 
 
 ## Compiler Optimization
 The authors faced these challenges while designing SELF. First, message-passing is expensive, and many optimizations during compilation are impossible without knowledge of the type, moreover, the language has to perform a virtual machine call for simple instructions.
