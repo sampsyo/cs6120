@@ -28,7 +28,7 @@ Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bri
 
 The first stage in the lowering pipeline is a preprocessing step. Source Bril programs are provided as input in JSON format. The program is parsed and each Bril instruction is translated to one [***BrilInsn***](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns) object. Each BrilInsn is an instance of a subclass of the BrilInsn class hierarchy (TODO: ADD 'See figure X' statement). The reasoning behind the structure of the BrilInsn class hierarchy lies in the fact that [most Bril instructions have a similar format](https://capra.cs.cornell.edu/bril/tools/text.html). This observation motivated a more conventional, Object-Oriented (OO) approach since the common Bril instruction formats could be implemented as parent classes and the small number of deviations from these common formats could be captured in the form of child classes. The BrilInsn class hierarchy lends itself to exploiting some of the main benefits of OO, namely minimal changes and maximal code reuse.
 
-<img width="1689" alt="Screenshot 2023-12-11 at 6 46 26 PM" src="https://github.com/20ashah/cs6120/assets/33373825/5b165c72-39bf-44d0-93b5-2dc37a265bb9">
+<img width="1689" alt="Screenshot 2023-12-11 at 6 46 26 PM" src="BrilInsnHierarchy.png">
 
  __Figure 1__
 
