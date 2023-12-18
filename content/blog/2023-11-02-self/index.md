@@ -38,7 +38,7 @@ Below is an example of a SELF object:
 
 <img src="self_example.png"/>
 
-In this example, point contains a single parent, a number of fields (data fields and method fields). One thing to note is that even the assignment operator for fields x and y of a cartesian point (and similarly for a polar point), are impemented as slots. As an example, imagine the rho message is passed to a cartesian point. After not finding the slot in the cartesian point it will look in the parent, and find rho. It will this clone this method, setting a special "self" slot to the cartesian point. Thus, when it looks for x and y it will find them with values 3 and 4 respectively, returning 5. 
+In this example, point contains a single parent, a number of fields (data fields and method fields). One thing to note is that even the assignment operator for fields `x` and `y` of a cartesian point (and similarly for a polar point), are impemented as slots. As an example, imagine the `rho` message is passed to a cartesian point. After not finding the slot in the cartesian point it will look in the parent, and find `rho`. It will this clone this method, setting a special "self" slot to the cartesian point. Thus, when it looks for `x` and `y` it will find them with values `3` and `4` respectively, returning `5`. 
 
 ## Language Implementation
 
@@ -54,7 +54,7 @@ And the implementation with maps:
 
 <img src="self_maps.png"/>
 
-In this simple example, the assignable slots x and y, and the parent slots are implemented twice, which is factored out in the maps example. In a more complex object there could be a lot of read-only data and method/parent slots that are factored out. 
+In this simple example, the assignable slots `x` and `y`, and the parent slots are implemented twice, which is factored out in the maps example. In a more complex object there could be a lot of read-only data and method/parent slots that are factored out. 
 
 ## Heap Scanning
 
@@ -65,7 +65,7 @@ Heap scanning is an operation the compiler needs to do often for a number of rea
 
 The first design point in heap scanning is the segregation of memory into the byte array section and objects section. This avoids the classic problem of byte arrays looking like pointer objects. Now, we know when scanning the heap which slots are bytes and which are pointers. 
 
-The second approach is the use of sentinels to efficiently check when the scanner has reached the end of the object space. Instead of checking if we have reached the end of the object space after every read, the SELF compiler adds a *sentinal* reference at the end of the object space that matches the scanning criteria. Thus, we only need to check for the sentinal on every matching reference instead of every word of memory.
+The second approach is the use of sentinels to efficiently check when the scanner has reached the end of the object space. Instead of checking if we have reached the end of the object space after every read, the SELF compiler adds a *sentinel* reference at the end of the object space that matches the scanning criteria. Thus, we only need to check for the sentinal on every matching reference instead of every word of memory.
 
 Finally, a scanner often must find objects that *contain* a matching reference rather than the object itself. To efficiently implement this, the compiler begins every object with a *mark* word. Once the scanner finds a matching reference, it simply needs to scan backwards to find the mark word and find out what the object is. 
 
