@@ -14,7 +14,6 @@ name = "Arjun Shah"
 
 TODO: Move these links
 
-- [Bril Insn Classes + convert to RISC-V functions](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns)
 - [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/RVIRInsns)
 - [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc)
 - Calling Convention Logic
@@ -23,18 +22,15 @@ TODO: Move these links
   - [Lowering function call](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns/BrilFunctionCallInsn.py)
 
 # Summary
-Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bril programs have typically been run using the Bril interpreter (TODO: ADD LINK). Compiling Bril programs to assembly code that can run on real hardware would allow for more accurate measurements of the impacts of compiler optimizations on Bril programs in terms of execution time or clock cycles. Thus, the goal of [this project](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend) was to write a RISC-V backend. That is, to write a program that lowers the core (TODO: ADD LINK) subset of Bril to TinyRV32IM (TODO: ADD LINK). The objective was to ensure semantic equivalence between the source program and the generated RISC-V code by running it on a RISC-V emulator. At the outset of this project, one of the stretch goals was to use Crocus (TODO: ADD LINK) to verify the correctness of the Bril-to-RISC-V lowering rules. Another stretch goal was to perform a program analysis step that would aid in instruction selection, allowing the lowering phase to take place in an M-to-N fashion as opposed to the more trivial 1-to-N approach. The authors regret to inform you that these stretch goals were not completed during the semester, however, the primary goal was achieved. The primary goal was to generate semantically equivalent RISC-V assembly code from a Bril source program using a dead simple approach: 1-to-N instruction selection, trivial register allocation, and correct calling conventions.
+Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bril programs have typically been run using the Bril interpreter (TODO: ADD LINK). Compiling Bril programs to assembly code that can run on real hardware would allow for more accurate measurements of the impacts of compiler optimizations on Bril programs in terms of execution time or clock cycles. Thus, the goal of [this project](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend) was to write a RISC-V backend. That is, to write a program that lowers the [core subset of Bril](https://capra.cs.cornell.edu/bril/lang/core.html) to TinyRV32IM (TODO: ADD LINK), a subset of RV32IM (TODO: ADD LINK). The objective was to ensure semantic equivalence between the source program and the generated RISC-V code by running it on a RISC-V emulator. At the outset of this project, one of the stretch goals was to use Crocus (TODO: ADD LINK) to verify the correctness of the Bril-to-RISC-V lowering rules. Another stretch goal was to perform a program analysis step that would aid in instruction selection, allowing the lowering phase to take place in an M-to-N fashion as opposed to the more trivial 1-to-N approach. The authors regret to inform you that these stretch goals were not completed during the semester, however, the primary goal was achieved. The primary goal was to generate semantically equivalent RISC-V assembly code from a Bril source program using a dead simple approach: 1-to-N instruction selection, trivial register allocation, and correct calling conventions.
 
-## Bril Instruction classes
+## Representing Bril Instructions
 
-The first step in this project included writing classes for each Bril instruction. For code reuse, we organized these classes in a hierarchy that would 
-allow for similarities in instructions to be in common classes using inheritance. The main idea for this is if we needed to tweak these common aspects in 
-the instruction classes, the change would be in one place rather than having to keep track of all the different files to update. The other reason why we dealt 
-with objects rather than Bril text or Bril JSON, was because it is easier to keep track and update operands in an object format.
-
-The class hierarchy we came up with was the following:
+The first stage in the lowering pipeline is a preprocessing step. Source Bril programs are provided as input in JSON format. The program is parsed and each Bril instruction is translated to one [***BrilInsn***](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns) object. Each BrilInsn is an instance of a subclass of the BrilInsn class hierarchy (TODO: ADD 'See figure X' statement). The reasoning behind the structure of the BrilInsn class hierarchy lies in the fact that [most Bril instructions have a similar format](https://capra.cs.cornell.edu/bril/tools/text.html). This observation motivated a more conventional, Object-Oriented (OO) approach since the common Bril instruction formats could be implemented as parent classes and the small number of deviations from these common formats could be captured in the form of child classes. The BrilInsn class hierarchy lends itself to exploiting some of the main benefits of OO, namely minimal changes and maximal code reuse.
 
 <img width="1689" alt="Screenshot 2023-12-11 at 6 46 26 PM" src="https://github.com/20ashah/cs6120/assets/33373825/5b165c72-39bf-44d0-93b5-2dc37a265bb9">
+
+ __Figure 1__
 
 ## Parse Bril to Objects
 
