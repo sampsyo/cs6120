@@ -16,7 +16,16 @@ name = "Collin Zhang"
 [[extra.authors]]
 name = "Alice Sze"
 +++
+<style>
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
 
+}
+
+</style>
 SELF was a pioneer langauge in the development of Dynamic Languages and just-in-time (JIT) compilers. It is no surprise that the developers utilize interesting and fairly complex optimizations to get their language to run as fast as static languages, despite their use of the prototype model instead of traditional classes and design choice that every operation is a message pass. 
 
 ## Language Design
@@ -27,9 +36,7 @@ Instead of constructing instances of classes (as in a familiar OO-language), all
 
 Below is an example of a SELF object: 
 
-<!-- <p align="center"> -->
-<img src="self_example.png" width=411 height=300/>
-<!-- </p> -->
+<img src="self_example.png"/>
 
 In this example, point contains a single parent, a number of fields (data fields and method fields). One thing to note is that even the assignment operator for fields x and y of a cartesian point (and similarly for a polar point), are impemented as slots. As an example, imagine the rho message is passed to a cartesian point. After not finding the slot in the cartesian point it will look in the parent, and find rho. It will this clone this method, setting a special "self" slot to the cartesian point. Thus, when it looks for x and y it will find them with values 3 and 4 respectively, returning 5. 
 
@@ -41,16 +48,11 @@ In this section, we will peak behind the curtain at how SELF is implemented effi
 
 Maps are used to avoid storing redundant information for cloned objects. Cloning creates many duplicates of slots that are the same among members of the same family (same slot structure, modulo assignable slot values). All shared data is factored into a map object, so objects can be implemented simply as arrays with assignable data and a pointer to the map of its clone family. Below is an example of two cartesian points implemented without using a map:
 
-<!-- <p align="center"> -->
-<img src="self_no_maps.png" width=411 height=300/>
-<!-- </p> -->
+<img src="self_no_maps.png"/>
 
 And the implementation with maps: 
 
-<!-- <p align="center"> -->
-<img src="self_maps.png" width=411 height=300/>
-<!-- </p> -->
-
+<img src="self_maps.png"/>
 
 In this simple example, the assignable slots x and y, and the parent slots are implemented twice, which is factored out in the maps example. In a more complex object there could be a lot of read-only data and method/parent slots that are factored out. 
 
@@ -80,14 +82,14 @@ Message Splitting is the optimization the authors apply to handle the case when 
 
 When we know the type of a variable, one optimization we can take is primitive inlining. Primitive operations are expensive because primitive operation often requires "calls to primitive operations are normally implemented using a simple procedure call to an external function in the virtual machine." When we know the type of the variable, we know how to handle the operations so that we don't have to pass the message to the virtual machine.
 
-With these optimizations, the authors are able to eliminate a lot of overhead produced by dynamic features of the languages. The evaluation of the language is discuess below.
+With these optimizations, the authors are able to eliminate a lot of overhead produced by dynamic features of the languages. The evaluation of the language is discussed below.
 
 ## Performance and Evaluation
 
 The authors compared the performance of SELF with the fastest Smalltalk implementation available and with the standard Sun optimizing C compiler. The Stanford integer benchmarks and the Richards operating system simulation benchmarks were transliterated from C to SELF, SELF' (rewritten in a more SELFish programming style) and Smalltalk. The figure below shows the ratios of the running times of the benchmarks for the given pair of systems.
 
 <!-- <p align="center"> -->
-<img src="self-relative-performance.png" width=411 height=300/>
+<img src="self-relative-performance.png"/>
 <!-- </p> -->
 
 SELF outperforms Smalltalk on every benchmark by about a factor of two, but is around four to five times slower than an optimizing C compiler. The authors attributed the relative slowness to the quality of the SELF compiler implementation, SELF's robust semantics (e.g. bounds-checking) and the lack of type information. While this is promising for those who want to have their dynamic languages and use them too, some concerns were voiced by the class over the evaluation methods. Firstly, it is unclear how the benchmarks were transliterated, e.g. by a human or a program, whether they were optimized. The fact that the authors improved on the original SELF transliterations to produce SELF' versions suggests that the Smalltalk benchmarks are "literal" translations that are less efficient, potentially putting Smalltalk at a disadvantage. More generally, this highlights the difficulty of using the same benchmarks across different languages. Secondly, real time is used instead of CPU time to measure the running time of Smalltalk, unlike C and SELF, because the two times are "practically identical". But if they are, then why not just use the CPU time for all of them? 
@@ -96,8 +98,11 @@ SELF outperforms Smalltalk on every benchmark by about a factor of two, but is a
 The authors proposed a new metric called *millions of messages per second (MiMS)* to compare the performance of object-oriented systems, analogous to the millions of instructions per second (MIPS) for processors. A message send here refers to invocations whose semantics include a dispatch. For SELF, this includes "instance variable" accesses but not "local variable" accesses. The *efficiency* of an object-oriented system is then inversely proportional to the number of instructions executed per message sent. While it is an interesting idea, it isn't clear whether these metrics could offer an apple-to-apple comparison with other languages that are less object- and message-oriented. For instance, even integers could be receivers in SELF, but not in most other languages. It is also ambiguous if inlined and replaced messages count as message sends.
 
 ## Conclusion
-Although SELF did not become a mainstream programming language, we see its relevance in prototypal inheritance in JavaScript, the ability to change classes at run-time and the attribute dictionaries in Python. On a design philosophy level, this paper asks us to reconsider if we should build compilers around people people around compilers, or somewhere in the middle.
+Although SELF did not become a mainstream programming language, we see its relevance in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">prototypal inheritance</a> in JavaScript, the ability to change classes at run-time and the attribute dictionaries in Python. On a design philosophy level, this paper asks us to reconsider if we should build compilers around people, people around compilers, or 
+<a href="https://en.wikipedia.org/wiki/Ousterhout%27s_dichotomy#:~:text=This%20is%20the%20proposition%20that,and%20are%20used%20for%20extensions">somewhere in the middle</a>.
 
 <blockquote>
 Researchers seeking to improve performance should improve their compilers instead of compromising their languages.
 </blockquote>
+
+Check out <a href = "https://discuss.systems/@adrian/111341846229244750">this thread on Mastodon</a> to see what people have to say about this!
