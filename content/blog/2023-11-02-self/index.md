@@ -1,11 +1,10 @@
 +++
-title = "An Eficient Implementation of SELF"
-
-
+title = "An Efficient Implementation of SELF"
 
 [extra]
 bio = """
   Alice is an M.Eng student studying Computer Science. She is broadly interested in compilers, systems and algorithm design.
+
   Benny is a Junior studying Computer Science. He is interested in networking and operating systems.
 """
 [[extra.authors]]
@@ -20,7 +19,7 @@ SELF was a pioneer langauge in the development of Dynamic Languages and just-in-
 
 ## Language Design
 
-In SELF, there is a disconnect between the behavior given to the programer (message passing, slots, etc.) and how these objects are efficiently implemented in the compiler. This gives a clean semantics while compiling to fast and efficient code. In this section, we focus on the language design itself. 
+In SELF, there is a disconnect between the behavior given to the programmer (message passing, slots, etc.) and how these objects are efficiently implemented in the compiler. This gives a clean semantics while compiling to fast and efficient code. In this section, we focus on the language design itself. 
 
 Instead of constructing instances of classes (as in a familiar OO-language), all SELF objects are created by cloning a prototype and setting the original prototype to the parent. All fields of objects are implemented as slots (including the parent). When evaluating a message pass that corresponds to a field or method, all slots of the receiving object are searched, before recursively searching the parents. SELF contains different kinds of slots: parents, methods, data (read-only and mutable). SELF supports multiple inheritance, and allows for the funky ability to dynamically rewrite parent slots. This means that inheritance is dynamic can change at runtime.
 
@@ -87,5 +86,8 @@ The authors compared the performance of SELF with the fastest Smalltalk implemen
 <img src="self-relative-performance.png" width=411 height=300/>
 <!-- </p> -->
 
-SELF outperforms Smalltalk on every benchmark by about a factor of two, but is around four to five times slower than an optimizing C compiler. The authors attributed the relative slowness to the quality of the SELF compiler implementation, SELF's robust semantics (e.g. bounds-checking) and the lack of type information. While this is promising for those who want to have their dynamic languages and use them too, some concerns were voiced by the class over the evaluation methods. Firstly, it is unclear how the benchmarks were transliterated, by a human or a program. Either way, it could be that the Smalltalk transliterations were not as good (subjective) as the SELF ones, which gives it an unfair disadvantage. More generally, this highlights the difficulty of using the same benchmarks across different languages. Secondly, real time is used instead of CPU time to measure the running time of Smalltalk, unlike C and SELF, because the two times are "practically identical". But if they are, then why not just use the CPU time for all of them? 
+SELF outperforms Smalltalk on every benchmark by about a factor of two, but is around four to five times slower than an optimizing C compiler. The authors attributed the relative slowness to the quality of the SELF compiler implementation, SELF's robust semantics (e.g. bounds-checking) and the lack of type information. While this is promising for those who want to have their dynamic languages and use them too, some concerns were voiced by the class over the evaluation methods. Firstly, it is unclear how the benchmarks were transliterated, e.g. by a human or a program, whether they were optimized. The fact that the authors improved on the original SELF transliterations to produce SELF' versions suggests that the Smalltalk benchmarks are "literal" translations that are less efficient, potentially putting Smalltalk at a disadvantage. More generally, this highlights the difficulty of using the same benchmarks across different languages. Secondly, real time is used instead of CPU time to measure the running time of Smalltalk, unlike C and SELF, because the two times are "practically identical". But if they are, then why not just use the CPU time for all of them? 
+
+### Instructions per message sent
+The authors proposed a new metric called *millions of messages per second (MiMS)* to compare the performance of object-oriented systems, analogous to the millions of instructions per second (MIPS) for processors. A message send here refers to invocations whose semantics include a dispatch. For SELF, this includes "instance variable" accesses but not "local variable" accesses. The *efficiency* of an object-oriented system is then inversely proportional to the number of instructions executed per message sent. While it is an interesting idea, it isn't clear whether these metrics could offer an apple-to-apple comparison with other languages that are less object- and message-oriented. For instance, even integers could be receivers in SELF, but not in most other languages. It is also ambiguous if inlined and replaced messages count as message sends.
 
