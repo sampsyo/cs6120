@@ -70,7 +70,7 @@ The authors faced these challenges while designing SELF. First, message-passing 
 
 To solve these challenges, the authors proposed these techniques. The first technique is to “automatically derive much of the type information statically specified in other type systems", which is actually the predecessor of JIT compilation nowadays. The authors also suggested customized compilation based on type prediction. Message inlining based on message splitting also helped a lot during the optimization, while primitive inlining further improves efficiency of primitive operations. It's interesting to observe that message passing is applied in other languages to implement dynamic features. For example, Objective-C is a dynamic object oriented language based on C, although C is static and doesn't have object oriented features. Objective-C uses the message passing style to implement these features, which shows that message passing is a powerful technique. 
 
-Let's first talk about customized compilation. SELF first trace the execution of the program, and generate a customized version of code based on type information. With that information of type, the language runtime can eliminate the need for message passing.
+Let's first talk about customized compilation. SELF first traces the execution of the program, and generates a customized version of code based on type information. With that information of type, the language runtime can eliminate the need for message passing.
 
 Type prediction is an interesting technique based on a lot of heuristics of the program. For example, `less-than` implies that the type would be integer. In that case, the compiler will insert a integer branch into the code according to message splitting.
 
@@ -91,3 +91,9 @@ SELF outperforms Smalltalk on every benchmark by about a factor of two, but is a
 ### Instructions per message sent
 The authors proposed a new metric called *millions of messages per second (MiMS)* to compare the performance of object-oriented systems, analogous to the millions of instructions per second (MIPS) for processors. A message send here refers to invocations whose semantics include a dispatch. For SELF, this includes "instance variable" accesses but not "local variable" accesses. The *efficiency* of an object-oriented system is then inversely proportional to the number of instructions executed per message sent. While it is an interesting idea, it isn't clear whether these metrics could offer an apple-to-apple comparison with other languages that are less object- and message-oriented. For instance, even integers could be receivers in SELF, but not in most other languages. It is also ambiguous if inlined and replaced messages count as message sends.
 
+## Conclusion
+Although SELF did not become a mainstream programming language, we see its relevance in prototypal inheritance in JavaScript, the ability to change classes at run-time and the attribute dictionaries in Python. On a design philosophy level, this paper asks us to reconsider if we should build compilers around people people around compilers, or somewhere in the middle.
+
+<blockquote>
+Researchers seeking to improve performance should improve their compilers instead of compromising their languages.
+</blockquote>
