@@ -30,7 +30,7 @@ Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bri
 The first step in this project included writing classes for each Bril instruction. For code reuse, we organized these classes in a hierarchy that would 
 allow for similarities in instructions to be in common classes using inheritance. The main idea for this is if we needed to tweak these common aspects in 
 the instruction classes, the change would be in one place rather than having to keep track of all the different files to update. The other reason why we dealt 
-with objects rather than bril text or bril JSON, was because it is easier to keep track and update operands in an object format.
+with objects rather than Bril text or Bril JSON, was because it is easier to keep track and update operands in an object format.
 
 The class hierarchy we came up with was the following:
 
@@ -42,7 +42,7 @@ Once we had classes for each Bril instruction, now we needed to actually create 
 function in the Bril program:
 
 1. Form basic blocks
-      - Not entirely necessary, but in the event that we want to perform optimizations later on, it would have been helpful for these bril instructions to be in basic blocks
+      - Not entirely necessary, but in the event that we want to perform optimizations later on, it would have been helpful for these Bril instructions to be in basic blocks
 2. Insert missing labels on basic blocks
       - For basic blocks that didn’t have a label, a unique one was assigned - mainly for the purpose of creating a more complete CFG.
 3. Mangle variable names by prepending each variable name with an underscore
@@ -123,7 +123,7 @@ allocation. For each of these temps, this mapping class would assign it a unique
 
 This was implemented as a dictionary in Python. So, if we come across a variable that is already in this dictionary, this means that we have seen it before and had already assigned it
 an offset, so we move on. Note that this happens on a per-function basis, so if we had two separate functions and they both contain a variable 'a', this variable is getting assigned 
-two separate offsets in each of these functions (for obvious reasons). By the end of this, for each function in our bril program, we have an object that has mapped each unique abstract variable to a unique stack location.
+two separate offsets in each of these functions (for obvious reasons). By the end of this, for each function in our Bril program, we have an object that has mapped each unique abstract variable to a unique stack location.
 
 The next step is to actually perform the trivial register allocation for each instruction in our function. As described above, this involves adding additional instructions before and after each instruction to load the appropriate temps off the stack, perform the operation, and then store the temps back onto the stack. The important property of when to add instructions before or after an instruction X is the following:
 
