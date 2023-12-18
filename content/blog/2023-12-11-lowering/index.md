@@ -12,9 +12,7 @@ name = "John Rubio"
 name = "Arjun Shah"
 +++
 
-# Summary
- [John Rubio](https://github.com/JohnDRubio) and I wrote a Python program that converts Bril to runnable RISC-V assembly for our final project.
-
+TODO: Move these links
 
 - [Bril Insn Classes + convert to RISC-V functions](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns)
 - [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/RVIRInsns)
@@ -24,8 +22,7 @@ name = "Arjun Shah"
   - [Epilogue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/util/epilogue.py)
   - [Lowering function call](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns/BrilFunctionCallInsn.py)
 
-# The goal
-
+# Summary
 Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bril programs have typically been run using the Bril interpreter (TODO: ADD LINK). Compiling Bril programs to assembly code that can run on real hardware would allow for more accurate measurements of the impacts of compiler optimizations on Bril programs in terms of execution time or clock cycles. Thus, the goal of [this project](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend) was to write a RISC-V backend. That is, to write a program that lowers the core (TODO: ADD LINK) subset of Bril to TinyRV32IM (TODO: ADD LINK). The objective was to ensure semantic equivalence between the source program and the generated RISC-V code by running it on a RISC-V emulator. At the outset of this project, one of the stretch goals was to use Crocus (TODO: ADD LINK) to verify the correctness of the Bril-to-RISC-V lowering rules. Another stretch goal was to perform a program analysis step that would aid in instruction selection, allowing the lowering phase to take place in an M-to-N fashion as opposed to the more trivial 1-to-N approach. The authors regret to inform you that these stretch goals were not completed during the semester, however, the primary goal was achieved. The primary goal was to generate semantically equivalent RISC-V assembly code from a Bril source program using a dead simple approach: 1-to-N instruction selection, trivial register allocation, and correct calling conventions.
 
 ## Bril Instruction classes
