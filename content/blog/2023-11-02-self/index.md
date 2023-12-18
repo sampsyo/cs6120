@@ -6,6 +6,8 @@ bio = """
   Alice is an M.Eng student studying Computer Science. She is broadly interested in compilers, systems and algorithm design.
 
   Benny is a Junior studying Computer Science. He is interested in networking and operating systems.
+
+  Collin is a first year CS PhD student at Cornell. He is interested in security and privacy.
 """
 [[extra.authors]]
 name = "Benny Rubin"
@@ -77,6 +79,8 @@ Type prediction is an interesting technique based on a lot of heuristics of the 
 Message Splitting is the optimization the authors apply to handle the case when one variable can take several different types. In this case, the compiler will create one specific subroutine for each type, while eliminating the need for message passing during that subroutine.
 
 When we know the type of a variable, one optimization we can take is primitive inlining. Primitive operations are expensive because primitive operation often requires "calls to primitive operations are normally implemented using a simple procedure call to an external function in the virtual machine." When we know the type of the variable, we know how to handle the operations so that we don't have to pass the message to the virtual machine.
+
+With these optimizations, the authors are able to eliminate a lot of overhead produced by dynamic features of the languages. The evaluation of the language is discuess below.
 
 ## Performance and Evaluation
 
