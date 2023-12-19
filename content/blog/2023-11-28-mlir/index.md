@@ -20,7 +20,7 @@ latex = true
 
 The designers of MLIR claim that their primary motivations for creating this new tool were to solve the problems of software fragmentation and heterogeneous hardware targets. By software fragmentation, the authors mean that compiler engineers working on modern, high-level languages such as Swift, Rust, and Julia have begun creating their own custom, high-level IRs in front of LLVM. This allows compiler engineers to more easily implement source-level optimizations that are significantly more difficult to implement using a lower-level IR. This is because lower-level IRs such as LLVM IR do not preserve the higher-level semantics that are necessary to more easily implement source-level optimizations. According to the authors, this approach requires excessive engineering resources to build compiler infrastructure that does not generalize to other languages - this is where MLIR comes in. MLIR aims to provide compiler engineers with the freedom to design high-level IRs that allow for source-level optimizations while being able to progressively lower to the typical lower-level IRs such as LLVM IR, all the while using the same compiler infrastructure.
 
-<img width="699" alt="Screenshot 2023-12-01 at 5 23 21 PM" src="https://github.com/20ashah/cs6120/assets/33373825/2f2e2a84-4e57-4446-aa0d-31a5a9d1a495">
+<img width="699" alt="Screenshot 2023-12-01 at 5 23 21 PM" src="custom_frontends.png">
 
 The authors add:
 
@@ -56,9 +56,7 @@ First, let's take a look at the difference between the overall structure of LLVM
 
 ### LLVM IR vs MLIR Structure
 
-<img width="290" alt="Screenshot 2023-12-01 at 6 18 10 PM" src="https://github.com/20ashah/cs6120/assets/33373825/65c87ead-7630-4748-bc3d-570cdc8ac1c1"> 
-
-<img width="368" alt="Screenshot 2023-12-01 at 6 18 35 PM" src="https://github.com/20ashah/cs6120/assets/33373825/a4f9bc37-3ad7-46de-98d6-727e752b8ec0">
+<img width="290" alt="Screenshot 2023-12-01 at 6 18 10 PM" src="llvm_structure.png"> <img width="368" alt="Screenshot 2023-12-01 at 6 18 35 PM" src="mlir_structure.png">
 
 These structures are very similar in that both structure programs into a hierarchy of modules, functions, and blocks, but the way they are implemented in MLIR as "Operations" is an important distinction that contributes to MLIR's extensibility.
 
