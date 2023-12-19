@@ -1,6 +1,7 @@
- +++
++++
 title = "Array IR for Mixed Cryptography"
 [extra]
+latex = true
 bio = """
   Vivian Ding is a fourth-year undergraduate studying Computer Science and Mathematics, interested in programming languages and program synthesis.
 
@@ -27,7 +28,7 @@ We decided that control flow instructions should be statements rather than expre
 
 Implementing control flow required a slight change to how “blocks” (sequences of code delimited by curly braces) are represented in our AST. Previously, blocks were only used to represent function bodies, and therefore required that the last statement was always a `return`. We decided to introduce distinct notions of blocks for function bodies and control flow branches. This is because the invariant that each function contains a single unique `return` statement makes code generation far more straightforward, and doesn’t sacrifice expressivity. 
 
-We evaluated this implementation using handwritten tests to ensure all branches through control flow are properly executed.
+We evaluated this implementation using handwritten tests to ensure all branches through control flow are properly executed, and no existing functionality was broken.
 
 # Precircuit IR
 We then implemented a “pre-circuit IR”. This is intended to be an updated version of the output of the original Viaduct project, which produces a program where each let-binding is annotated with the protocol that will execute it. This had to be implemented separately since AIRduct represents computations differently from the original Viaduct, being more array-based and having support for array operations.
@@ -38,16 +39,18 @@ The pre-circuit IR is different from the circuit IR in that:
 1. All let-bindings are annotated with a protocol. In the circuit IR, only let-bindings involving a “command” (input, output, and function/circuit calls) are annotated with protocols denoting where results are stored. Let-bindings involving computations occur within circuits, which are annotated with the associated protocol for all included statements. 
 2. It includes downgrade nodes. These are explicit violations of secure information flow, such as declassifying secret data or endorsing untrusted values. It is necessary that downgrade instructions are preserved in the precircuit IR, since they enforce a secure ordering on computations.
 
+To test our project, we hand-wrote benchmarks in the pre-circuit IR. We deemed implementing a frontend less urgent than investigating the grouping problem: Creating a frontend requires re-implementing the existing protocol selection algorithm, and would not constitute a novel contribution. Additionally, benchmarks would still need to be hand-written in the new surface language, since the former surface language does not include the powerful array-based operations newly added in AIRduct.
+
 # Grouping
 The grouping procedure places statements of the same protocol together whenever possible. This will enable larger circuit blocks, reducing the overhead of communication between protocols.
 
 This reordering is subject to data and security dependencies. Node `x` is a dependency of node `y` when:
 - `x` defines data that is used by `y`,
-- `x` is an `input` statement, and `y` an output,
-- `x` is an `endorse` statement, and `y` an declassify, or
-- `x` is an `output` statement, and `y` an input from the same host.
+- `x` is an `input` statement, and `y` an `output`,
+- `x` is an `endorse` statement, and `y` a `declassify`, or
+- `x` is an `input` or `output` statement, and `y` an `input` or `output` from the same host.
 
-The first rule corresponds to data dependencies. The second and third rules hold because moving a statement which reveals information before one that commits to data violates security. The last rule preserves the user interface.
+The first rule corresponds to data dependencies. The second and third rules hold because moving a statement which reveals information before one that commits to data violates security. The last rule preserves the user interface. Input and output expressions allow programs to interact with hosts.
 
 We decided to only reorder at top-level within blocks; that is, statements only get swapped if they exist at the same “depth.” For instance, consider the following code:
 ```
@@ -66,7 +69,7 @@ We formalize the reordering task as the following problem. Given a directed acyc
 - For all $e = (v_1, v_2) \in E$ (the execution of $v_2$ depends on $v_1$), $v_1$ is ordered before $v_2$
 - The number of protocol changes within the sequence is minimized. For each consecutive $v_{\pi_i}, v_{\pi_j}$ in the sort, there is a change if $p(v_{\pi_i}) \neq p(v_{\pi_j})$.
 
-We are unsure of the hardness of this problem. We (unsuccessfully) tried several reductions from NP-Complete problems, and have not yet proven that our polynomial-time algorithm produces an optimum result. This would be an interesting task to pursue in the future. We think the problem might be in P.
+The hardness of this problem is unknown. We (unsuccessfully) tried several reductions from NP-Complete problems, and have not yet proven that our polynomial-time algorithm produces an optimum result. This would be an interesting task to pursue in the future. We think the problem might be in P.
 
 Our heuristic algorithm for reordering runs in polynomial time and is as follows:
 <p align="center">
@@ -95,7 +98,7 @@ This Python code generates a random DAG and assigns a random protocol to each no
 
 Here, the error is defined by the number of swaps computed by our algorithm compared to the optimal solution. `p` is defined to be the probability of a DAG edge existing. 
 
-From these results, we see that our heuristic gives an optimal solution nearly 90% (at least for smaller DAG’s). We also estimate that the smallest approximation factor that describes our algorithm is `ɑ=2`, where our algorithm gives twice as many swaps as the optimal solution (number is obtained by a small adversarial example).
+From these results, we see that our heuristic gives an optimal solution for nearly 90% of the randomly generated graphs. We also estimate that the smallest approximation factor that describes our algorithm is `ɑ=2`, where our algorithm gives twice as many swaps as the optimal solution (number is obtained by a small adversarial example).
 
 We also computed how the average percent error is affected by the connectivity of the DAG:
 <p align="center">
@@ -105,5 +108,6 @@ We also computed how the average percent error is affected by the connectivity o
 
 These results seem to make sense; sparse graphs are rather uncomplicated and most solutions will already be optimal, and highly-connected graphs have a smaller space of possible topological sorts. It would be interesting to perform a more rigorous analysis of the algorithm to explain the empirical results.
 
-We also tested our implementation on handwritten programs in the pre-circuit language, both based on existing benchmarks for cryptographic compilers and programs which mix multiple protocols in suboptimal orders. For each example, maximally large groupings were constructed. One important task for future work is to test on more representative benchmarks, as many of the existing benchmarks are small and do not use more than two cryptographic protocols.
+We also tested our implementation on handwritten programs in the pre-circuit language, both based on existing benchmarks for cryptographic compilers and programs which mix multiple protocols in suboptimal orders. For each example, maximally large groupings were constructed.
 
+An important task for future work is to test on more representative benchmarks. Existing benchmarks are small and do not use more than two cryptographic protocols, since most standard benchmarks are for cryptographic compilers which only support one protocol. However, these small programs make it difficult to demonstrate benefits of optimizations such as reordering.
