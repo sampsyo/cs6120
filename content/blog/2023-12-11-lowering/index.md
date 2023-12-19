@@ -27,7 +27,7 @@ Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bri
 
 The first stage in the lowering pipeline is a preprocessing step. Source Bril programs are provided as input in JSON format. The program is parsed and, for each function, each Bril instruction is translated to one [__BrilInsn__](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns) object. Each BrilInsn is an instance of a subclass of the BrilInsn class hierarchy as depicted in __Figure 1__ below. The reasoning behind the structure of the BrilInsn class hierarchy lies in the fact that [most Bril instructions have a similar format](https://capra.cs.cornell.edu/bril/tools/text.html). This observation motivated a more conventional, Object-Oriented (OO) approach since the common Bril instruction formats could be implemented as parent classes and the small number of deviations from these common formats could be captured in the form of child classes. The BrilInsn class hierarchy lends itself to exploiting some of the main benefits of OO, namely minimal changes and maximal code reuse. For example, a [value operation](https://capra.cs.cornell.edu/bril/lang/syntax.html#:~:text=string%3E%22%2C%20...%5D%3F%2C%0A%20%20%22labels%22%3A%20%5B%22%3Cstring%3E%22%2C%20...%5D%3F%20%7D-,A%20Value%20Operation,-is%20an%20instruction) is a general type of Bril instruction that takes arguments, performs some computations, and produces a value. Several types of Bril instructions fall under the umbrella of value operations, namely arithmetic and logical operation instructions, ID assignments, and function calls. This inherent hierarchical structure is a perfect opportunity for subclassing. The one attribute each of these Bril instruction types have in common is a destination field which is why __Figure 1__ shows the *BrilValueOperation* abstract class with a single `dest` field. The specifics of the computations that arithmetic & logical instructions, ID assignments, and function calls differ enough to justify each of these instruction types being their own subclass of the *BrilValueOperation* class. Using an OO approach allowed us to minimize the amount of time dedicated to common scaffolding among classes and focus more on implementation details specific to a class.
 
-<img width="1689" alt="Screenshot 2023-12-11 at 6 46 26 PM" src="BrilInsn_Class_Hierarchy2.jpeg">
+<img width="1689" alt="UML Diagram" src="BrilInsn_Class_Hierarchy2.jpeg">
 
  __Figure 1__
 
@@ -45,19 +45,9 @@ Each of these groups corresponds to a class in the RISC-V Intermediate Represent
 
 ## Progressive Lowering
 
-Now that we have a list of Bril object instructions and a hierarchy of RISC-V classes, we ultimately want a list of RISC-V object instructions that is semantically equivalent 
-to the list of Bril object instructions. To implement this, we had each Bril instruction class implement a function to convert itself into a series of RISC-V objects. 
-As specified before, we implemented this as a 1-N approach, where each Bril instruction corresponds to N RISC-V instructions. This is less efficient than a N-N approach, 
-where we try and look for Bril instructions we can combine for optimization, but the 1-N approach was the first step in generating working RISC-V assembly, which was our first goal.
+With the proper infrastructure in place, it is possible to perform the first of two lowering steps. As shown in __Figure 1__, each BrilInsn instance implements a *conv_riscvir* method. As the name implies, this method converts each BrilInsn instance to one or more RVIRInsn instances, thus implementing the 1-N instruction selection design. See __Table 1__ below for translation details. Each RVIRInsn instance corresponds to a single RISC-V IR instruction. For each function in the source Bril program, this pass returns a list of RVIRInsn instances representing a semantically equivalent RVIR function. It is worth noting that the only difference between RIVR instructions and true RISC-V instructions is that RVIR instructions do not use RISC-V registers (TODO: ADD LINK). To lower to true RISC-V from RVIR, a register allocation pass is required.
 
-An important note here is that in the first pass, we implemented this for every Bril instruction object except for function calls. The reason for this is that we wanted to save 
-the calling convention pass of lowering until the end, even after register allocation. We anticipated that this part would be the hardest, and so we wanted to get RISC-V assembly 
-without function calls working first before we added that whole layer of complexity. This worked out quite well, since we could test the correctness of the assembly we were generating
-without function calls early on, without having implemented lowering for function calls.
-
-Below is a brief description of the conversions from Bril instructions to RISC-V instructions. We filled out this table prior to actually coding these functions to make sure 
-that logically, our conversions created RISC-V instructions that were semantically equivalent to the Bril. Note that this is abstract assembly, so no actual RISC-V registers are used.
-
+TODO: Clean up table
 
 | Bril                            | RISC-V Abstract Asm                |
 | ------------------------------- | --------------------------------- |
@@ -74,17 +64,13 @@ that logically, our conversions created RISC-V instructions that were semantical
 | x: bool = not y                 | xori x, y, 1                      |
 | x: bool = and y z               | and x, y, z                       |
 | x: bool = or y z                | or x, y, z                        |
-| print x                         | nop                               |
 | jmp .label                      | jal x0, .label                    |
 | br cond .label1 .label2         | addi tmp, x0, 1 <br> beq cond, tmp, .label1 <br> jal x0, .label2 <br> .label1: <br> ... <br> jal x0 .exit <br> .label2: <br> ... <br> .exit: |
 | ret x                           | addi a0, x, 0 <br> jalr x0, x1, 0 |
 | ret                             | jalr x0, x1, 0                    |
 | x: int = id y                   | addi x, y, 0                      |
- 
-                                  
-Note: An important note about the above chart that required some extra implementation had to deal with the case when the RISC-V instructions needed to add in temps and labels 
-to match the behavior of the Bril instructions. An edge case here is that these labels and temp variables need to be generated fresh each time for semantic equivalence, so 
-keeping track of this was a key part of the converter.
+
+ __Table 1__
 
 ## Trivial Register Allocation
 
@@ -93,7 +79,7 @@ function calls, which still remain Bril objects (We saved dealing with calling c
 but with all of the RISC-V objects, we get rid of the abstract registers and replace them with actual RISC-V registers using trivial register allocation. Before discussing the 
 details of how this was implemented, we will first briefly describe how trivial register allocation works, in a non-architecture-specific way.
 
-### Description of trivial register allocation
+### Overview
 
 The first step is to select 3 caller-saved registers in the given assembly language. In most assembly languages, instructions deal with at most only 2 registers at a time, 
 so we’ll never need to have more than these registers. Next, the main part of trivial register allocation involves adding instructions before each abstract assembly 
@@ -133,6 +119,8 @@ By far, the biggest implementation obstacle was implementing the RISC-V calling 
 3. **Epilogue (Clean-up):** The third key piece of this calling convention puzzle is the clean-up step, or the epilogue. After the instructions in the function body have finished executing, the epilogue is responsible for restoring the stack to its original state and releasing any resources allocated during the prologue. This includes popping the stack frame, restoring the values of callee-save registers, and ensuring a smooth return to the calling function.
 
 # What were the hardest parts to get right?
+
+While implementing the initial translations from Bril to RVIR, some subtle details were tricky to get right. For example, conditional assignments such as `x: bool = lt y z` were implemented using a sequence of RVIR instructions that included a branch, two labels, and a jump. A set of fresh labels needed to be generated for each conditional assignment statement, otherwise the program could contain two or more identical labels and the compiler would crash.
 
 We found it surprisingly easy to convert a Bril program to abstract assembly and even perform trivial register allocation. Because Bril was already a flat set of instructions 
 with instructions very similar to RISC-V, these initial passes to create RISC-V instructions were fairly simple. Trivial register allocation was slightly more complicated, 
