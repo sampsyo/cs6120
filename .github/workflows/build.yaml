@@ -25,10 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{github.event_name=='push' && github.ref=='refs/heads/2023fa'}}
     steps:
-      - name: Setup Tailscale
-        uses: tailscale/github-action@main
+      - name: Tailscale
+        uses: tailscale/github-action@v2
         with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
