@@ -122,11 +122,18 @@ The environment is not expressed by the DSL, and is assumed to operate based on 
 These limitations are expressed by specifying the variables that the environment can touch.
 For instance, the code for some agent can be wrapped with a giant branching action with a guard $\texttt{not crashed}$, and a $\texttt{nop}$ for the else clause.
 The environment can then choose to crash and uncrash the agent however it likes.
+As for the trigger, it is formalized by introducing a temporal predicate P for the environment, and modeling the trigger as an initial period of arbitrary environment actions until they eventually always satisfy P.
+This comes from our formal definition for metastability, which I have abstained from presenting here for the sake of brevity.
 
 Based on these, a general execution of the system is a repeating cycle of the following:
 1. The environment takes an action.
 2. The system as a whole takes an action, i.e., each agent takes a big step.
 3. The network handles the messages.
+
+Note that such an execution would also require an initial condition, or some inputs.
+The initial conditions have to come from some specification of the system.
+As for the inputs, we assume that the environment introduces them into the system.
+For instance, if we have a system that consumes requests, the environment can arbitrarily put request into the network, to be delivered to a specific agent.
 
 ## Example
 Time for an example.
