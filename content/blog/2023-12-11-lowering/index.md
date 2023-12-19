@@ -14,7 +14,6 @@ name = "Arjun Shah"
 
 TODO: Move these links
 
-- [RISC Insn Classes](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/RVIRInsns)
 - [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc)
 - Calling Convention Logic
   - [Prologue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/util/prologue.py)
@@ -42,7 +41,7 @@ As mentioned above, a __1-to-N__ instruction selection approach was used for low
 - Unconditional Jump Instructions
 - Conditional Jump Instructions
 
-Each of these groups corresponds to a class in the RISC-V Intermediate Representation (RVIR) implementation (TODO: ADD LINK). RISC-V instructions are fundamentally simple, thus there was no need for a class hierarchy other than each RVIR instruction inheriting from the RVIRInsn abstract class (TODO: ADD LINK).
+Each of these groups corresponds to a class in the RISC-V Intermediate Representation (RVIR) [implementation](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/RVIRInsns). RISC-V instructions are fundamentally simple, thus there was no need for a class hierarchy other than each RVIR instruction inheriting from the [RVIRInsn abstract class](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/blob/main/rv32_backend/RVIRInsns/RVIRInsn.py).
 
 ## Progressive Lowering
 
