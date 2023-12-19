@@ -6,14 +6,13 @@ John Rubio is a 2nd year MS student at Cornell University. He is interested in c
 Arjun Shah is a senior undergraduate at Cornell University. He is interested in industry-standard compilers.
 Jiahan Xie is a 1st year MS student at Cornell University. He is interested in compilers and LLVM.
 """
+latex = true
 [[extra.authors]]
 name = "John Rubio"
 [[extra.authors]]
 name = "Jiahan Xie"
 [[extra.authors]]
 name = "Arjun Shah"
-[extra]
-latex = true
 +++
 
 # Summary
