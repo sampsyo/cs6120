@@ -24,36 +24,27 @@ TODO: Move these links
 # Summary
 Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bril programs have typically been run using the Bril interpreter (TODO: ADD LINK). Compiling Bril programs to assembly code that can run on real hardware would allow for more accurate measurements of the impacts of compiler optimizations on Bril programs in terms of execution time or clock cycles. Thus, the goal of [this project](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend) was to write a RISC-V backend. That is, to write a program that lowers the [core subset of Bril](https://capra.cs.cornell.edu/bril/lang/core.html) to TinyRV32IM (TODO: ADD LINK), a subset of RV32IM (TODO: ADD LINK). The objective was to ensure semantic equivalence between the source program and the generated RISC-V code by running it on a RISC-V emulator. At the outset of this project, one of the stretch goals was to use Crocus (TODO: ADD LINK) to verify the correctness of the Bril-to-RISC-V lowering rules. Another stretch goal was to perform a program analysis step that would aid in instruction selection, allowing the lowering phase to take place in an M-to-N fashion as opposed to the more trivial 1-to-N approach. The authors regret to inform you that these stretch goals were not completed during the semester, however, the primary goal was achieved. The primary goal was to generate semantically equivalent RISC-V assembly code from a Bril source program using a dead simple approach: 1-to-N instruction selection, trivial register allocation, and correct calling conventions.
 
-## Representing Bril Instructions
+## Representing Bril Programs
 
-The first stage in the lowering pipeline is a preprocessing step. Source Bril programs are provided as input in JSON format. The program is parsed and each Bril instruction is translated to one [__BrilInsn__](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns) object. Each BrilInsn is an instance of a subclass of the BrilInsn class hierarchy as depicted in __Figure 1__ below. The reasoning behind the structure of the BrilInsn class hierarchy lies in the fact that [most Bril instructions have a similar format](https://capra.cs.cornell.edu/bril/tools/text.html). This observation motivated a more conventional, Object-Oriented (OO) approach since the common Bril instruction formats could be implemented as parent classes and the small number of deviations from these common formats could be captured in the form of child classes. The BrilInsn class hierarchy lends itself to exploiting some of the main benefits of OO, namely minimal changes and maximal code reuse. For example, a [value operation](https://capra.cs.cornell.edu/bril/lang/syntax.html#:~:text=string%3E%22%2C%20...%5D%3F%2C%0A%20%20%22labels%22%3A%20%5B%22%3Cstring%3E%22%2C%20...%5D%3F%20%7D-,A%20Value%20Operation,-is%20an%20instruction) is a general type of Bril instruction that takes arguments, performs some computations, and produces a value. Several types of Bril instructions fall under the umbrella of value operations, namely arithmetic and logical operation instructions, ID assignments, and function calls. This inherent hierarchical structure is a perfect opportunity for subclassing. The one attribute each of these Bril instruction types have in common is a destination field which is why __Figure 1__ shows the *BrilValueOperation* abstract class with a single `dest` field. The specifics of the computations that arithmetic & logical instructions, ID assignments, and function calls differ enough to justify each of these instruction types being their own subclass of the *BrilValueOperation* class. Using an OO approach allowed us to minimize the amount of time dedicated to common scaffolding among classes and focus more on implementation details specific to a class.
+The first stage in the lowering pipeline is a preprocessing step. Source Bril programs are provided as input in JSON format. The program is parsed and, for each function, each Bril instruction is translated to one [__BrilInsn__](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/BrilInsns) object. Each BrilInsn is an instance of a subclass of the BrilInsn class hierarchy as depicted in __Figure 1__ below. The reasoning behind the structure of the BrilInsn class hierarchy lies in the fact that [most Bril instructions have a similar format](https://capra.cs.cornell.edu/bril/tools/text.html). This observation motivated a more conventional, Object-Oriented (OO) approach since the common Bril instruction formats could be implemented as parent classes and the small number of deviations from these common formats could be captured in the form of child classes. The BrilInsn class hierarchy lends itself to exploiting some of the main benefits of OO, namely minimal changes and maximal code reuse. For example, a [value operation](https://capra.cs.cornell.edu/bril/lang/syntax.html#:~:text=string%3E%22%2C%20...%5D%3F%2C%0A%20%20%22labels%22%3A%20%5B%22%3Cstring%3E%22%2C%20...%5D%3F%20%7D-,A%20Value%20Operation,-is%20an%20instruction) is a general type of Bril instruction that takes arguments, performs some computations, and produces a value. Several types of Bril instructions fall under the umbrella of value operations, namely arithmetic and logical operation instructions, ID assignments, and function calls. This inherent hierarchical structure is a perfect opportunity for subclassing. The one attribute each of these Bril instruction types have in common is a destination field which is why __Figure 1__ shows the *BrilValueOperation* abstract class with a single `dest` field. The specifics of the computations that arithmetic & logical instructions, ID assignments, and function calls differ enough to justify each of these instruction types being their own subclass of the *BrilValueOperation* class. Using an OO approach allowed us to minimize the amount of time dedicated to common scaffolding among classes and focus more on implementation details specific to a class.
 
 <img width="1689" alt="Screenshot 2023-12-11 at 6 46 26 PM" src="BrilInsn_Class_Hierarchy2.jpeg">
 
  __Figure 1__
 
-## Parse Bril to Objects
+## Representing RISC-V Programs
 
-Once we had classes for each Bril instruction, now we needed to actually create these objects from a Bril program. We performed the following steps for each 
-function in the Bril program:
+As mentioned above, a __1-to-N__ instruction selection approach was used for lowering. Thus, for each Bril instruction, one or more relatively simple RISC-V instructions would be used. The subset of RISC-V being used is TinyRV32IM which only consists of about 30 non-privileged RV32IM instructions. After some consideration, we felt the most straightforward way to group these instructions was the following:
 
-1. Form basic blocks
-      - Not entirely necessary, but in the event that we want to perform optimizations later on, it would have been helpful for these Bril instructions to be in basic blocks
-2. Insert missing labels on basic blocks
-      - For basic blocks that didn’t have a label, a unique one was assigned - mainly for the purpose of creating a more complete CFG.
-3. Mangle variable names by prepending each variable name with an underscore
-      - In the event that the user-defined a variable x1, we did not want this to be confused with the actual register in RISC-V during register allocation, so we added an
-        underscore before every variable in the Bril program.
-4. Parse instructions in Bril JSON
-      - The main part of this step includes going through each Bril instruction (which is a	JSON object), picking out certain parts of the instruction such as ‘op’, and
-        identifying what kind of instruction it is. Once this was determined, we created an instance of the appropriate Bril class. By the end of this process, we have a
-        list of Bril object instructions for each function in the Bril program.
+- Register-Register Arithmetic Instructions
+- Register-Immediate Arithmetic Instructions
+- Memory Instructions
+- Unconditional Jump Instructions
+- Conditional Jump Instructions
 
-## RISC-V Instruction classes
+Each of these groups corresponds to a class in the RISC-V Intermediate Representation (RVIR) implementation (TODO: ADD LINK). RISC-V instructions are fundamentally simple, thus there was no need for a class hierarchy other than each RVIR instruction inheriting from the RVIRInsn abstract class (TODO: ADD LINK).
 
-There was less of a hierarchy in our RISC-V instruction classes since there were not that many different types of instructions like there were in Bril. For these classes, we had a general RISC-V instruction class that had method stubs such as emitting assembly, getting abstract registers, getting read/write registers (explained in detail below), and converting registers from abstract to real that each of the RISC-V classes would implement.
-
-## Convert Bril to RISC-V IR Objects (Abstract Assembly)
+## Progressive Lowering
 
 Now that we have a list of Bril object instructions and a hierarchy of RISC-V classes, we ultimately want a list of RISC-V object instructions that is semantically equivalent 
 to the list of Bril object instructions. To implement this, we had each Bril instruction class implement a function to convert itself into a series of RISC-V objects. 
