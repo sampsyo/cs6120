@@ -1,5 +1,11 @@
 +++
 title = "MLIR: A Compiler Infrastructure for the End of Moore’s Law"
+[extra]
+bio = """
+John Rubio is a 2nd year MS student at Cornell University. He is interested in compilers, programming languages, and hardware.
+Arjun Shah is a senior undergraduate at Cornell University. He is interested in industry-standard compilers.
+Jiahan Xie is a 1st year MS student at Cornell University. He is interested in compilers and LLVM.
+"""
 [[extra.authors]]
 name = "John Rubio"
 [[extra.authors]]
@@ -11,7 +17,6 @@ latex = true
 +++
 
 # Summary
-[Slides from discussion](https://docs.google.com/presentation/d/1dHY8Xrk-VhUodql-06egCotdDWsIoiNOgEzlmSc0coM/edit?usp=sharing)
 
 The designers of MLIR claim that their primary motivations for creating this new tool were to solve the problems of software fragmentation and heterogeneous hardware targets. By software fragmentation, the authors mean that compiler engineers working on modern, high-level languages such as Swift, Rust, and Julia have begun creating their own custom, high-level IRs in front of LLVM. This allows compiler engineers to more easily implement source-level optimizations that are significantly more difficult to implement using a lower-level IR. This is because lower-level IRs such as LLVM IR do not preserve the higher-level semantics that are necessary to more easily implement source-level optimizations. According to the authors, this approach requires excessive engineering resources to build compiler infrastructure that does not generalize to other languages - this is where MLIR comes in. MLIR aims to provide compiler engineers with the freedom to design high-level IRs that allow for source-level optimizations while being able to progressively lower to the typical lower-level IRs such as LLVM IR, all the while using the same compiler infrastructure.
 
@@ -35,7 +40,7 @@ To allow compiler engineers to design a wide range of IRs, MLIR needed to be suf
 
 A key approach the authors take to promoting the flexibility of MLIR is the _nested regions_ feature. The authors state:
 
->While many existing IRs use a [flat]([url](https://www.cs.cornell.edu/~asampson/blog/flattening.html)), linearized CFG, representing higher level abstractions push introducing _nested regions_ as a first-class concept in the IR. This goes beyond the traditional region formation to lift higher level abstractions (e.g., loop trees), speeding up the compilation process or extracting instruction, or SIMD parallelism. To support heterogeneous compilation, the system has to support the expression of structured control flow, concurrency constructs, closures in source languages, and many other purposes. One specific challenge is to make CFG-based analyses and transformations compose over nested regions.
+>While many existing IRs use a [flat]([url](https://www.cs.cornell.edu/~asampson/blog/flattening.html)), linearized CFG, representing higher level abstractions push introducing _nested regions_ as a first-class concept in the IR. This goes beyond the traditional region formation to lift higher-level abstractions (e.g., loop trees), speeding up the compilation process or extracting instruction, or SIMD parallelism. To support heterogeneous compilation, the system has to support the expression of structured control flow, concurrency constructs, closures in source languages, and many other purposes. One specific challenge is to make CFG-based analyses and transformations compose over nested regions.
 
 In short, MLIR's focus on nested regions allows for the representation of higher-level abstractions, such as loop trees, in a structured manner. The challenge lies in ensuring that CFG-based analyses and transformations can effectively compose over these nested regions, especially to support heterogeneous compilation for various purposes like structured control flow, concurrency constructs, and closures in source languages.
 
@@ -129,11 +134,3 @@ MLIR presents a promising avenue for compiler development, offering a versatile 
 ### Limitations
 
 MLIR is not a silver bullet and it does have its limitations. These limitations revolve around the idea that oftentimes there is a trade-off between expressiveness and performance. In certain instances, while MLIR offers a powerful framework for expressing complex transformations, it doesn't always directly reduce overall complexity. Instead, it might shift the intricacies to another layer or domain within the compilation process. The trade-offs between expressiveness and performance often constitute a crucial aspect in compiler design and optimization. While enhanced expressiveness within a compiler framework like MLIR allows developers to articulate intricate transformations and optimizations tailored to specific requirements, it might inadvertently introduce complexities that impact performance. This trade-off involves finding a delicate balance: the more expressive the framework, the greater the potential for sophisticated optimizations, but this might come at the cost of increased compilation time or overhead in the generated code.
-
----
-
-_John Rubio is a 2nd year MS student at Cornell University. He is interested in compilers, programming languages, and hardware._
-
-_Arjun Shah is a senior undergraduate at Cornell University. He is interested in working on compilers in industry._
-
-_Jiahan Xie is a 1st year MS student at Cornell University. He is interested in compilers and LLVM._
