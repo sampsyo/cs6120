@@ -74,7 +74,7 @@ The key insight behind trivial register allocation (TRA) is that any RISC-V inst
 
 ### Implementation
 
-Our [implementation](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc) used the same pattern described above, save for a few subtle differences. To map each abstract register to a specific offset, we added a new IR-to-machine class (TODO: ADD LINK) which stores a mapping of abstract registers to offsets. Note that each offset is a multiple of 4 since TinyRV32IM is a 32-bit architecture. 
+Our [implementation](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc) used the same pattern described above. To map each abstract register to a specific offset, we added a new IR-to-machine class (TODO: ADD LINK) which stores a mapping of abstract registers to offsets. Note that each offset is a multiple of four since TinyRV32IM is a 32-bit architecture. 
 
 Next, TRA is performed on each RVIR function. This point is important - TRA takes place on a _per-function_ basis. This means that if two Bril functions contain a variable, `a`, each `a` variable is mapped to a specific offset within a separate call frame. During the TRA pass, each RVIR instruction is examined. As described above, each variable _used_ by a given RVIR instruction has its value loaded from the stack. This is now possible since each variable has been assigned a unique offset. Each RVIR instruction that _defines_ a variable has the updated value stored to the stack at the location corresponding to the defined variable.
 
