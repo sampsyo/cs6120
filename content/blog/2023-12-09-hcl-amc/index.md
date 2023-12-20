@@ -34,7 +34,7 @@ The [CIRCT](https://circt.llvm.org/) project expands the MLIR-based development 
 
 ## Design Example
 
-To use HCL with AMC, the designer only needs to write their kernel in Python. Then, then user can simply specify which Python function to build with the AMC backend. Moreover, AMC acts as a drop-in replacement to the other backends in the HCL ecosystem, making functional testing and debugging seamless. In the far majority of cases, the [NumPy](https://numpy.org/) or the LLVM backend is suitable for use as a golden reference model. In this section, we walk through an example where we functionally verify a kernel built with AMC. Then, we will record some resource estimates and execution times.
+To use HCL with AMC, the designer only needs to write their kernel in Python. Then, then user can simply specify which Python function to build with the AMC backend. HCL will do the initial translation of the kernel AST into MLIR, along with some other high-level optimzations. Then, the AMC backend takes it the the rest of the way. Moreover, AMC acts as a drop-in replacement to the other backends in the HCL ecosystem, making functional testing and debugging seamless. In the far majority of cases, the [NumPy](https://numpy.org/) or the LLVM backend is suitable for use as a golden reference model. In this section, we walk through an example where we functionally verify a kernel built with AMC. Then, we will record some resource estimates and execution times.
 
 Our illustrative example will be matrix multiplication. What would ordinarily be a cumbersome task when using the vendor tools, like [Vitis HLS](https://www.xilinx.com/products/design-tools/vitis/vitis-hls.html), becomes a simple, 5 minute exercise. First, we specify some inputs initialized to random values. Then, `build()` the accelerator. Finally, we call both the software and hardware simulations and check their outputs. Compared to a C/C++ based tool flow, the amount of boilerplate code and scripting is reduced to near zero. In the end, we can represent this application with only 18 lines of code:
 
@@ -50,8 +50,10 @@ def test_amc():
     def kernel(A: int32[N, N], B: int32[N, N]) -> int32[N, N]:
         return matmul(A, B)
 
-    # Build the accelerator with AMC backend
+    # Traverse the kernel AST
+    # and create handle to Allo customizations
     s = customize(kernel)
+    # Build the accelerator with AMC backend
     f = s.build(target="amc")
     # Run the software simulation by invoking directly
     np_out = kernel(A, B)
@@ -204,7 +206,9 @@ Back to AMC, the custom dialect elaborates the *real* limiting resources of memo
   }
 ```
 
-The role of the AMC compiler is to take in a high-level description of memory organization (as seen above) and figure out how to best compile it to the target architecture. It accounts for some of the properties of underlying architecture, like BRAM size and port count, as well as the general context in which the memory is being used. For example, suppose a 2D matrix is being accesssed along its columns. The compiler may bank the memory by the matrix's rows for higher throughput. The memory compilation is a very gradual lowering process, and the explanation of the whole pass pipeline won't even start to fit in this post. However, the following diagram may offer a rough idea of how the core MLIR and AMC dialects to Verilog:
+In the above snippet, AMC IR is being used to declare a simple memory interface. The body is the implementation of said memory. First, the definition starts with an `amc.alloc` operation which represents the memory banks themselves. Then, `amc.create_port` is used to create handles to ports on those banks. Finally, `amc.extern` exposes those ports in the memory interface. In this case, the port types are dynamic, meaing that they have non-static latency for every read/write request. This memory module is a very simple example. Given a more elaborate application, you can find very interesting interactions from the compositions of AMC operations not shown here (`amc.merge`, `amc.reshape`, `amc.arbiter`, ...).
+
+The role of the AMC compiler is to take in a high-level description of memory organization (as seen above) and figure out how to best compile it to the target architecture. It accounts for some of the properties of underlying architecture, like BRAM size and port count. Moreover, AMC attempts to exploit the context in which the memory is being used for optimization. For example, suppose a 2D matrix is being accesssed along its columns. The compiler may bank the memory by the matrix's rows for higher throughput. Overall, the memory compilation is a very gradual lowering process, and the explanation of the whole pass pipeline won't fit in this post about the frontend. However, the following diagram may offer a rough idea of how the core MLIR and AMC dialects to Verilog:
 
 <center>
 <img src="amc_passes.png" alt="Diagram for AMC pass pipeline" title="AMC pass pipeline" style="zoom:30%;">
