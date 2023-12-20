@@ -28,7 +28,7 @@ Another approach to speeding up network throughput is to optimize the Linux netw
 The eBPF hook we explored in our project is the XDP hook. XDP allows users to run programs on packets within the networking driver before all of the expensive transport layer processing, memory allocation, and data copy has occurred. These programs can read/write header fields, route packets out the Tx (transmit) datapath, let packets continue along the kernel networking stack, drop packets, and even store state with the use of eBPF maps, a restricted form of memory. XDP is especially powerful for programs where the common case is dropping or forwarding (e.g., filters, load-balancers), as the majority of packets will not be processed by the kernel networking stack. 
 
 The use of a smartNIC can further accelerate this processing. A programmable smartNIC is a piece of networking hardware that operates as a NIC, but can be reprogrammed on the fly, rather than just implementing a fixed set of behaviors decided by the hardware vendor. By running an XDP program on a smartNIC, a packet fated to be dropped does not need to be DMA (Direct Memory Access) written to host memory, saving on end-to-end latency, and PCIe and memory bandwidth. We call this the Extra Express eXpress Data path. 
-An important piece of prior work is hXDP [1], which implements an eBPF interpreter on an FPGA smartNIC, allowing it to run arbitrary XDP programs. While this is a great innovation, due to the complex and non-specialized hardware, they were not able to measure any significant throughput increases. This approach also does not allow for a program to be “split” between the CPU and the NIC – instead, all of the XDP program processing is happening on the NIC. 
+An important piece of prior work is [hXDP](https://dl.acm.org/doi/abs/10.1145/3543668), which implements an eBPF interpreter on an FPGA smartNIC, allowing it to run arbitrary XDP programs. While this is a great innovation, due to the complex and non-specialized hardware, they were not able to measure any significant throughput increases. This approach also does not allow for a program to be “split” between the CPU and the NIC – instead, all of the XDP program processing is happening on the NIC.
 
 ## JITNIC System
 
@@ -133,9 +133,3 @@ let read_directory dname =
 ```
 
 The suggestions produced by ChatGPT resemble those of a new CS 3110 student still trying to shake an imperative way of thinking.
-
-## References
-
-1. Marco Spaziani Brunella, Giacomo Belocchi, Marco Bonola, Salvatore Pontarelli, Giuseppe Siracusano, Giuseppe Bianchi, Aniello Cammarano,
-   Alessandro Palumbo, Luca Petrucci, and Roberto Bifulco. 2022. hXDP: Efficient Software Packet Processing on FPGA NICs. Commun. ACM 65, 8 
-   (August 2022), 92–100.
