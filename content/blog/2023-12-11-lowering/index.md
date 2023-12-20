@@ -12,10 +12,9 @@ name = "John Rubio"
 name = "Arjun Shah"
 +++
 
-TODO: Move these links
+TODO: Move these link
 
 - [Trivial Register Allocation Logic](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/TrivialRegAlloc)
-- [Epilogue Inserter](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend/util/epilogue.py)
 
 # Summary
 Bril (TODO: ADD LINK) is a user-friendly, educational intermediate language. Bril programs have typically been run using the Bril interpreter (TODO: ADD LINK). Compiling Bril programs to assembly code that can run on real hardware would allow for more accurate measurements of the impacts of compiler optimizations on Bril programs in terms of execution time or clock cycles. Thus, the goal of [this project](https://github.com/JohnDRubio/CS_6120_Advanced_Compilers/tree/main/rv32_backend) was to write a RISC-V backend. That is, to write a program that lowers the [core subset of Bril](https://capra.cs.cornell.edu/bril/lang/core.html) to TinyRV32IM (TODO: ADD LINK), a subset of RV32IM (TODO: ADD LINK). The objective was to ensure semantic equivalence between the source program and the generated RISC-V code by running it on a RISC-V emulator. At the outset of this project, one of the stretch goals was to use Crocus (TODO: ADD LINK) to verify the correctness of the Bril-to-RISC-V lowering rules. Another stretch goal was to perform a program analysis step that would aid in instruction selection, allowing the lowering phase to take place in an M-to-N fashion as opposed to the more trivial 1-to-N approach. The authors regret to inform you that these stretch goals were not completed during the semester, however, the primary goal was achieved. The primary goal was to generate semantically equivalent RISC-V assembly code from a Bril source program using a dead simple approach: 1-to-N instruction selection, trivial register allocation, and correct calling conventions.
@@ -48,24 +47,24 @@ TODO: Clean up table
 
 | Bril                            | RISC-V Abstract Asm                |
 | ------------------------------- | --------------------------------- |
-| x: int = const 1                | addi x, x0, 1                     |
-| x: int = add y z                | add x, y, z                       |
-| x: int = mul y z                | mul x, y, z                       |
-| x: int = sub y z                | sub x, y, z                       |
-| x: int = div y z                | div x, y, z                       |
-| x: bool = eq y z                | beq y, z, .eq <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .eq: <br> addi x, x0, 1 <br> .exit_cond: |
-| x: bool = lt y z                | blt y, z, .lt <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .lt: <br> addi x, x0, 1 <br> .exit_cond: |
-| x: bool = gt y z                | blt z, y, .gt <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .gt: <br> addi x, x0, 1 <br> .exit_cond: |
-| x: bool = le y z                | bge z, y, .le <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .le: <br> addi x, x0, 1 <br> .exit_cond: |
-| x: bool = ge y z                | bge y, z, .ge <br> addi x, x0, 0 <br> jal x0 .exit_cond <br> .ge: <br> addi x, x0, 1 <br> .exit_cond: |
-| x: bool = not y                 | xori x, y, 1                      |
-| x: bool = and y z               | and x, y, z                       |
-| x: bool = or y z                | or x, y, z                        |
-| jmp .label                      | jal x0, .label                    |
-| br cond .label1 .label2         | addi tmp, x0, 1 <br> beq cond, tmp, .label1 <br> jal x0, .label2 <br> .label1: <br> ... <br> jal x0 .exit <br> .label2: <br> ... <br> .exit: |
-| ret x                           | addi a0, x, 0 <br> jalr x0, x1, 0 |
-| ret                             | jalr x0, x1, 0                    |
-| x: int = id y                   | addi x, y, 0                      |
+| `x: int = const 1`               |`addi x, x0, 1`                  |
+| `x: int = add y z`                | `add x, y, z`                       |
+| `x: int = mul y z`                | `mul x, y, z`                       |
+| `x: int = sub y z`                | `sub x, y, z`                      |
+| `x: int = div y z`                | `div x, y, z`                       |
+| `x: bool = eq y z`                |`  beq y, z, .eq` <br> `  addi x, x0, 0` <br> `  jal x0 .exit_cond` <br> `.eq:` <br> `  addi x, x0, 1` <br> `.exit_cond:`|
+| `x: bool = lt y z`                |`  blt y, z, .lt` <br> `  addi x, x0, 0` <br> `  jal x0 .exit_cond` <br> `.lt:` <br> `  addi x, x0, 1` <br> `.exit_cond:` |
+| `x: bool = gt y z`                |`  blt z, y, .gt` <br> `  addi x, x0, 0` <br> `  jal x0 .exit_cond` <br> `.gt:` <br> `  addi x, x0, 1` <br> `.exit_cond:` |
+| `x: bool = le y z`                |`  bge z, y, .le` <br> `  addi x, x0, 0` <br> `  jal x0 .exit_cond` <br> `.le:` <br> `  addi x, x0, 1` <br> `.exit_cond:` |
+| `x: bool = ge y z`                |`  bge y, z, .ge` <br> `  addi x, x0, 0` <br> `  jal x0 .exit_cond` <br> `.ge:` <br> `  addi x, x0, 1` <br> `.exit_cond:` |
+| `x: bool = not y`                 |`xori x, y, 1`                      |
+| `x: bool = and y z`               |`and x, y, z`                       |
+| `x: bool = or y z `               |`or x, y, z`                        |
+| `jmp .label`                      |`jal x0, .label`                    |
+| `br cond .label1 .label2`         |`  addi tmp, x0, 1` <br> `  beq cond, tmp, .label1` <br> `  jal x0, .label2` <br> `.label1:` <br> `  ...` <br> `  jal x0 .exit` <br> `.label2:` <br> `  ...` <br> `.exit:` |
+| `ret x`                           |`addi a0, x, 0` <br> `jalr x0, x1, 0` |
+| `ret`                             |`jalr x0, x1, 0`                    |
+| `x: int = id y `                  | `addi x, y, 0`                      |
 
  __Table 1__
 
