@@ -1,5 +1,5 @@
 +++
-title = "Variable Arguments in Bril and Arrays in the TypeScript compiler"
+title = "Variable Arguments in Bril and Arrays in the TypeScript Compiler"
 [extra]
 bio = """
  Alice is an M.Eng student studying Computer Science. She is broadly interested in compilers, systems and algorithm design.
