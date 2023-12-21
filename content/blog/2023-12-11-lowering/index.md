@@ -27,7 +27,7 @@ The first stage in the lowering pipeline is a preprocessing step. Source Bril pr
 
 ## Representing RISC-V Programs
 
-As mentioned above, a __1-to-N__ instruction selection approach was used for lowering. Thus, for each Bril instruction, one or more relatively simple RISC-V instructions would be used. The subset of RISC-V being used is TinyRV32IM which only consists of about thirty non-privileged RV32IM instructions. After some consideration, we felt the most straightforward way to group these instructions was the following:
+As mentioned above, a __1-to-N__ instruction selection approach was used for lowering. Thus, for each Bril instruction, one or more relatively simple RISC-V instructions would be generated. The subset of RISC-V being used is TinyRV32IM which only consists of about thirty non-privileged RV32IM instructions. After some consideration, we felt the most straightforward way to group these instructions was the following:
 
 - Register-Register Arithmetic Instructions
 - Register-Immediate Arithmetic Instructions
@@ -39,7 +39,7 @@ Each of these groups corresponds to a class in the RISC-V Intermediate Represent
 
 ## Progressive Lowering
 
-With the proper infrastructure in place, it is possible to perform the first of three lowering passes. As shown in __Figure 1__, each BrilInsn instance implements a *conv_riscvir* method. As the name implies, this method converts each BrilInsn instance to one or more RVIRInsn instances, thus implementing the 1-N instruction selection design. See __Table 1__ below for translation details. Each RVIRInsn instance corresponds to a single RISC-V IR instruction. For each function in the source Bril program, this pass returns a list of RVIRInsn instances representing a semantically equivalent RVIR function. It is worth noting that the only difference between RIVR instructions and true RISC-V instructions is that RVIR instructions do not use [RISC-V registers](https://en.wikichip.org/wiki/risc-v/registers). To lower to true RISC-V from RVIR, a register allocation pass is required.
+With the proper infrastructure in place, it was now possible to implement the first of three lowering passes. As shown in __Figure 1__, each BrilInsn instance implements a *conv_riscvir* method. As the name implies, this method converts each BrilInsn instance to one or more RVIRInsn instances, thus implementing the 1-N instruction selection design. See __Table 1__ below for translation details. Each RVIRInsn instance corresponds to a single RISC-V IR instruction. For each function in the source Bril program, this pass returns a list of RVIRInsn instances representing a semantically equivalent RVIR function. It is worth noting that the only difference between RIVR instructions and true RISC-V instructions is that RVIR instructions do not use [RISC-V registers](https://en.wikichip.org/wiki/risc-v/registers). To lower to true RISC-V from RVIR, a register allocation pass is required.
 
 
 | Bril                            | RISC-V Abstract Asm                |
