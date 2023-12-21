@@ -14,12 +14,19 @@ In the polyhedral model, executions of a statement within a loop nest are repres
 $$
 \mathcal{D} = \\{ x \in \mathbb{Z}^n \mid Ax + b \geq \mathbf{0} \\},
 $$
-where $n$ is the depth of the loop nest, which admits a compact representation in terms of $A$ and $b$. For example, consider the following program:
+where $n$ is the depth of the loop nest, which admits a compact representation in terms of $A$ and $b$. The points $x$ may be viewed as possible assignments to the iteration vector
+$$
+\begin{bmatrix} x_1 & x_2 & \cdots & x_n \end{bmatrix}^\mathrm{T},
+$$
+where the $x_j$ are the induction variables of the loop nest. For example, consider the following program:
 
 ```c
-for (int i = 0; i < n; i++)
-    for (int j = 1; j <= i; j++)
+for (int i = 0; i < n; i++) {
+    a[i][0] = 1;
+    for (int j = 1; j <= i; j++) {
         a[i][j] = a[i - 1][j - 1] + a[i - 1][j];
+    }
+}
 ```
 
 The iteration domain for the innermost statement can be visualized as a two-dimensional region:
@@ -99,17 +106,32 @@ The result is a list of the SCoPs within a given function. Implementing this ana
 
 Having identified regions with polyhedral domain, the next step is to construct those domains explicitly in a format that can be manipulated by integer programming tools. We use [isl](https://libisl.sourceforge.io/) to build sets from affine constraints and discharge queries such as emptiness checking.
 
-For a given operation, we begin by determining the space in which its iteration domain should be constructed. This determination depends on the SCoP in which the operation resides: loop induction variables within the SCoP correspond to dimensions of the space, while other variables correspond to parameters.
+For a given operation, we begin by determining the space in which its iteration domain should be constructed. The space defines the iteration vector (whose elements are called *dimensions* in isl's terminology) and any symbolic constants (*parameters*) referenced by the system of constraints. It is selected according to the SCoP in which the operation resides: loop induction variables within the SCoP correspond to dimensions of the space, while other variables correspond to parameters.
 
 To construct the iteration domain, we traverse the loop nest moving outwards from the operation, accumulating constraints imposed by loop bounds and `if` conditions, until we reach the root of the SCoP. Each constraint we encounter introduces an inequality between affine expressions. We convert these expressions from MLIR `Value`s into isl's internal representation of affine functions, construct integer sets corresponding to the inequalities, and finally compute the intersection across all constraints.
 
-In the implementation, this analysis is wrapped up in an MLIR pass that annotates each operation in the IR with an attribute encoding the operation's iteration domain. The figure from the introduction was generated from the pass' output.
+In the implementation, this analysis is wrapped up in an MLIR pass that annotates each operation in the IR with an attribute encoding the operation's iteration domain. For example, the two stores in the program from the introduction have their iteration domains annotated as follows, where the domain is encoded as a string in [isl notation](https://libisl.sourceforge.io/user.html#isl-format):
+
+```mlir
+scf.for %arg3 = %c0 to %arg2 step %c1 {
+  memref.store %c1_i32, %arg0[%arg3, %c0]
+    {domain = "[arg2] -> { [arg3] : 0 <= arg3 < arg2 }"} : memref<?x10xi32>
+  ...
+  scf.for %arg4 = %c1 to %3 step %c1 {
+    ...
+    memref.store %11, %arg0[%arg3, %arg4]
+      {domain = "[arg2] -> { [arg4, arg3] : arg4 > 0 and arg3 >= arg4 and 0 <= arg3 < arg2 }"} : memref<?x10xi32>
+  } {domain = "[arg2] -> { [arg3] : 0 <= arg3 < arg2 }"}
+} {domain = "[arg2] -> { [] :  }"}
+```
+
+In this simple example, the constraints correspond directly to the loop bounds as specified in the source program, though that might not be the case in general.
 
 ### Building Dependence Polyhedra
 
 Testing the legality of transformations in the polyhedral model requires encoding dependence relations between statement executions. Dependences arise from accesses to a common memory location, where one access is a store. There are many techniques for identifying such dependences; following Bastoul, we take the approach of dependence polyhedra.
 
-A dependence polyhedron, for a given pair of statements, encodes dependences between executions of the respective statements as integer points. The question of whether the statements are free of dependences then amounts to an emptiness check on the polyhedron.
+A dependence polyhedron, for a given pair of statements, encodes dependences between executions of the respective statements as integer points, such that the polyhedron is precisely the set of possible dependences. The question of whether the statements are free of dependences then amounts to an emptiness check on the polyhedron.
 
 We construct the dependence polyhedron via a system of constraints with the following components, as described by Bastoul:
 
@@ -121,14 +143,12 @@ The implementation reuses much of the infrastructure needed for the previous ana
 
 ## Evaluation
 
-Unfortunately, the project has not reached a point where it is practical to perform a systematic evaluation across a wide range of benchmarks. To check correctness, I have thus far relied on manual inspection of the internal data structures. I've tested with a modest set of examples from the literature, with mostly encouraging results.
+Unfortunately, the project has not reached a point where it is practical to perform a systematic evaluation across a wide range of benchmarks. To check correctness, I have thus far relied on manual inspection of the internal data structures. I've tested with a modest set of examples from the literature, with mostly encouraging results. These include most of Bastoul's examples from Chapters 2–3 and a few other standard programs such as matrix multiplication, which exercise the various features of the implementation described above. Altogether they contain various shapes of loop nests, with both static and non-static control, with and without loop-carried dependencies.
 
 ### Challenges
 
 There was a considerable amount of background material to learn before and throughout the project, given that I had no prior experience with polyhedral compilation. Learning the requisite infrastructure (MLIR, isl) was also occasionally troublesome. In particular, figuring out how to do relatively simple things in isl sometimes required lots of experimenting with sparsely documented functions.
 
 With respect to the implementation itself, construction of the dependence polyhedra was certainly the trickiest part, and is also the part of the implementation in whose correctness I'm least confident. And as I mentioned above, testing is currently limited to manual inspection of internal data structures (though I did write utilities to visualize those structures where appropriate).
-
-## References
 
 [^1]: Cédric Bastoul. *Improving Data Locality in Static Control Programs.* PhD thesis, University Paris 6, Pierre et Marie Curie, 2004.
