@@ -73,9 +73,9 @@ define <vscale x 1 x i8> @vadd_vv_nxv1i8(<vscale x 1 x i8> %va, <vscale x 1 i8> 
 ```
 Here, we define a vector-vector add function that takes in two vector arguments, and returns the sum. For the background knowledge of LLVM [vector types](https://llvm.org/docs/LangRef.html#vector-type), it has both fix-length vectors and scalable vectors. We will be focusing on scalable vectors not only because it's more complex and flexible, it also fits into our abovementioned discussion regarding flexible-widths RISC-V vector registers. The form of scalable vectors in LLVM is as follows:
 ```
-<vscale x VF x primitive data type>
+<vscale x M x primitive data type>
 ```
-where `VF` is the vectorization/grouping factor, it specifies how many vector elements are there in this group; a primitive data type; and `vscale` is a constant multiple of the specified number of vector elements, and `vscale` is unknown at compile time. For example, `<vscale x 4 x i32>` represents a scalable vector, which is a multiple of 4 32-bit integer values.
+where `M` is the minimum number of elements in the vector; a primitive data type; and `vscale` is a constant multiple of the specified number of vector elements, and `vscale` is unknown at compile time. For example, `<vscale x 4 x i32>` represents a scalable vector, which is a multiple of 4 32-bit integer values.
 
 
 Since there are four passes in the LLVM GlobalISel core pipeline, my design and implmentation are also based on these four passes.
