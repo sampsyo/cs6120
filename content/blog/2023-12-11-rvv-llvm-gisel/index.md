@@ -26,7 +26,7 @@ There are a lot of instructions and cool features in the [RISC-V "V" Vector Exte
 The most important parameters are undoubtly `SEW`, `VLEN`, `VL`, and `LMUL`; and one of the most interesting and powerful instructions is `vset{i}vl{i}`.
 
 Let's begin with the crucial parameters:
-- `SEW`: Selected Element Width (in bits), set dynamically by the programmers. It sets the width/length of a single element in a vector element. Each vector element can compose multiple single element.
+- `SEW`: Selected Element Width (in bits), set dynamically by the programmers. It sets the width/length of a single element in a vector element/register. Each vector element can compose `VLEN`/`SEW` single elements.
 - `VLEN`: Vector register LENgth (in bits). The number of bits in a single vector register. It is hardware dependent. 
 - `VL`: Vector element Length (in bits) that the programmers actually deal with, which can be treated as the vector operation building blocks. It defines how many elements the vector operations will execute.
 - `LMUL`: The vector Length MULtiplier. It is used for grouping vector registers. It is a power of 2 and it ranges from 1/8 to 8. For instance, when `LMUL=8`, the ABI imposes that only `v0`, `v8`, `v16`, and `v24` indices are allowed to used, as for example, group `v8` encodes 8 vector elments `v8v9`...`v15`. Note it can also be fraction numbers because sometimes we want to use only parts of the vector registers.
