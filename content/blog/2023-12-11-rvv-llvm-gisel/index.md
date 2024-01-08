@@ -75,7 +75,7 @@ Here, we define a vector-vector add function that takes in two vector arguments,
 ```
 <vscale x M x primitive data type>
 ```
-where `M` is the minimum number of elements in the vector; a primitive data type; and `vscale` is a constant multiple of the specified number of vector elements, and `vscale` is unknown at compile time. For example, `<vscale x 4 x i32>` represents a scalable vector, which is a multiple of 4 32-bit integer values.
+where `M` is the minimum number of elements in the vector; a primitive data type; and `vscale` is a positive constant multiple of the specified number of vector elements, and `vscale` is unknown at compile time. For example, `<vscale x 4 x i32>` represents a scalable vector, which can be _any_ positive multiple (for example, 1, 4, 16, etc.) of 4 32-bit integer values. Although it's unknown at compile time, it remains constant during runtime (for example, the user passes `vscale` as the program input).
 
 
 Since there are four passes in the LLVM GlobalISel core pipeline, my design and implmentation are also based on these four passes.
