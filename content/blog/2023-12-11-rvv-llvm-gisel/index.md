@@ -61,7 +61,7 @@ GlobalISel is intended to be a replacement for [SelectionDAG](https://llvm.org/d
 
 A visualization of the pipeline is shown below: ![](pipeline.png)
 
-Please note that Combiner is not in the scope of this blog.
+Please note that Combiner, which is an optional optimization in GlobalISel that replaces patterns of instructions with a better (faster or smaller code size) alternative, is not in the scope of this blog.
 
 # What Did I Do?
 Let's start with a minimum code generation example that we want to support in LLVM GlobalISel:
