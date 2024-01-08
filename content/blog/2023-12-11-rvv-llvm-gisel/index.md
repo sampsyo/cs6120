@@ -27,7 +27,8 @@ The most important parameters are undoubtly `SEW`, `VLEN`, `VL`, and `LMUL`; and
 
 Let's begin with the crucial parameters:
 - `SEW`: Selected Element Width (in bits), set dynamically by the programmers. It sets the width/length of a single element in a vector element/register. Each vector element can compose `VLEN`/`SEW` single elements.
-- `VLEN`: Vector register LENgth (in bits). The number of bits in a single vector register. It is hardware dependent. 
+- `ELEN`: The maximum size in bits of a vector element that any operation can produce or consume.
+- `VLEN`: Vector register LENgth (in bits). The number of bits in a single vector register. It is hardware dependent and `VLEN >= ELEN`.
 - `VL`: Vector element Length (in bits) that the programmers actually deal with, which can be treated as the vector operation building blocks. It implies how many vector registers/elements the vector operations will execute. As will be discussed below, `VL = min(AVL, VLMAX)`, which means there's no fixed relationship between `VL` and `VLEN`. `VL` might be greater than, less than, or equal to `VLEN` depending on the value of `AVL`, `LMUL`, and `SEW`. 
 - `LMUL`: The vector Length MULtiplier. It is used for grouping vector registers. It is a power of 2 and it ranges from 1/8 to 8. For instance, when `LMUL=8`, the ABI imposes that only `v0`, `v8`, `v16`, and `v24` indices are allowed to used, as for example, group `v8` encodes 8 vector elments `v8v9`...`v15`. Note it can also be fraction numbers because sometimes we want to use only parts of the vector registers.
   
@@ -101,10 +102,10 @@ Before explaining our work, let's define what does "legal" mean in LLVM GlobalIS
 
 Prior to our support, the `G_ADD` operation is legal for scalar types. Scalable vectors as Low Level Types are theoretically legal in GlobalISel, but it has not been legalized, so we focused on legalizing the LLTs. Just as a note, [Low Level Type (LLT)](https://llvm.org/doxygen/classllvm_1_1LLT.html) is intended to replace the usage of Extended Vector Type (EVT) in SelectionDAG. LLTs are specified in terms of whether they are scalar or vector, and their widths; but they don't differentiate between integer and floating values.  For example, `LLT s16` is simply defined as `LLT::scalar(16)`. For scalable vector types, if we want to define `nx4s32` (`<vscale x 4 x s32>`), it's nothing but `LLT::scalable_vector(4, s32)`.
 
-Since we just brought up LLT, I'd like to introduce how to concretely associate the `VLEN`, `LMUL` things we discussed before with LLVM scalable vector types. Please note that as the date of this blog post, the LLVM community only has comprehensive support when `vscale == VLEN/64`, and that we only have partial support for `VLEN=32` using intrinsics when `vscale` is not used and there is no spill/reload of vectors. Supporting `VLEN=32` would require twice as many instruction selection patterns in `RISCVGenDAGISel.inc` which is already a very large table so the community hasn't done it. With that being said, I can present the chart of how RISC-V vector types are mapped to LLVM types for integers:
+Since we just brought up LLT, I'd like to introduce how to concretely associate the `VLEN`, `LMUL` things we discussed before with LLVM scalable vector types. Please note that as the date of this blog post, the LLVM community only has comprehensive support when `vscale == VLEN/64`, where 64 is the magic constant for the minimum vector register length (assumed by LLVM not RISC-V), that is to say, we currently require that `VLEN >= 64`. We only have partial support for `VLEN=32` using intrinsics when `vscale` is not used and there is no spill/reload of vectors. Supporting `VLEN=32` would require twice as many instruction selection patterns in `RISCVGenDAGISel.inc` which is already a very large table so the community hasn't done it. With that being said, I can present the chart of how RISC-V vector types are mapped to LLVM types for integers:
 ```
 LMUL
-/           MF8    MF4     MF2     M1      M2      M4       M8
+/           1/8    1/4     1/2     1       2       4        8
 SEW       
 i64         N/A    N/A     N/A     nxv1i64 nxv2i64 nxv4i64  nxv8i64
 i32         N/A    N/A     nxv1i32 nxv2i32 nxv4i32 nxv8i32  nxv16i32
@@ -113,7 +114,7 @@ i8          nxv1i8 nxv2i8  nxv4i8  nxv8i8  nxv16i8 nxv32i8  nxv64i8
 ```
 The complete chart can be found in [this `RISCV/RISCVRegisterInfo.td` file](https://github.com/llvm/llvm-project/blob/75d6795e420274346b14aca8b6bd49bfe6030eeb/llvm/lib/Target/RISCV/RISCVRegisterInfo.td). And note that `MF` stands for fractional `LMUL` and `M`s are integer `LMUL`s.
 
-Some values are `None` because currently RISC-V vectors assume `VLEN=64`. Take the combination (`MF8`, `i16`) as an example. If we were to write it in terms of LLVM scalable vectors, it would be `nx1/2i16` ((64 x 1/8) / 16 = 1/2), which is illegal. Now consider a legal (`LMUL`, `SEW`) combination: (`i32`, `M4`). Since `VLEN` = 64 and `SEW` = 32, there are 64/32 = 2 elements that can fit in a single vector element. And since the grouping factor is 4, there are 2*4 = 8 multiples of elements, hence `nxv8i32 == <vscale x 8 x i32>`.
+Some values are `None` because currently the LLVM community assumes the RISC-V vectors to have `VLEN=64`. Take the combination (`1/8`, `i16`) as an example. If we were to write it in terms of LLVM scalable vectors, it would be `nx1/2i16` ((64 x 1/8) / 16 = 1/2), which is illegal. Now consider a legal (`LMUL`, `SEW`) combination: (`i32`, `4`). Since `VLEN` = 64 and `SEW` = 32, there are 64/32 = 2 elements that can fit in a single vector element. And since the grouping factor is 4, there are 2*4 = 8 multiples of elements, hence `nxv8i32 == <vscale x 8 x i32>`.
 
 The legal scalable vector types in the chart should all be legalized in the `legalize` pass. To implement this, we use the `getActionDefinitionsBuilder` function in [the `LegalizerInfo` class](https://llvm.org/doxygen/classllvm_1_1LegalizerInfo.html). In addition, we utilize [the `LegalityQuery` structure](https://llvm.org/doxygen/structllvm_1_1LegalityQuery.html) to query and filter the input LLTs. 
 
