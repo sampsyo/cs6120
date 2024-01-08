@@ -16,8 +16,7 @@ name = "Michael Maitland"
 
 The open [RISC-V instruction set architecture (ISA)](https://riscv.org/technical/specifications/) has an interesting extension, [the RISC-V "V" Vector Extension](https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc). The unique part of RISC-V Vector Extension is that its vector instructions can deal with flexible vector lengths, VL, which makes programming in RISC-V Vector Extension agnostic to the vector register sizes. This feature really distinguishes the RISC-V Vector Extension from the traditional SIMD extensions, such as [x86 SSE](https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions) (with a fixed size 128-bit vector length)/[AVX](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) (256-bit), and [Arm NEON](https://developer.arm.com/Architectures/Neon) (128-bit). Traditional SIMD extensions with fixed vector lengths face challenges when dealing with the changing data sizes. They must maintain compatibility and support all existing fixed-size vector lengths in their instruction set architectures. This often leads to inefficiencies, especially in loop operations where the data size/loop stride may not align perfectly with the fixed vector size, necessitating additional scalar processing for the remaining elements. And the most suitable size for the number of elements to be processed in the vector loop is hard to decide ahead of time. In contrast, the RISC-V Vector Extension eliminate this concern with its vector length agnostic principle. Particularly in loop scenarios, the RISC-V's ability to adaptively handle varying data sizes stands out. For instance, in a simple loop adding two arrays, the RISC-V can dynamically adjust the vector length for each iteration by dynamically setting the vector length. This means it can process as many elements as possible in each pass, depending on the hardware capabilities and the remaining data. This adaptive approach really simplifies the code by eliminating the need for separate scalar loops for the leftover elements.
 
-# What Was the Goal?
-The goal was to support LLVM Global Instruction Selection, a framework that operates on whole function for instruction selection, for the RISC-V Vector Extension on some ALU operations, such as `vadd`, `vsub`, `vand`, `vor`, and `vxor`.
+In this project, our goal was to support LLVM Global Instruction Selection, a framework that operates on whole function for instruction selection, for the RISC-V Vector Extension on some ALU operations, such as `vadd`, `vsub`, `vand`, `vor`, and `vxor`.
 
 
 # A Primer on the RISC-V Vector Extension
@@ -64,7 +63,7 @@ A visualization of the pipeline is shown below: ![](pipeline.png)
 
 Please note that Combiner, which is an optional optimization in GlobalISel that replaces patterns of instructions with a better (faster or smaller code size) alternative, is not in the scope of this blog.
 
-# What Did I Do?
+# The Core Pipeline and My Implementation
 Let's start with a minimum code generation example that we want to support in LLVM GlobalISel:
 ```
 define <vscale x 1 x i8> @vadd_vv_nxv1i8(<vscale x 1 x i8> %va, <vscale x 1 i8> %b) {
@@ -144,7 +143,7 @@ Implementation-wise, the [`select` function](https://llvm.org/doxygen/classllvm_
 [This patch](https://github.com/llvm/llvm-project/pull/74114) implements both Register Bank Select and Instruction Select passes. 
 
 
-# What Were the Hardest Parts?
+# Challenges and Triumphs
 
 Learning the whole LLVM and its GlobalISel infrastructure were the hardest parts to support GlobalISel for the RISC-V Vector Extension, especially for someone who was new to the LLVM world. It was also hard to understand the vector length agnostic features/instructions in the RISC-V vector extension in particular.
 
@@ -152,15 +151,13 @@ LLVM is a huge project and it was hard to navigate at the beginning. They have t
 
 Learning the RISC-V vector extension was also a headache at the beginning because I had to figure out the difference between RISC-V vector extension with standard SIMD vector instructions. Learning the semantic meaning of `vsetvli`, differentiating the concepts of `ELEN`, `VLEN`, and how `SEW`, `LMUL`, `VLMAX` come into play was also confusing.
 
-# Were You Successful?
-
-This project is a success and we have become one of the first developers to support GlobalISel for the RISC-V vector extension, as well as the first developers to support scalable vectors in GlobalISel for any target.
+Nevertheless, this project turns out to be a success and we have become one of the first developers to support GlobalISel for the RISC-V vector extension, as well as the first developers to support scalable vectors in GlobalISel for any target.
 
 We evaluate our work using LLVM [Regression tests](https://llvm.org/docs/TestingGuide.html#regression-tests). The regression tests are driven by [lit](https://llvm.org/docs/CommandGuide/lit.html), LLVM Integrated Tester. Each pass of GlobalISel is testable (that's also one of the advantages of GlobalISel over SelectionDAG). The root test directory for RISC-V GlobalISel is located in [`llvm/test/CodeGen/RISCV/GlobalISel`](https://github.com/llvm/llvm-project/tree/main/llvm/test/CodeGen/RISCV/GlobalISel), in which it has  `irtranslator`, `legalizer`, `regbankselect`, and `instruction-select` directories to test each pass. We first make sure that our implementation still pass all the existing regression tests. Then, we generate more regression test assertions using Python scripts `update_llc_test_checks.py` and `update_mir_test_checks.py` located under `llvm/utils/`. We test for every pass, for all the opcodes we intend to support, and for all the scalable vector `LLT` types available in the RISC-V vector extension. And as a result, we achieve 100% correctness. Although didn't "optimizie" anything explicitly, when I compare our GlobalISel outputs with the outputs from SelectionDAG, which is typically used as the ground truth for now, and they turn out to be the same, meaning we have an "optimal" code generation implementation.
 
 There are numerous benefits of this work. As we have mentioned before, GlobalISel is intended to replace SelectionDAG and FastISel to solve some major problems. Since GlobalISel operates on the whole function, supporting GlobalISel for RISC-V vector extension can allow for more efficient code generation globally tailored to the unique features of this extension, such as variable vector lengths and diverse operation types. GlobalISel also eliminates the use of dedicated IRs as in SelectionDAG, it streamlines the compilation process by providing this more unified and efficient approach to instruction selection, which can be particularly beneficial for the complex operations involved in vector processing. Last but not least, as GlobalISel is built in a way that enables code reuses, our work also provides a foundation of the framework that can be extended and customized for future work, enabling long term reusability and adaptability.
 
-# Future Work?
+# Future Work
 
 It's absolutely been a fun and rewarding experience, and I plan to keep supporting more opcodes, such as vector load/store, in LLVM GlobalISel for the RISC-V vector extension. When more opcodes are supported and we are ready to write actual interesting high-level language programs, I will also try to write some, for example, C programs, and run them on simulators like [Spike](https://github.com/riscv-software-src/riscv-isa-sim).
 
