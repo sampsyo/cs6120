@@ -1,5 +1,10 @@
 +++
 title = "Efficient Path Profiling Paper"
+[extra]
+latex = true
+bio = """
+  Allen, Kabir, Noah, and Simon were students at Cornell University in the Spring of 2025 -- at that time they diligently studied compilers under the tutelage of [Adrian Sampson](https://www.cs.cornell.edu/~asampson/)
+"""
 [[extra.authors]]
 name = "Allen Wang"
 [[extra.authors]]
