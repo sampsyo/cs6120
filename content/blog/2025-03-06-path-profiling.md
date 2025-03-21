@@ -21,7 +21,7 @@ means in the context of control-flow graph analysis. When performing a program a
 key insights can be ascertained by looking at the most frequently visited paths through the control-flow graph.
 The process of counting occurrences of different paths through the graph is referred to as path profiling.
 
-In recent times, the strongest use case for profiling in programs has been **profile-driven compilation**
+In recent times, the strongest use case for profiling in programs has been **profile-guided optimization**
 – a tool by which one can optimize programs based on what paths in a control-flow graph are the most frequently visited. 
 
 **Edge Profiling**
@@ -31,7 +31,7 @@ the most frequently visited **edges** in a control-flow graph.
 Edge profiling for a while served as the primary tool by which one could analyze well the 'hottest' paths of a program.
 
 However, there are a number of cases in which edge profiling just isn't sufficient in providing a strong enough
-analysis for profile-driven compilation – furthermore, often making wrong predictions. This issue has been known for a while,
+analysis for profile-guided optimization – furthermore, often making wrong predictions. This issue has been known for a while,
 but ignored, as alternative, more accurate forms of profiling have historically come with a higher overhead.  
 
 As such an example, one more accurate form of profiling which analyzes larger portions of the graph, is **path profiling**.
@@ -91,7 +91,7 @@ Of course there was not really space to do a deeper analysis on edge vs. path pr
 
 This paper was the first to offer a performant algorithm for path profiling, so almost all of the other work on path profiling uses the paper's algorithm. The question here then just rounds to asking "what is the role of path profiling in history?"
 
-The authors mention that path profiling could be potentially used for performance tuning, profile-directed compilation, and test coverage. For test coverage, it doesn't really see any use in practice for the reasons mentioned in [the discussion](https://github.com/sampsyo/cs6120/discussions/487) (too much performance cost for not enough benefit over edge profiling). For performance tuning and profile-directed compilation, it seems like path profiling sees some use in non-real time applications, but I'm not sure how often they're used in practice. Interestingly, profile-guided optimization tools like [these](https://research.facebook.com/file/900986544473313/Improved-Basic-Block-Reordering.pdf) [two](https://arxiv.org/abs/1810.00905) block layout optimizers that might be able to benefit from path profiling don't use it. Optimistically, this suggests that path profiling offers more utility than block or edge profiling, but that it can be difficult to make use of that utility. Pessimistically, this suggests that path profiling doesn't offer much more than block or edge profiling. The Codestitcher authors do mention that the information path profiling offers is "excessive" for code layout optimization, which I guess counts towards both viewpoints depending on how you want to think about it. For similar reasons as in profile-guided optimization, path profiling is not used in practice for real-time use cases like just-in-time compilation. Most of them also rely on simpler techniques like counting function calls or branch paths in order to determine when to patch in code. However, some other reasons why path profiling might be difficult to use here are the 30% performance drop and the difficulty of effective interprocedural optimization.
+The authors mention that path profiling could be potentially used for performance tuning, profile-guided optimization, and test coverage. For test coverage, it doesn't really see any use in practice for the reasons mentioned in [the discussion](https://github.com/sampsyo/cs6120/discussions/487) (too much performance cost for not enough benefit over edge profiling). For performance tuning and profile-guided optimization, it seems like path profiling sees some use in non-real time applications, but I'm not sure how often they're used in practice. Interestingly, profile-guided optimization tools like [these](https://research.facebook.com/file/900986544473313/Improved-Basic-Block-Reordering.pdf) [two](https://arxiv.org/abs/1810.00905) block layout optimizers that might be able to benefit from path profiling don't use it. Optimistically, this suggests that path profiling offers more utility than block or edge profiling, but that it can be difficult to make use of that utility. Pessimistically, this suggests that path profiling doesn't offer much more than block or edge profiling. The Codestitcher authors do mention that the information path profiling offers is "excessive" for code layout optimization, which I guess counts towards both viewpoints depending on how you want to think about it. For similar reasons as in profile-guided optimization, path profiling is not used in practice for real-time use cases like just-in-time compilation. Most of them also rely on simpler techniques like counting function calls or branch paths in order to determine when to patch in code. However, some other reasons why path profiling might be difficult to use here are the 30% performance drop and the difficulty of effective interprocedural optimization.
 
 #### Other Papers
 
