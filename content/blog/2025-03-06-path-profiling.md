@@ -32,7 +32,7 @@ Edge profiling for a while served as the primary tool by which one could analyze
 
 However, there are a number of cases in which edge profiling just isn't sufficient in providing a strong enough
 analysis for profile-guided optimization – furthermore, often making wrong predictions. This issue has been known for a while,
-but ignored, as alternative, more accurate forms of profiling have historically come with a higher overhead.  
+but has been tolerated as alternative, more accurate forms of profiling have historically come with a higher overhead.  
 
 As such an example, one more accurate form of profiling which analyzes larger portions of the graph, is **path profiling**.
 As its name would suggest, rather than looking purely at edges within the control flow graph and examining those which are the most frequently visited,
