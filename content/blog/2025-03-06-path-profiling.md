@@ -69,7 +69,7 @@ The idea is that if you (a vertex in the DAG) have assigned some ordering to you
 
 Of course, the control flow graphs of many interesting programs are not DAGs. So the paper gives a technique for extending the algorithm to general control flow graphs. The key idea is to remove backedges (in the depth-first search sense of the term) and replace them with fake edges that can be more easily instrumented.
 
-In particular, if $v \rightarrow w$ is a backedge, when you remove that edge you add two new edges: $ENTRY \rightarrow w$ and $v \rightarrow EXIT$. This process turns general control flow graphs into DAGS (and preserves the unique ENTRY and EXIT vertices). The resulting encoding does not distinguish _all_ paths through the graph (there are infinite distinct paths through a cyclic graph) but it does distinguish between some important paths (namely, paths that take 1 pass through a loop vs paths that take multiple passes).
+In particular, if $v \rightarrow w$ is a backedge, when you remove that edge you add two new edges: $ENTRY \rightarrow w$ and $v \rightarrow EXIT$. This process turns general control flow graphs into DAGs (and preserves the unique ENTRY and EXIT vertices). The resulting encoding does not distinguish _all_ paths through the graph (there are infinite distinct paths through a cyclic graph) but it does distinguish between some important paths (namely, paths that take 1 pass through a loop vs paths that take multiple passes).
 
 The paper includes other details on placing instrumentation code for fake edges, placing instrumentation code efficiently, storing counts of path sums in arrays vs. hash maps, and selecting registers for storing the active path sum, but the key contribution is the algorithm described above.
 
