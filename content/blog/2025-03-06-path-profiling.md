@@ -90,12 +90,24 @@ So while this profiling algorithm is certainly low-overhead _for a path profilin
 This program dependence makes it tricky to argue about whether this algorithm is "low-overhead enough" for certain use cases.
 An interesting use case to consider that was brought up during the class discussion of this paper is JIT compilers.
 We asked ourselves "is this algorithm so low-overhead that we would feel comfortable running it on an actively running user program in a JIT compiler?"
-For programs where the overhead of this algorithm is near 5% my answer is pretty comfortably "yes", but for programs where the overhead is close to 100% my answer is probably "no".
+For programs where the overhead of this algorithm is near 5% my answer is pretty comfortably "yes", but for programs where the overhead is close to 100% my answer is probably "no" or at least "very rarely".
 Since it is not clear how well per-program profiling overhead can be statically predicted, this algorithm might be limited to uses cases where the worst-case overhead of 100% or higher can be tolerated.
 
 Besides the path profiling algorithm, the paper's main argument is in favor of path profiling itself, arguing that it produces substantially better profiles than edge profiling.
 
-The paper successfully argues that path profiling produces better profiles. The implemented path profiler reliably provides frequencies for paths that are meaningfully longer than those produced by the edge profiler they compare against (and, of course, it should produce nearly identical information about edge frequencies). But the paper fails to take the final step and argue that the longer paths lead to better optimized programs. The authors don't do any experiments where the path and edge profiles are used to separately optimize the profiled programs. Such an experiment would have completed their argument that path profiling is worth the extra cost.
+The paper mostly successfully argues that path profiling produces better profiles.
+The authors measure their own path profiles against path profiles produced from edge profiles in two ways.
+One is by comparing the number of full executed paths that each method correctly predicts.
+Path profiling obviously scores 100% on this metric, while edge profiling rarely breaks 50%.
+The other method is by comparing the longest mistake-free path prefix that edge profiling produces to the length of the full executed paths.
+The reported result is that edge profiling generally guesses the first 50-75% of a path correctly.
+The biggest flaw in these two metrics is that they are not very holistic.
+They ignore the fact that a distribution over edge frequencies gives an implied distribution over path frequencies that could be compared to the "true" distribution of path frequencies collected by the path profiler.
+However, overall, this data paints a convincing picture that the information produced by path profiling is richer and more detailed.
+
+The paper's deeper flaw is that it fails to take the final step and argue that the richer information leads to better optimized programs.
+The authors don't do any experiments where the path and edge profiles are used to separately optimize the profiled programs.
+Such an experiment would have completed their argument that path profiling is worth the extra cost.
 
 Of course there was not really space to do a deeper analysis on edge vs. path profiling in this paper. Which is likely why that analysis was performed separately in the Ball paper from the background section. Although, disappointingly, even that paper doesn't include any experiments on actually optimizing programs with path and edge profiles.
 
