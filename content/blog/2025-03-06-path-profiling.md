@@ -21,25 +21,25 @@ This blog post summarizes the class discussion on the paper [Efficient Path Prof
 
 **Overview of Profiling**
 
-To understand the motivation of the paper, one can first take a closer look at what **profiling**
+To understand the motivation of the paper, one can first take a closer look at what _profiling_
 means in the context of control-flow graph analysis. When performing a program analysis over a control-flow graph,
 key insights can be ascertained by looking at the most frequently visited paths through the control-flow graph.
 The process of counting occurrences of different paths through the graph is referred to as path profiling.
 
-In recent times, the strongest use case for profiling in programs has been **profile-guided optimization**
+In recent times, the strongest use case for profiling in programs has been _profile-guided optimization_
 – a tool by which one can optimize programs based on what paths in a control-flow graph are the most frequently visited. 
 
 **Edge Profiling**
 
-One of the most popular profiling tools has been **edge profiling**, by which one can determine
-the most frequently visited **edges** in a control-flow graph.
+One of the most popular profiling tools has been _edge profiling_ by which one can determine
+the most frequently visited edges in a control-flow graph.
 Edge profiling for a while served as the primary tool by which one could analyze well the "hottest" paths of a program.
 
 However, there are a number of cases in which edge profiling just isn't sufficient in providing a strong enough
 analysis for profile-guided optimization – furthermore, often making wrong predictions. This issue has been known for a while,
 but has been tolerated as alternative, more accurate forms of profiling have historically come with a higher overhead.  
 
-As such an example, one more accurate form of profiling which analyzes larger portions of the graph, is **path profiling**.
+As such an example, one more accurate form of profiling which analyzes larger portions of the graph, is _path profiling_.
 As its name would suggest, rather than looking purely at edges within the control flow graph and examining those which are the most frequently visited,
 it instead looks at entire acyclic routines (paths) throughout the graph, and analyzes those which are traversed the most frequently.
 
