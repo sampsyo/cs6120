@@ -28,7 +28,7 @@ In recent times, the strongest use case for profiling in programs has been **pro
 
 One of the most popular profiling tools has been **edge profiling**, by which one can determine
 the most frequently visited **edges** in a control-flow graph.
-Edge profiling for a while served as the primary tool by which one could analyze well the 'hottest' paths of a program.
+Edge profiling for a while served as the primary tool by which one could analyze well the "hottest" paths of a program.
 
 However, there are a number of cases in which edge profiling just isn't sufficient in providing a strong enough
 analysis for profile-guided optimization – furthermore, often making wrong predictions. This issue has been known for a while,
