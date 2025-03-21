@@ -18,8 +18,8 @@ This blog post summarizes the class discussion on the paper [Efficient Path Prof
 
 To understand the motivation of the paper, one can first take a closer look at what **profiling**
 means in the context of control-flow graph analysis. When performing a program analysis over a control-flow graph,
-key insights can be ascertained by looking at the most frequently visited paths along the control-flow graph.
-The process of analytically observing different routines in the graph is referred to as profiling.
+key insights can be ascertained by looking at the most frequently visited paths through the control-flow graph.
+The process of counting occurrences of different paths through the graph is referred to as path profiling.
 
 In recent times, the strongest use case for profiling in programs has been **profile-driven compilation**
 – a tool by which one can optimize programs based on what paths in a control-flow graph are the most frequently visited. 
