@@ -80,11 +80,18 @@ The paper includes other details on placing instrumentation code for fake edges,
 
 ### Analysis ###
 
-The algorithm presented in this paper is interesting on pure theoretical grounds. It is always informative to find a minimum of anything, so the minimal encoding presented is valuable as a pure mathematical object. As a practical matter, the encoding is perhaps less valuable.
+The algorithm presented in this paper is interesting on pure theoretical grounds. It is always informative to find a minimum of anything, so the minimal encoding presented is valuable as a pure mathematical object. As a practical matter, the picture is slightly less clear.
 
-It turned out (in the evaluation section) that many programs have too many paths to store path counts in an array, so the profiler presented in the paper used a hash map anyway. While having small integers to represent paths is valuable in its own right, the greater benefit was in being able to store counts in an array. This is born out by the data in the paper, with programs that were small enough to use an array for path counts having noticably lower overheads than those that required a hash map.
+It turned out (in the evaluation section) that many programs have too many paths to store path counts in an array, so the profiler presented in the paper often had to use a hash map instead.
+This resulted in a somewhat bimodal distribution of profiling overheads: while the average profiling overhead across all programs was 31%, roughly bucketing the profiled programs into "low path count" and "high path count" (<10% hashed paths and >10% hashed paths in Table 1 in the paper, respectively) groups gave an average overhead of 16% for the low path count group and 43% for the high path count group.
+There is even more variance in the overheads attributable to the number of instructions in the basic blocks of the CFG.
+So while this profiling algorithm is certainly low-overhead _for a path profiling algorithm_, the observed overhead is highly dependent on the program being profiled.
 
-A similar argument can be made about reducing profiling overhead in general. While making programs run faster is almost always a good thing, this particular improvement did not cross the line into "viable-in-production" (for some definition of production). So for example, it is difficult to imagine a JIT compiler tolerating a 30% overhead for a running program at any stage of compilation. In this sense, the progress made in this paper towards low-overhead path profiling is perhaps better viewed as a step in the right direction than as a paradigm shift.
+This program dependence makes it tricky to argue about whether this algorithm is "low-overhead enough" for certain use cases.
+An interesting use case to consider that was brought up during the class discussion of this paper is JIT compilers.
+We asked ourselves "is this algorithm so low-overhead that we would feel comfortable running it on an actively running user program in a JIT compiler?"
+For programs where the overhead of this algorithm is near 5% my answer is pretty comfortably "yes", but for programs where the overhead is close to 100% my answer is probably "no".
+Since it is not clear how well per-program profiling overhead can be statically predicted, this algorithm might be limited to uses cases where the worst-case overhead of 100% or higher can be tolerated.
 
 Besides the path profiling algorithm, the paper's main argument is in favor of path profiling itself, arguing that it produces substantially better profiles than edge profiling.
 
