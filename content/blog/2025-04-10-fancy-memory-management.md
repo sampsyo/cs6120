@@ -1,3 +1,19 @@
++++
+title = "Memory Compaction via Meshing"
+[extra]
+latex = false
+[[extra.authors]]
+name = "Lisa Li"
+[[extra.authors]]
+name = "Bryant Park"
+[[extra.authors]]
+name = "Mariia Soroka"
+[[extra.authors]]
+name = "David Han"
++++
+
+This blog post is about [Mesh: Compacting Memory Management for C/C++ Applications](https://dl.acm.org/doi/10.1145/3314221.3314582), published in PLDI 2019.
+
 Many modern programming languages—like Java, Go, and Python—use automatic memory management. Their garbage-collected runtimes periodically find and reclaim unreachable memory, reducing the burden on the programmer to manually deallocate memory when it is no longer needed. This automatic management simplifies development and avoids common bugs like memory leaks and double-frees, which can occur in languages which use manual memory management. However, garbage collection comes with trade-offs. It adds runtime overhead (for instance, in the form of reference counting or object graph traversal) and can lead to unpredictable stop-the-world collection phases, which are undesirable in latency-sensitive applications. In contrast, C/C++ uses manual memory management, giving programmers direct control over allocation/deallocation via `malloc` and `free`. This fine-grained management over the layout of memory and the timing of deallocation makes C/C++ popular in performance-sensitive contexts, where deterministic behavior and tight control over resources is essential.
 
 ### Fragmentation
