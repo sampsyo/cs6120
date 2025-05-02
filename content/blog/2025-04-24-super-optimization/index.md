@@ -1,5 +1,5 @@
 +++
-title = "Denali: A Goal-directed Superoptimizer"
+title = "Superoptimization: a quest for -O∞"
 [[extra.authors]]
 name = "Mark Barbone"
 [[extra.authors]]
@@ -7,8 +7,6 @@ name = "Zihan Li"
 [[extra.authors]]
 name = "Samuel Breckenridge"
 +++
-
-## Superoptimization: a quest for -O∞
 
 The -O flag makes your program faster. -O2 makes it faster still, and ideally, -O3 squeezes out even more speed, and the cost of being slower to compile. What if we could keep going? -O4, -O5, or even -O∞, getting the fastest program ever (at the expense of perhaps the slowest compiler)? This is the goal of superoptimization. In this blog post we’ll discuss the paper “Denali: A Goal-directed Superoptimizer”.
 
