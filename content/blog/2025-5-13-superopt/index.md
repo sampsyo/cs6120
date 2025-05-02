@@ -12,15 +12,28 @@ name = "Neel Patel"
 +++
 
 ## Introduction
+### E-graphs and Equality Saturation
+E-graphs efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program. The example below shows an arithmetic expression a * 2 / 2 represented as an e-graph.
+
+<!--- TODO -->
+
+In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
+<!--- -->
+Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The E-graphs Good (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
+<!--- -->
+The benefit of equality saturation is that it avoids the problem of finding the optimal order in which to apply optimizations (the phase-ordering problem) by encoding all possible optimizations within the e-graph. The catch is that a separate procedure, called *extraction*, is required to actually select the best term from the e-graph according to a user-provided cost function.
+<!--- -->
+For simple cost functions, it is sufficient to apply a greedy, bottom-up, extraction procedure. However, for more complex cost functions, extracting an optimal solution has been proven to be NP-hard. Currently, Egg implements a [heuristic greedy extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/extract.rs) and an [exact extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/lp_extract.rs) which formulates extraction as a mixed integer linear programming problem and solves it using the [COIN-OR](https://github.com/coin-or/Cbc) Branch-and-cut solver. The former has been shown to select terms with suboptimal costs, while the latter does not scale well to larger problems, leading to a poor scalability-quality tradeoff [[Cai et al. 2025](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf)].
+
+### Superoptimization for Technology Mapping
 <!--TODO: Brief intro on what RTL and ASIC technology mapping is.-->
 
 <!--TODO: Explain what the state-of-the-art in technology mapping i.e., ABC and heuristic algorithms -->
 
-<!--TODO: Then explain superoptimization and egraphs (provide an illustration). Explain why they are useful for RTL optimization as well as other optimization problems with a large search space (e.g., compiler optimizations) -->
 
 <!--TODO: Then explain our contributions
 1) Integration of good_lp library into egg, enabling the use of a wider range of extraction techniques
-2) Comparison of
+2) Comparison of different ILP solvers and greedy extraction for superoptimization of RTL designs using a standard cell library -- TODO (what standard cell library?)
 -->
 ###
 
@@ -36,29 +49,11 @@ name = "Neel Patel"
 
 ### Design Extraction
 
-<!-- TODO: Show and expalin the currently possible extraction techniques used to extract the design from the egraph
+<!-- TODO: Show and expalin the extraction techniques (currently implemented in Egg) that we can use to extract the design from the egraph
 1) Greedy Extraction
 2) ILP Extraction using branch-and-cut
   a) [COIN-OR](https://coin-or.github.io/Cbc/intro)
-  b) [SCIP](https://www.scipopt.org/)
+  b) [SCIP]()
 -->
 
 ## Results
-
-
-<!---
-
-### Technology Mapping
-Technology Mapping with Boolean Matching, Supergates and Choices: https://people.eecs.berkeley.edu/~alanmi/publications/2005/tech05_map.pdf
-* The task of technology mapping in standard-cell logic synthesis is to express a given Boolean function as a network of gates chosen from a given standard-cell library so that some objective function, such as total area or delay, is optimized.
-* cut-based techniques found in technology mapping for FPGA look-up tables can be adapted to work for standard cell libraries using Boolean matching
-
-
-### ILP Algos:
-* [cbc](https://en.wikipedia.org/wiki/Branch_and_cut#:~:text=Branch%20and%20cut%20is%20a%20method%20of,the%20algorithm%20is%20called%20cut%20and%20branch)
-  *
-
-### Example:
-https://www.cs.cornell.edu/courses/cs6120/2023fa/blog/hcl-amc/
-https://github.com/neel-patel-1/cs6120/tree/2023fa/content/blog/2023-12-09-hcl-amc
--->
