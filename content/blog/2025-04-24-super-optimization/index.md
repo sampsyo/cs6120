@@ -22,7 +22,7 @@ An e-graph is a DAG that represents the computation of a program. Its key featur
 
 ### Boolean Satisfiability (SAT) Solvers
 
-Denali was one of the earliest applications of SAT solvers to code generation, an approach which has since become widely adopted in the field (for example used in [Sketch](https://people.csail.mit.edu/asolar/papers/Solar-Lezama09.pdf) and [Brahma](https://people.eecs.berkeley.edu/~sseshia/pubdir/synth-icse10.pdf)). At the time the Denali paper was written, SAT solvers were improving at an insane rate: for at least 10-15 years, SAT algorithms were getting faster at about the same rate as Moore’s law.  Today’s SAT solvers solve problems with ~tens of millions of variables.
+Denali was one of the earliest applications of SAT solvers to code generation, an approach which has since become widely adopted in the field. For example, [Sketch](https://people.csail.mit.edu/asolar/papers/Solar-Lezama09.pdf) and [Brahma](https://people.eecs.berkeley.edu/~sseshia/pubdir/synth-icse10.pdf) both use solvers for program synthesis, although they use more general satisfiability modulo theory (SMT) solvers which in contrast to SAT solvers are not limited to just boolean formulas. At the time the Denali paper was written, SAT solvers were improving at an insane rate: for at least 10-15 years, SAT algorithms were getting faster at about the same rate as Moore’s law.  Today’s SAT solvers solve problems with ~tens of millions of variables.
 
 ## Contributions
 
