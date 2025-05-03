@@ -80,6 +80,6 @@ The STOKE superoptimizer formulates the superoptimization task as a stochastic s
 
 **[Souper: A Synthesizing Superoptimizer (2018)](https://arxiv.org/pdf/1711.04422)**
 
-Souper takes a different approach to the other superoptimizers discussed, in that instead of outputting assembly, its output is IR: it both takes in, and produces as output, LLVM IR. Its algorithm is CEGIS: enumeration and testing, like Massalin’s superoptimizer, but in a loop with a verification tool that can add tests. It’s designed to be used mainly by compiler engineers, to help improve compiler optimizations: both LLVM and MSVC include optimizations inspired by suggestions from the output of Souper.
+Souper takes a different approach to the other superoptimizers discussed, in that instead of outputting assembly, its output is IR: it both takes in, and produces as output, LLVM IR. Its algorithm is an improved version of counterexample guided inductive synthesis (CEGIS), in which an SMT solver is used to synthesize instructions, with extra logic to constrain instruction cost. It’s designed to be used mainly by compiler engineers, to help improve compiler optimizations: both LLVM and MSVC include optimizations inspired by suggestions from the output of Souper.
 
 There is a body of other superoptimization work focusing on more domain specific settings ([tensor computation](https://arxiv.org/abs/2101.01332) optimization in a deep learning setting) and more restricted search spaces ([SIMD instructions](https://arxiv.org/abs/2306.00229)).
