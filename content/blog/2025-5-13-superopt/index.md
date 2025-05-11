@@ -62,20 +62,20 @@ The former has been shown to select terms with suboptimal costs, while the latte
 
 ## Results
 
-* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks.
+* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks. Since Exact LUT count fails to find a solution once the number of rewrite iterations becomes large (the size of the e-graph gets too big), we attempted to run each benchmark to 10 rewrite iterations. Some, like c3540, c6288, and c7552 did not complete 10 iterations.
 
-| Benchmark | No Optimization LUT Count  | Greedy LUT Count | Exact LUT Count |
+| Benchmark | No Optimization LUT Count  | Greedy LUT Count | Exact LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|-----------------|
-| c1355     | 96                         | 94               | 94              |
-| c17       | 2                          | 2                | 2               |
-| c1908     | 86                         | 85               | 86              |
-| c2670     | 120                        | 119              | 118             |
-| c3540     | 265                        | 260              |                 |
-| c432      | 51                         | 50               | 50              |
-| c499      | 90                         | 90               | 90              |
-| c5315     | 267                        | 266              | 264             |
-| c6288     | 520                        | 512              |                 |
-| c7552     | 335                        | 325              |                 |
+| c1355     | 96                         | 94               | 94 (10)         |
+| c17       | 2                          | 2                | 2 (10)          |
+| c1908     | 86                         | 85               | 86 (10)         |
+| c2670     | 120                        | 119              | 118 (10)        |
+| c3540     | 265                        | 260              | 258 (3)         |
+| c432      | 51                         | 50               | 50 (10)         |
+| c499      | 90                         | 90               | 90 (10)         |
+| c5315     | 267                        | 266              | 264 (10)        |
+| c6288     | 520                        | 512              | 511 (8)         |
+| c7552     | 335                        | 325              | 328 (9)         |
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targeting an ASIC.
 
@@ -97,14 +97,14 @@ The former has been shown to select terms with suboptimal costs, while the latte
 
 | Bench   | Greedy Area   | Exact Area   |
 |---------|---------------|--------------|
-| c1355   | 301.11176     |              |
-| c17     | 7.182         |              |
-| c1908   | 302.70795     |              |
-| c2670   | 592.1152      |              |
-| c3540   | 897.7507      |              |
-| c432    | 184.07196     |              |
-| c499    | 259.08365     |              |
-| c880    | 254.56172     |              |
+| c1355   | 301.11176     | DNF          |
+| c17     | 7.182         | 7.182        |
+| c1908   | 302.70795     | DNF          |
+| c2670   | 592.1152      | DNF          |
+| c3540   | 897.7507      | DNF          |
+| c432    | 184.07196     | DNF          |
+| c499    | 259.08365     | DNF          |
+| c880    | 254.56172     | DNF          |
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an ASIC.
 
