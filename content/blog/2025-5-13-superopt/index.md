@@ -15,7 +15,7 @@ name = "Neel Patel"
 ### E-graphs and Equality Saturation
 E-graphs efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program. The example below shows an arithmetic expression a * 2 / 2 represented as an e-graph.
 
-<!--- TODO -->
+<img src="canonical-example.svg" alt="" width="33%">
 
 In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
 <!--- -->
