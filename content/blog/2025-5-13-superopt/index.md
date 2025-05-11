@@ -77,21 +77,21 @@ The former has been shown to select terms with suboptimal costs, while the latte
 | c6288     | 520                        | 512              |                 |
 | c7552     | 335                        | 325              |                 |
 
-* We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an FPGA.
+* We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targeting an ASIC.
 
-| Benchmark | Greedy Time   | Exact Time |
-|-----------|---------------|------------|
-| c1355     | 0.014683506   |            |
-| c17       | 0.000015339   |            |
-| c1908     | 0.013643256   |            |
-| c2670     | 0.014628216   |            |
-| c3540     | 0.027794132   |            |
-| c432      | 0.009021587   |            |
-| c499      | 0.012706906   |            |
-| c5315     | 0.016442      |            |
-| c6288     | 0.033019137   |            |
-| c7552     | 0.021390077   |            |
-| c880      | 0.015240757   |            |
+| Benchmark | Greedy Time       | Exact Time       |
+|-----------|-------------------|------------------|
+| c1355     | 0.014683506       | 592.576364288    |
+| c17       | 0.000015339       | 0.047621979      |
+| c1908     | 0.013643256       | 580.703048272    |
+| c2670     | 0.014628216       | 592.308684103    |
+| c3540     | 0.027794132       | 6.183054221      |
+| c432      | 0.009021587       | 588.374009831    |
+| c499      | 0.012706906       | 586.398412895    |
+| c5315     | 0.016442          | 583.762630907    |
+| c6288     | 0.033019137       | 88.027779099     |
+| c7552     | 0.021390077       | 590.099322901    |
+| c880      | 0.015240757       | 0.074230685      |
 
 * We compare the area of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
 
