@@ -32,8 +32,8 @@ For simple cost functions, it is sufficient to apply a greedy, bottom-up, extrac
 
 
 <!--TODO: Then explain our contributions
-1) Integration of good_lp library into egg, enabling the use of a wider range of extraction techniques
-2) Comparison of different ILP solvers and greedy extraction for superoptimization of RTL designs using a standard cell library -- TODO (what standard cell library?)
+1) Correct formulation of a cost model for area-optimization of ASIC designs for use in ILP extraction
+2) Comparison of greedy and ILP extraction for superoptimization of RTL targetting both FPGAs and ASICs
 -->
 ###
 
@@ -57,3 +57,47 @@ For simple cost functions, it is sufficient to apply a greedy, bottom-up, extrac
 -->
 
 ## Results
+
+* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks.
+
+| Benchmark | No Optimization LUT Count  | Greedy LUT Count |
+|-----------|----------------------------|------------------|
+| c1355     | 96                         | 94               |
+| c17       | 2                          | 2                |
+| c1908     | 86                         | 85               |
+| c2670     | 120                        | 119              |
+| c3540     | 265                        | 260              |
+| c432      | 51                         | 50               |
+| c499      | 90                         | 90               |
+| c5315     | 267                        | 266              |
+| c6288     | 520                        | 512              |
+| c7552     | 335                        | 325              |
+
+* We compare the area of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library.
+
+| Bench   | Greedy Area   |
+|---------|---------------|
+| c1355   | 301.11176     |
+| c17     | 7.182         |
+| c1908   | 302.70795     |
+| c2670   | 592.1152      |
+| c3540   | 897.7507      |
+| c432    | 184.07196     |
+| c499    | 259.08365     |
+| c880    | 254.56172     |
+
+* We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an FPGA.
+
+| Benchmark | Greedy Time   | Exact Time |
+|-----------|---------------|------------|
+| c1355     | 0.014683506   |            |
+| c17       | 0.000015339   |            |
+| c1908     | 0.013643256   |            |
+| c2670     | 0.014628216   |            |
+| c3540     | 0.027794132   |            |
+| c432      | 0.009021587   |            |
+| c499      | 0.012706906   |            |
+| c5315     | 0.016442      |            |
+| c6288     | 0.033019137   |            |
+| c7552     | 0.021390077   |            |
+| c880      | 0.015240757   |            |
