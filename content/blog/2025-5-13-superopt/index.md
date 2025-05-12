@@ -27,38 +27,46 @@ The benefit of equality saturation is that it avoids the problem of finding the 
 For some simple cost functions, the optimal expression can be found by applying a greedy, bottom-up, extraction procedure, but, in general, the problem of extracting an optimal solution has been shown NP-hard. Currently, Egg implements two extractors.
 The first is a [heuristic greedy extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/extract.rs) which expresses the cost of an e-node as the aggregate cost of its children.
 The second is an [exact extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/lp_extract.rs) which formulates extraction as a mixed integer linear programming problem and solves it using the [COIN-OR](https://github.com/coin-or/Cbc) Branch-and-cut solver.
-The former has been shown to select terms with suboptimal costs, while the latter does not scale well to larger problems, leading to a poor scalability-quality tradeoff [[Cai et al. 2025](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf)].
+<!--- The former has been shown to select terms with suboptimal costs, while the latter does not scale well to larger problems, leading to a poor scalability-quality tradeoff [[Cai et al. 2025](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf)]. -->
 
-### Superoptimization for Technology Mapping
-<!--TODO: Brief intro on what RTL and ASIC technology mapping is.-->
+### E-graphs for Technology Mapping
+<!--TODO: Change depending on whether we can run ASIC flow or explain the issues.-->
+The task of technology mapping in logic synthesis is to express a given Boolean function as a network of gates from a standard cell library (for ASICs) or programmable LUTs (for FPGAs) so that an objective function, such as total area or delay, is optimized.
 
 <!--TODO: Explain what the state-of-the-art in technology mapping i.e., ABC and heuristic algorithms -->
 
+<!--TODO: Explain why e-graphs are a good way to represent designs and which (if any) prior works -->
 
+### Contributions
 <!--TODO: Then explain our contributions
 1) Correct formulation of a cost model for area-optimization of ASIC designs for use in ILP extraction
 2) Comparison of greedy and ILP extraction for superoptimization of RTL targetting both FPGAs and ASICs
 -->
-###
+In this project, we completed the integration of an exact extractor into the *msynth* electronic design automation tool, which transforms designs specified in verilog into area-optimal designs using components from a standard cell library.
+Both msynth, and its sister tool, *lvv* -- which produces FPGA netlists -- now support greedy and exact extraction.
+We compare the performance of both of these tools in terms of time to extract a design and quality of the resulting design.
 
-## Superoptimizing RTL
+## Optimizing RTL using E-Graphs
 
 ### Specifying an RTL Design
+Below we give an example of a half-adder written in a domain-specific, circuit-specification language called *LutLang*. lvv takes a verilog program as input, but represents the program as a LutLang expression to perform optimizations before converting back to verilog and emitting the optimized design.
 <!-- TODO: Example of a circuit written in LUTLang -->
 
 ### Equality Saturation
 <!-- TODO: Show how the circuit is represented as an egraph-->
+The e-graph of the original design, before equality saturation, looks like:
+
+<img src="simple_2_output_before.svg" alt="" width="20%">
 
 <!-- TODO: Show the rewrite rules and how the rewrites are applied to the egraph  -->
+During equality saturation, rewrite rules transform the two-input gates into programmable LUTs, specified by three parameters: a program (numeric e-node), and two operands (a and b).
+
+<img src="simple_2_output_lvv_after.svg" alt="" width="33%">
+
 
 ### Design Extraction
 
-<!-- TODO: Show and expalin the extraction techniques (currently implemented in Egg) that we can use to extract the design from the egraph
-1) Greedy Extraction
-2) ILP Extraction using branch-and-cut
-  a) [COIN-OR](https://coin-or.github.io/Cbc/intro)
-  b) [SCIP]()
--->
+During extraction, an optimal design is produced using either the greedy or exact approach explained in the [E-graphs and Equality Saturation](#e-graphs-and-equality-saturation) section.
 
 ## Results
 
