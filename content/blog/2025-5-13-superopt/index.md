@@ -105,14 +105,17 @@ During extraction, an optimal design is produced using either the greedy or exac
 
 | Bench   | Greedy Area   | Exact Area   |
 |---------|---------------|--------------|
-| c1355   | 301.11176     | DNF          |
-| c17     | 7.182         | 7.182        |
-| c1908   | 302.70795     | DNF          |
-| c2670   | 592.1152      | DNF          |
-| c3540   | 897.7507      | DNF          |
-| c432    | 184.07196     | DNF          |
-| c499    | 259.08365     | DNF          |
-| c880    | 254.56172     | DNF          |
+| c1355   | 429.32428     | 323.45593    |
+| c17     | 6.9160004     | 6.118        |
+| c1908   | 438.36798     | 345.53387    |
+| c2670   | 669.25555     | 563.6538     |
+| c3540   | 1091.3983     | 724.58307    |
+| c432    | 188.5938      | 158.00392    |
+| c499    | 273.44772     | 238.8677     |
+| c5315   | 1352.5999     | 1320.1482    |
+| c6288   | 1244.3474     | 176.88991    |
+| c7552   | 1218.539      | 958.1368     |
+| c880    | 297.91995     | 229.02611    |
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an ASIC.
 
