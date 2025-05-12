@@ -101,7 +101,7 @@ During extraction, an optimal design is produced using either the greedy or exac
 | c7552     | 0.021390077       | 590.099322901    |
 | c880      | 0.015240757       | 0.074230685      |
 
-* We compare the area of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
+* We compare the area (µm²) <!-- TODO: Is this the right unit? --> of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
 
 | Bench   | Greedy Area   | Exact Area   |
 |---------|---------------|--------------|
@@ -119,16 +119,16 @@ During extraction, an optimal design is produced using either the greedy or exac
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an ASIC.
 
-| Benchmark | Greedy Time   | Exact Time |
-|-----------|---------------|------------|
-| c1355     |               |            |
-| c17       |               |            |
-| c1908     |               |            |
-| c2670     |               |            |
-| c3540     |               |            |
-| c432      |               |            |
-| c499      |               |            |
-| c5315     |               |            |
-| c6288     |               |            |
-| c7552     |               |            |
-| c880      |               |            |
+| Benchmark | Greedy Time       | Exact Time       |
+|-----------|-------------------|------------------|
+| c1355     | 0.046134086       | 552.489092645    |
+| c17       | 0.011094708       | 0.184392328      |
+| c1908     | 0.03812723        | 552.00           |
+| c2670     | 0.042055477       | 574.89           |
+| c3540     | 0.032852412       | 127.343130536    |
+| c432      | 0.022252978       | 570.399432819    |
+| c499      | 0.023853089       | 1.452188237      |
+| c5315     | 0.047760014       | 18.092125211     |
+| c6288     | 0.136245309       | 0.323213248      |
+| c7552     | 0.045072024       | 41.087552974     |
+| c880      | 0.027521613       | 0.843221141      |
