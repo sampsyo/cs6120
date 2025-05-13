@@ -76,7 +76,7 @@ To enable exploration of different solvers for the exact extraction phase of e-g
 
 ## Results
 
-* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until 10 rewrite iterations. This limits the size of the e-graph by restricting the number of times rewrites can be applied to the e-graph. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
+* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until 10 rewrite iterations. This limits the size of the e-graph by restricting the number of times rewrites can be applied to the e-graph. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
 
 | Benchmark | No Optimization LUT Count  | Greedy LUT Count | Microlp LUT Count (# Rewrite Iterations) | Highs LUT Count (# Rewrite Iterations) | CBC LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|------------------------------------------|----------------------------------------|---------------------------------------|
