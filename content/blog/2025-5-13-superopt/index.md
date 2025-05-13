@@ -39,10 +39,11 @@ The task of technology mapping in logic synthesis is to express a given Boolean 
 
 ### Contributions
 <!--TODO: Then explain our contributions
-1) Correct formulation of a cost model for area-optimization of ASIC designs for use in ILP extraction
-2) Comparison of greedy and ILP extraction for superoptimization of RTL targetting both FPGAs and ASICs
+1) Integration of new ILP solvers into Egg's exact extractor
+2) Correct formulation of a cost model for area-optimization of ASIC designs for use in ILP extraction
+3) Comparison of greedy and ILP extraction for superoptimization of RTL targetting both FPGAs and ASICs
 -->
-In this project, we completed the integration of an exact extractor into the *msynth* electronic design automation tool, which transforms designs specified in verilog into area-optimal designs using components from a standard cell library.
+In this project, we completed the integration of an exact extractor into an e-graph-based electronic design automation tool. The tool transforms designs specified in verilog into area-optimal designs using components from a standard cell library.
 Both msynth, and its sister tool, *lvv* -- which produces FPGA netlists -- now support greedy and exact extraction.
 We compare the performance of both of these tools in terms of time to extract a design and quality of the resulting design.
 
@@ -59,7 +60,7 @@ The e-graph of the original design, before equality saturation, looks like:
 <img src="simple_2_output_before.svg" alt="" width="20%">
 
 <!-- TODO: Show the rewrite rules and how the rewrites are applied to the egraph  -->
-During equality saturation, rewrite rules transform the two-input gates into programmable LUTs, specified by three parameters: a program (numeric e-node), and two operands (a and b).
+During equality saturation, rewrite rules transform the two-input gates into programmable LUTs, specified by three parameters: a truth table (numeric e-node), and two operands (a and b).
 
 <img src="simple_2_output_lvv_after.svg" alt="" width="33%">
 
@@ -70,7 +71,7 @@ During extraction, an optimal design is produced using either the greedy or exac
 
 ## Results
 
-* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks. Since Exact LUT count fails to find a solution once the number of rewrite iterations becomes large (the size of the e-graph gets too big), we attempted to run each benchmark to 10 rewrite iterations. Some, like c3540, c6288, and c7552 did not complete 10 iterations.
+* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" we run benchmark until 10 rewrite iterations. Some, like c3540, c6288, and c7552 did not reach 10 iterations before our timeout threshold of 10 minutes was reached.
 
 | Benchmark | No Optimization LUT Count  | Greedy LUT Count | Exact LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|-----------------|
@@ -103,19 +104,20 @@ During extraction, an optimal design is produced using either the greedy or exac
 
 * We compare the area (µm²) <!-- TODO: Is this the right unit? --> of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
 
-| Bench   | Greedy Area   | Exact Area   |
-|---------|---------------|--------------|
-| c1355   | 429.32428     | 323.45593    |
-| c17     | 6.9160004     | 6.118        |
-| c1908   | 438.36798     | 345.53387    |
-| c2670   | 669.25555     | 563.6538     |
-| c3540   | 1091.3983     | 724.58307    |
-| c432    | 188.5938      | 158.00392    |
-| c499    | 273.44772     | 238.8677     |
-| c5315   | 1352.5999     | 1320.1482    |
-| c6288   | 1244.3474     | 176.88991    |
-| c7552   | 1218.539      | 958.1368     |
-| c880    | 297.91995     | 229.02611    |
+| Bench   | Greedy Area   | Exact Area (msynth)             | Exact Area (Synopsys)  |
+|---------|---------------|---------------------------------|------------------------|
+| c1355   | 317.87        | 415.23                          | 254.56                 |
+| c17     | 7.18          | 6.92                            | 6.92                  |
+| c1908   | 330.11        | 374.53                          | 229.29                |
+| c2670   | 587.86        | 760.76                          | 424.00                |
+| c3540   | 867.16        | 981.28                          | 537.59                |
+| c432    | 183.27        | 176.36                          | 107.46                |
+| c499    | 259.08        | 272.38                          | 255.63                |
+| c5315   | 1373.61       |                                 | 813.43                |
+| c6288   | 2672.49       |                                 | 1239.83               |
+| c7552   | 1760.10       |                                 | 913.18                |
+| c880    | 259.88        | 265.73                          | 224.24                |
+
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an ASIC.
 
