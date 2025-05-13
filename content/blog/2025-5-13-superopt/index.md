@@ -144,7 +144,7 @@ We also compare the area (µm²) of the designs extracted using greedy and exact
 | c7552   | 1760.10       | DNF                              | 913.18                 |
 | c880    | 259.88        | 265.73 (4000)                    | 224.24                 |
 
-* The times to perform greedy and exact extraction are reported below.
+The times to perform greedy and exact extraction are reported below.
 
 | Benchmark | Greedy Time       | Exact Time (msynth) |
 |-----------|-------------------|---------------------|
@@ -160,7 +160,7 @@ We also compare the area (µm²) of the designs extracted using greedy and exact
 | c7552     | 0.045072024       | DNF                 |
 | c880      | 0.027521613       | 10.793451794        |
 
-* *Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
+*Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
 
 ## Challenges
 
