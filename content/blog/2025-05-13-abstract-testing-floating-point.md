@@ -33,10 +33,9 @@ In the following blog post, I will:
 
 ## What is a bug?
 
-Consider a verification tool **VERIFY** to take some program *p(x)* and
-providing a **GUARANTEE** such that for all inputs *x*,
-**GUARANTEE(**_p(x)_**)** holds. At first blush, one might reasonably define a
-bug as follows: 
+Consider a verification tool **VERIFY** to take some program *p(x)* and provide
+a **GUARANTEE** such that for all inputs *x*, **GUARANTEE(**_p(x)_**)** holds.
+At first blush, one might reasonably define a bug as follows: 
 
 > <ins>Definition</ins> (_bug_). A bug in **VERIFY** exists iff there exists
 an input _x_ such that **GUARANTEE(**_p(x)_**)** does not hold.
