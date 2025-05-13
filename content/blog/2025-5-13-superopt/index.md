@@ -13,11 +13,11 @@ name = "Neel Patel"
 
 ## Introduction
 ### E-graphs and Equality Saturation
-E-graphs efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program, minimizing some user-provided cost function. The example below shows an arithmetic expression `a * 2 / 2` represented as an e-graph.
+Equality-graphs, or more simply, e-graphs, efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program, minimizing some user-provided cost function. E-graphs are directed graphs with edges from expressions (*e-nodes* in an e-graph), to a group of e-nodes (an *e-class* in an e-graph, where all the e-nodes contained are equivalent expressions). To efficiently maintain and merge these equivalence classes, e-graphs rely on a union-find data structure. The example below shows an arithmetic expression `a * 2 / 2` represented as an e-graph.
 
 <img src="canonical-example-before.svg" alt="" width="33%">
 
-In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions (*e-nodes* in an e-graph). Each rewrite grows the e-graph, without losing the previous versions of the expression. An *e-class* in an e-graph groups together expressions that are all equivalent. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
+In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously. 
 
 Using the previous example expression, `a * 2 / 2`, three (among many other) rewrite rules can be applied:
 1. Division associativity
@@ -41,11 +41,13 @@ The second is an [exact extractor](https://github.com/egraphs-good/egg/blob/v0.1
 
 ### E-graphs for Technology Mapping
 <!--TODO: Change depending on whether we can run ASIC flow or explain the issues.-->
-The task of technology mapping in logic synthesis is to express a given Boolean function as a network of gates from a standard cell library (for ASICs) or programmable LUTs (for FPGAs) so that an objective function, such as total area or delay, is optimized.
+The task of technology mapping in logic synthesis is to express a given Boolean function as a network of gates from a standard cell library (for ASICs) or programmable LUTs (for FPGAs) so that an objective function, such as total area, is optimized.
 
 <!--TODO: Explain what the state-of-the-art in technology mapping i.e., ABC and heuristic algorithms -->
+Traditional technology mapping tools like ABC rely on cut enumeration and dynamic programming to select optimal gate implementations. ABC supports both FPGA and ASIC targets and can operate on logic networks with structural choices—precomputed alternative implementations of subcircuits. Its recent addition of a priority-cut-based mapper improves performance by only considering the most promising cuts per node, reducing memory use and runtime. However, the mapper's effectiveness still depends heavily on the initial circuit structure, which may limit optimization potential.
 
 <!--TODO: Explain why e-graphs are a good way to represent designs and which (if any) prior works -->
+E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. E-Syn integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. ROVER applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
 
 ### Contributions
 In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg]() library, the EDA tool and users of egg's exact extractor can run extraction with these solvers.
