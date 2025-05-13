@@ -17,7 +17,7 @@ Equality-graphs, or more simply, e-graphs, efficiently represent equivalence cla
 
 <img src="canonical-example-before.svg" alt="" width="33%">
 
-In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
+In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible programs simultaneously.
 
 Using the previous example expression, `a * 2 / 2`, three (among many other) rewrite rules can be applied:
 1. Division associativity
