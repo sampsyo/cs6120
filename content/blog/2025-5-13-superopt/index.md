@@ -56,7 +56,14 @@ We also evaluate the performance of the extractor in the EDA tool, which transfo
 ## Optimizing RTL using E-Graphs
 
 ### Specifying an RTL Design
-Below we give an example of a half-adder written in a domain-specific, circuit-specification language called *LutLang*. The `lvv` tool takes verilog as input, but converts it into LutLang before performing optimizations and converting back into verilog.
+
+The EDA tool, called `lvv`, performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
+Here is a rough outline of the grammar defined by LutLang:
+`<LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>`
+lvv takes verilog as input, but converts it into LutLang before performing optimizations and then converts it back into verilog.
+
+Below we give an example of a half-adder written in a domain-specific, circuit-specification language called *LutLang*.
+
 `(BUS (AND a b) (XOR a b))`
 
 
