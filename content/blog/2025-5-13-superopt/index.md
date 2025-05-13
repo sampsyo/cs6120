@@ -6,7 +6,7 @@ bio = """
   Neel Patel is a first year PhD student interested in computer architecture and systems.<br>
 """
 [[extra.authors]]
-name = "Arnav Muthiyan"
+name = "Arnav Muthiayen"
 [[extra.authors]]
 name = "Neel Patel"
 +++
