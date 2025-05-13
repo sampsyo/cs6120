@@ -58,7 +58,7 @@ Our good\_lp-based exact extractor is [available](https://github.com/neel-patel-
 
 ### Specifying an RTL Design
 
-The EDA tool, called `lvv`, performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
+For this project, we use an EDA tool, written by Matt Hoffman, called `lvv`. lvv performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
 Here is a rough outline of the grammar defined by LutLang:
 ```
 LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
