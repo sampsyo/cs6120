@@ -76,7 +76,7 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 
 ## Results
 
-* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until 10 rewrite iterations. This limits the size of the e-graph by restricting the number of times rewrites can be applied to the e-graph. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
+* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until reaching 10 . This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
 
 | Benchmark | No Optimization LUT Count  | Greedy LUT Count | Microlp LUT Count (# Rewrite Iterations) | Highs LUT Count (# Rewrite Iterations) | CBC LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|------------------------------------------|----------------------------------------|---------------------------------------|
@@ -145,5 +145,8 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 
 ## Challenges
 
-* Long synthesis times for exact extraction made debugging challenging. Working with simple, fast-to-synthesize test cases is not enough. Simple test cases' e-graphs are not representative of complex designs with thousands of e-nodes, hundreds of thousands of constraints, and many cycles.
-* The size and complexity of logic synthesis for ASICs revealed the limitations of solver libraries. Errors from the underlying libraries were frequent. To address these, manual tuning of the problem was required -- we limited the size of the e-graph by restricting the number of total e-nodes and rewrite iterations.
+The end goal of the project changed after the proposal. Initially, we aimed to implement an efficient extraction algorithm, called [SmoothE](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf) into the EDA tool used throughout this project. As a stepping stone towards an implementation, we decided to first implement a linear programming-based extraction algorithm.
+Getting our LP solver implementation to emit correct results took more effort than expected. At the same time, the EDA tool had only recently began to implement support for ASIC logic synthesis using a standard cell library and exact extraction had not yet been fully implemented and tested. For this reason we decided to focus on developing a correct implementation of LP extraction. Despite the less ambitions end goal, there were numerous challenges.
+
+Long synthesis times for exact extraction made debugging challenging. Working with simple, fast-to-synthesize test cases is not enough. Simple test cases' e-graphs are not representative of complex designs with thousands of e-nodes, hundreds of thousands of constraints, and many cycles.
+The size and complexity of logic synthesis for ASICs revealed the limitations of solver libraries. Errors from the underlying libraries were frequent. To address these, manual tuning of the problem was required -- we limited the size of the e-graph by restricting the number of total e-nodes and rewrite iterations.
