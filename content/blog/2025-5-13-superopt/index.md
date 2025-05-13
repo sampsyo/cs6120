@@ -24,12 +24,12 @@ Using the previous example expression, `a * 2 / 2`, three (among many other) rew
 2. Constant folding
 3. Multiplicative identity
 
-As rewrite rules are applied to the expression `a * 2 / 2`, each transformation produces an equivalent form: first rewriting it as `a * (2 / 2)` using division associativity, then simplifying to `a * 1` via constant folding, and finally reducing to `a` using the multiplicative identity. Though the expression changes, all versions are equivalent. It's important to note that adding more rewrite rules, such as multiplicative commutativity or replacing `x * 2` with `x << 1`, doesn’t erase existing expressions. Instead, it expands the e-class by adding more equivalent expressions. The e-graph grows to represent several equivalent programs, giving the optimizer more options to choose from.
+As rewrite rules are applied to the expression `a * 2 / 2`, each transformation produces an equivalent form: first rewriting it as `a * (2 / 2)` using division associativity, then simplifying to `a * 1` via constant folding, and finally reducing to `a` using the multiplicative identity. Though the expression changes, all versions are equivalent. It's important to note that applying more rewrite rules, such as multiplicative commutativity or replacing `x * 2` with `x << 1`, doesn’t erase existing expressions. Instead, it expands the e-class by adding more equivalent expressions. The e-graph grows to represent several equivalent expressions, giving the optimizer more options to choose from.
 
 <img src="canonical-example-after.svg" alt="" width="33%">
 
 <!--- -->
-Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The E-graphs Good (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
+Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The [E-graphs Good](https://egraphs-good.github.io/) (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
 <!--- -->
 The benefit of equality saturation is that it avoids the problem of finding the optimal order in which to apply optimizations (the phase-ordering problem) by encoding all possible optimizations within the e-graph. The catch is that a separate procedure, called *extraction*, is required to actually select the best term from the e-graph according to a user-provided cost function.
 
@@ -52,6 +52,7 @@ E-graphs offer a more expressive alternative. Rather than selecting cuts locally
 ### Contributions
 In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg](https://github.com/egraphs-good/egg) library, the EDA tool and users of egg's exact extractor can run extraction with these solvers.
 We also evaluate the performance of the extractor in the EDA tool, which transforms designs specified in the verilog hardware description language into designs targetting FPGAs or ASICs.
+Our good\_lp-based exact extractor is [available](https://github.com/neel-patel-1/egg) and can be used by any projects using the egg library.
 
 ## Optimizing RTL using E-Graphs
 
@@ -59,20 +60,32 @@ We also evaluate the performance of the extractor in the EDA tool, which transfo
 
 The EDA tool, called `lvv`, performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
 Here is a rough outline of the grammar defined by LutLang:
-`<LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>`
+```
+LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
+
+<Node> ::= <Const> | x | <Input> | NOR <Node> <Node> | MUX <Node> <Node> <Node>
+            | LUT <Program> <Node> ... <Node> | REG <Node> | ARG <u64> | CYCLE <Node>
+
+<Const> ::= false | true // Base type is a bool
+
+<Input> ::= <String> // Any string is parsed as an input variable
+
+<Program> ::= <u64> // Can store a program for up to 6 bits
+```
+
 lvv takes verilog as input, but converts it into LutLang before performing optimizations and then converts it back into verilog.
 
-Below we give an example of a half-adder written in a domain-specific, circuit-specification language called *LutLang*.
+Below we give an example of a half-adder written in LutLang:
 
 `(BUS (AND a b) (XOR a b))`
 
 
 ### Equality Saturation
-The e-graph of the original design, before equality saturation, looks like:
+An e-graph representation of the original design using boolean logic, is shown below:
 
 <img src="simple_2_output_before.svg" alt="" width="20%">
 
-During equality saturation, rewrite rules transform the two-input gates into programmable LUTs, specified by three parameters: a truth table (numeric e-node), and two operands (a and b).
+The two-input gates are first transformed into programmable LUTs specified by three parameters: a truth table (numeric e-node), and two operands (a and b). During equality saturation, rewrite rules are applied until all possible designs are encoded in the e-graph.
 
 <img src="simple_2_output_lvv_after.svg" alt="" width="33%">
 
@@ -81,7 +94,7 @@ During equality saturation, rewrite rules transform the two-input gates into pro
 
 During extraction, an optimal design is produced using either a greedy or exact (linear programming) method as explained in the [E-graphs and Equality Saturation](#e-graphs-and-equality-saturation) section.
 
-To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize.  We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332). Formally, the problem of e-graph extraction can be represented by the following constraint programming problem:
+To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize.  We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332). The problem of e-graph extraction can be formalized as follows:
 
 Let:
 - `i = 0, ..., N - 1` be the set of e-nodes in the e-graph.
@@ -135,7 +148,7 @@ The times to solution are reported in the table below
 
 *Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
 
-We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing, highs, solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
+We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
 | Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Exact Area (Synopsys)  |
 |---------|---------------|----------------------------------|------------------------|
@@ -151,7 +164,7 @@ We also compare the area (µm²) of the designs extracted using greedy and exact
 | c7552   | 1760.10       | DNF                              | 913.18                 |
 | c880    | 259.88        | 265.73 (4000)                    | 224.24                 |
 
-The times to perform greedy and exact extraction are reported below.
+The times to perform greedy and exact extraction are reported below. We use a 10-minute timeout for the solver, omitting results for which it is unable to produce a valid solution within the alloted time.
 
 | Benchmark | Greedy Time       | Exact Time (msynth) |
 |-----------|-------------------|---------------------|
@@ -171,8 +184,8 @@ The times to perform greedy and exact extraction are reported below.
 
 ## Challenges
 
-The end goal of the project changed after the proposal. Initially, we aimed to implement an efficient extraction algorithm, called [SmoothE](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf) into the EDA tool used throughout this project. As a stepping stone towards an implementation, we decided to first implement a linear programming-based extraction algorithm.
-Getting our LP solver implementation to emit correct results took more effort than expected. At the same time, the EDA tool had only recently began to implement support for ASIC logic synthesis using a standard cell library and exact extraction had not yet been fully implemented and tested. For this reason we decided to focus on developing a correct implementation of LP extraction. Despite the less ambitions end goal, there were numerous challenges.
+The end goal of the project changed after the proposal. Initially, we aimed to implement an efficient extraction algorithm, called [SmoothE](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf), into the EDA tool used throughout this project. As a stepping stone towards an implementation, we decided to first implement a linear programming-based extraction algorithm.
+Getting our LP solver implementation to emit correct results took more effort than expected. At the same time, the EDA tool had only recently begun to implement support for ASIC logic synthesis using a standard cell library and exact extraction had not yet been fully implemented and tested. For this reason we decided to focus on developing a correct implementation of LP extraction. Despite the less ambitious end goal, there were numerous challenges.
 
 Long synthesis times for exact extraction made debugging challenging. Working with simple, fast-to-synthesize test cases is not enough. Simple test cases' e-graphs are not representative of complex designs with thousands of e-nodes, hundreds of thousands of constraints, and many cycles.
 The size and complexity of logic synthesis for ASICs revealed the limitations of solver libraries. Errors from the underlying libraries were frequent. To address these, manual tuning of the problem was required -- we limited the size of the e-graph by restricting the number of total e-nodes and rewrite iterations.
