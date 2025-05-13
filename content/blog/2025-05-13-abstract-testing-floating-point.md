@@ -41,7 +41,7 @@ At first blush, one might define a bug as follows:
 an input _x_ such that **GUARANTEE(**_p(x)_**)** does not hold.
 
 This is a perfectly reasonable definition. If you can violate a guarantee, it
-seems like you have a bug! 
+seems like you have a bug.
 
 But deep down in our hearts, there is _secretly_ a stronger notion of
 correctness that we'd like the verification tool to respect. In particular, it
@@ -50,7 +50,7 @@ prove **X** to be a sound technique when in reality it does **Y**. That sounds
 like a bug!
 
 In other words: we'd like our verification tool to faithfully implement its own
-theory (and respect its corresponding soundness proof)! This is an entirely
+theory (and respect its corresponding soundness proof). This is an entirely
 reasonable demand for a user to have. I absolutely want my tool to do what it
 claims to be doing.
 
@@ -134,7 +134,7 @@ Once we know which direction to point each $\epsilon$, we can assign the most
 extreme values (either $+u$ or $-u$) to get a pretty good $\epsilon$-trace.
 
 For this program, the $\epsilon$-trace we computed happens to be the
-**worst-case**, which is awesome! This technique generalizes in a pretty
+**worst-case**, which is awesome. This technique generalizes in a pretty
 straightforward manner to a backwards static analysis. [^2] 
 
 ## Implementation and Preliminary Evaluation
@@ -153,7 +153,7 @@ OCaml for similar practical considerations. [^3]
 ### Charts and Graphs
 Below is a log-scale violin plot showing the distribution of absolute error
 abstractly witnessed by my prototype tool. (_Aside: I think more people should use
-violin plots!_) 
+violin plots._) 
 
 ![Violin plot of "Absolute error (abstractly) witnessed by FPBench
 benchmark".](/blog/sample-violins.svg)
