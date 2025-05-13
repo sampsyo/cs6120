@@ -119,8 +119,9 @@ some intuition, consider a simple floating point program:
 
 $$p := \frac{a - b}{c + d}$$
 
-We wish to maximize the final error term in this program. To accomplish this, it
-suffices to:
+We wish to maximize the final error term in this program. Assuming that $a, b,
+c, d$ are all non-negative, it suffices to:
+
 1. Maximize the error term in the numerator ($a-b$). Recursing further, we
    realize we wish to
    - minimize the error term in $b$.
