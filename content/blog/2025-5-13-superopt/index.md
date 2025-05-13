@@ -28,25 +28,18 @@ As rewrite rules are applied to the expression `a * 2 / 2`, each transformation 
 
 <img src="canonical-example-after.svg" alt="" width="33%">
 
-<!--- -->
 Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The [E-graphs Good](https://egraphs-good.github.io/) (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
-<!--- -->
 The benefit of equality saturation is that it avoids the problem of finding the optimal order in which to apply optimizations (the phase-ordering problem) by encoding all possible optimizations within the e-graph. The catch is that a separate procedure, called *extraction*, is required to actually select the best term from the e-graph according to a user-provided cost function.
 
-<!--- -->
 For some simple cost functions, the optimal expression can be found by applying a greedy, bottom-up, extraction procedure, but, in general, the problem of extracting an optimal solution has been shown NP-hard. Currently, Egg implements two extractors.
 The first is a [heuristic greedy extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/extract.rs) which expresses the cost of an e-node as the aggregate cost of its children.
 The second is an [exact extractor](https://github.com/egraphs-good/egg/blob/v0.10.0/src/lp_extract.rs) which formulates extraction as a mixed integer linear programming problem and solves it using the [COIN-OR](https://github.com/coin-or/Cbc) Branch-and-cut solver.
-<!--- The former has been shown to select terms with suboptimal costs, while the latter does not scale well to larger problems, leading to a poor scalability-quality tradeoff [[Cai et al. 2025](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf)]. -->
 
 ### E-graphs for Technology Mapping
-<!--TODO: Change depending on whether we can run ASIC flow or explain the issues.-->
 The task of technology mapping in logic synthesis is to express a given Boolean function as a network of gates from a standard cell library (for ASICs) or programmable LUTs (for FPGAs) so that an objective function, such as total area, is optimized.
 
-<!--TODO: Explain what the state-of-the-art in technology mapping i.e., ABC and heuristic algorithms -->
 Traditional technology mapping tools like [ABC](https://people.eecs.berkeley.edu/~alanmi/abc/) rely on cut enumeration and dynamic programming to select optimal gate implementations. ABC supports both FPGA and ASIC targets and can operate on logic networks with structural choices—precomputed alternative implementations of subcircuits. Its recent addition of a priority-cut-based mapper improves performance by only considering the most promising cuts per node, reducing memory use and runtime. However, the mapper's effectiveness still depends heavily on the initial circuit structure, which may limit optimization potential.
 
-<!--TODO: Explain why e-graphs are a good way to represent designs and which (if any) prior works -->
 E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. [E-Syn](https://arxiv.org/pdf/2403.14242) integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. [ROVER](https://ieeexplore.ieee.org/iel8/43/10762795/10549954.pdf) applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
 
 ### Contributions
