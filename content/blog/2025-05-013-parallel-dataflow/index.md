@@ -11,6 +11,7 @@ name = "Parth Sarkar"
 name = "Edmund Lam"
 [[extra.authors]]
 name = "Ethan Gabizon"
++++
 
 # Motivation
 Dataflow analyses can be a bottleneck in performance for just-in-time (JIT) compilers, limiting the optimizations that they can perform.
