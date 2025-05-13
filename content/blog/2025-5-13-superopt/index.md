@@ -44,7 +44,7 @@ The second is an [exact extractor](https://github.com/egraphs-good/egg/blob/v0.1
 The task of technology mapping in logic synthesis is to express a given Boolean function as a network of gates from a standard cell library (for ASICs) or programmable LUTs (for FPGAs) so that an objective function, such as total area, is optimized.
 
 <!--TODO: Explain what the state-of-the-art in technology mapping i.e., ABC and heuristic algorithms -->
-Traditional technology mapping tools like ABC rely on cut enumeration and dynamic programming to select optimal gate implementations. ABC supports both FPGA and ASIC targets and can operate on logic networks with structural choices—precomputed alternative implementations of subcircuits. Its recent addition of a priority-cut-based mapper improves performance by only considering the most promising cuts per node, reducing memory use and runtime. However, the mapper's effectiveness still depends heavily on the initial circuit structure, which may limit optimization potential.
+Traditional technology mapping tools like [ABC](https://people.eecs.berkeley.edu/~alanmi/abc/) rely on cut enumeration and dynamic programming to select optimal gate implementations. ABC supports both FPGA and ASIC targets and can operate on logic networks with structural choices—precomputed alternative implementations of subcircuits. Its recent addition of a priority-cut-based mapper improves performance by only considering the most promising cuts per node, reducing memory use and runtime. However, the mapper's effectiveness still depends heavily on the initial circuit structure, which may limit optimization potential.
 
 <!--TODO: Explain why e-graphs are a good way to represent designs and which (if any) prior works -->
 E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. [E-Syn](https://arxiv.org/pdf/2403.14242) integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. [ROVER](https://ieeexplore.ieee.org/iel8/43/10762795/10549954.pdf) applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
@@ -74,7 +74,21 @@ During equality saturation, rewrite rules transform the two-input gates into pro
 
 During extraction, an optimal design is produced using either a greedy or exact (linear programming) method as explained in the [E-graphs and Equality Saturation](#e-graphs-and-equality-saturation) section.
 
-To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize. good\_lp will transform the problem specification into the implementation-specific data structures and method invocations to solve the problem. By writing our exact extractor using good\_lp, the implementation is agnostic to the solver backend and the problem variables, constraints, and objective function are easy to determine upon inspection. We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332) (Section 5.1).
+To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize. good\_lp will transform the problem specification into the implementation-specific data structures and method invocations to solve the problem. By writing our exact extractor using good\_lp, the implementation is agnostic to the solver backend and the problem variables, constraints, and objective function are easy to determine upon inspection. We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332). Formally, the problem of e-graph extraction can be represented by the following constraint programming problem:
+
+Let:
+- `i = 0, ..., N - 1` be the set of e-nodes in the e-graph.
+- `m = 0, ..., M - 1` be the set of e-classes in the e-graph.
+- `e_m` denote the set of e-nodes within e-class `m`: `{i | i ∈ e_m}`.
+We introduce a binary integer variable `x_i` for each e-node `i`. A node `i` is selected if `x_i = 1`, and not selected otherwise.
+#### Objective Function:
+Each e-node is associated with a cost `c_i`. The objective is to minimize the total cost of the selected nodes:
+#### Subject to:
+1. `x_i ∈ {0, 1}` for all `i`.
+2. `Σ x_i = 1` for all `i ∈ e_0` (root e-class).
+3. For all `i ∈ h_i` and `m ∈ h_i`, `x_i ≤ Σ x_j` for all `j ∈ e_m`.
+4. Acyclicity constraints: For all `i, m ∈ h_i`, `t_g(i) - t_m - c + A(1 - x_i) ≥ 0`.
+5. Bounds on Acyclicity variables: `0 ≤ t_m ≤ 1`.
 
 ## Results
 
@@ -92,7 +106,7 @@ We compare the number of LUTs in the designs extracted using greedy and ILP extr
 | c5315     | 267                        | 266              | DNF                                      | 259 (6)                                | DNF                                   |
 | c6288     | 520                        | 512              | DNF                                      | 515 (6)                                | 520 (2)                               |
 | c7552     | 335                        | 325              | DNF                                      | 315 (7)                                | DNF                                   |
-| c880      |
+| c880      | DNF                        | DNF              | DNF                                      | DNF                                    | DNF                                   |
 
 The times to solution are reported in the table below
 
@@ -108,7 +122,7 @@ The times to solution are reported in the table below
 | c5315     | 0.047760014       | DNF               | 743.806362887     | DNF                |
 | c6288     | 0.136245309       | DNF               | 608.710588015     | DNF                |
 | c7552     | 0.045072024       | DNF               | 600.26766583      | DNF                |
-| c880      | 0.027521613       | DNF               | 2.070102574       | 601.518185161      |
+| c880      | DNF               | DNF               | DNF               | DNF                |
 
 *Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
 
