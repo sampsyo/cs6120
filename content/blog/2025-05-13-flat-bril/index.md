@@ -31,6 +31,8 @@ Value {
 1. Infrastructure to convert existing Bril JSON files to/from our flattened format
 2. An alternate Bril interpreter that operates directly on the flattened data structure (as opposed to the existing one brili, which has to parse JSON)
 
+Our complete implementation can be found at https://github.com/ngernest/flat-bril/tree/main
+
 ## Design
 
 ### Flat data structures
@@ -108,12 +110,13 @@ Once we had finished implementing our infrastructure for flat Bril representatio
 
 ## Evaluation
 
-For our evaluation, we decided to test flat bril on the set of core bril benchmarks. To check the correctness of our implementation, we used Turnt to verify that all benchmarks using our flat bril interpreter returned the same result as that of the reference interpreter, for which we were successful. Additionally, to check the correctness of our infrastructure converting JSON files to/from our flattened format, we manually checked that the final json output converted back matched that of the original. To measure the performance impacts, we did the following using hyperfine:
+For our evaluation, we decided to test flat bril on 70 core bril benchmarks. To check the correctness of our implementation, we used Turnt to verify that all benchmarks using our flat bril interpreter returned the same result as that of the reference Brili interpreter, for which we were successful. Additionally, to check the correctness of our infrastructure converting JSON files to/from our flattened format, we manually checked that the final json output converted back matched that of the original. To measure the performance impacts, we did the following using hyperfine:
 
 1. Measured the CPU wall clock time (using Hyperfine) for the flat bril, brili typescript, and brili rust interpreters, comparing their performance
 2. Measured the CPU wall clock time for json roundtrips (json -> flat -> json). (Although there wasn’t a specific baseline for this.)
 
 Below is a table showing the time taken for json roundtrips. We tested this on all the core benchmarks, but due to space constraints, we only list a few here. These are averaged over 10 runs, with a warmup of 3.
+
 
 | Benchmark | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
