@@ -43,15 +43,14 @@ Traditional technology mapping tools like [ABC](https://people.eecs.berkeley.edu
 E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. [E-Syn](https://arxiv.org/pdf/2403.14242) integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. [ROVER](https://ieeexplore.ieee.org/iel8/43/10762795/10549954.pdf) applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
 
 ### Contributions
-In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg](https://github.com/egraphs-good/egg) library, the EDA tool and users of egg's exact extractor can run extraction with these solvers.
-We also evaluate the performance of the extractor in the EDA tool, which transforms designs specified in the verilog hardware description language into designs targetting FPGAs or ASICs.
-Our good\_lp-based exact extractor is [available](https://github.com/neel-patel-1/egg) and can be used by any projects using the egg library.
+In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg](https://github.com/egraphs-good/egg) library, the EDA tool can now use a larger set of solvers. Our good\_lp-based exact extractor is [available](https://github.com/neel-patel-1/egg) and can be used by any projects using the egg library (not just logic synthesis for FPGAs).
+We evaluate the performance of our exact extractor in the context of logic synthesis using the EDA tool, which transforms designs specified in the verilog hardware description language into designs targetting FPGAs or ASICs.
 
 ## Optimizing RTL using E-Graphs
 
 ### Specifying an RTL Design
 
-For this project, we use an EDA tool, written by Matt Hoffman, called `lvv`. lvv performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
+For this project, we use an ongoing research compiler in the Zhang research group, called `lvv`. lvv performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
 Here is a rough outline of the grammar defined by LutLang:
 ```
 LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
@@ -107,7 +106,7 @@ good\_lp will transform the problem specification into the implementation-specif
 
 ## Results
 
-We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until reaching 10 . This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
+We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://github.com/matth2k/synth-benchmarks/tree/main/verilog/iscas85) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until reaching 10 . This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
 
 | Benchmark | No Optimization LUT Count  | Greedy LUT Count | Microlp LUT Count (# Rewrite Iterations) | Highs LUT Count (# Rewrite Iterations) | CBC LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|------------------------------------------|----------------------------------------|---------------------------------------|
