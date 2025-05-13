@@ -74,7 +74,7 @@ During equality saturation, rewrite rules transform the two-input gates into pro
 
 During extraction, an optimal design is produced using either a greedy or exact (linear programming) method as explained in the [E-graphs and Equality Saturation](#e-graphs-and-equality-saturation) section.
 
-To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize. good\_lp will transform the problem specification into the implementation-specific data structures and method invocations to solve the problem. By writing our exact extractor using good\_lp, the implementation is agnostic to the solver backend and the problem variables, constraints, and objective function are easy to determine upon inspection. We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332). Formally, the problem of e-graph extraction can be represented by the following constraint programming problem:
+To apply linear programming to the e-graph extraction problem, a set of constraints and objective function must be specified. A number linear-programming libraries implement algorithms to solve linear programming problems. The good\_lp rust crate was developed to make it easier to apply any of the [HiGHs](https://highs.dev/), [SCIP](https://scipopt.org/#scipoptsuite), [microlp](https://github.com/Specy/microlp/), and [COIN-OR Branch-and-Cut](https://github.com/coin-or/Cbc) algorithms to linear programming problems. With good\_lp, the application developer specifies the set of problem variables, a set of constraints, and an objective function to maximize/minimize.  We specify the problem using the formulation of [Yang et al.](https://arxiv.org/pdf/2101.01332). Formally, the problem of e-graph extraction can be represented by the following constraint programming problem:
 
 Let:
 - `i = 0, ..., N - 1` be the set of e-nodes in the e-graph.
@@ -89,6 +89,8 @@ Each e-node is associated with a cost `c_i`. The objective is to minimize the to
 3. For all `i ∈ h_i` and `m ∈ h_i`, `x_i ≤ Σ x_j` for all `j ∈ e_m`.
 4. Acyclicity constraints: For all `i, m ∈ h_i`, `t_g(i) - t_m - c + A(1 - x_i) ≥ 0`.
 5. Bounds on Acyclicity variables: `0 ≤ t_m ≤ 1`.
+
+good\_lp will transform the problem specification into the implementation-specific data structures and method invocations to solve the problem. By writing our exact extractor using good\_lp, the implementation is agnostic to the solver backend and the problem variables, constraints, and objective function are easy to determine upon inspection.
 
 ## Results
 
