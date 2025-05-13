@@ -2,7 +2,7 @@
 title = "Technology Mapping with Egraphs"
 [extra]
 bio = """
-  Arnav Muthiyan is a <!--TODO -->.<br>
+  Arnav Muthiyan is a third year undergraduate student interested in computer architecture.<br>
   Neel Patel is a first year PhD student interested in computer architecture and systems.<br>
 """
 [[extra.authors]]
@@ -13,11 +13,21 @@ name = "Neel Patel"
 
 ## Introduction
 ### E-graphs and Equality Saturation
-E-graphs efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program. The example below shows an arithmetic expression a * 2 / 2 represented as an e-graph.
+E-graphs efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program, minimizing some user-provided cost function. The example below shows an arithmetic expression `a * 2 / 2` represented as an e-graph.
 
-<img src="canonical-example.svg" alt="" width="33%">
+<img src="canonical-example-before.svg" alt="" width="33%">
 
-In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
+In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions (*e-nodes* in an e-graph). Each rewrite grows the e-graph, without losing the previous versions of the expression. An *e-class* in an e-graph groups together expressions that are all equivalent. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously. 
+
+Using the previous example expression, `a * 2 / 2`, three (among many other) rewrite rules can be applied:
+1. Division associativity
+2. Constant folding
+3. Multiplicative identity
+
+As rewrite rules are applied to the expression `a * 2 / 2`, each transformation produces an equivalent form: first rewriting it as `a * (2 / 2)` using division associativity, then simplifying to `a * 1` via constant folding, and finally reducing to `a` using the multiplicative identity. Though the expression changes, all versions are equivalent. It's important to note that adding more rewrite rules, such as multiplicative commutativity or replacing `x * 2` with `x << 1`, doesn’t erase existing expressions. Instead, it expands the e-class by adding more equivalent expressions. The e-graph grows to represent several equivalent programs, giving the optimizer more options to choose from.
+
+<img src="canonical-example-after.svg" alt="" width="33%">
+
 <!--- -->
 Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The E-graphs Good (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
 <!--- -->
