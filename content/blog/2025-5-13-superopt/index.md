@@ -2,7 +2,7 @@
 title = "Technology Mapping with Egraphs"
 [extra]
 bio = """
-  Arnav Muthiyan is a third year undergraduate student interested in computer architecture.<br>
+  Arnav Muthiayen is a third year undergraduate student interested in computer architecture.<br>
   Neel Patel is a first year PhD student interested in computer architecture and systems.<br>
 """
 [[extra.authors]]
@@ -17,7 +17,7 @@ Equality-graphs, or more simply, e-graphs, efficiently represent equivalence cla
 
 <img src="canonical-example-before.svg" alt="" width="33%">
 
-In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously. 
+In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible expressions simultaneously.
 
 Using the previous example expression, `a * 2 / 2`, three (among many other) rewrite rules can be applied:
 1. Division associativity
@@ -47,10 +47,10 @@ The task of technology mapping in logic synthesis is to express a given Boolean 
 Traditional technology mapping tools like ABC rely on cut enumeration and dynamic programming to select optimal gate implementations. ABC supports both FPGA and ASIC targets and can operate on logic networks with structural choices—precomputed alternative implementations of subcircuits. Its recent addition of a priority-cut-based mapper improves performance by only considering the most promising cuts per node, reducing memory use and runtime. However, the mapper's effectiveness still depends heavily on the initial circuit structure, which may limit optimization potential.
 
 <!--TODO: Explain why e-graphs are a good way to represent designs and which (if any) prior works -->
-E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. E-Syn integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. ROVER applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
+E-graphs offer a more expressive alternative. Rather than selecting cuts locally, they grow a graph of equivalent expressions using rewrite rules. This enables the representation of many circuit topologies simultaneously, effectively enumerating structural choices upfront. After saturation (or a time limit is reached), extraction selects an implementation based on a cost model. Prior work has demonstrated the promise of this approach. [E-Syn](https://arxiv.org/pdf/2403.14242) integrates e-graph rewriting into a delay- and area-aware mapping, showing measurable improvements over standard AIG-based pipelines in delay and area savings. [ROVER](https://ieeexplore.ieee.org/iel8/43/10762795/10549954.pdf) applies e-graphs to RTL datapath optimization and uses ILP-based extraction to achieve up to 63% area savings. These results validate e-graphs as a competitive backend for logic synthesis, capable of exploring larger design spaces than traditional mappers.
 
 ### Contributions
-In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg]() library, the EDA tool and users of egg's exact extractor can run extraction with these solvers.
+In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg](https://github.com/egraphs-good/egg) library, the EDA tool and users of egg's exact extractor can run extraction with these solvers.
 We also evaluate the performance of the extractor in the EDA tool, which transforms designs specified in the verilog hardware description language into designs targetting FPGAs or ASICs.
 
 ## Optimizing RTL using E-Graphs
@@ -78,7 +78,7 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 
 ## Results
 
-* We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until reaching 10 . This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
+We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://sportlab.usc.edu/~msabrishami/benchmarks.html) design benchmarks. Since finding an exact solution quickly becomes prohibitive in terms of extraction time, (the size of the e-graph and corresponding linear programming problem gets too large), we incrementally increase the number of "rewrite iterations" until reaching 10 . This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
 
 | Benchmark | No Optimization LUT Count  | Greedy LUT Count | Microlp LUT Count (# Rewrite Iterations) | Highs LUT Count (# Rewrite Iterations) | CBC LUT Count (# Rewrite Iterations) |
 |-----------|----------------------------|------------------|------------------------------------------|----------------------------------------|---------------------------------------|
@@ -92,26 +92,27 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 | c5315     | 267                        | 266              | DNF                                      | 259 (6)                                | DNF                                   |
 | c6288     | 520                        | 512              | DNF                                      | 515 (6)                                | 520 (2)                               |
 | c7552     | 335                        | 325              | DNF                                      | 315 (7)                                | DNF                                   |
+| c880      |
 
-* The times to solution are reported in the table below
+The times to solution are reported in the table below
 
 | Benchmark | Greedy Time       | Microlp Time      | HiGHS Time        | CBC Time           |
 |-----------|-------------------|-------------------|-------------------|--------------------|
-| c1355     | 0.046134086       | -                 | 640.92384104      | 230.738058229      |
+| c1355     | 0.046134086       | DNF               | 640.92384104      | 230.738058229      |
 | c17       | 0.011094708       | 4.205207809       | 0.00869014        | 0.007125629        |
-| c1908     | 0.03812723        | -                 | 1551.254409928    | 488.214537225      |
-| c2670     | 0.042055477       | -                 | 600.226674074     | -                  |
-| c3540     | 0.032852412       | -                 | 112.26789725      | -                  |
-| c432      | 0.022252978       | -                 | 860.208582938     | 603.27150813       |
-| c499      | 0.023853089       | -                 | 729.54756512      | 600.49411377       |
-| c5315     | 0.047760014       | -                 | 743.806362887     | -                  |
-| c6288     | 0.136245309       | -                 | 608.710588015     | -                  |
-| c7552     | 0.045072024       | -                 | 600.26766583      | -                  |
-| c880      | 0.027521613       | -                 | 2.070102574       | 601.518185161      |
+| c1908     | 0.03812723        | DNF               | 1551.254409928    | 488.214537225      |
+| c2670     | 0.042055477       | DNF               | 600.226674074     | DNF                |
+| c3540     | 0.032852412       | DNF               | 112.26789725      | DNF                |
+| c432      | 0.022252978       | DNF               | 860.208582938     | 603.27150813       |
+| c499      | 0.023853089       | DNF               | 729.54756512      | 600.49411377       |
+| c5315     | 0.047760014       | DNF               | 743.806362887     | DNF                |
+| c6288     | 0.136245309       | DNF               | 608.710588015     | DNF                |
+| c7552     | 0.045072024       | DNF               | 600.26766583      | DNF                |
+| c880      | 0.027521613       | DNF               | 2.070102574       | 601.518185161      |
 
-* *Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
+*Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
 
-* We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing, highs, solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
+We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing, highs, solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
 | Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Exact Area (Synopsys)  |
 |---------|---------------|----------------------------------|------------------------|
@@ -138,9 +139,9 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 | c3540     | 0.032852412       | 72.048779133        |
 | c432      | 0.022252978       | 14.406110368        |
 | c499      | 0.023853089       | 0.853112572         |
-| c5315     | 0.047760014       | -                   |
-| c6288     | 0.136245309       | -                   |
-| c7552     | 0.045072024       | -                   |
+| c5315     | 0.047760014       | DNF                 |
+| c6288     | 0.136245309       | DNF                 |
+| c7552     | 0.045072024       | DNF                 |
 | c880      | 0.027521613       | 10.793451794        |
 
 * *Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
