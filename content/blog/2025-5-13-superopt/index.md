@@ -142,3 +142,8 @@ To apply linear programming to the e-graph extraction problem, a set of constrai
 | c880      | 0.027521613       | 10.793451794        |
 
 * *Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
+
+## Challenges
+
+* Long synthesis times for exact extraction made debugging challenging. Working with simple, fast-to-synthesize test cases is not enough. Simple test cases' e-graphs are not representative of complex designs with thousands of e-nodes, hundreds of thousands of constraints, and many cycles.
+* The size and complexity of logic synthesis for ASICs revealed the limitations of solver libraries. Errors from the underlying libraries were frequent. To address these, manual tuning of the problem was required -- we limited the size of the e-graph by restricting the number of total e-nodes and rewrite iterations.
