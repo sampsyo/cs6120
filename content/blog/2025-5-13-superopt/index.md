@@ -143,7 +143,7 @@ The times to solution are reported in the table below
 
 We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
-| Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Exact Area (Synopsys)  |
+| Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Synopsys               |
 |---------|---------------|----------------------------------|------------------------|
 | c1355   | 317.87        | 415.23 (16000)                   | 254.56                 |
 | c17     | 7.18          | 6.92 (2000)                      | 6.92                   |
