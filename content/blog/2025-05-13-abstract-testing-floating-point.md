@@ -152,14 +152,15 @@ OCaml for similar practical considerations. [^3]
 
 ### Charts and Graphs
 Below is a log-scale violin plot showing the distribution of absolute error
-abstractly witnessed by my prototype tool. (_Aside: I think more people should use
+abstractly witnessed by my prototype tool. [^4] (_Aside: I think more people should use
 violin plots._) 
 
 ![Violin plot of "Absolute error (abstractly) witnessed by FPBench
 benchmark".](/blog/sample-violins.svg)
 
-Finally, below is a table showing the minimum and maximum error sampled on a few
-selected benchmarks:
+Finally, here is a table showing the minimum and maximum error sampled on a few
+selected benchmarks along with the corresponding guarantees provided by FPTaylor
+and Daisy:
 
 | Name | Min. error sampled | Max. error sampled | FPTaylor Guarantee | Daisy Guarantee |
 |:----:|:-----------------:|:-----------------:|:-:|:-:|
@@ -172,7 +173,7 @@ selected benchmarks:
 | delta4 | 3.126935e-14 |  7.394990e-14 |7.676607e-14| 1.160113e-13|
 
 As you can see, the maximum error sampled can get quite close to the guarantee
-provided by the various tools. 
+provided by the various tools.
 
 For future work, it would be cool to run this on more tools and benchmarks.
 Additionally, a question not addressed by this tool (and omitted blog post) is
@@ -191,3 +192,9 @@ produces a worst-case $\epsilon$-trace. Otherwise, you might need to do a little
 searching to find the worst-case $\epsilon$-trace.
 [^3]: The implementation and evaulation is at:
     https://github.com/Athena-Types/numerics-playground.
+[^4]: To make the violin plot semi-legible and suitable for a blog post, some
+    very small error samples are dropped. Specifically, the error values
+that were equal to 0 once cast to a float (at the very end of testing) are
+dropped from the plot. This only affects the plots for benchmarks `rigidBody1`
+and `rigidBody2`. You may see the unadulterated range of error values sampled in
+the table shown.
