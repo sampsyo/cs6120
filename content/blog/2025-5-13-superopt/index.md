@@ -102,21 +102,21 @@ During extraction, an optimal design is produced using either the greedy or exac
 | c7552     | 0.021390077       | 590.099322901    |
 | c880      | 0.015240757       | 0.074230685      |
 
-* We compare the area (µm²) <!-- TODO: Is this the right unit? --> of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
+* We compare the area (µm²) of the designs extracted using greedy and ILP extraction on the ISCAS85 verilog design benchmarks using a standard cell library. Since the logic needs to be synthesized to a standard cell library, a set of rewrite rules is required to convert the LUT-based representation to a standard cell representation. We therefore do not include a No Optimization LUT Count column in this table.
 
-| Bench   | Greedy Area   | Exact Area (msynth)             | Exact Area (Synopsys)  |
-|---------|---------------|---------------------------------|------------------------|
-| c1355   | 317.87        | 415.23                          | 254.56                 |
-| c17     | 7.18          | 6.92                            | 6.92                  |
-| c1908   | 330.11        | 374.53                          | 229.29                |
-| c2670   | 587.86        | 760.76                          | 424.00                |
-| c3540   | 867.16        | 981.28                          | 537.59                |
-| c432    | 183.27        | 176.36                          | 107.46                |
-| c499    | 259.08        | 272.38                          | 255.63                |
-| c5315   | 1373.61       |                                 | 813.43                |
-| c6288   | 2672.49       |                                 | 1239.83               |
-| c7552   | 1760.10       |                                 | 913.18                |
-| c880    | 259.88        | 265.73                          | 224.24                |
+| Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Exact Area (Synopsys)  |
+|---------|---------------|----------------------------------|------------------------|
+| c1355   | 317.87        | 415.23 (16000)                   | 254.56                 |
+| c17     | 7.18          | 6.92 (2000)                      | 6.92                   |
+| c1908   | 330.11        | 374.53 (8000)                    | 229.29                 |
+| c2670   | 587.86        | 760.76 (8000)                    | 424.00                 |
+| c3540   | 867.16        | 981.28 (8000)                    | 537.59                 |
+| c432    | 183.27        | 176.36 (2000)                    | 107.46                 |
+| c499    | 259.08        | 272.38 (4000)                    | 255.63                 |
+| c5315   | 1373.61       |                                  | 813.43                 |
+| c6288   | 2672.49       |                                  | 1239.83                |
+| c7552   | 1760.10       |                                  | 913.18                 |
+| c880    | 259.88        | 265.73 (4000)                    | 224.24                 |
 
 
 * We compare the time to perform greedy and ILP extraction on the ISCAS85 verilog design benchmarks when extracting designs targetting an ASIC.
