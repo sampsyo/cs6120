@@ -1,0 +1,44 @@
++++
+title = "Welcome to CS 6120!"
+[extra]
+bio = """
+  Grace Hopper made the first compiler. [Adrian Sampson](https://www.cs.cornell.edu/~asampson/) is an associate professor of computer science, so that's pretty cool too I guess.
+"""
+[[extra.authors]]
+name = "Adrian Sampson"
+link = "https://www.cs.cornell.edu/~asampson/"  # Links are optional.
+[[extra.authors]]
+name = "Grace Hopper"
++++
+
+My project was based on Dr.Jit codebase. Here is the [paper](https://dl.acm.org/doi/10.1145/3528223.3530099) that describes the compiler. In short, Dr.Jit traces the program to compute an AST, performs some optimizations on this representation, then manually assembles either LLVM IR or PTX code depending on the used backend, and finally compiles it into a kernel.
+
+My first goal was to familiarize myself with the internals of the codebase by implementing a simple optimization: replacing computation of $\sin^2(x)$ with $1 - \cos^2(x)$, if $\cos(x)$ is already computed elsewhere in the program.
+
+To accomplish this, I made modifications to both the [drjit](https://github.com/mariasoroka/drjit_CS6120) and [drjit-core](https://github.com/mariasoroka/drjit-core_CS6120) codebases. The implementation is straightforward: I examine the trace to identify the nodes where the optimization is applicable and edit the trace accordingly. It was not trivial, however, to navigate the codebase and to figure out which functions to use. For example, at first, I did not decrement the reference counters correctly, which led to variable leaks. This was resolved by using the appropriate function for reference counters.
+
+
+I first verified that my implementation is correct on several hand-crafted programs. Here is an example of one of them:
+```
+w = Float(1, 2)
+dr.make_opaque(w)
+cos = dr.cos(w)
+tmp_1 = 1 + cos**2
+sin = dr.sin(w)
+tmp_2 = 1 + dr.sin(w)**2
+tmp_3 = tmp_1 - tmp_2
+```
+
+Below is the trace of the following code snippet before and after the modification. Clearly, the optimization worked out and $\sin^2$ is now computed as $1 - \cos^2$. Note that $\sin$ node still appears in the trace because $\sin$ was also created as a separate variable. 
+
+
+<img src="./2025-05-13-Final_Project/graph_old.png" alt="drawing" height="300"/>
+<img src="./2025-05-13-Final_Project/graph_new.png" alt="drawing" height="300"/>
+
+To better test the optimization and evaluate the performance, I planned to render the three scenes shown in Fig. 6 of the Dr.Jit paper. However, I noticed that during rendering, the optimization was never invoked. To address this, I modified the renderer code to make it less efficient, ensuring that there will be nodes to which the optimization can be applied. I rendered all the scenes with and without my optimization five times to get average times. The results are reported below. 
+
+<img src="./2025-05-13-Final_Project/evaluation.png" alt="drawing" width="300"/>
+
+Well, my optimization did not improve the performance, but at least I know that the trace modification was correct since produced images were identical.
+
+The second part of the project was much less straightforward, and I was not able to figure it out. As described in the project proposal, the idea was to trace functions that lack hardware support and cannot be represented by a single node into a separate trace, and then redirect the main AST to that newly created trace. I was unable to find a way to achieve this using the existing tools in the codebase. Implementing this optimization would require introducing a new type of node (e.g., `call`) and writing the corresponding PTX or LLVM IR code to support it.
