@@ -29,13 +29,13 @@ Value {
 1. Infrastructure to convert existing Bril JSON files to/from our flattened format
 2. An alternate Bril interpreter that operates directly on the flattened data structure (as opposed to the existing one brili, which has to parse JSON)
 
-Our complete implementation can be found at https://github.com/ngernest/flat-bril/tree/main
+Our implementation is [available on GitHub](https://github.com/ngernest/flat-bril/tree/main).
 
 ## Design
 
 ### Flat data structures
 
-A key design decision was what the flattened data structures would look like. We clearly need similar fields to those of the original representation, but we need a strategy for flattening `Vec`s and `String`s and other non-flat types. Instead of storing variables, labels and function names as Strings and Vec<String>s we aggregate all the names referenced throughout a function into three contiguous arrays of bytes that are stored in our function representation. Then instead of using Strings, our instruction representation stores pairs of indices that can be used to extract the relevant name from the function-level contiguous array. One subtlety here is that if we want to use a Vec, we cannot just index into the array containing all the names, we would not know where the boundaries between each name are! We need to use an intermediary array that stores indices into the top-level name array.
+A key design decision was what the flattened data structures would look like. We clearly need similar fields to those of the original representation, but we need a strategy for flattening `Vec`s and `String`s and other non-flat types. Instead of storing variables, labels and function names as `String`s and `Vec<String>`s we aggregate all the names referenced throughout a function into three contiguous arrays of bytes that are stored in our function representation. Then instead of using `String`s, our instruction representation stores pairs of indices that can be used to extract the relevant name from the function-level contiguous array. One subtlety here is that if we want to use a Vec, we cannot just index into the array containing all the names, we would not know where the boundaries between each name are! We need to use an intermediary array that stores indices into the top-level name array.
 
 For instance, in a function with three variable names v1, v2 and v3, the function-level variable array will look like v1v2v3. If an instruction has two arguments v1 and v2, our representation stores a pair of indices into an intermediate array that itself contains pairs of indices. A lookup would proceed as (0,1) → (0,0), (1,1) → v1, v2.
 
@@ -68,7 +68,7 @@ pub struct Function {
 }
 ```
 
-Although our function representation does contain Vec s to enable construction, these will be flattened to slices once the entire Function has been created
+Although our function representation does contain `Vec`s to enable construction, these will be flattened to slices once the entire Function has been created.
 
 ### A flat file format
 
@@ -78,9 +78,9 @@ Once we have flattened all of the functions and instructions in a Bril program, 
 
 ### Zerocopy
 
-In order to facilitate conversion between slices of bytes and our flat data structures we used the zerocopy crate. In practice this meant adding the IntoBytes and FromBytes traits to our flat representations, and specifying their byte representations using the repr attribute. It ended up being quite challenging to get this working. Zerocopy was quite finicky about what was allowable in a struct using the zerocopy traits. We ended up needing to create new “extra-flat” versions of many of our data structures to get this to work and experimenting with different repr options. For instance we discovered that zerocopy could not convert pairs of `u32`s, or `Option`s to bytes, so we needed to create a new `I32Pair` struct that itself implemented the zerocopy traits (`I32` as opposed to `u32` because we used -1 to represent the case where the `Option` is None). We probably could have used these extra-flat data structures everywhere, rather than converting between multiple versions, but since we had written most of our flattening logic using the original data structures we decided to stick with using new extra-flat versions. 
+In order to facilitate conversion between slices of bytes and our flat data structures we used the [`zerocopy`](https://docs.rs/zerocopy/latest/zerocopy/) crate. In practice, this meant adding the [`IntoBytes`](https://docs.rs/zerocopy/latest/zerocopy/trait.IntoBytes.html) and [`FromBytes`](https://docs.rs/zerocopy/latest/zerocopy/trait.FromBytes.html) traits to our flat representations, and specifying their byte representations using Rust's [`repr` attribute](https://doc.rust-lang.org/nomicon/repr-rust.html). It ended up being quite challenging to get this working. Zerocopy was quite finicky about what was allowable in a struct using the `zerocopy` traits. We ended up needing to create new “extra-flat” versions of many of our data structures to get this to work and experimenting with different `repr` options. For instance we discovered that `zerocopy` could not convert pairs of `u32`s, or `Option`s to bytes, so we needed to create a new `I32Pair` struct that itself implemented the `zerocopy` traits (`i32` as opposed to `u32` because we used `-1` to represent the case where the `Option` is `None`). We probably could have used these extra-flat data structures everywhere, rather than converting between multiple versions, but since we had written most of our flattening logic using the original data structures we decided to stick with using new extra-flat versions. 
 
-Our final representation of a function that worked with zerocopy:
+Our final representation of a function that worked with `zerocopy`:
 
 ```Rust
 #[repr(packed)]
@@ -98,22 +98,22 @@ pub struct FunctionView<'a> {
 }
 ```
 
-Once we finally made zerocopy happy about all our data structures we were able to convert seamlessly between the in memory representations and bytes which we could directly mmap to disk, enabling the flat file format we envisioned as one of our goals.
+Once we finally made `zerocopy` happy about all our data structures we were able to convert seamlessly between the in memory representations and bytes which we could directly `mmap` to disk, enabling the flat file format we envisioned as one of our goals.
 
-When deserializing from our flat file format back to our flat data structures we ran into a very nasty bug. On some programs we would get alignment errors when attempting to convert bytes to our data structures, but we could fix/break programs just by changing the variable names! We eventually realized that a program would crash if the total bytes used to represent all variable names (or labels, or functions) was not a multiple of 4! This was because our top-level arrays just stored all names contiguously, and so would be unaligned unless the total bytes to represent all names was a multiple of 4. To fix this we just padded all of these top level arrays with null bytes.
+When deserializing from our flat file format back to our flat data structures, we ran into a very nasty bug. On some programs we would get alignment errors when attempting to convert bytes to our data structures, but we could fix/break programs just by changing the variable names! We eventually realized that a program would crash if the total bytes used to represent all variable names (or labels, or functions) was not a multiple of 4! This was because our top-level arrays just stored all names contiguously, and so would be unaligned unless the total bytes to represent all names was a multiple of 4. To fix this we just padded all of these top level arrays with null bytes.
 
 ### Interpreting flat Bril
 
-Once we had finished implementing our infrastructure for flat Bril representations, we implemented an interpreter that operated directly on the flat data structures. We built this interpreter from the ground up rather than trying to adapt the existing Rust interpreter. This was mostly straightforward, and we were able to model our logic after the Typescript interpreter. The main challenges were introduced by needing to keep track of which array each pair of indices in our flat data structures was referring to. We had a few bugs caused by assuming that some indices referred to the top-level name arrays, when in fact we needed to go through an intermediate array. In hindsight we could have done a better job with our naming conventions to avoid this.
+Once we had finished implementing our infrastructure for flat Bril representations, we implemented an interpreter that operated directly on the flat data structures. We built this interpreter from the ground up rather than trying to adapt the existing Rust interpreter. This was mostly straightforward, and we were able to model our logic after the TypeScript interpreter. The main challenges were introduced by needing to keep track of which array each pair of indices in our flat data structures was referring to. We had a few bugs caused by assuming that some indices referred to the top-level name arrays, when in fact we needed to go through an intermediate array. In hindsight we could have done a better job with our naming conventions to avoid this.
 
 ## Evaluation
 
-For our evaluation, we decided to test flat bril on 70 core bril benchmarks. To check the correctness of our implementation, we used Turnt to verify that all benchmarks using our flat bril interpreter returned the same result as that of the reference Brili interpreter, for which we were successful. Additionally, to check the correctness of our infrastructure converting JSON files to/from our flattened format, we manually checked that the final json output converted back matched that of the original. To measure the performance impacts, we did the following using Hyperfine:
+For our evaluation, we decided to test flat Bril on 70 core Bril benchmarks. To check the correctness of our implementation, we used [Turnt](https://github.com/cucapra/turnt/tree/main) to verify that all benchmarks using our flat bril interpreter returned the same result as that of the reference Brili interpreter, for which we were successful. Additionally, to check the correctness of our infrastructure converting JSON files to/from our flattened format, we manually checked that the final JSON output converted back matched that of the original. To measure the performance impacts, we did the following using Hyperfine:
 
-1. Measured the CPU wall clock time for the flat bril, brili typescript, and brili rust interpreters, comparing their performance
-2. Measured the CPU wall clock time for json roundtrips (json -> flat -> json). (Although there wasn’t a specific baseline for this)
+1. Measured the CPU wall clock time for the flat Bril, [TypeScript](https://capra.cs.cornell.edu/bril/tools/interp.html), and [Rust Brili](https://capra.cs.cornell.edu/bril/tools/brilirs.html) interpreters, comparing their performance
+2. Measured the CPU wall clock time for JSON roundtrips (JSON -> flat -> JSON). (Although there wasn’t a specific baseline for this)
 
-Below is a table showing the time taken for json roundtrips. We tested this on all the core benchmarks, but due to space constraints, we only list a few here. These are averaged over 10 runs, with a warmup of 3.
+Below is a table showing the time taken for JSON roundtrips. We tested this on all the core benchmarks, but due to space constraints, we only list a few here. These are averaged over 10 runs, with a warmup of 3.
 
 | Benchmark | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
@@ -128,7 +128,7 @@ Below is a table showing the time taken for json roundtrips. We tested this on a
 | `reverse` | 486.1 ± 61.1 | 432.5 | 616.1 | 1.11 ± 0.14 |
 | `rot13` | 438.5 ± 7.8 | 428.4 | 452.8 | 1.00 |
 
-We used Hyperfine to compare the runtime of our interpreter over our flattened (mmap-ed) representation of Bril files, versus the TypeScript and Rust Brili interpreters on the JSON representation of Bril files. We ran the three interpreters on 70 Core Bril benchmarks, and for each benchmark, measured the mean execution time of the interpreter over 10 runs. From the scatter plot below, we see that Flat-Bril’s execution time is consistently in-between the TypeScript and Rust Brili interpreters (closer to the latter in many cases).  
+We used [Hyperfine](https://github.com/sharkdp/hyperfine) to compare the runtime of our interpreter over our flattened (`mmap`-ed) representation of Bril files, versus the [TypeScript](https://capra.cs.cornell.edu/bril/tools/interp.html) and [Rust Brili](https://capra.cs.cornell.edu/bril/tools/brilirs.html) interpreters on the JSON representation of Bril files. We ran the three interpreters on 70 Core Bril benchmarks, and for each benchmark, measured the mean execution time of the interpreter over 10 runs. From the scatter plot below, we see that Flat-Bril’s execution time is consistently in-between the TypeScript and Rust Brili interpreters (closer to the latter in many cases).  
 (Benchmarks were run on a 2023 M4 Macbook Pro.)
 
 Rust Brili outperforms our flattened interpreter for the vast majority of benchmarks, although our interpreter has the lowest execution time out of the three interpreters for a few benchmarks (`call`, `call-with-args`, `mccarthy91`). 
@@ -139,7 +139,7 @@ The benchmarks where there was the biggest discrepancy between the three interpr
   <img src="bench_results.png" alt="" style="width: 100%;">
 </div>
 
-Besides comparing our interpreter with the other Brili implementations, we also used the Samply profiler to figure out where our interpreter was spending most of its time. The stack chart below (obtained from the Firefox Profiler UI) demonstrates how our interpreter exectuable spends its time on the benchmark `catalan.bril` – we chose to highlight this benchmark since it has many recursive function calls and the difference between our interpreter and the TypeScript/Rust Brili interpreters’ performance is noticeable. 
+Besides comparing our interpreter with the other Brili implementations, we also used the [Samply](https://github.com/mstange/samply) profiler to figure out where our interpreter was spending most of its time. The stack chart below (obtained from the Firefox Profiler UI) demonstrates how our interpreter exectuable spends its time on the benchmark `catalan.bril` – we chose to highlight this benchmark since it has many recursive function calls and the difference between our interpreter and the TypeScript/Rust Brili interpreters’ performance is noticeable. 
 
 The stack chart shows that most of the runtime of the executable spent was in the interpreter-related functions: `mmap`-ing the flat file  format was relatively quick, and so was converting the JSON to a flat file format (omitted from the screenshot). Zooming into the stack chart (second screenshot below) and focusing on the function calls towards the bottom, we see that when interpreting individual individual instructions, our interpreter calls a lot of standard library functions that manipulate `HashMap`s and `Vec`s. This is because the environment datatype in our interpreter is defined as `HashMap<&str, BrilValue>` (mapping variable names to a Bril value), i.e. keys in the hashmaps are (references to) strings. We realized that strings were the canonical way to represent variables in the environment, since different indexes in the arguments field of an instruction may point to the same underlying variable. However, the fast Rust Brili interpreter canonicalises variable names into a numerical representation (as described in their blogpost), allowing for faster look-ups in their environment. We suspect that this is one of the reasons why the Rust Brili interpreter out-performs our flat interpreter. 
 
@@ -165,6 +165,6 @@ We also used `/usr/bin/time -l` to compare the memory usage of our interpreter t
 Our interpreter compares favorably to Rust Brili in terms of peak physical memory usage (max resident set size). Notably, our interpreter has an order of magnitude fewer page faults and involuntary context switches compared to the TypeScript interpreter (250 vs 2036 and 210 vs 2480), although it’s unclear whether this is due to our choice of implementation language (Rust vs TypeScript) as opposed to our data structure flattening strategy, since Rust Brili also has similar metrics. 
 
 ### What else could be done?
-At the moment, our implementation creates `Vec`-based buffers to store the variables/labels it sees within a Bril program. Since Bril programs are unlikely to contain excessively large no. of variables/labels, perhaps we could use Rust’s `smallvec` or `arrayvec` libraries to create these buffers instead of the standard library’s `Vec` data structure. The aforementioned libraries offer specialized short vectors which minimize heap allocations, which might offer performance benefits over heap-allocated `Vec`s. However, we would need to properly benchmark these supposed benefits to see if swapping to these libraries is worth it.
+At the moment, our implementation creates `Vec`-based buffers to store the variables/labels it sees within a Bril program. Since Bril programs are unlikely to contain excessively large number of variables/labels, perhaps we could use Rust’s [`smallvec`](https://docs.rs/smallvec/latest/smallvec/) or [`arrayvec`](https://docs.rs/arrayvec/latest/arrayvec/) crates to create these buffers instead of the standard library’s `Vec` data structure. The aforementioned libraries offer specialized short vectors which minimize heap allocations, which might offer performance benefits over heap-allocated `Vec`s. However, we would need to properly benchmark these supposed benefits to see if swapping to these libraries is worth it.
 
 We could also come up with a better way to determine the right capacity for the `Vec`-based buffers – we initialize these buffers using `Vec::with_capacity` to avoid the `Vec` from re-sizing excessively. At the moment, we use ad-hoc heuristics to pick “large enough” capacities to store all the variables/labels in the program, but perhaps we could de-duplicate variables to minimize `Vec` capacities / find a way to dynamically compute the right capacity. 
