@@ -45,9 +45,9 @@ seems like you have a bug.
 
 But deep down in our hearts, there is _secretly_ a stronger notion of
 correctness that we'd like the verification tool to respect. In particular, it
-would be really bad if _I_ published a paper claiming my tool does **X** and
-prove **X** to be a sound technique when in reality it does **Y**. That sounds
-like a bug!
+would be really bad if _I_ published a paper claiming my tool does **\$BLAH**
+and prove **\$BLAH** to be a sound technique when in reality it does **\$BLEH**.
+That sounds like a bug!
 
 In other words: we'd like our verification tool to faithfully implement its own
 theory (and respect its corresponding soundness proof). This is an entirely
@@ -67,15 +67,16 @@ all) verification tools operate over an abstract domain using overapproximate
 simplifying assumptions. 
 
 For example, the "standard model of floating-point error" assumes that each
-floating-point operation $(op_{float} \ x \ y)$ can introduce up to $1*\epsilon$
-error. To be precise, for every operation, the following overapproximation holds
-for some unit round-off value $u$:
+floating-point operation $(op_{float} \ x \ y)$ can introduce up to $1+\epsilon$
+error. To be precise, for every operation, the following overapproximation (of
+the IEEE floating-point spec) holds for some unit round-off value $u$:
 
 > $(op_{float} \ x \ y) = (op_{real} \ x \ y) * (1 + \epsilon)$
 
-for $|\epsilon| <= u$. Different tools may use varying overapproximations, but the
-principle is the same: to tractably verify you (typically) need to
-overapproximate.
+for $|\epsilon| <= u$. Different tools may use varying overapproximations, but
+the principle is the same: to tractably verify you (typically) need to
+overapproximate. The IEEE floating-point spec, of course, is fully deterministic
+and simply computes values.
 
 But how to test? Here's an idea: one can view an overapproximation as a bigger
 testing budget to smash the verification tool with. For floating-point
