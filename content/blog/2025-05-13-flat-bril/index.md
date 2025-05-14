@@ -10,24 +10,50 @@ name = "Samuel Breckenridge"
 
 Typically, the way to implement an interpreter is to create an explicit AST data type, but this requires allocating AST nodes on the heap. Instead, as demonstrated in [this blogpost](https://www.cs.cornell.edu/~asampson/blog/flattening.html) by Adrian, we can flatten the AST into an array, i.e. pack all AST nodes into one single contiguous array, and refer to children in the AST using array indices (as opposed to pointers). This has enormous performance benefits!
 
-Since Bril is based on commands rather than expressions, there are no ASTs to flatten. However, in the existing Rust interpreter, programs, functions and instructions are all represented using structs that contain pointers to the heap. For instance this is the representation of a value instruction:
+Since Bril is based on commands rather than expressions, there are no ASTs to flatten. However, in the existing Rust interpreter, programs, functions and instructions are all represented using `struct`s that contain pointers to the heap. For instance, this is the representation of a value instruction (lightly modified for clarity):
 
-```Rust
-Value {
-        args: Vec<String>,
-        dest: String,
-        funcs: Vec<String>,
-        labels: Vec<String>,
-        op: ValueOps,
-        pos: Option<Position>,
-        op_type: Type,
-    }
+```rust
+struct ValueInstr {
+  args: Vec<String>,
+  dest: String,
+  funcs: Vec<String>,
+  labels: Vec<String>,
+  op: Op,
+  op_type: Type,
+}
 ```
 
-`Vec`s and `String`s in Rust are both implemented using pointers, so the representation is clearly not flat even before considering that functions contain pointers to instructions and programs contain pointers to functions. Our goal was to adopt the same approach of flattening data structures and packing them into a single contiguous array for Bril. The resulting representation of Bril programs is then a flat file containing these arrays that can be directly mapped into memory and interpreted, analogous to the approach laid out in [another blogpost](https://www.cs.cornell.edu/~asampson/blog/flatgfa.html) by Adrian. This requires two main components:
+`Vec`s and `String`s in Rust are both implemented using pointers, so the representation is clearly not flat even before considering that functions contain pointers to instructions and programs contain pointers to functions. To make this point explicit, consider how the Bril instruction `z: int = call @add2 x y` is represented using this Rust `datatype`. We have the following:
+```rust 
+let instr = ValueInstr {
+  args: vec!["x", "y"],
+  dest: "z",
+  funcs: vec!["add2"],
+  op: Call,
+  ...
+};
+```
+This `struct` is represented in memory like so:
+<div style="display: flex; justify-content: center; gap: 10px;">
+  <img src="heap_figure1.png" alt="" style="width: 75%;">
+</div>
+
+(Figure generated using the [Aquascope](https://cel.cs.brown.edu/aquascope/) visualizer for Rust programs.)
+
+Note that the `args`, `dest` and `funcs` fields are all pointers to the heap! In particular, since `args` has type `Vec<String>`, to fetch a string containing a variable name, we have to do two layers of indirection, one to get the heap pointer corresponding to the start of the `Vec`, then another to reach the actual string containing the argument. Clearly, this representation is *not* flat. This phenomenon is especially apparent when we get Aquascope to reveal the contents of the `Vec` and `String`s in the diagram above: 
+
+<div style="display: flex; justify-content: center; gap: 10px;">
+  <img src="heap_figure2.png" alt="" style="width: 100%;">
+</div>
+
+(In Rust, the `Vec<T>` and `String` types carry around metadata like their capacity alongside the pointer to the actual data elements.)
+
+Hopefully, you can see by how flattening data structures is a worthwhile endeavor! (Sidenote: flattening data structures is a fruitful area of research in the PL community! The [Gibbon](https://drops.dagstuhl.de/opus/volltexte/2017/7273/pdf/LIPIcs-ECOOP-2017-26.pdf) compiler translates a functional language to a flattened representation, and there's even [work](https://arthi-chaud.github.io/posts/packed/) appearing at [ECOOP](https://2025.ecoop.org) this year about offering library-level support for data structure flattening!)
+
+For this project, our goal was to adopt the same approach of flattening data structures and packing them into a single contiguous array for Bril. The resulting representation of Bril programs is then a flat file containing these arrays that can be directly mapped into memory and interpreted, analogous to the approach laid out in [another blogpost](https://www.cs.cornell.edu/~asampson/blog/flatgfa.html) by Adrian. This requires two main components:
 
 1. Infrastructure to convert existing Bril JSON files to/from our flattened format
-2. An alternate Bril interpreter that operates directly on the flattened data structure (as opposed to the existing one brili, which has to parse JSON)
+2. An alternate Bril interpreter that operates directly on the flattened data structure (as opposed to the existing interpreter `brili`, which has to parse JSON)
 
 Our implementation is [available on GitHub](https://github.com/ngernest/flat-bril/tree/main).
 
