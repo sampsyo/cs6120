@@ -75,8 +75,8 @@ the IEEE floating-point spec) holds for some unit round-off value $u$:
 
 for $|\epsilon| <= u$. Different tools may use varying overapproximations, but
 the principle is the same: to tractably verify you (typically) need to
-overapproximate. The IEEE floating-point spec, of course, is fully deterministic
-and simply computes values.
+overapproximate. The IEEE floating-point spec, of course, is a fully executable
+and deterministic spec.
 
 But how to test? Here's an idea: one can view an overapproximation as a bigger
 testing budget to smash the verification tool with. For floating-point
