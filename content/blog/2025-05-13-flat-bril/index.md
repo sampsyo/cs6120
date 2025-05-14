@@ -1,5 +1,9 @@
 +++
 title = "A Flattened Representation for Bril"
+[extra]
+bio = """
+  Ernest, Katherine and Sam are all 1st-year CS PhD students at Cornell. Ernest & Katherine work on PL research, while Sam works on security.
+"""
 [[extra.authors]]
 name = "Ernest Ng"
 [[extra.authors]]
@@ -61,36 +65,36 @@ Our implementation is [available on GitHub](https://github.com/ngernest/flat-bri
 
 ### Flat data structures
 
-A key design decision was what the flattened data structures would look like. We clearly need similar fields to those of the original representation, but we need a strategy for flattening `Vec`s and `String`s and other non-flat types. Instead of storing variables, labels and function names as `String`s and `Vec<String>`s we aggregate all the names referenced throughout a function into three contiguous arrays of bytes that are stored in our function representation. Then instead of using `String`s, our instruction representation stores pairs of indices that can be used to extract the relevant name from the function-level contiguous array. One subtlety here is that if we want to use a Vec, we cannot just index into the array containing all the names, we would not know where the boundaries between each name are! We need to use an intermediary array that stores indices into the top-level name array.
+A key design decision was what the flattened data structures would look like. We clearly need similar fields to those of the original representation, but we need a strategy for flattening `Vec`s and `String`s and other non-flat types. Instead of storing variables, labels and function names as `String`s and `Vec<String>`s we aggregate all the names referenced throughout a function into three contiguous arrays of bytes that are stored in our function representation. Then instead of using `String`s, our instruction representation stores pairs of indices that can be used to extract the relevant name from the function-level contiguous array. One subtlety here is that if we want to use a `Vec`, we cannot just index into the array containing all the names, we would not know where the boundaries between each name are! We need to use an intermediary array that stores indices into the top-level name array.
 
-For instance, in a function with three variable names v1, v2 and v3, the function-level variable array will look like v1v2v3. If an instruction has two arguments v1 and v2, our representation stores a pair of indices into an intermediate array that itself contains pairs of indices. A lookup would proceed as (0,1) → (0,0), (1,1) → v1, v2.
+For instance, in a function with three variable names `"v1"`, `"v2"` and `"v3"`, the function-level variable array `arg_store` would look like `["v1v2v3....."]`, stored as a contiguous sequence of bytes. If an instruction has two arguments `"v1"` and `"v2"`, our representation stores a pair of indices `(start, end)` (inclusive) into an intermediate array `arg_idxes_store` that itself contains pairs of indices, such that if `arg_idxes_store[start..=end] = [(v1_start, v1_end), (v2_start, v2_end)]`, then `arg_store[v1_start..=v1_end] = "v1" and arg_store[v2_start..=v2_end] = "v2"`. We store the pair `(start, end)` as the start/end index for all the arguments used in our flattened instruction datatype. (In our implementation, we enforce the invariant that all arguments for the same instruction must be stored in one contiguous region in the `args_store` array, and their indexes in the interstitial `arg_idxes_store` array must also be stored contiguously.)
 
 We applied these same ideas consistently across the original Bril representation to produce flattened versions of functions and instructions:
 
 ```Rust 
-pub struct Instr {
-    pub op: u32,
-    pub label: Option<(u32, u32)>,
-    pub dest: Option<(u32, u32)>,
-    pub ty: Option<Type>,
-    pub value: Option<BrilValue>,
-    pub args: Option<(u32, u32)>, // Indirect: indexes into args_idxes_store
-    pub instr_labels: Option<(u32, u32)>, // Indirect: indexes into labels_idxes_store
-    pub funcs: Option<(u32, u32)>,
+// Flattened datatype for Bril instructions
+struct Instr {
+    op: u32,
+    label: Option<(u32, u32)>,
+    dest: Option<(u32, u32)>,
+    ty: Option<Type>,
+    value: Option<BrilValue>,
+    args: Option<(u32, u32)>, // Indirect: indexes into `args_idxes_store`
+    instr_labels: Option<(u32, u32)>, // Indirect: indexes into `labels_idxes_store`
+    funcs: Option<(u32, u32)>,
 }
-```
 
-```Rust 
-pub struct Function {
-    pub func_name: Vec<u8>,
-    pub func_args: Vec<FuncArg>,
-    pub func_ret_ty: Option<Type>,
-    pub var_store: Vec<u8>,
-    pub args_idxes_store: Vec<(u32, u32)>, // Intermediate array: indexes into var_store
-    pub labels_idxes_store: Vec<(u32, u32)>, // Intermediate array: indexes into labels_store
-    pub labels_store: Vec<u8>,
-    pub funcs_store: Vec<u8>,
-    pub instrs: Vec<Instr>,
+// Flattened datatype for Bril functions
+struct Function {
+    func_name: Vec<u8>, // Strings are represented as sequence of bytes (`u8`s)
+    func_args: Vec<FuncArg>, // `FuncArg` is a flattened function argument (definition omitted)
+    func_ret_ty: Option<Type>,
+    var_store: Vec<u8>,
+    args_idxes_store: Vec<(u32, u32)>, // Intermediate array: indexes into `var_store`
+    labels_idxes_store: Vec<(u32, u32)>, // Intermediate array: indexes into `labels_store`
+    labels_store: Vec<u8>,
+    funcs_store: Vec<u8>,
+    instrs: Vec<Instr>,
 }
 ```
 
@@ -110,17 +114,17 @@ Our final representation of a function that worked with `zerocopy`:
 
 ```Rust
 #[repr(packed)]
-#[derive(Debug, PartialEq, Clone, Immutable, IntoBytes)]
-pub struct FunctionView<'a> {
-    pub func_name: &'a [u8],
-    pub func_args: &'a [FlatFuncArg],
-    pub func_ret_ty: FlatType,
-    pub var_store: &'a [u8],
-    pub arg_idxes_store: &'a [I32Pair],
-    pub labels_idxes_store: &'a [I32Pair],
-    pub labels_store: &'a [u8],
-    pub funcs_store: &'a [u8],
-    pub instrs: &'a [FlatInstr],
+#[derive(Immutable, IntoBytes, ...)]
+struct FunctionView<'a> {
+    func_name: &'a [u8],
+    func_args: &'a [FlatFuncArg],
+    func_ret_ty: FlatType,
+    var_store: &'a [u8],
+    arg_idxes_store: &'a [I32Pair],
+    labels_idxes_store: &'a [I32Pair],
+    labels_store: &'a [u8],
+    funcs_store: &'a [u8],
+    instrs: &'a [FlatInstr],
 }
 ```
 
@@ -143,6 +147,8 @@ Below is a table showing the time taken for JSON roundtrips. We tested this on a
 
 (Aside: We measured these times using [Hyperfine](https://github.com/sharkdp/hyperfine) with the intermediate shell disabled using `--shell=none`. Hyperfine [corrects for the shell spawning time](https://github.com/sharkdp/hyperfine?tab=readme-ov-file#intermediate-shell) by default, and since we noticed that the JSON roundtrip occurs relatively quickly, the shell startup overhead correction would produce a decent amount of noise, so we explicitly disable this behavior in Hyperfine.)
 
+<center>
+
 | **Command**  | **Mean [ms]** | **Min [ms]** | **Max [ms]** |
 |--------------|--------------:|-------------:|-------------:|
 | `bitshift`   |     6.4 ± 1.0 |          4.5 |         11.4 |
@@ -155,6 +161,8 @@ Below is a table showing the time taken for JSON roundtrips. We tested this on a
 | `perfect`    |     9.1 ± 1.7 |          5.6 |         15.8 |
 | `reverse`    |     9.2 ± 2.0 |          5.0 |         20.6 |
 | `rot13`      |     9.2 ± 2.1 |          3.4 |         15.7 |
+
+</center>
 
 We used [Hyperfine](https://github.com/sharkdp/hyperfine) to compare the runtime of our interpreter over our flattened (`mmap`-ed) representation of Bril files, versus the [TypeScript](https://capra.cs.cornell.edu/bril/tools/interp.html) and [Rust Brili](https://capra.cs.cornell.edu/bril/tools/brilirs.html) interpreters on the JSON representation of Bril files. We ran the three interpreters on 70 Core Bril benchmarks, and for each benchmark, measured the mean execution time of the interpreter over 10 runs. From the scatter plot below, we see that Flat-Bril’s execution time is consistently in-between the TypeScript and Rust Brili interpreters (closer to the latter in many cases).  
 (Benchmarks were run on a 2023 M4 Macbook Pro.)
@@ -169,7 +177,7 @@ The benchmarks where there was the biggest discrepancy between the three interpr
 
 Besides comparing our interpreter with the other Brili implementations, we also used the [Samply](https://github.com/mstange/samply) profiler to figure out where our interpreter was spending most of its time. The stack chart below (obtained from the Firefox Profiler UI) demonstrates how our interpreter exectuable spends its time on the benchmark `catalan.bril` – we chose to highlight this benchmark since it has many recursive function calls and the difference between our interpreter and the TypeScript/Rust Brili interpreters’ performance is noticeable. 
 
-The stack chart shows that most of the runtime of the executable spent was in the interpreter-related functions: `mmap`-ing the flat file  format was relatively quick, and so was converting the JSON to a flat file format (omitted from the screenshot). Zooming into the stack chart (second screenshot below) and focusing on the function calls towards the bottom, we see that when interpreting individual individual instructions, our interpreter calls a lot of standard library functions that manipulate `HashMap`s and `Vec`s. This is because the environment datatype in our interpreter is defined as `HashMap<&str, BrilValue>` (mapping variable names to a Bril value), i.e. keys in the hashmaps are (references to) strings. We realized that strings were the canonical way to represent variables in the environment, since different indexes in the arguments field of an instruction may point to the same underlying variable. However, the fast Rust Brili interpreter canonicalises variable names into a numerical representation (as described in their blogpost), allowing for faster look-ups in their environment. We suspect that this is one of the reasons why the Rust Brili interpreter out-performs our flat interpreter. 
+The stack chart shows that most of the runtime of the executable spent was in the interpreter-related functions: `mmap`-ing the flat file  format was relatively quick, and so was converting the JSON to a flat file format (omitted from the screenshot). Zooming into the stack chart (second screenshot below) and focusing on the function calls towards the bottom, we see that when interpreting individual individual instructions, our interpreter calls a lot of standard library functions that manipulate `HashMap`s and `Vec`s. This is because the environment datatype in our interpreter is defined as `HashMap<&str, BrilValue>` (mapping variable names to a Bril value), i.e. keys in the hashmaps are (references to) strings. We realized that strings were the canonical way to represent variables in the environment, since different indexes in the arguments field of an instruction may point to the same underlying variable. However, the fast Rust Brili interpreter canonicalises variable names into a numerical representation (as described in [their blogpost](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/faster-interpreter/)), allowing for faster look-ups in their environment. We suspect that this is one of the reasons why the Rust Brili interpreter out-performs our flat interpreter. 
 
 <div style="display: flex; justify-content: center; gap: 10px;">
   <img src="stack_chart2.png" alt="" style="width: 100%;">
@@ -182,6 +190,8 @@ The stack chart shows that most of the runtime of the executable spent was in th
 
 We also used `/usr/bin/time -l` to compare the memory usage of our interpreter to both reference Brili interpreters (the results below are also for `catalan.bril`): 
 
+<center>
+
 |                                   | Flat Bril | Brili (TypeScript) | Brili (Rust) |
 |-----------------------------------|-----------|--------------------|--------------|
 | Maximum Resident Set Size (bytes) | 18923520  | 57262080           | 19382272     |
@@ -189,6 +199,8 @@ We also used `/usr/bin/time -l` to compare the memory usage of our interpreter t
 | Page Faults                       | 250       | 2036               | 203          |
 | Voluntary Context Switches        | 158       | 126                | 89           |
 | Involuntary Context Switches      | 210       | 2480               | 176          |
+
+</center>
 
 Our interpreter compares favorably to Rust Brili in terms of peak physical memory usage (max resident set size). Notably, our interpreter has an order of magnitude fewer page faults and involuntary context switches compared to the TypeScript interpreter (250 vs 2036 and 210 vs 2480), although it’s unclear whether this is due to our choice of implementation language (Rust vs TypeScript) as opposed to our data structure flattening strategy, since Rust Brili also has similar metrics. 
 
