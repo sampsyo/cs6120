@@ -119,16 +119,16 @@ Below is a table showing the time taken for JSON roundtrips. We tested this on a
 
 | **Command**  | **Mean [ms]** | **Min [ms]** | **Max [ms]** |
 |--------------|--------------:|-------------:|-------------:|
-| `bitshift`   |    11.2 ± 1.7 |          6.5 |         21.3 |
-| `call`       |    10.9 ± 2.0 |          4.0 |         20.7 |
-| `catalan`    |     8.2 ± 4.1 |          3.5 |         63.2 |
-| `euclid`     |    10.9 ± 3.8 |          4.2 |         48.5 |
-| `main-args`  |    10.5 ± 3.1 |          4.4 |         40.2 |
-| `montgomery` |    11.9 ± 4.6 |          5.2 |         43.9 |
-| `nop`        |    11.6 ± 2.6 |          6.6 |         21.6 |
-| `perfect`    |     6.9 ± 1.1 |          3.2 |         10.7 |
-| `reverse`    |     7.2 ± 0.7 |          5.4 |         10.3 |
-| `rot13`      |     7.3 ± 0.8 |          5.4 |          9.9 |
+| `bitshift`   |     6.4 ± 1.0 |          4.5 |         11.4 |
+| `call`       |     6.1 ± 0.7 |          4.6 |          9.2 |
+| `catalan`    |     6.0 ± 0.8 |          4.5 |          9.2 |
+| `euclid`     |     6.0 ± 0.9 |          4.2 |         10.1 |
+| `main-args`  |     5.9 ± 0.8 |          4.1 |          9.4 |
+| `montgomery` |     7.2 ± 4.4 |          3.5 |         84.7 |
+| `nop`        |     9.7 ± 3.0 |          4.1 |         59.1 |
+| `perfect`    |     9.1 ± 1.7 |          5.6 |         15.8 |
+| `reverse`    |     9.2 ± 2.0 |          5.0 |         20.6 |
+| `rot13`      |     9.2 ± 2.1 |          3.4 |         15.7 |
 
 We used [Hyperfine](https://github.com/sharkdp/hyperfine) to compare the runtime of our interpreter over our flattened (`mmap`-ed) representation of Bril files, versus the [TypeScript](https://capra.cs.cornell.edu/bril/tools/interp.html) and [Rust Brili](https://capra.cs.cornell.edu/bril/tools/brilirs.html) interpreters on the JSON representation of Bril files. We ran the three interpreters on 70 Core Bril benchmarks, and for each benchmark, measured the mean execution time of the interpreter over 10 runs. From the scatter plot below, we see that Flat-Bril’s execution time is consistently in-between the TypeScript and Rust Brili interpreters (closer to the latter in many cases).  
 (Benchmarks were run on a 2023 M4 Macbook Pro.)
