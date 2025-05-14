@@ -15,6 +15,7 @@ In this project we introduce Briloop, an extension into the [Bril programming la
 Brilooped programs extends the Bril instruction set with the following op codes: `while`, `block`, `if`, `break`, and `continue`.
 Brilooped extends the Bril instruction set with new control flow operations that provide structured alternatives to jumps and labels. These new op codes allow programmers to write more readable and maintainable code with familiar control flow constructs like loops and conditionals. This structured control flow can also be useful for specific applications such as WASM.
 
+
 ### `while`
 
 The `while` operation introduces a structured loop into Bril programs:
@@ -29,30 +30,17 @@ Example usage:
 
 ```json
 {
+  "op": "while",
   "args": [
     "cond"
   ],
   "children": [
     [
-      {
-        "args": [
-          "a",
-          "b"
-        ],
-        "dest": "temp",
-        "op": "add",
-        "type": "int"
-      },
-      {
-        "args": ["b", "ten"],
-        "dest": "cond",
-        "op": "le",
-        "type": "bool"
-      }
+      { "args": ["a","b"], "dest": "temp", "op": "add", "type": "int" },
+      { "args": ["b", "ten"], "dest": "cond", "op": "le", "type": "bool" }
     ]
   ],
-  "op": "while"
-},
+}
 ```
 
 ```
@@ -80,26 +68,16 @@ Example usage:
 
 ```json
 {
+  "op": "if",
   "args": ["cond"],
   "children": [
     [
-      {
-        "args": ["a", "b"],
-        "dest": "temp",
-        "op": "add",
-        "type": "int"
-      }
+      { "args": ["a", "b"], "dest": "temp", "op": "add", "type": "int" }
     ],
     [
-      {
-        "args": ["a", "b"],
-        "dest": "temp",
-        "op": "sub",
-        "type": "int"
-      }
+      { "args": ["a", "b"], "dest": "temp", "op": "sub", "type": "int" }
     ]
   ],
-  "op": "if"
 }
 ```
 
