@@ -386,7 +386,7 @@ Detecting the different kinds of translations allows us to only introduce the mi
 
 ### Merge nodes
 
-Identifying merge nodes is a key part of the Briloop algorithm, they are defined as nodes that have at least 2 in edges from nodes with a smaller reverse post order. This means that in the original control flow, there are two basic blocks that jump into it and that thse nodes do not form a loop. Detecting them is important since we need to rely on block statements and break instructions in order to reach them (see Theorem three in Peterson, Kasami, and Tokura for more info).
+Identifying merge nodes is a key part of the Briloop algorithm. They are defined as nodes that have at least 2 in edges from nodes with a smaller reverse post order. This means that in the original control flow, there are two basic blocks that jump into it and that thse nodes do not form a loop. Detecting them is important since we need to rely on block statements and break instructions in order to reach them ([see Theorem three in Peterson, Kasami, and Tokura](https://dl.acm.org/doi/10.1145/355609.362337)).
 
 To see why this is needed, consider the following example (based on Ramsey):
 ![Merge Nodes](merge-nodes.png)
@@ -413,7 +413,7 @@ public void foo(boolean l, boolean r) {
     System.out.println("Block G");
 ```
 
-But we want our translation to be minimal, and not rely on duplicate blocks. The beyond relooper algorithm allows this to happen by using `break n;` statements (Peterson et. al. refer to them as multi-level exit instructions):
+But we want our translation to be minimal, and not rely on duplicate blocks. The beyond relooper algorithm allows this to happen by using `break n;` statements ([Peterson et. al](https://dl.acm.org/doi/10.1145/355609.362337) refer to them as multi-level exit instructions):
 
 ```code
 @foo(l: bool, r: bool) {
