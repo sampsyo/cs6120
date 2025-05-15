@@ -11,50 +11,120 @@ name = "Ethan Uppal"
 [[extra.authors]]
 name = "Zihan Li"
 +++
+## Background
+Dataflow analysis with the worklist algorithm can be a bottleneck for compilation speed, especially for JITs:
+```rust
+In[entry] = init
+out[*] = init
+Worklist = all blocks
+While worklist is not empty:
+	B = pick any block from worklist
+	In[b] = merge(out[p] for every predecessors p of b)
+	Out[b] = transfer(b, in[b])
+	If out[b] changed:
+		Worklist += successors of b
+```
+In this [project](https://github.com/zihan0822/para-dflow), we built a parallel dataflow solver in Rust with bitset optimizations for our flattened Bril IR. We parallelized the KILL and GEN set computation and the condensed cfg traversal process. We focused on one forward pass analysis: reaching definition and one backward pass analysis: liveness analysis in particular. 
 
-## Evaluation
 
-> [!NOTE]
-> Some of these questions are redundant in the context of both sections and thus their answers will be too.
+## Preparations
+#### Flattened Bril Representation
+We implemented a flattened representation for Bril to get rid of fragmented heap references in previous Bril representations implemented in [bril-rs](https://github.com/sampsyo/bril/tree/main/bril-rs). Here are some of our flattened equivalents. 
+```rust
+pub enum Instruction {
+    Add(Variable, Variable, Variable),
+    …
+    Br(Variable, LabelIdx, LabelIdx),
+    Call(Option<Variable>, FunctionIdx, Box<[Variable]>),
+}
+pub struct Function<'a> {
+    pub instructions: &'a [Instruction],
+    /// sorted in ascending order by offset
+    pub labels: Vec<Label<'a>>,
+    …
+}
+pub struct Program {
+    pub instructions: Vec<Instruction>,
+    functions: Vec<FunctionInternal>,
+    strings: Vec<String>,
+    labels: Vec<(usize, StringIdx)>,
+}
+```
 
-**Where will you get the input code you’ll use in your evaluation?**
+With this flattened representation, we hope to isolate the performance increase to just the dataflow analyses. It also simplifies things by tying all references’ lifetime to the program. We also provide a handy shim that transforms bril’s official repr to our flattened repr. 
 
-We will use both the core benchmarks (a restriction imposed by our decision to keep a simple custom Bril representation) and generate our own CFGs through fuzzing.
 
-**How will you check the correctness of your implementation? If you’ve implemented an optimization, for example, “correctness” means that the transformed programs behave the same way as the original programs.**
+#### Bril Fuzzer
+Rather than generating code at the Bril IR level, our fuzzer works on AST level with if-else and loop constructs. This lets us generate “interesting” bril programs with reducible CFGs and configurable nesting levels. Although the reducibility of cfg is not a requirement for dataflow analysis, we hope to fuzz IRs that resemble those emitted from real programs.
 
-We will use a sequential implementation based on one we already tested for a previous CS 6120 assignment (and therefore have high confidence that it is correct).
-If the parallel result agrees with the sequential result on all inputs, we will consider our implementation "correct".
+For the same reason, we also limit the maximum nesting depth of basic blocks. In practice, most of the real-world programs won’t have loops that go over three levels deep. By enforcing this, we also limit the number of back edges within each SCC and the average component size. 
 
-**How will you measure the benefit (in performance, energy, complexity, etc.) of your implementation?**
+(we recommend [bril2json-rs](https://github.com/sampsyo/bril/tree/main/bril2json-rs) for serializing large fuzzed bril programs, the default [python impl](https://github.com/sampsyo/bril/tree/main/bril-txt) for that is sometimes too slow)
 
-TODO
+Our [bril fuzzer](https://github.com/zihan0822/para-dflow/tree/main/bril-fuzzer), [flattened bril repr](https://github.com/zihan0822/para-dflow/tree/main/bril) and the [parallel solver](https://github.com/zihan0822/para-dflow/tree/main/bril-analysis) are all open sourced on [Github](https://github.com/zihan0822/para-dflow/tree/main)
 
-**How will you present the data you collect from your empirical evaluation?**
+## Parallel Dataflow Solver
+There are two main phases for our parallel solver:
+##### 1. Compute KILL and GEN set in parallel
+Besides flattening, our new bril representation also assigns each variable a number (zero-indexed per function) instead of strings, which makes it easy for us to apply bitset optimization. For block b, bit `i` in `in[b]` means either “definition at `function.instruction[i]`” reaches b (reaching definition) or “variable `i` is live at b” (liveness analysis). We used a [SIMD accelerated bitset](https://docs.rs/fixedbitset/latest/fixedbitset/) implementation for efficiency. 
 
-TODO
+For both the sequential baseline and the parallel version, we only compute KILL and GEN sets once for each block before running the dataflow solver and use them afterwards in all transfer passes. This avoids re-iterating block’s instruction on every transfer whenever the `in[b]` is changed. Both the reaching definition  and liveness analysis share the same transfer function given KILL and GEN set:
+```
+transfer(b) = (in[b] \ KILL[b]) U GEN[b]
+```
+Another important observation is that: most of the computations for KILL and GEN are embarrassingly parallelizable. 
 
-## Experience Report
 
-**What was the goal?**
+**Reaching definition**:
+`GEN[b]`: a set of local variables defined in block b
+`KILL[b]`: for definition `d: y = … in b, KILL[b][d] = DEFS[y] - {d}`
+`GEN[b]` only depends on block local info. `KILL[b]` requires `DEFS[y]` across every block, while `DEFS[y]` can be computed with a simple map-reduce or fold-reduce (however, empirically, we found that fold-reduce/map-reduce has worse performance than the sequential baseline in our setting)
 
-Build a parallel dataflow solver for analyses supporting bitset optimization.
 
-**What did you do? (Include both the design and the implementation.)**
+**Liveness analysis**:
+`GEN[b]`: The set of variables that are used in b before any assignment in the same block.
+`KILL[b]`: The set of variables that are assigned a value in b
+Both `GEN[b]` and `KILL[b]` only depend on block local info. 
 
-- We built a simple representation of Bril programs that assigns variables numbers instead of strings to make it easy to apply the bitset optimization.
-- We implemented a simple generic dataflow solver for analyses supporting bitset optimization.
-- Using the aforementioned framework, we implemented live variable and reaching definition analysis.
-- We applied Tarjan's algorithm to decompose a CFG into a DAG of SCCs. DAGs, of course, naturally lend themselves to parallelism.
-Thus, we would apply the sequential implementation to each SCC and schedule dependent jobs for each SCC in a thread pool following the DAG dependencies.
-- We had plans for more intelligent load balancing that were scrapped due to time constraints.
+We parallelize KILL and GEN computation with [rayon's par_iter](https://docs.rs/rayon/latest/rayon/). 
 
-**What were the hardest parts to get right?**
 
-Correctness in the implementation of the parallel dataflow solver, in particular, managing successors and predecessors between and within components.
-We tried 
 
-**Were you successful? (Report rigorously on your empirical evaluation.)**
 
-We tested on the core benchmarks and wrote a fuzz tester to automatically generate "interesting" CFGs to test with.
-By test, we mean we implemented a sequential oracle solver and used it to gauge the correctness of the parallel solver.
+##### 2. Condensed CFG traversal in parallel:
+We applied [Tarjan's algorithm](https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm) to decompose a CFG into a DAG of SCCs (condensed CFG) in linear time. DAGs, of course, naturally lend themselves to parallelism. Thus, we would apply the sequential implementation to each SCC and schedule dependent jobs for each SCC in a thread pool following the DAG dependencies. Our current policy is simple: once the dependencies for a SCC have all been computed, we immediately submit a new worker for that component to the thread pool. A rayon thread pool Scope is passed around between workers to allow them to recursively submit new works. Inside each SCC, the sequential solver only follows edges between blocks in the same component, ignoring other inter-component edges. 
+
+In the forward pass, an SCC’s input state is computed by merging the out state of its predecessor blocks in already-processed predecessor SCCs. In the backward pass, we treat any blocks that have inter-component edges pointing to it as potential entry points. We use the same merge methods to compute their initial states as the forward pass.
+
+
+## Evaluations
+To test the correctness, we compare the results of sequential and parallel solver on core benchmarks and fuzzed programs to make sure they agree. 
+
+We compare the average performance between sequential and parallel solver (`#workers = 4`) on 20 large scaled fuzzed bril programs, which are generated with:
+
+```shell
+bril-fuzzer –-num-block 1024 –-block-size-mean 128 –-max-nesting 3
+```
+
+The sequential baseline is somewhat parallelized with SIMD accelerated bitset implementation. 
+
+**Liveness Analysis**: 1.85x faster 
+| Method     | Fastest (ms) | Slowest (ms) | Mean (ms) |
+|------------|--------------|---------------|-----------|
+| Parallel   | 231.6        | 233.9         | 232.7     |
+| Sequential | 427.0        | 434.2         | 430.6     |
+
+
+**Reaching Def**: 8% slow down
+| Method     | Fastest (s) | Slowest (s) | Mean (s) |
+|------------|--------------|---------------|-----------|
+| Parallel   | 17.4        | 24.11         | 20.76     |
+| Sequential | 18.76        | 19.41         | 19.08     |
+
+
+
+**Profiling Results**:
+We profiled our runs on the fuzzed programs with [samply](https://github.com/mstange/samply), surprisingly we found that the embarrassingly parallelizable computation of KILL and GEN set actually dominates the total runtime. The parallel solver itself only accounts for 30% of the runtime in liveness analysis, and a mere 0.1% for reaching definition. 
+
+
+
