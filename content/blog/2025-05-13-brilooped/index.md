@@ -387,7 +387,7 @@ Our analysis of the Bril to Brilooped transformation using the relooper algorith
 
 ![Figure 1: Relative Change in Dynamic Instructions After Brilooped Transformation](relative_change.png)
 
-The blue dashed line in Figure 1 is the average (9.06%) change in dynamic instructions after the transformation. 11 of the benchmarks were significantly above (>15%) this average while 9 were significantly below (<1%), leading to a large standard deviation (9.75%)
+The blue dashed line in Figure 1 is the average (9.06%) change in dynamic instructions after the transformation. 11 of the benchmarks were significantly above (>15%) this average while 9 were significantly below (<1%), leading to a large standard deviation (9.75%).
 
 ### Execution Time Analysis Across Benchmarks
 
