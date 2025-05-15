@@ -522,7 +522,6 @@ Figure 3 illustrates the relationship between benchmark size (measured in dynami
    - Recursion can be very expensive
 
 2. There doesn't seem to be any strong correlation between benchmark size and the magnitude of impact from the Brilooped transformation. Both small and large benchmarks showed varying degrees of change. Benchmarks clustered around the 10^2 instruction count range had the greatest variance, ranging from approximately -6% to +31%.
-   - Note: this could be a product of the benchmark suite.
 
 ### Before vs. After Comparison with Percentage Changes
 
@@ -542,10 +541,3 @@ Figure 4 provides a comparison of the total dynamic instructions before and afte
 
 These results suggest that while transforming Bril code to Brilooped using the relooper algorithm introduces some overhead in most cases, the structured control flow benefits of Brilooped come with a reasonable performance cost. The high variance in impact across different benchmarks indicates that the transformation's efficiency depends significantly on the specific control flow patterns in the original code. This tradeoff seems acceptable, especially considering that all benchmarks maintained their functional correctness.
 
-### References
-
-Peterson, Kasami, Tokura. "On the capabilities of while, repeat, and exit statements". https://dl.acm.org/doi/10.1145/355609.362337
-
-Ramsey, Norman. "Beyond Relooper: recursive translation of unstructured control flow to structured control flow (functional perl)". https://dl.acm.org/doi/10.1145/3547621
-
-Leroy, Xavier. "The birth of control structures: from 'goto' to structured programming". https://xavierleroy.org/CdF/2023-2024/1.pdf
