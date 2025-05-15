@@ -13,11 +13,12 @@ name = "Neel Patel"
 
 ## Introduction
 ### E-graphs and Equality Saturation
-Equality-graphs, or more simply, e-graphs, efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program, minimizing some user-provided cost function. E-graphs are directed graphs with edges from expressions (*e-nodes* in an e-graph), to a group of e-nodes (an *e-class* in an e-graph, where all the e-nodes contained are equivalent expressions). To efficiently maintain and merge these equivalence classes, e-graphs rely on a union-find data structure. The example below shows an arithmetic expression `a * 2 / 2` represented as an e-graph.
+[Equality-graphs](https://en.wikipedia.org/wiki/E-graph), or more simply, e-graphs, efficiently represent equivalence classes of expressions. This makes them useful for superoptimization, where, given an input program, we seek to find the sequence of optimizations that emits the *best* program, minimizing some user-provided cost function. E-graphs are directed graphs with edges from expressions (*e-nodes* in an e-graph), to a group of e-nodes (an *e-class* in an e-graph, where all the e-nodes contained are equivalent expressions). To efficiently maintain and merge these equivalence classes, e-graphs rely on a union-find data structure. The example below shows an arithmetic expression `a * 2 / 2` represented as an e-graph.
 
-<img src="canonical-example-before.svg" alt="" width="33%">
+<img src="canonical-example-before.svg" alt="Example e-graph for a simple arithmetic expression before saturation" width="33%">
 
-In *equality saturation*, we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. Upon saturation, an e-graph will have undergone enough rewrites to reach a fixed point where it encodes all possible programs simultaneously.
+In [*equality saturation*](https://arxiv.org/pdf/1012.1802), we apply pattern-based *rewrites* to repeatedly produce equivalent expressions. Each rewrite grows the e-graph, without losing the previous versions of the expression. So if two expressions always evaluate to the same result, they belong in the same e-class. As long as the rewrites do not lead to unbounded e-graph expansion, the e-graph will reach a saturated state where all possible programs resulting from all rewrite rules are represented within the e-graph.
+
 
 Using the previous example expression, `a * 2 / 2`, three (among many other) rewrite rules can be applied:
 1. Division associativity
@@ -26,7 +27,7 @@ Using the previous example expression, `a * 2 / 2`, three (among many other) rew
 
 As rewrite rules are applied to the expression `a * 2 / 2`, each transformation produces an equivalent form: first rewriting it as `a * (2 / 2)` using division associativity, then simplifying to `a * 1` via constant folding, and finally reducing to `a` using the multiplicative identity. Though the expression changes, all versions are equivalent. It's important to note that applying more rewrite rules, such as multiplicative commutativity or replacing `x * 2` with `x << 1`, doesn’t erase existing expressions. Instead, it expands the e-class by adding more equivalent expressions. The e-graph grows to represent several equivalent expressions, giving the optimizer more options to choose from.
 
-<img src="canonical-example-after.svg" alt="" width="33%">
+<img src="canonical-example-after.svg" alt="Example e-graph for a simple arithmetic expression after saturation." width="33%">
 
 Equality saturation has found applications in compiler optimization and, recently RTL synthesis. The [E-graphs Good](https://egraphs-good.github.io/) (egg) library provides a fast and extensible implementation of equality saturation, enabling the use of E-graphs in more applications.
 The benefit of equality saturation is that it avoids the problem of finding the optimal order in which to apply optimizations (the phase-ordering problem) by encoding all possible optimizations within the e-graph. The catch is that a separate procedure, called *extraction*, is required to actually select the best term from the e-graph according to a user-provided cost function.
