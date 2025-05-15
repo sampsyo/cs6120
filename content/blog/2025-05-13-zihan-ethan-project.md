@@ -24,12 +24,12 @@ while worklist is not empty:
 	if out[b] changed:
 		Worklist += successors of b
 ```
-In this [project](https://github.com/zihan0822/para-dflow), we built a parallel dataflow solver in Rust with bitset optimizations for our flattened Bril IR. We parallelized the KILL and GEN set computation and the condensed cfg traversal process. We focused on one forward pass analysis: reaching definition and one backward pass analysis: liveness analysis in particular. 
+In this [project](https://github.com/zihan0822/para-dflow), we built a parallel dataflow solver in Rust with bitset optimizations for our flattened Bril IR. We parallelized the KILL and GEN set computation and the condensed CFG traversal process. We focused on one forward pass analysis (reaching definition)and one backward pass analysis (liveness analysis).
 
 
 ## Preparations
 #### Flattened Bril Representation
-We implemented a flattened representation for Bril to get rid of fragmented heap references in previous Bril representations implemented in [bril-rs](https://github.com/sampsyo/bril/tree/main/bril-rs). Here are some of our flattened equivalents. 
+We implemented a flattened Bril representation that avoided the heap fragmentation that can come with a standard, pointer-based program representation. Here are some of our flattened equivalents. 
 ```rust
 pub enum Instruction {
     Add(Variable, Variable, Variable),
@@ -51,24 +51,22 @@ pub struct Program {
 }
 ```
 
-With this flattened representation, we hope to isolate the performance increase to just the dataflow analyses. It also simplifies things by tying all references’ lifetime to the program. We also provide a handy shim that transforms bril’s official repr to our flattened repr. 
+With this flattened representation, we hope to isolate the performance increase to just the dataflow analyses. It also simplifies things by tying all references’ lifetime to the program. We also provide a handy shim that transforms Bril Rust representation defined in [bril-rs](https://github.com/sampsyo/bril/tree/main/bril-rs) to our flattened representation. 
 
 
 #### Bril Fuzzer
-Rather than generating code at the Bril IR level, our fuzzer works on AST level with if-else and loop constructs. This lets us generate “interesting” bril programs with reducible CFGs and configurable nesting levels. Although the reducibility of cfg is not a requirement for dataflow analysis, we hope to fuzz IRs that resemble those emitted from real programs.
+Rather than generating code at the Bril IR level, our fuzzer works on AST level with if-else and loop constructs. This lets us generate “interesting” Bril programs with reducible CFGs and configurable nesting levels. Although the reducibility of cfg is not a requirement for dataflow analysis, we hope to fuzz IRs that resemble those emitted from real programs.
 
-For the same reason, we also limit the maximum nesting depth of basic blocks. In practice, most of the real-world programs won’t have loops that go over three levels deep. By enforcing this, we also limit the number of back edges within each SCC and the average component size. 
+For the same reason, we also limit the maximum nesting depth of basic blocks. In practice, most of the real-world programs won’t have loops that go over three levels deep. By enforcing this, we also limit the number of back edges within each SCC in the condensed CFG and the average component size. Our Bril fuzzer emits text based Bril representation. We recommend using [bril2json-rs](https://github.com/sampsyo/bril/tree/main/bril2json-rs) for serializing large fuzzed Bril programs into json representation for better performance.
 
-(we recommend [bril2json-rs](https://github.com/sampsyo/bril/tree/main/bril2json-rs) for serializing large fuzzed bril programs, the default [python impl](https://github.com/sampsyo/bril/tree/main/bril-txt) for that is sometimes too slow)
-
-Our [bril fuzzer](https://github.com/zihan0822/para-dflow/tree/main/bril-fuzzer), [flattened bril repr](https://github.com/zihan0822/para-dflow/tree/main/bril) and the [parallel solver](https://github.com/zihan0822/para-dflow/tree/main/bril-analysis) are all open sourced on [Github](https://github.com/zihan0822/para-dflow/tree/main)
+Our [Bril fuzzer](https://github.com/zihan0822/para-dflow/tree/main/bril-fuzzer), [flattened Bril representation](https://github.com/zihan0822/para-dflow/tree/main/bril) and [the parallel solver](https://github.com/zihan0822/para-dflow/tree/main/bril-analysis) are all open sourced on [GitHub](https://github.com/zihan0822/para-dflow/tree/main).
 
 ## Parallel Dataflow Solver
 There are two main phases for our parallel solver:
 ##### 1. Compute KILL and GEN set in parallel
-Besides flattening, our new bril representation also assigns each variable a number (zero-indexed per function) instead of strings, which makes it easy for us to apply bitset optimization. For block b, bit `i` in `in[b]` means either “definition at `function.instruction[i]`” reaches b (reaching definition) or “variable `i` is live at b” (liveness analysis). We used a [SIMD accelerated bitset](https://docs.rs/fixedbitset/latest/fixedbitset/) implementation for efficiency. 
+Besides flattening, our new Bril representation also assigns each variable a number (zero-indexed per function) instead of strings, which makes it easy for us to apply bitset optimization. For block b, bit `i` in `in[b]` means either “definition at `function.instruction[i]` reaches b" (reaching definition) or “variable `i` is live at b” (liveness analysis). We used a [SIMD accelerated bitset](https://docs.rs/fixedbitset/latest/fixedbitset/) implementation for efficiency. 
 
-For both the sequential baseline and the parallel version, we only compute KILL and GEN sets once for each block before running the dataflow solver and use them afterwards in all transfer passes. This avoids re-iterating block’s instruction on every transfer whenever the `in[b]` is changed. Both the reaching definition  and liveness analysis share the same transfer function given KILL and GEN set:
+For both the sequential baseline and the parallel version, we only compute KILL and GEN sets once for each block before running the dataflow solver and use them afterwards in all transfer passes. This avoids re-iterating block’s instruction on every transfer whenever `in[b]` is changed. Both the reaching definition  and liveness analysis share the same transfer function given KILL and GEN set:
 ```
 transfer(b) = (in[b] \ KILL[b]) U GEN[b]
 ```
@@ -103,7 +101,7 @@ In the forward pass, an SCC’s input state is computed by merging the out state
 ## Evaluations
 To test the correctness, we compare the results of sequential and parallel solver on core benchmarks and fuzzed programs to make sure they agree. 
 
-We compare the average performance between sequential and parallel solver (`#workers = 4`) on 20 large scaled fuzzed bril programs, which are generated with:
+We compare the average performance between sequential and parallel solver (`#workers = 4`) on 20 large scaled fuzzed Bril programs, which are generated with:
 
 ```shell
 bril-fuzzer –-num-block 1024 –-block-size-mean 128 –-max-nesting 3
