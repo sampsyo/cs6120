@@ -45,7 +45,7 @@ E-graphs offer a more expressive alternative. Rather than selecting cuts locally
 
 ### Contributions
 In this project, we integrate multiple linear programming solvers into an e-graph-based electronic design automation (EDA) tool. By using the [good_lp](https://github.com/rust-or/good_lp) library to implement an exact extractor in the [egg](https://github.com/egraphs-good/egg) library, the EDA tool can now use a larger set of solvers. Our good\_lp-based exact extractor is [available](https://github.com/neel-patel-1/egg) and can be used by any projects using the egg library (not just logic synthesis for FPGAs).
-We evaluate the performance of our exact extractor in the context of logic synthesis using the EDA tool, which transforms designs specified in the verilog hardware description language into designs targetting FPGAs or ASICs.
+We evaluate the performance of our exact extractor in the context of logic synthesis using the EDA tool, which transforms designs specified in the Verilog hardware description language into designs targetting FPGAs or ASICs.
 
 ## Optimizing RTL using E-Graphs
 
@@ -54,7 +54,7 @@ We evaluate the performance of our exact extractor in the context of logic synth
 For this project, we use an ongoing research compiler in the Zhang research group, called `lvv`. lvv performs optimizations on a domain-specific, circuit-specification language called *LutLang*.
 Here is a rough outline of the grammar defined by LutLang:
 ```
-LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
+<LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
 
 <Node> ::= <Const> | x | <Input> | NOR <Node> <Node> | MUX <Node> <Node> <Node>
             | LUT <Program> <Node> ... <Node> | REG <Node> | ARG <u64> | CYCLE <Node>
@@ -66,7 +66,7 @@ LutLang> ::= <Program> | <Node> | BUS <Node> ... <Node>
 <Program> ::= <u64> // Can store a program for up to 6 bits
 ```
 
-lvv takes verilog as input, but converts it into LutLang before performing optimizations and then converts it back into verilog.
+lvv takes Verilog as input, but converts it into LutLang before performing optimizations and then converts it back into Verilog.
 
 Below we give an example of a half-adder written in LutLang:
 
@@ -141,7 +141,7 @@ The times to solution (in seconds) are reported in the table below
 
 *Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
 
-We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 verilog design benchmarks when synthesizing to an ASIC target using a standard cell library. We use another e-graph-based logic synthesis tool, called msynth, which operates similarly to lvv, but can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. We note that there is no "No Optimization" column in this chart. This is because we must run a set of rewrite rules to convert digital logic to standard cells, so optimization and standard cell transformation take place simultaneously. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
+We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 Verilog design benchmarks when synthesizing to an ASIC target using a standard cell library. We use another e-graph-based logic synthesis tool, called msynth, which operates similarly to lvv, but can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. We note that there is no "No Optimization" column in this chart. This is because we must run a set of rewrite rules to convert digital logic to standard cells, so optimization and standard cell transformation take place simultaneously. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
 | Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Synopsys               |
 |---------|---------------|----------------------------------|------------------------|
