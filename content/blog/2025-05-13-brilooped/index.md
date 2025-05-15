@@ -15,71 +15,124 @@ In this project we introduce Briloop, an extension into the [Bril programming la
 Brilooped programs extends the Bril instruction set with the following op codes: `while`, `block`, `if`, `break`, and `continue`.
 Brilooped extends the Bril instruction set with new control flow operations that provide structured alternatives to jumps and labels. These new op codes allow programmers to write more readable and maintainable code with familiar control flow constructs like loops and conditionals. This structured control flow can also be useful for specific applications such as WASM.
 
+### From lists to trees
 
-### `while`
+Briloop follows Bril's design philosophy and represent a program as a JSON Object with single key `functions` that maps to a list of BriloopFunction.
+```
+// BriloopProgram
+{ "functions": [<BriloopFunction>] }
+```
 
-The `while` operation introduces a structured loop into Bril programs:
+A Briloop function contains a name, an optional array of function arguments, an optional return type, and a list of instructions. There are no labels in Briloop. 
+```
+// BriloopFunction
+{
+    "name": "<string>",
+    "args": [{"name": "<string>, "type":<Type>}, ...]?,
+    "type": <Type>?,
+    "instrs": [<BriloopInstruction>, ...],
+}
+```
 
-- It takes exactly one argument: a string containing the name of a boolean variable that serves as the loop condition.
-- It includes an additional `children` field that contains an array of arrays of `Instr` objects representing the loop body.
-  - Note: this is an array of arrays to make the language a little more uniform (children field is used in both while loops and if-then-else statements)
-- The condition is evaluated before each iteration. If true, the body executes; if false, the loop terminates.
-- The instructions within the loop body are responsible for potentially updating the condition variable.
+In Bril, the instructions array is a flat list of instructions, but in Briloop structured control flow statements may reference other Briloop instructions. So control flow statements in briloop may contain a `children` field a list of list of Briloop instructions. Since BriloopInstructions may contain other BriloopInstructions, they give the appearance of being nested:
+```
+// BriloopInstruction
+{
+    "op": "<string>",
+    "dest": "<string>"?,
+    "type": "<Type>"?,
+    "args": ["<string>", ...]?,
+    "funcs": ["<string>", ...]?,
+    "value": <Value>?,
+    "children": [[ <BriloopInstruction>, ...], ...]?,
+}
+```
 
-Example usage:
+Let's see some of the control flow statements to see how they use the children field
+
+#### `while`
+
+The `while` operation starts a loop that is executed until its argument evaluates to false, or execution is interrupted by a break or continue statement: 
 
 ```json
 {
   "op": "while",
-  "args": [
-    "cond"
-  ],
+  "args": ["cond"],
   "children": [
     [
-      { "args": ["a","b"], "dest": "temp", "op": "add", "type": "int" },
-      { "args": ["b", "ten"], "dest": "cond", "op": "le", "type": "bool" }
+      { "op": "print", "args": ["b"], },
+      { "op": "add", "args": ["a","b"], "dest": "b", "type": "int" },
+      { "op": "le", "args": ["b", "ten"], "dest": "cond", "type": "bool" }
     ]
   ],
 }
 ```
 
+- `op`: must be "while"
+- `args`: a list with exactly one element, the name of a boolean variable that serves as the loop condition. It is evaluated before each execution of the loop.
+- `children`: a list with exactly one element, the list of instructions (body) to execute in each iteration of the loop. A while statement will iterate indefinitely until the variable name evaluates to false or a `break`/`ret` instruction is executed in the body.  
+- may also be represented in text form:
+
 ```
+# will print 0, 1, ..., 9
 ten: int = const 10;
 a: int = const 1;
 b: int = const 0;
 cond: bool = id true;
 while cond {
+    print b;
     b: int = add a b;
     cond: bool = le b ten;
 }
 ```
 
+#### `block`
+The `block` operation starts a block statement that executes the instructions in its body exactly one time, unless interrupted by a `block`, `continue`, or `ret` instruction. 
+
+```json
+{
+  "op": "block",
+  "children": [
+    [
+      { "op": "print", "args": ["a"] } 
+      { "op": "print", "args": ["b"] } 
+    ]
+  ],
+}
+```
+
+- `op`: must be "block"
+- `children`: a list with exactly one element, the list of instructions (body). 
+- may also be represented in text form:
+
+```
+# will print 1, 0
+a: int = const 1;
+b: int = const 0;
+block {
+    print a;
+    print b;
+}
+```
+
 ### `if`
 
-The `if` operation implements conditional execution:
-
-- It takes exactly one argument: a string containing the name of a boolean variable that serves as the condition.
-- It includes a `children` field with an array of arrays of `Instr` objects.
-  - This will contain 1 or 2 arrays, belonging to the True and False blocks respectively.
-  - When the condition is true, the first array of `Instrs` objects in the `children` is executed.
-  - When it is false, the second array is executed.
-
-Example usage:
+The `if` operation represents a conditional execution of at least one, but possibly two branches:
 
 ```json
 {
   "op": "if",
   "args": ["cond"],
   "children": [
-    [
-      { "args": ["a", "b"], "dest": "temp", "op": "add", "type": "int" }
-    ],
-    [
-      { "args": ["a", "b"], "dest": "temp", "op": "sub", "type": "int" }
-    ]
+    [{ "args": ["a", "b"], "dest": "temp", "op": "add", "type": "int" }],
+    [{ "args": ["a", "b"], "dest": "temp", "op": "sub", "type": "int" }]
   ],
 }
 ```
+- `op`: must be "if"
+- `args`: a list with exactly one element, the name of a boolean variable that serves as the if condition.
+- `children`: a list with at least one element and maximum two elements. The first element represents the true branch and the second (if any) the false branch.
+- may also be represented in text form: 
 
 ```
 cond: bool = id true;
@@ -93,39 +146,118 @@ else {
 
 ```
 
-### The `break` and `continue` Operations
+### Transferring control: break and continue
+#### `break`
+The `break n` operation terminates execution the current control flow statement and exits `n` additional enclosing control flow statements, transferring control to the instruction immediately after the n-th control flow statement. 
 
-Two additional operations provide finer control within loops:
+```json
+{ "op": "break", "value": 0 }
+```
+- `op`: must be "break"
+- `value`: an integer literal representing how many levels of control flow to break out of. Zero-indexed. 
 
-- `break`: Takes one constant argument and exits `value` loops. This brings execution to the top of this loop.
-- `continue`: Takes one constant argument and exits `value` loops. This continues execution at the following instruction.
-
-For example the following program will print 1 and 2 forever:
+Let's consider a few break examples to see how it behaves in action. In this first example break makes the block statement exit early and execution moves to the first instruction after its closing curly brace:
 
 ```
+# will print 1, 3.
+block {
+    print one;
+    break 0;
+    print two;
+}
+print three;
+```
+
+More deeply nested blocks, will require different levels to break out of: 
+```
+# will print 1, 2, 3, 6, 7
+block {
+    print one;
+    block {
+        print two;
+        block {
+            print three;
+            break 1;
+            print four;
+        }
+        print five;
+    }
+    print six;
+}
+print seven;
+```
+
+Only block and while statements count for the number of levels to break out of: 
+
+```
+# will print 1, 2, 3, 7
+while cond {
+    print one;
+    block {
+        print two;
+        while cond {
+            print three;
+            break 2;
+            print four;
+        }
+        print five;
+    }
+    print six;
+}
+print seven;
+```
+
+#### `continue`
+The `continue n` operation terminates execution the current control flow statement and exits `n` additional enclosing control flow statements, transferring control to the instruction
+
+```json
+{ "op": "continue", "value": 0 }
+```
+- `op`: must be "continue"
+- `value`: an integer literal representing how many levels of control flow to continue out of. Zero-indexed. 
+
+Let's consider a few break examples to see how it behaves in action. Inside of a block, continue works just like break.
+
+```
+# will print 1, 3.
+block {
+    print one;
+    continue 0;
+    print two;
+}
+print three;
+```
+
+In while statements, continue transfers control to the start of the loop
+```
+# will print 0, 1, ..., 9
 cond: bool = const true;
+a: int = const 0;
 one: int = const 1;
-two: int = const 2;
+ten: int = const 10;
+while cond {
+    print a; 
+    a: int = add a one;
+    keep_going: bool = le a ten;
+    if keep_going
+    then {
+        continue 0;
+    }
+    else {
+        break 0;
+    }
+}
+```
+
+In nested while loops, continue may transfer control to outer loops: 
+```
+# will print 1, 2, 1, 2, ...
+cond: bool = const true;
 while cond {
     print one;
     while cond {
         print two;
         continue 1;
-    }
-}
-```
-
-Whereas this program will print 1 followed by infinite twos:
-
-```
-cond: bool = const true;
-one: int = const 1;
-two: int = const 2;
-while cond {
-    print one;
-    while cond {
-        print two;
-        continue 0;
     }
 }
 ```
