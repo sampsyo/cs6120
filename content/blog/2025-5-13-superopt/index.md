@@ -122,25 +122,25 @@ We compare the number of LUTs in the designs extracted using greedy and ILP extr
 | c7552     | 335                        | 325              | DNF                                      | 315 (7)                                | DNF                                   |
 | c880      | DNF                        | DNF              | DNF                                      | DNF                                    | DNF                                   |
 
-The times to solution are reported in the table below
+The times to solution (in seconds) are reported in the table below
 
-| Benchmark | Greedy Time       | Microlp Time      | HiGHS Time        | CBC Time           |
-|-----------|-------------------|-------------------|-------------------|--------------------|
-| c1355     | 0.046134086       | DNF               | 640.92384104      | 230.738058229      |
-| c17       | 0.011094708       | 4.205207809       | 0.00869014        | 0.007125629        |
-| c1908     | 0.03812723        | DNF               | 1551.254409928    | 488.214537225      |
-| c2670     | 0.042055477       | DNF               | 600.226674074     | DNF                |
-| c3540     | 0.032852412       | DNF               | 112.26789725      | DNF                |
-| c432      | 0.022252978       | DNF               | 860.208582938     | 603.27150813       |
-| c499      | 0.023853089       | DNF               | 729.54756512      | 600.49411377       |
-| c5315     | 0.047760014       | DNF               | 743.806362887     | DNF                |
-| c6288     | 0.136245309       | DNF               | 608.710588015     | DNF                |
-| c7552     | 0.045072024       | DNF               | 600.26766583      | DNF                |
-| c880      | DNF               | DNF               | DNF               | DNF                |
+| Benchmark | Greedy Time | Microlp Time | HiGHS Time | CBC Time |
+|-----------|-------------|--------------|------------|----------|
+| c1355     | 0.046       | DNF          | 641        | 231      |
+| c17       | 0.011       | 4.21         | 0.009      | 0.007    |
+| c1908     | 0.038       | DNF          | 1550       | 488      |
+| c2670     | 0.042       | DNF          | 600        | DNF      |
+| c3540     | 0.033       | DNF          | 112        | DNF      |
+| c432      | 0.022       | DNF          | 860        | 603      |
+| c499      | 0.024       | DNF          | 730        | 600      |
+| c5315     | 0.048       | DNF          | 744        | DNF      |
+| c6288     | 0.136       | DNF          | 609        | DNF      |
+| c7552     | 0.045       | DNF          | 600        | DNF      |
+| c880      | DNF         | DNF          | DNF        | DNF      |
 
 *Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
 
-We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 verilog design benchmarks using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
+We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 verilog design benchmarks when synthesizing to an ASIC target using a standard cell library. Another e-graph-based logic synthesis tool, called msynth, which can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. There is no "No Optimization" column in this chart. To convert to a standard cell library, a set of rewrite rules must be applied required to convert digital logic to standard cells. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
 | Bench   | Greedy Area   | Exact Area (Node Limit) (msynth) | Synopsys               |
 |---------|---------------|----------------------------------|------------------------|
@@ -158,25 +158,25 @@ We also compare the area (µm²) of the designs extracted using greedy and exact
 
 The times to perform greedy and exact extraction are reported below. We use a 10-minute timeout for the solver, omitting results for which it is unable to produce a valid solution within the alloted time.
 
-| Benchmark | Greedy Time       | Exact Time (msynth) |
-|-----------|-------------------|---------------------|
-| c1355     | 0.046134086       | 600.090794699       |
-| c17       | 0.011094708       | 14.406110368        |
-| c1908     | 0.03812723        | 600.034827982       |
-| c2670     | 0.042055477       | 114.496902413       |
-| c3540     | 0.032852412       | 72.048779133        |
-| c432      | 0.022252978       | 14.406110368        |
-| c499      | 0.023853089       | 0.853112572         |
-| c5315     | 0.047760014       | DNF                 |
-| c6288     | 0.136245309       | DNF                 |
-| c7552     | 0.045072024       | DNF                 |
-| c880      | 0.027521613       | 10.793451794        |
+| Benchmark | Greedy Time | Exact Time (msynth) |
+|-----------|-------------|---------------------|
+| c1355     | 0.046       | 600                 |
+| c17       | 0.011       | 14.4                |
+| c1908     | 0.038       | 600                 |
+| c2670     | 0.042       | 114                 |
+| c3540     | 0.033       | 72.0                |
+| c432      | 0.022       | 14.4                |
+| c499      | 0.024       | 0.853               |
+| c5315     | 0.048       | DNF                 |
+| c6288     | 0.136       | DNF                 |
+| c7552     | 0.045       | DNF                 |
+| c880      | 0.028       | 10.8                |
 
 *Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
 
 ## Challenges
 
-The end goal of the project changed after the proposal. Initially, we aimed to implement an efficient extraction algorithm, called [SmoothE](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf), into the EDA tool used throughout this project. As a stepping stone towards an implementation, we decided to first implement a linear programming-based extraction algorithm.
+The end goal of the project changed after the proposal. Initially, we aimed to integrate an efficient extraction algorithm, called [SmoothE](https://www.csl.cornell.edu/~zhiruz/pdfs/smoothe-asplos2025.pdf), into the EDA tool used throughout this project. As a stepping stone towards an implementation, we decided to first implement a linear programming-based extraction algorithm.
 Getting our LP solver implementation to emit correct results took more effort than expected. At the same time, the EDA tool had only recently begun to implement support for ASIC logic synthesis using a standard cell library and exact extraction had not yet been fully implemented and tested. For this reason we decided to focus on developing a correct implementation of LP extraction. Despite the less ambitious end goal, there were numerous challenges.
 
 Long synthesis times for exact extraction made debugging challenging. Working with simple, fast-to-synthesize test cases is not enough. Simple test cases' e-graphs are not representative of complex designs with thousands of e-nodes, hundreds of thousands of constraints, and many cycles.
