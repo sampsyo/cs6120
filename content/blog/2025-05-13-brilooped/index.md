@@ -374,11 +374,11 @@ The multi-level breaks and continues proved particularly challenging to implemen
 
 ## Beyond Relooper
 
-The Beyond Relooper algorithm was described by Ramsey as a way to translate [Cmm sources](https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/rts/cmm) into [WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly); for this project we adapted the algorith to translate Bril into Briloop. We'll start by providing a high level overview of the algorithm and some of the adaptations we did, as the source and target languages are different from what are presented in Ramsey's paper.
+The Beyond Relooper algorithm was described by Ramsey as a way to translate [Cmm sources](https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/rts/cmm) into [WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly); for this project we adapted the algorithm to translate Bril into Briloop. We'll start by providing a high level overview of the algorithm and some of the adaptations we did, as the source and target languages are different from what are presented in Ramsey's paper.
 
 The Beyond Relooper algorithm takes as input the Dominator Tree of a Control Flow Graph, with the important characteristic that the children in the tree are sorted in descending reverse post order, and produces the Briloop Program as an output. It is implemented as a recursive function over the structure of the dominator tree, where the current node is translated into either a while statement, a list of Briloop instructions, or a block statement:
 
-- A basic block is translated into a while statement if it is a loop header, we use Ramsey's definition of a block header being a loop header if it has a predecessor with a larger reverse post order than itself rather than the more standard definition of a loop header being a node that has a predecessor that it dominates.
+- A basic block is translated into a while statement if it is a loop header. We use Ramsey's definition of a block header being a loop header if it has a predecessor with a larger reverse post order than itself rather than the more standard definition of a loop header being a node that has a predecessor that it dominates.
 - If a basic block is a merge node it is translated into a Briloop block statement, to support breaking.
 - Otherwise, the basic block is translated into a flat list of Briloop instructions.
 
