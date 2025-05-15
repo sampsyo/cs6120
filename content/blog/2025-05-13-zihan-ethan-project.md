@@ -13,15 +13,15 @@ name = "Zihan Li"
 +++
 ## Background
 Dataflow analysis with the worklist algorithm can be a bottleneck for compilation speed, especially for JITs:
-```rust
-In[entry] = init
+```
+in[entry] = init
 out[*] = init
-Worklist = all blocks
-While worklist is not empty:
-	B = pick any block from worklist
-	In[b] = merge(out[p] for every predecessors p of b)
-	Out[b] = transfer(b, in[b])
-	If out[b] changed:
+worklist = all blocks
+while worklist is not empty:
+	b = pick any block from worklist
+	in[b] = merge(out[p] for every predecessors p of b)
+	out[b] = transfer(b, in[b])
+	if out[b] changed:
 		Worklist += successors of b
 ```
 In this [project](https://github.com/zihan0822/para-dflow), we built a parallel dataflow solver in Rust with bitset optimizations for our flattened Bril IR. We parallelized the KILL and GEN set computation and the condensed cfg traversal process. We focused on one forward pass analysis: reaching definition and one backward pass analysis: liveness analysis in particular. 
@@ -76,14 +76,17 @@ Another important observation is that: most of the computations for KILL and GEN
 
 
 **Reaching definition**:
-`GEN[b]`: a set of local variables defined in block b
-`KILL[b]`: for definition `d: y = … in b, KILL[b][d] = DEFS[y] - {d}`
+* `GEN[b]`: a set of local variables defined in block b
+* `KILL[b]`: for definition `d: y = … in b, KILL[b][d] = DEFS[y] - {d}`
+
 `GEN[b]` only depends on block local info. `KILL[b]` requires `DEFS[y]` across every block, while `DEFS[y]` can be computed with a simple map-reduce or fold-reduce (however, empirically, we found that fold-reduce/map-reduce has worse performance than the sequential baseline in our setting)
 
 
 **Liveness analysis**:
-`GEN[b]`: The set of variables that are used in b before any assignment in the same block.
-`KILL[b]`: The set of variables that are assigned a value in b
+
+* `GEN[b]`: The set of variables that are used in b before any assignment in the same block.
+* `KILL[b]`: The set of variables that are assigned a value in b
+
 Both `GEN[b]` and `KILL[b]` only depend on block local info. 
 
 We parallelize KILL and GEN computation with [rayon's par_iter](https://docs.rs/rayon/latest/rayon/). 
