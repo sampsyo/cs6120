@@ -7,10 +7,12 @@ bio = """
 latex=true
 [[extra.authors]]
 name = "Parth Sarkar"
+link = "https://parthsarkar17.github.io"
 [[extra.authors]]
 name = "Edmund Lam"
 [[extra.authors]]
 name = "Ethan Gabizon"
+link = "https://gabizon103.github.io"
 +++
 
 # Motivation
@@ -52,7 +54,7 @@ The naive parallel algorithm we implemented repeatedly batches entire worklist c
 ## Mixed
 During testing and early evaluations, we found that some benchmarks are too small to benefit from parallelization. This is likely because the amount of time required to execute the worklist algorithm is less than the amount of time it takes to spawn and collect threads. We attempted to find a heuristic, based on the size of a function in basic blocks, that we can use for switching between our sequential and parallel versions of the algorithm.  
 
-This version of the algorithm takes an integer threshold as an additional input; if the size of the function is below that threshold it uses the sequential algorithm and otherwise it uses the parallel algorithm.
+This version of the algorithm takes an integer threshold as an additional input; if the size of the function in basic blocks is below that threshold it uses the sequential algorithm and otherwise it uses the parallel algorithm.
 
 ## Parallel Across Functions
 We also implemented another type of algorithm which parallelizes dataflow analysis across functions. In a Bril file with 4 functions, this algorithm will assign a CFG to 4 threads and achieve parallelism that way. This implementation is likely more useful in an ahead of time compiler rather than a JIT, but we thought it would interesting to explore what kind of speedups we can achieve with a different parallelism scheme.
@@ -65,12 +67,17 @@ We evaluated our implementations on the Bril core benchmarks and a series of 50 
 
 For generating random Bril programs, we used [Bear](https://stephenverderame.github.io/blog/bear/), an existing fuzzer for Bril. 
 
+## Experimental Setup
+We conducted our experiments on an 8-core M2 MacBook Air. All of our parallel implementations are set to use the number of cores on the machine they're running on. This can be configured using [rayon](https://docs.rs/rayon/latest/rayon/), but we did not focus on this parameter in our experiment. For all our experiments, we use 8 threads. 
+
 ## Parallelizing a Single CFG
 We were interested in the average runtime for each pass, with each type of algorithm, across all benchmarks.
 Runtime includes the amount of time it takes to build a CFG and run the worklist algorithm on it. It does not include the time to parse a Bril program.
 
 ![alt text](./averages_runtime.png)
 In general, it seems our parallel algorithm provides at least some speedup over the sequential one. It also seems that our heuristics for all of our hybrid algorithms were quite bad, since at best they are on par with the fully parallel implementation. In the case of the reaching definitions analysis all of the hybrid algorithms are actually slower than the sequential one, so our heuristics were probably wrong more often than they were right. It is also possible that different heuristics are required for different types of analyses, which we did not explore.
+
+We also note that the speedup isn't that great; it takes 8 threads to achieve a speedup of 2.32x at best and 1.21x at worst. We hypothesize this is because our parallel implementations are bottlenecked by the sequential portions of the algorithm, mostly the time it takes to collect results across threads. Confirming this would require some finer-grain benchmarking in our code, which we haven't yet implemented. Since the algorithm is bottlenecked by the sequential portion, we also hypothesize that this trend would persist on a system with more cores.
 
 We also were interested in evaluating our algorithms on specific benchmarks.
 ![alt text](./averages_by_bmark_ReachingDefinitions_runtime.png)
