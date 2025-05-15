@@ -208,7 +208,7 @@ print seven;
 ```
 
 #### `continue`
-The `continue n` operation terminates execution the current control flow statement and exits `n` additional enclosing control flow statements, transferring control to the instruction
+The `continue n` operation skips the remaining code in the current control flow instruction and transfers execution to the n-th control flow instruction. If the n-th control flow operation is a while loop, the next iteration of the loop starts, if it is a block statement it exits the block entirely.
 
 ```json
 { "op": "continue", "value": 0 }
