@@ -70,14 +70,14 @@ For both the sequential baseline and the parallel version, we only compute KILL 
 ```
 transfer(b) = (in[b] \ KILL[b]) U GEN[b]
 ```
-Another important observation is that: most of the computations for KILL and GEN are embarrassingly parallelizable. 
-
+Another important observation is that most of the computations for KILL and GEN are embarrassingly parallelizable: the results of them for a particular block b does not depend on other blocks. 
 
 **Reaching definition**:
+* `DEFS[y]`: a set of definitions of variable `y` in the entire CFG 
 * `GEN[b]`: a set of local variables defined in block b
-* `KILL[b]`: for definition `d: y = … in b, KILL[b][d] = DEFS[y] - {d}`
+* `KILL[b]`: a set of definitions that local variables defined in block b can kill. For each definition in b, `d: y = ...`, where `d` notes the unique instruction label (can be the offset into instructions buffer), the kill set for `d` is defined as `DEFS[y] - {d}`
 
-`GEN[b]` only depends on block local info. `KILL[b]` requires `DEFS[y]` across every block, while `DEFS[y]` can be computed with a simple map-reduce or fold-reduce (however, empirically, we found that fold-reduce/map-reduce has worse performance than the sequential baseline in our setting)
+`GEN[b]` only depends on block local information, while `KILL[b]` requires `DEFS[y]` that depends on the information from every block. However, `DEFS[y]` can be computed with a simple map-reduce or fold-reduce in parallel: compute `DEFS[y]` for each block in parallel and merge them together by taking the union.
 
 
 **Liveness analysis**:
@@ -85,9 +85,9 @@ Another important observation is that: most of the computations for KILL and GEN
 * `GEN[b]`: The set of variables that are used in b before any assignment in the same block.
 * `KILL[b]`: The set of variables that are assigned a value in b
 
-Both `GEN[b]` and `KILL[b]` only depend on block local info. 
+Both `GEN[b]` and `KILL[b]` only depend on block local information. 
 
-We parallelize KILL and GEN computation with [rayon's par_iter](https://docs.rs/rayon/latest/rayon/). 
+We compute KILL and GEN set for each block in parallel with [rayon's par_iter](https://docs.rs/rayon/latest/rayon/).
 
 
 
