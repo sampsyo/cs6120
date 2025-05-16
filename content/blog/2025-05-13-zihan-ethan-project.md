@@ -29,7 +29,7 @@ In this [project](https://github.com/zihan0822/para-dflow), we built a parallel 
 
 ## Preparations
 #### Flattened Bril Representation
-We implemented a flattened Bril representation that avoided the heap fragmentation that can come with a standard, pointer-based program representation. Here are some of our flattened equivalents. 
+We implemented a flattened Bril representation that avoided the heap fragmentation that can come with a standard, pointer-based program representation. The main idea is to allocate continuous blob of data without extra pointer indirection on heap for better locality and later reference elements in it with newtype wrapped indices. Here are some design choices we have made:
 ```rust
 pub enum Instruction {
     Add(Variable, Variable, Variable),
