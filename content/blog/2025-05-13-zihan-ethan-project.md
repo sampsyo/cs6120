@@ -142,7 +142,7 @@ We ensured the correctness of our parallel solver by comparing its results with 
 We compared the average performance between sequential and parallel solver on 20 large scaled fuzzed Bril programs, which are generated with:
 
 ```shell
-bril-fuzzer –-num-block 1024 –-block-size-mean 128 –-max-nesting 3
+bril-fuzzer --num-blocks 1024 --block-size-mean 128 --max-nesting 3
 ```
 Bitset optimization is applied to both sequential and the parallel solver.
 Therefore, the sequential baseline is somewhat parallelized with SIMD accelerated bitset implementation.
