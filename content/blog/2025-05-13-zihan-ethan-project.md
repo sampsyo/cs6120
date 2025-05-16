@@ -95,7 +95,7 @@ For block `b`, bit `i` in `in[b]` means either "definition at `function.instruct
 We used a [SIMD accelerated bitset](https://docs.rs/fixedbitset/latest/fixedbitset/) implementation for efficiency. 
 
 In both the sequential baseline and the parallel version, we only compute `KILL` and `GEN` sets once for each block before running the dataflow solver and refer them afterwards in all transfer passes.
-This strategu avoids traversing the block instruction on every transfer calculation.
+This strategy avoids traversing the block instruction on every transfer calculation.
 Both the reaching-definitions and liveness analyses share the same transfer function given `KILL` and `GEN` sets:
 ```
 transfer(b) = (in[b] \ KILL[b]) U GEN[b]
@@ -184,10 +184,10 @@ The parallel fold-reduce/map-reduce approach we applied somehow did not yield an
 ## Future work
 
 In the parallel condensed CFG traversal phase, we currently treat all the components the same.
-That is, we always submit a new intra-component sequential dataflow job to the thread pool regardless of the component's size or other potential heruistic that might influence the dataflow problem complexity.
+That is, we always submit a new intra-component sequential dataflow job to the thread pool regardless of the component's size or other potential heuristics that might influence the dataflow problem complexity.
 We should have a smarter policy to decide when we should launch a dedicated thread for a new component.
 
 We also can have a better load-balancing strategy to determine which component should run next in order to maximize the number of worker executing in parallel at every time and prevent the overall dataflow from stalling on a few unfinished SCCs.
-We can use some per component heuristics, such as component size, the number of backedges within the component, out degree, etc. to precompute a better condensed CFG traveral ordering or guide the local choice at each component during traversal when picking the next to run.
+We can use some per component heuristics, such as component size, the number of backedges within the component, out degree, etc. to precompute a better condensed CFG traversal ordering or guide the local choice at each component during traversal when picking the next to run.
 We may further choose to devote more threads for large SCCs to parallelize the sequential worklist algorithm.
 But we are a little bit skeptical about how far this parallel condensed CFG approach will take us given its often limited impact on analysis performance as shown in these profiling results.
