@@ -2,8 +2,8 @@
 title = "Final Project: Parallel Dataflow Analysis"
 [extra]
 bio = """
-  Ethan Uppal Cornell CS '27
-  Zihan Li Cornell CS '25
+  Ethan Uppal is a CS student at Cornell University
+  Zihan Li is a CS master at Cornell University, who usually listens to music when not doing CS 
 """
 [[extra.authors]]
 name = "Ethan Uppal"
