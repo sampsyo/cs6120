@@ -121,7 +121,7 @@ We compare the number of LUTs in the designs extracted using greedy and ILP extr
 | c5315     | 267                        | 266              | DNF                                      | 259 (6)                                | DNF                                   |
 | c6288     | 520                        | 512              | DNF                                      | 515 (6)                                | 520 (2)                               |
 | c7552     | 335                        | 325              | DNF                                      | 315 (7)                                | DNF                                   |
-| c880      | DNF                        | DNF              | DNF                                      | DNF                                    | DNF                                   |
+| c880      | 84                         | 81               | DNF                                      | DNF                                    | DNF                                   |
 
 The times to solution (in seconds) are reported in the table below
 
