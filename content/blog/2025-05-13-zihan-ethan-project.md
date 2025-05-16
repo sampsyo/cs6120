@@ -99,15 +99,16 @@ In the forward pass, an SCC’s input state is computed by merging the out state
 
 
 ## Evaluations
-To test the correctness, we compare the results of sequential and parallel solver on core benchmarks and fuzzed programs to make sure they agree. 
+We ensured the correctness of our parallel solver by comparing its results with that of the sequential solver on Bril's [core benchmarks](https://github.com/sampsyo/bril/tree/main/benchmarks/core) and fuzzed programs.
 
-We compare the average performance between sequential and parallel solver (`#workers = 4`) on 20 large scaled fuzzed Bril programs, which are generated with:
+We compared the average performance between sequential and parallel solver on 20 large scaled fuzzed Bril programs, which are generated with:
 
 ```shell
 bril-fuzzer –-num-block 1024 –-block-size-mean 128 –-max-nesting 3
 ```
+Bitset optimization is applied to both sequential and the parallel solver. Therefore, the sequential baseline is somewhat parallelized with SIMD accelerated bitset implementation. The parallel condensed CFG traversal approach is only applied to the parallel solver. The numbers below are the total time elapsed to complete the  analysis for all 20 fuzzed Bril benchmarks. The fastest, slowest and mean metrics were collected from 10 different runs.
 
-The sequential baseline is somewhat parallelized with SIMD accelerated bitset implementation. 
+The experiments were conducted on an old Macbook Pro with MacOS 12.5.1 and 8 (with hyper-threading) 2GHz i5 intel CPU cores. We fixed the number of workers of parallel solver to 4 throughout the evaluations. We used rustc 1.87.0-nightly.
 
 **Liveness Analysis**: 1.85x faster 
 | Method     | Fastest (ms) | Slowest (ms) | Mean (ms) |
@@ -116,16 +117,23 @@ The sequential baseline is somewhat parallelized with SIMD accelerated bitset im
 | Sequential | 427.0        | 434.2         | 430.6     |
 
 
-**Reaching Def**: 8% slow down
+**Reaching Definition**: 8% slow down
 | Method     | Fastest (s) | Slowest (s) | Mean (s) |
 |------------|--------------|---------------|-----------|
-| Parallel   | 17.4        | 24.11         | 20.76     |
+| Parallel   | 17.40        | 24.11         | 20.76     |
 | Sequential | 18.76        | 19.41         | 19.08     |
 
+Reaching definition analysis reported here directly tracks the definition in a granularity of its offset into the function's instructions buffer. We had also tried a coarser-grained version by only tracking the index of the block associated with definitions, which could give a 20x speed up compared with the fine-grained version. However, that did not change the relative performance between the sequential and parallel solver in any nontrivial way. 
 
 
 **Profiling Results**:
-We profiled our runs on the fuzzed programs with [samply](https://github.com/mstange/samply), surprisingly we found that the embarrassingly parallelizable computation of KILL and GEN set actually dominates the total runtime. The parallel solver itself only accounts for 30% of the runtime in liveness analysis, and a mere 0.1% for reaching definition. 
+We profiled our runs on the fuzzed programs with [samply](https://github.com/mstange/samply), surprisingly we found that the embarrassingly parallelizable computation of KILL and GEN set actually dominates the total runtime. The parallel dataflow phase only accounts for 30% of the runtime in liveness analysis, and a mere 0.1% for reaching definition. 
+
+**Remarks**:
+For reaching definition, the profiling results indicate that parallel condensed CFG traversal approach has little impact on the final performance. Unlike in liveness analysis, we did not see an expected speedup when parallelizing KILL and GEN computation for reaching definition. The main bottleneck is the computation of `DEFS` for all variables in the CFG. The parallel fold-reduce/map-reduce approach we applied somehow did not yield any significant speedup.
 
 
+## Future work
+In the parallel condensed CFG traversal phase, we currently treat all the components the same. We always submit a new intra-component sequential dataflow job to the thread pool regardless of the component's size or other potential heruistic that might influence the dataflow problem complexity. We need a smarter policy to decide when we should launch a dedicated thread for a new component.
 
+We also can have a better load balancing strategy to determine which component should run next in order to maximize the number of worker executing in parallel at every time and prevent the overall dataflow from stalling on a few unfinished SCCs. We can use some per component heuristics, such as component size, the number of backedges within the component, out degree, etc to precompute a better condensed CFG traveral ordering or guide the local choice at each component during traversal when picking the next to run. We may further choose to devote more threads for large SCCs to parallelize the sequential worklist algorithm. But we are a little bit skeptical about how far this parallel condensed CFG approach will take us given its sometimes limited impact on analysis performance as shown in previous profiling results.
