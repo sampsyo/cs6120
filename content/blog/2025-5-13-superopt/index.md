@@ -107,39 +107,41 @@ good\_lp will transform the problem specification into the implementation-specif
 
 ## Results
 
-We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://github.com/matth2k/synth-benchmarks/tree/main/verilog/iscas85) design benchmarks. E-graph tech mapping is performed after an initial FPGA synthesis using [Yosys](https://yosyshq.readthedocs.io/projects/yosys/en/0.46/cmd/synth_xilinx.html), which performs a tech mapping using the ABC tool. Since finding an exact solution quickly becomes prohibitive in terms of extraction time (the size of the e-graph and corresponding linear programming problem gets too large) we incrementally increase the number of "rewrite iterations" until reaching 10. This limits the size of the e-graph by restricting the number of times rewrites are applied. Some benchmarks/solvers were not able to complete even a single iteration within the 30 minute timeout threshold.
+We compare the number of LUTs in the designs extracted using greedy and ILP extraction on the [ISCAS85](https://github.com/matth2k/synth-benchmarks/tree/main/verilog/iscas85) design benchmarks. E-graph tech mapping is performed after an initial FPGA synthesis using [Yosys](https://yosyshq.readthedocs.io/projects/yosys/en/0.46/cmd/synth_xilinx.html), which performs a tech mapping using the ABC tool. Since finding an exact solution quickly becomes prohibitive in terms of extraction time (the size of the e-graph and corresponding linear programming problem gets too large) we fix a 2000 node limit on the size of the e-graph.
 
-| Benchmark | Yosys                      | Greedy LUT Count | Microlp LUT Count (# Rewrite Iterations) | Highs LUT Count (# Rewrite Iterations) | CBC LUT Count (# Rewrite Iterations) |
-|-----------|----------------------------|------------------|------------------------------------------|----------------------------------------|---------------------------------------|
-| c1355     | 96                         | 94               | DNF                                      | 96 (10)                                | 96 (5)                                |
-| c17       | 2                          | 2                | 2 (10)                                   | 2 (10)                                 | 2 (10)                                |
-| c1908     | 86                         | 85               | DNF                                      | 84 (8)                                 | 84 (5)                                |
-| c2670     | 120                        | 119              | DNF                                      | 118 (10)                               | DNF                                   |
-| c3540     | 265                        | 260              | DNF                                      | 264 (1)                                | DNF                                   |
-| c432      | 51                         | 50               | DNF                                      | 50 (10)                                | 50 (4)                                |
-| c499      | 90                         | 90               | DNF                                      | 90 (10)                                | 90 (5)                                |
-| c5315     | 267                        | 266              | DNF                                      | 259 (6)                                | DNF                                   |
-| c6288     | 520                        | 512              | DNF                                      | 515 (6)                                | 520 (2)                               |
-| c7552     | 335                        | 325              | DNF                                      | 315 (7)                                | DNF                                   |
-| c880      | 84                         | 81               | DNF                                      | DNF                                    | DNF                                   |
+<!-- ./scripts/lvv-iscas85.sh ./scripts/parse_lvv.sh -->
+| Benchmark | Yosys | Greedy LUT Count | HiGHS LUT Count | CBC LUT Count | egg CBC LUT Count |
+|-----------|-------|------------------|-----------------|---------------|-------------------|
+| c1355     | 96    | 94               | 96              | 96            | 96                |
+| c17       | 2     | 2                | 2               | 2             | 2                 |
+| c1908     | 86    | 85               | 85              | 85            | 85                |
+| c2670     | 120   | 119              | 120             | 120           | 120               |
+| c3540     | 265   | 260              | 264             | 264           | 264               |
+| c432      | 51    | 50               | 49              | 49            | 49                |
+| c499      | 90    | 90               | 90              | 90            | 90                |
+| c5315     | 267   | 266              | 266             | 267           | 267               |
+| c6288     | 520   | 512              | 520             | 520           | 520               |
+| c7552     | 335   | 325              | 334             | 335           | 335               |
+| c880      | 84    | 81               | 80              | 80            | 80                |
 
-The times to solution (in seconds) are reported in the table below
+The times to solution (in seconds) are reported in the table below:
 
-| Benchmark | Greedy Time | Microlp Time | HiGHS Time | CBC Time |
-|-----------|-------------|--------------|------------|----------|
-| c1355     | 0.046       | DNF          | 641        | 231      |
-| c17       | 0.011       | 4.21         | 0.009      | 0.007    |
-| c1908     | 0.038       | DNF          | 1550       | 488      |
-| c2670     | 0.042       | DNF          | 600        | DNF      |
-| c3540     | 0.033       | DNF          | 112        | DNF      |
-| c432      | 0.022       | DNF          | 860        | 603      |
-| c499      | 0.024       | DNF          | 730        | 600      |
-| c5315     | 0.048       | DNF          | 744        | DNF      |
-| c6288     | 0.136       | DNF          | 609        | DNF      |
-| c7552     | 0.045       | DNF          | 600        | DNF      |
-| c880      | DNF         | DNF          | DNF        | DNF      |
+| Benchmark | Greedy Time | HiGHS Time | CBC Time | egg CBC Time |
+|-----------|-------------|------------|----------|--------------|
+| c1355     | 0.018       | 59.74      | 598.38   | 7.23         |
+| c17       | 0.00003     | 0.017      | 0.007    | 0.09         |
+| c1908     | 0.017       | 21.28      | 601.29   | 4.17         |
+| c2670     | 0.020       | 8.07       | 0.868    | 0.87         |
+| c3540     | 0.035       | 18.29      | 0.592    | 0.59         |
+| c432      | 0.012       | 41.42      | 602.13   | 101.40       |
+| c499      | 0.016       | 52.84      | 606.19   | 7.21         |
+| c5315     | 0.019       | 12.10      | 0.624    | 0.62         |
+| c6288     | 0.045       | 23.51      | 605.03   | 0.80         |
+| c7552     | 0.027       | 9.62       | 0.425    | 0.42         |
+| c880      | 0.016       | 11.45      | 605.36   | 2.15         |
 
-*Takeaway:* We observe that there is a scalability, quality tradeoff between greedy and exact extraction. The latter requires orders of magnitude longer time to produce a solution, and can even produce worse solutions when limiting the number of rewrite iterations. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
+We observe a scalability–quality tradeoff between greedy and exact extraction. Exact extraction requires orders of magnitude longer time to produce a solution and can even yield worse results when the number of rewrite iterations is limited. As designs scale, it may not be feasible to run exact extraction to find the optimal design.
+We also observe that egg's CBC solver outperforms our good\_lp-based solver, likely due to differences in how cycles in the e-graph are handled. For a valid expression, the extracted subgraph must be acyclic, as described in [Design Extraction](#design-extraction).
 
 We also compare the area (µm²) of the designs extracted using greedy and exact extraction (this time only using the top-performing - HiGHs - solver) on the ISCAS85 Verilog design benchmarks when synthesizing to an ASIC target using a standard cell library. We use another e-graph-based logic synthesis tool, called msynth, which operates similarly to lvv, but can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. We note that there is no "No Optimization" column in this chart. This is because we must run a set of rewrite rules to convert digital logic to standard cells, so optimization and standard cell transformation take place simultaneously. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
