@@ -181,7 +181,10 @@ We also compare the area (µm²) of synthesized ASIC designs extracted using gre
 | c7552     | Error       | Error      | Infeasible   | Error      |
 | c880      | 0.032       | 8.49       | Infeasible   | Error      |
 
-*Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
+As shown in the tables, many of the designs produce problems the cbc solver is not capable of handling. It instead emits an infeasible error. Since it does not provide descriptive error messages, [like some solvers do](https://stackoverflow.com/questions/37593986/cbc-know-why-a-program-is-infeasible), it is difficult to determine the source of the error, or how we might modify the problem formulation to correct the error. The issues are not only found in egg's exact extractor implementation using cbc -- we find similar issues when using cbc through good\_lp.
+Some errors (e.g., errors when using HiGHS) occur due to time limitations. Since we are unable to perform exact extraction over large e-graphs, we must restrict the size of the e-graph by limiting the number of rewrites. By doing so, it becomes possible for some logic not to be mapped to standard cells. In this scenario, the tool emits an error instead of an incorrect design.
+Errors for greedy extraction also occur due to restrictions on the size of the e-graph. We limit the maximum size to ~40,000, which is sometimes insufficient to map all logic to standard cells.
+Through this evaluation, we observe that greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability. This motivates novel extraction approaches that find a better trade between solution quality and scalability.
 
 ## Challenges
 
