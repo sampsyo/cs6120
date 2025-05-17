@@ -108,7 +108,7 @@ In accordance, we compute them in parallel.
 * `DEFS[y]`: a set of definitions of variable `y` in the entire CFG.
 * `GEN[b]`: a set of local variables defined in block `b`.
 * `KILL[b]`: a set of definitions that local variables defined in block `b` can kill. 
-   For each definition in b, `d: y = ...`, where `d` denotes the unique instruction label (can be the offset into instructions buffer), the kill set for `d` is defined as `DEFS[y] - {d}`.
+   For each definition in b, `d: y = ...`, where `d` denotes the instruction label (can be the offset into instructions buffer or just block `b`), the kill set for `d` is defined as `DEFS[y] - {d}`.
 
 `GEN[b]` only depends on block local information, whereas `KILL[b]` requires `DEFS[y]` that depends on information from every block.
 However, `DEFS[y]` can be computed with a simple map-reduce or fold-reduce in parallel: compute `DEFS[y]` for each block in parallel and merge them together by taking the union.
@@ -148,38 +148,35 @@ bril-fuzzer --num-blocks 1024 --block-size-mean 128 -max-nesting 3
 Bitset optimization is applied to both sequential and the parallel solver.
 Therefore, the sequential baseline is somewhat parallelized with SIMD accelerated bitset implementation.
 The parallel condensed CFG traversal approach is only applied to the parallel solver.
-The numbers below are the total time elapsed to complete the analysis for all 20 fuzzed Bril benchmarks.
-The fastest, slowest and mean metrics were collected from 10 different runs.
+The numbers below are the total time elapsed to complete the analysis for all 40 fuzzed Bril benchmarks.
+The metrics listed below were collected from 20 different runs.
 
 The experiments were conducted on an old Macbook Pro with MacOS 12.5.1 and 8 (with hyper-threading) 2GHz i5 intel CPU cores.
 We fixed the number of workers of parallel solver to 4 throughout the evaluations.
 We used rustc 1.87.0-nightly.
 
-**Liveness**: 1.85x faster 
-| Method     | Fastest (ms) | Slowest (ms) | Mean (ms) |
-|------------|--------------|---------------|-----------|
-| Parallel   | 231.6        | 233.9         | 232.7     |
-| Sequential | 427.0        | 434.2         | 430.6     |
+**Liveness**: 1.65x faster 
+| Method     | Fastest  | Slowest | Median   | Mean     | 
+|------------|----------|---------|----------|----------|
+| Parallel   | 546.7 ms | 617.7 ms| 562.4 ms | 567.4 ms |
+| Sequential | 923.2 ms | 1.06 s  | 930.8 ms | 939.1 ms |
 
+**Reaching-Definitions**: 1.22x faster 
+| Method     | Fastest  | Slowest | Median   | Mean     | 
+|------------|----------|---------|----------|----------|
+| Parallel   | 801.6 ms | 1.457 s | 820.2 ms | 882.6 ms |
+| Sequential | 1.049 s  | 1.123 s | 1.074 s  | 1.078 s  |
 
-**Reaching-Definitions**: 8% slow down
-| Method     | Fastest (s) | Slowest (s) | Mean (s) |
-|------------|--------------|---------------|-----------|
-| Parallel   | 17.40        | 24.11         | 20.76     |
-| Sequential | 18.76        | 19.41         | 19.08     |
-
-Reaching-definitions analysis reported here directly tracks the definition in a granularity of its offset into the function's instructions buffer.
-We had also tried a coarser-grained version by only tracking the index of the block associated with definitions, which could give a 20x speed up compared with the fine-grained version. However, that did not change the relative performance between the sequential and parallel solver in any nontrivial way. 
+Reaching-definitions analysis reported here tracked each definition in a granularity of the basic block index associated with it instead of its offset into function's instruction buffer.
+This reduced the memory footprint for bitset by a factor of `num_total_instructions / num_blocks`.
+We further optimized the bitset allocation by preallocating a contiguous bitset arena on heap to serve the frequent allocation requests when computing `DEFS`. These optimizations were applied to both the sequential and parallel solver.
 
 **Profiling Results**:
-We profiled our runs on the fuzzed programs with [samply](https://github.com/mstange/samply); surprisingly, we found that the embarrassingly parallelizable computation of `KILL` and `GEN` set actually dominates the total runtime.
-The parallel dataflow phase only accounts for 30% of the runtime in liveness analysis --- and a mere 0.1% for reaching-definitions analysis.
+We profiled our runs on the fuzzed programs with [samply](https://github.com/mstange/samply); surprisingly, we found that the embarrassingly parallelizable computation of `KILL` and `GEN` set actually dominated the total runtime.
+The parallel dataflow phase only accounted for 30% of the runtime in liveness analysis --- and a mere 3% for reaching-definitions analysis.
 
 **Remarks**:
-For reaching-definitions, the profiling results indicate that parallel condensed CFG traversal approach has little impact on the final performance.
-Unlike in liveness analysis, we did not see an expected speedup when parallelizing `KILL` and `GEN` computation for reaching-definitions.
-The main bottleneck is the computation of `DEFS` for all variables in the CFG.
-The parallel fold-reduce/map-reduce approach we applied somehow did not yield any significant speedup.
+In reaching-definitions, the computation of `DEFS` for all variables in the CFG turned out to be our main bottleneck. The parallel fold-reduce/map-reduce approach we applied somehow did not yield any significant speedup. One of the potential reasons can be the overhead of transferring the large `DEFS`, implemented as `HashMap<u32, FixedBitSet>` across different worker threads outweighed the parallel benefits.
 
 ## Future work
 
