@@ -187,4 +187,10 @@ We should have a smarter policy to decide when we should launch a dedicated thre
 We also can have a better load-balancing strategy to determine which component should run next in order to maximize the number of worker executing in parallel at every time and prevent the overall dataflow from stalling on a few unfinished SCCs.
 We can use some per component heuristics, such as component size, the number of backedges within the component, out degree, etc. to precompute a better condensed CFG traversal ordering or guide the local choice at each component during traversal when picking the next to run.
 We may further choose to devote more threads for large SCCs to parallelize the sequential worklist algorithm.
-But we are a little bit skeptical about how far this parallel condensed CFG approach will take us given its often limited impact on analysis performance as shown in these profiling results.
+However, we are a little bit skeptical about how far this parallel condensed CFG approach will take us, given its often limited impact on analysis performance as shown in these profiling results. 
+
+We initially chose to precompute `KILL` and `GEN` because of their nice bitset formulation, and they are just easy to parallelize. 
+A potentially promising alternative is to apply the parallel condensed CFG traversal without precomputing `KILL` and `GEN`.
+Rustc actually [deprecated](https://github.com/rust-lang/rust/commit/4dc1b4d0b1c0e96102f6d9b3a0ea91e46feaf8e9) their `GenKillAnalysis` trait, which involves precomputing transfer functions for each basic block and using them afterwards in Oct 2024 due to its limited performance gains.
+While for liveness analysis, the precomputation-free approach might not surpass our current framework, it might improve reaching definition because it's no longer bottlenecked by `KILL` computation.
+Also, this alternative can be adopted to work with other analyses that lack a straightforward bitset formulation, for example, constant propagation.
