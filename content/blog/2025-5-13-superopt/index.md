@@ -162,9 +162,9 @@ We also compare the area (µm²) of synthesized ASIC designs extracted using gre
 | c3540     | 895.36      | 979.95     | Infeasible   | Error      | 537.59   |
 | c432      | 185.93      | 176.36     | 187.53       | 187.53     | 107.46   |
 | c499      | 259.08      | 272.38     | 272.38       | 272.38     | 255.63   |
-| c5315     | 1327.07     | Error      | Infeasible   | Error      | Error    |
-| c6288     | 3264.89     | Error      | Infeasible   | Error      | Error    |
-| c7552     | 1617.00     | Error      | Infeasible   | Error      | Error    |
+| c5315     | 1327.07     | Error      | Infeasible   | Error      | 813.43   |
+| c6288     | 3264.89     | Error      | Infeasible   | Error      | 1239.83  |
+| c7552     | 1617.00     | Error      | Infeasible   | Error      | 913.18   |
 | c880      | 257.22      | 265.73     | Infeasible   | Error      | 224.24   |
 
 | Benchmark | Greedy Time | HiGHS Time | egg CBC Time | egg CBC Time |
