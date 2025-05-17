@@ -29,11 +29,11 @@ We went over one value numbering algorithm [here](https://www.cs.cornell.edu/cou
 
 ### Global Value Numbering
 
-Global value numbering is a set of techniques which perform value numbering at the level of a function, rather than a single block. [This paper](https://www.cs.tufts.edu/~nr/cs257/archive/keith-cooper/value-numbering.pdf) goes over hash-based and partitioning implementations of global value numbering. There's already a hash-based implementation for Bril and it's very conceptually similar to local value numbering, so I decided to implement value partitioning instead. 
+Global value numbering is a set of techniques which perform value numbering at the level of a function, rather than a single block. [This paper](https://www.cs.tufts.edu/~nr/cs257/archive/keith-cooper/value-numbering.pdf) goes over hash-based and partitioning implementations of global value numbering. There's already a hash-based implementation for Bril [here](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/global-value-numbering/) and it's very conceptually similar to local value numbering, so I decided to implement value partitioning instead. 
 
 ### Value partitioning
 
-Instead of hashing expressions to values like local value numbering, value partitioning works by directly computing congruence classes of expressions, where two expressions are congruent if they have the same opcode all their arguments are congruent with each other. To perform value partitioning, we first put a program into SSA to ensure that each value has a unique variable associated with it.  We assume that all operations of a type are in the same congruence class, then repeatedly partition congruence classes where this cannot be true until we obtain a maximum fixed point.
+Instead of hashing expressions to values like local value numbering, value partitioning works by directly computing congruence classes of expressions, where two expressions are congruent if they have the same opcode and all their arguments are congruent with each other. To perform value partitioning, we first put a program into SSA to ensure that each value has a unique variable associated with it.  We assume that all operations of a type are in the same congruence class, then repeatedly partition congruence classes where this cannot be true until we obtain a maximum fixed point.
 
 We implemented this algorithm for value partitioning, which was given in the paper:  
 ```
@@ -69,13 +69,12 @@ I also tried implementing partial redundancy elimination, which moves computatio
 
 #### Implementation Notes
 
-Getting GVN right was very finicky and required reading the text very carefully. My biggest struggles in the end were first understanding the processing algorithm, then figuring out and debugging all the edge cases that arose from not reading the paper carefully enough.
-  
+Getting GVN right was very finicky and required reading the text very carefully. My biggest struggles in the end were first understanding the processing algorithm, then figuring out and debugging all the edge cases that arose from not reading the paper carefully enough. The most annoying edge case I ran into was handling phi statements. I kept getting differences in code execution, and after going through the source code and a log of instructions executed, I discovered that phi statements were mysteriously being removed. After this, I managed to pinpoint that the problem was that the phi statements could not be congruent with phi statements in other blocks and fixed this. Immediately after, I read through the paper again and found that it mentioned this in an aside ... I also had a lot of trouble implementing copy propagation to match the hash-based implementation, then discovered that the paper explicitly used this as an example of an optimization that couldn't be done using value partitioning in a later section.  
 
 ### evaluation
 
-For correctness, I ran my optimizations on the core benchmarks with different inputs to test whether they would cause problems. I also wrote a series of test cases for various edge cases and optimizations GVN should be able to identify.
+For correctness, I ran my optimizations on the core benchmarks with different inputs to test whether they would cause problems. I also wrote a series of test cases for various edge cases and optimizations GVN should be able to identify. Each of the benchmarks and hand-written test cases produced the same outputs before and after optimization. I also verified that the benchmarks were able to catch incorrect implementations while fixing bugs.
 
-For performance, I tested against the core benchmarks, using the same inputs as the correctness tests. I found that using only the AVAIL-based removal resulted in a median improvement of 1.5% less instructions executed over base SSA and a max speedup across runs of around 58% less instructions executed. Most of the benchmarks were written directly in Bril, so they were relatively optimized and there were few opportunities to identify congruence classes across blocks. 
+For performance, I tested against the core benchmarks, using the same inputs as the correctness tests. I found that using only the AVAIL-based removal resulted in a minimum improvement of 0% less instructions executed (as global value numbering doesn't add any operations to a program), a median improvement of 1.5% less instructions executed compared to base SSA, and a maximum improvement around 58% less instructions executed. Most of the benchmarks were written directly in Bril, so they were relatively optimized and there were few opportunities to identify congruence classes across blocks.
 
 <img src="plot.png" alt="" width="60%">
