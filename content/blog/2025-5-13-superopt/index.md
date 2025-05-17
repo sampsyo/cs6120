@@ -162,9 +162,9 @@ We also compare the area (µm²) of synthesized ASIC designs extracted using gre
 | c3540     | 895.36      | 979.95     | Infeasible   | Error      | 537.59   |
 | c432      | 185.93      | 176.36     | 187.53       | 187.53     | 107.46   |
 | c499      | 259.08      | 272.38     | 272.38       | 272.38     | 255.63   |
-| c5315     | Error       | Error      | Infeasible   | Error      | Error    |
-| c6288     | Error       | Error      | Infeasible   | Error      | Error    |
-| c7552     | Error       | Error      | Infeasible   | Error      | Error    |
+| c5315     | 1327.07     | Error      | Infeasible   | Error      | Error    |
+| c6288     | 3264.89     | Error      | Infeasible   | Error      | Error    |
+| c7552     | 1617.00     | Error      | Infeasible   | Error      | Error    |
 | c880      | 257.22      | 265.73     | Infeasible   | Error      | 224.24   |
 
 | Benchmark | Greedy Time | HiGHS Time | egg CBC Time | egg CBC Time |
@@ -176,14 +176,13 @@ We also compare the area (µm²) of synthesized ASIC designs extracted using gre
 | c3540     | 0.037       | 100.99     | Infeasible   | Error      |
 | c432      | 0.028       | 127.04     | 604.09       | 178.49     |
 | c499      | 0.024       | 39.59      | 19.22        | 0.197      |
-| c5315     | Error       | Error      | Infeasible   | Infeasible |
-| c6288     | Error       | Error      | Infeasible   | Error      |
-| c7552     | Error       | Error      | Infeasible   | Error      |
+| c5315     | 0.136       | Error      | Infeasible   | Infeasible |
+| c6288     | 0.627       | Error      | Infeasible   | Error      |
+| c7552     | 0.108       | Error      | Infeasible   | Error      |
 | c880      | 0.032       | 8.49       | Infeasible   | Error      |
 
-As shown in the tables, many designs generate problems the cbc solver cannot handle. The entries labelled infeasible indicate the solver (mistakenly) identified the problem to be infeasible. Since it does not provide descriptive error messages, [like some solvers do](https://stackoverflow.com/questions/37593986/cbc-know-why-a-program-is-infeasible), it is difficult to determine the source of the error, or how we might modify the problem formulation to correct the error. The issues are not only found in egg's exact extractor implementation using cbc -- we find similar issues when using cbc through good\_lp.
-Some errors (e.g., errors when using HiGHS) occur due to time limitations. Since we are unable to perform exact extraction over large e-graphs, we must restrict the size of the e-graph by limiting the number of rewrites. By doing so, it becomes possible for some logic not to be mapped to standard cells. In this scenario, the tool emits an error instead of an incorrect design.
-Errors for greedy extraction also occur due to restrictions on the size of the e-graph. We limit the size to 48,000 nodes, which is sometimes insufficient to map all logic to standard cells (c5315, c6288, and c7552).
+As shown in the tables, many designs generate problems the cbc solver cannot handle. The entries labelled infeasible indicate the solver (mistakenly) identified the problem to be infeasible. When running with an alternative solver (e.g., HiGHs) a correct design is generated, which we verify with Yosys [equivalence checking](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/equiv_simple.html). Not all solvers implement support for [descriptive error messages](https://stackoverflow.com/questions/37593986/cbc-know-why-a-program-is-infeasible), making it is difficult to determine the source of the error, and how we might modify the problem formulation to work with the solver. The issues are not only found in egg's exact extractor implementation using cbc -- we find similar issues when using cbc through good\_lp.
+Some errors (e.g., errors when using HiGHS) occur due to time limitations. Since we are unable to perform exact extraction over large e-graphs, we must restrict the size of the e-graph by limiting the number of rewrites. By doing so, it is possible for some logic not to be mapped to standard cells. In this scenario, the tool emits an error instead of an incorrect design.
 Through this evaluation, we observe that greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability. This motivates novel extraction approaches that find a better trade between solution quality and scalability.
 
 ## Challenges
