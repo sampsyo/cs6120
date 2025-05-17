@@ -112,6 +112,7 @@ good\_lp will transform the programmer-provided problem specification into the i
 ## Results
 
 ### FPGA Synthesis
+
 We first compare the number of LUTs in the designs synthesized using greedy and exact extraction on the [ISCAS85](https://github.com/matth2k/synth-benchmarks/tree/main/verilog/iscas85) design benchmarks. E-graph-based tech mapping is performed after an initial FPGA synthesis using [Yosys](https://yosyshq.readthedocs.io/projects/yosys/en/0.46/cmd/synth_xilinx.html), which does an initial tech mapping using the ABC tool. Since finding an exact solution quickly becomes prohibitive in terms of extraction time (the size of the e-graph and corresponding linear programming problem gets too large) we fix a 2000 node limit on the size of the e-graph and time out the solver after (roughly) 10 minutes.
 
 | Benchmark | Yosys (w/ ABC) | Greedy LUT Count | HiGHS LUT Count | CBC LUT Count | egg CBC LUT Count |
@@ -148,32 +149,37 @@ We observe a scalability-quality tradeoff for exact extraction. Exact extraction
 We also observe that egg's CBC solver outperforms our good\_lp-based solver in terms of time to solution. We believe this to be due to differences in how the two implementations handle cycles. As specified in the constraints in [Design Extraction](#design-extraction), a subgraph extracted from an e-graph should not contain cycles. To address this, Egg's cbc solver filters cycles before formulating a linear programming problem and solving it with COIN-Or Branch-and-Cut's solver. Our good\_lp solver handles cycles with an acyclicity constraint which must be respected by solver. [Prior work](https://arxiv.org/pdf/2101.01332) has shown that the acyclity constraint is the main bottleneck for linear-programming-based e-graph extraction.
 
 ### ASIC Synthesis
+
 We also compare the area (µm²) of synthesized ASIC designs extracted using greedy and exact extraction. We use another e-graph-based logic synthesis tool, called msynth, which operates similarly to lvv, but can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. The transformation from digital logic to standard cells is encoded in the rewrite rules, so both transformation from logic gates to standard cells and optimization take place simultaneously. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
+<!--./scripts/msynth-iscas85.sh (with -n 1, then -n 4 until c17-highs and c17-egg_cbc improve improves and ) ;./scripts/parse_msynth.sh   -->
+| Benchmark | Greedy Area | HiGHS Area | egg CBC Area | CBC Area | Synopsys |
+|-----------|-------------|------------|--------------|----------|----------|
+| c1355     | 296.86      | 434.11     | -            | 439.17   | 254.56   |
+| c17       | 7.18        | 6.92       | -            | 7.18     | 6.92     |
+| c1908     | 305.10      | 401.93     | 423.47       | -        | 229.29   |
+| c2670     | 592.12      | 762.89     | 781.51       | -        | 424.00   |
+| c3540     | 895.36      | 979.95     | -            | -        | 537.59   |
+| c432      | 185.93      | 176.36     | 187.53       | -        | 107.46   |
+| c499      | 259.08      | 272.38     | 272.38       | 272.38   | 255.63   |
+| c5315     | Error       | Error      | Error        | Error    | Error    |
+| c6288     | Error       | Error      | Error        | Error    | Error    |
+| c7552     | Error       | Error      | Error        | Error    | Error    |
+| c880      | 257.22      | 265.73     | -            | -        | 224.24   |
 
-| Bench   | Greedy Area  | HiGHS Area  | CBC Area  | egg CBC Area  | microlp Area  | Synopsys |
-|---------|-----------------|----------------|--------------|------------------|------------------|----------|
-| c1355   | 296.86 (1)      | 434.11 (1)     | -            | 439.17 (1)       | DNF (1)          | 254.56   |
-| c17     | 7.18 (1)        | 7.45 (1)       | -            | 7.45 (1)         | 7.45 (1)         | 6.92     |
-| c1908   | 305.10 (1)      | 401.93 (1)     | 423.47 (1)   | -                | DNF (1)          | 229.29   |
-| c2670   | 592.12 (1)      | 762.89 (1)     | 781.51 (1)   | -                | DNF (1)          | 424.00   |
-| c3540   | 895.36 (1)      | 979.95 (1)     | -            | -                | DNF (1)          | 537.59   |
-| c432    | 185.93 (1)      | 176.36 (1)     | 187.53 (1)   | -                | DNF (1)          | 107.46   |
-| c499    | 259.08 (1)      | 272.38 (1)     | 272.38 (1)   | 272.38 (1)       | DNF (1)          | 255.63   |
-| c880    | 257.22 (1)      | 265.73 (1)     | -            | -                | DNF (1)          | 224.24   |
-
-| Benchmark | Greedy Time  | HiGHS Time  | CBC Time  | egg CBC Time  | microlp Time  |
-|-----------|-----------------|----------------|--------------|------------------|------------------|
-| c1355     | 0.020 (1)       | 0.484 (1)      | -            | 0.209 (1)        | DNF (1)          |
-| c17       | 0.009 (1)       | 0.038 (1)      | -            | 0.031 (1)        | 0.002 (1)        |
-| c1908     | 0.035 (1)       | 193.03 (1)     | 603.74 (1)   | -                | DNF (1)          |
-| c2670     | 0.025 (1)       | 277.81 (1)     | 611.29 (1)   | -                | DNF (1)          |
-| c3540     | 0.037 (1)       | 100.99 (1)     | -            | -                | DNF (1)          |
-| c432      | 0.028 (1)       | 127.04 (1)     | 604.09 (1)   | -                | DNF (1)          |
-| c499      | 0.024 (1)       | 39.59 (1)      | 19.22 (1)    | 0.197 (1)        | DNF (1)          |
-| c880      | 0.032 (1)       | 8.49 (1)       | -            | -                | DNF (1)          |
-
-
+| Benchmark | Greedy Time | HiGHS Time | egg CBC Time | egg CBC Time |
+|-----------|-------------|------------|--------------|------------|
+| c1355     | 0.020       | 0.484      | Infeasible   | 0.209      |
+| c17       | 0.009       | 0.039      | Infeasible   | 143.69     |
+| c1908     | 0.035       | 193.03     | 603.74       | Infeasible |
+| c2670     | 0.025       | 277.81     | 611.29       | Infeasible |
+| c3540     | 0.037       | 100.99     | Infeasible   | Error      |
+| c432      | 0.028       | 127.04     | 604.09       | 178.49     |
+| c499      | 0.024       | 39.59      | 19.22        | 0.197      |
+| c5315     | Error       | Error      | Infeasible   | Infeasible |
+| c6288     | Error       | Error      | Infeasible   | Error      |
+| c7552     | Error       | Error      | Infeasible   | Error      |
+| c880      | 0.032       | 8.49       | Infeasible   | Error      |
 
 *Takeaway:* Greedy extraction cannot achieve the design quality of optimized EDA tools, but it is impractical to achieve high quality designs using exact extraction, due to its poor scalability.
 
