@@ -153,19 +153,19 @@ We also observe that egg's CBC solver outperforms our good\_lp-based solver in t
 We also compare the area (µm²) of synthesized ASIC designs extracted using greedy and exact extraction. We use another e-graph-based logic synthesis tool, called msynth, which operates similarly to lvv, but can synthesize ASIC designs using a standard cell library. Synthesizing an ASIC design using exact extraction becomes prohibitive faster than synthesis targetting an FPGA due to the larger design search space. The transformation from digital logic to standard cells is encoded in the rewrite rules, so both transformation from logic gates to standard cells and optimization take place simultaneously. We also compare against the Synopsys commercial design compiler to show the design quality a tuned EDA tool can achieve.
 
 <!--./scripts/msynth-iscas85.sh (with -n 1, then -n 4 until c17-highs and c17-egg_cbc improve improves and ) ;./scripts/parse_msynth.sh   -->
-| Benchmark | Greedy Area | HiGHS Area | egg CBC Area | CBC Area | Synopsys |
-|-----------|-------------|------------|--------------|----------|----------|
-| c1355     | 296.86      | 434.11     | -            | 439.17   | 254.56   |
-| c17       | 7.18        | 6.92       | -            | 7.18     | 6.92     |
-| c1908     | 305.10      | 401.93     | 423.47       | -        | 229.29   |
-| c2670     | 592.12      | 762.89     | 781.51       | -        | 424.00   |
-| c3540     | 895.36      | 979.95     | -            | -        | 537.59   |
-| c432      | 185.93      | 176.36     | 187.53       | -        | 107.46   |
-| c499      | 259.08      | 272.38     | 272.38       | 272.38   | 255.63   |
-| c5315     | Error       | Error      | Error        | Error    | Error    |
-| c6288     | Error       | Error      | Error        | Error    | Error    |
-| c7552     | Error       | Error      | Error        | Error    | Error    |
-| c880      | 257.22      | 265.73     | -            | -        | 224.24   |
+| Benchmark | Greedy Area | HiGHS Area | egg CBC Area | CBC Area   | Synopsys |
+|-----------|-------------|------------|--------------|------------|----------|
+| c1355     | 296.86      | 434.11     | Infeasible   | 439.17     | 254.56   |
+| c17       | 7.18        | 6.92       | Infeasible   | 7.18       | 6.92     |
+| c1908     | 305.10      | 401.93     | 423.47       | Infeasible | 229.29   |
+| c2670     | 592.12      | 762.89     | 781.51       | Infeasible | 424.00   |
+| c3540     | 895.36      | 979.95     | Infeasible   | Error      | 537.59   |
+| c432      | 185.93      | 176.36     | 187.53       | 187.53     | 107.46   |
+| c499      | 259.08      | 272.38     | 272.38       | 272.38     | 255.63   |
+| c5315     | Error       | Error      | Infeasible   | Error      | Error    |
+| c6288     | Error       | Error      | Infeasible   | Error      | Error    |
+| c7552     | Error       | Error      | Infeasible   | Error      | Error    |
+| c880      | 257.22      | 265.73     | Infeasible   | Error      | 224.24   |
 
 | Benchmark | Greedy Time | HiGHS Time | egg CBC Time | egg CBC Time |
 |-----------|-------------|------------|--------------|------------|
