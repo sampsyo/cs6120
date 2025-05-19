@@ -118,6 +118,8 @@ Although this seems like still many different points of weakness, existing proje
 
 ## Performance
 
+![CompCert Compiler Performance](performance.png)
+
 One of the major limitations of CompCert is its relative simplicity compared to industry standard compilers like `gcc`. CompCert is competitive with `gcc -O1`, performing approximately `10%` slower than GCC $4$ at optimization level $1$.
 
-However, as it is common for safety-critical code to be compiled with minimal optimizations (due to the difficulty of source to object tracing), it is still likely that CompCert's guarantees provide significant optimizations, especially with much lower developer overhead. 
+Despite this, CompCert is still highly relevant in embedded systems for safety-critical domains such as avionics, where correctness outweighs raw performance. As it is common for safety-critical code to be compiled with minimal optimizations (due to the difficulty of source to object tracing), it is still likely that CompCert's guarantees provide significant optimizations, especially with much lower developer overhead. 
