@@ -10,6 +10,8 @@ name = "Jonah Bernard"
 latex = true
 bio = """
 Edmund is an M.Eng student studying Electrical and Computer Engineering. He has been working in Prof. Sampson's lab on Filament and loves designing cool compilers.
+
+Mahmoud is an M.Eng student studying Computer Science.
 """
 +++
 
