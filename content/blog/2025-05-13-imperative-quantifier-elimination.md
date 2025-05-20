@@ -21,13 +21,13 @@ $$
 b^2 - 4ac \geq 0
 $$
 
-It is worth noting briefly that the two formulas are only equivalent when $x$ is restricted to be a real number. If we allowed $x$ to be any complex number (or further restricted $x$ to be an integer!) the two formulas would no longer be equivalent. We might say that the formulas are equivalent in the _theory_ of real numbers. For our purposes, a theory is a formal language together with some axioms defining which formulas constructed from that language are true.
+It is worth noting briefly that the two formulas are only equivalent when $x$ is restricted to be a real number. If we allowed $x$ to be any complex number (or further restricted $x$ to be an integer!) the two formulas would no longer be equivalent. We say that the formulas are equivalent in the _theory_ of real numbers. For our purposes, a theory is a formal language together with some axioms defining which formulas constructed from that language are true.
 
-When a formula can be written with and without quantifiers, the _quantifier-free_ version has some advantages from a computational perspective. The main advantage in the context of formal mathematical statements is that in most theories we care about, the quantifier-free version is decidable while the quantifier-ful version is not. If we squint and pretend our two formulas are computer programs, the quantifier-free version looks like a few arithmetic operations while the quantifier-ful version looks an awful lot like a loop that might never halt!
+When a formula can be written with and without quantifiers, the _quantifier-free_ version has some advantages from a computational perspective. The main advantage in the context of formal mathematical statements is that in most theories we care about, it is possible to describe an algorithm that decides the truth of any quantifier-free formula in that theory. This is not generally true of quantifier-ful formulas. If we squint and pretend our two formulas are computer programs, the quantifier-free version looks like a few arithmetic operations while the quantifier-ful version looks an awful lot like a loop that might never halt!
 
- Some theories have known procedures for removing quantifiers from any formula in that theory and, in fact, the Z3 SMT solver has a [quantifier elimination tactic](https://microsoft.github.io/z3guide/docs/strategies/summary/#tactic-qe) which attempts to apply such procedures.
+This suggests an algorithm for deciding the truth of a formula. First convert the formula to a quantifier-free form, then apply the universal-quantifier-free-deciding algorithm to the result. This is possible in some theories which have known procedures for removing quantifiers from any formula in that theory and, in fact, the Z3 SMT solver has a [quantifier elimination tactic](https://microsoft.github.io/z3guide/docs/strategies/summary/#tactic-qe) which attempts to apply such procedures.
 
-Of course, performing quantifier elimination cannot make an undecidable formula decidable. If one can remove the quantifiers from a formula, that formula was decidable to begin with (you can't make an undecidable formula decidable without changing its meaning). So the reason Z3 has a quantifier elimination tactic is because it can make the deciding _cheaper_. Even if our "loopy" pseudo-program above eventually terminates, it might take a long time. It would be easier to do the arithmetic instead.
+Of course, quantifier elimination is not performing any decidability magic. Theories which admit quantifier elimination are fully decidable even by algorithms that do not perform quantifier elimination. So one reason Z3 has a quantifier elimination tactic (and not some other deciding algorithm) is because it can make the deciding _cheaper_. Even if our "loopy" pseudo-program above eventually terminates, it might take a long time. It would be easier to do the arithmetic instead.
 
 # The Project
 
@@ -35,7 +35,7 @@ This brings us to the task at hand. If quantifier elimination can speed up SMT s
 
 As we saw above, true quantifiers generally translate to loops that may never terminate. In most programming circles, writing loops that you know ahead of time might never terminate is generally frowned upon, so we will need more limited substitutes. We will use the commonly available `any` and `all` functions as our restricted quantifiers. `any` returns `true` if and only if _any_ of its inputs is `true` while `all` returns `true` if and only if _all_ of its inputs are `true` (get it?). This makes `any` an _existential quantifier_ ($\exists$) and `all` a _universal quantifier_ ($\forall$).
 
-We will also restrict ourselves to a single theory: Presburger Integer Arithmetic. Formulas in Presburger Arithmetic are built from the following language: $[ \neg, \wedge, \vee, \exists, \forall ] \cup \mathbb{N} \cup [ +,-,<,= ] \cup [ P_m : m \in \mathbb{N}]$. Where $P_m$ is a function that returns true if its input is divisible by $m$ and the first three symbols are the standard first order predicate logic _not_, _and_, and _or_. For this project, we will ignore the $P_m$ because the process for removing quantifiers from formulas that contain $P_m$ can result in potentially-expensive-to-compute quantifier-free formulas and we want to make programs faster!
+We will also restrict ourselves to a single theory: [Presburger Integer Arithmetic](https://en.wikipedia.org/wiki/Presburger_arithmetic). Formulas in Presburger Arithmetic are built from the following language: $[ \neg, \wedge, \vee, \exists, \forall ] \cup \mathbb{N} \cup [ +,-,<,= ]$. Where the first three symbols are the standard first order predicate logic _not_, _and_, and _or_.
 
 We will operate on Python programs because Python has a few nice properties:
 
@@ -65,7 +65,7 @@ When I started out, I was hoping to design my AST-rewriter/optimization pass as 
 
 Anyone who is curious about performing full quantifier elimination on Presburger Arithmetic formulas is welcome to take a look at [my source for the algorithm](https://amedvedev.ccny.cuny.edu/mathA4400s16/vandenDries.pdf). It is Theorem 4.4.2 and the pass I do in this project is a version of the one presented there.
 
-The primary difficulty I had in translating a description of the algorithm in a math text to a piece of running code that modified computer programs was the irregularity of Python ASTs. My final design ended up being a series of passes that applied more and more regularity to ASTs until I could perform a simple, final transformation. With that in mind, the rest of this section will be a high-level tour of the various regularizing passes the algorithm performs.
+The primary difficulty I had in translating a description of the algorithm in a math text to a piece of running code that modified computer programs was the irregularity of Python programs/ASTs. My final design ended up being a series of passes that applied more and more regularity to ASTs until I could perform a simple, final transformation. With that in mind, the rest of this section will be a high-level tour of the various regularizing passes the algorithm performs.
 
 ### Constant Folding
 
@@ -104,7 +104,12 @@ The key insight is that of all the upper bound sub-predicates of the form `m*x <
 
 In a pure predicate logic setting, these special bounds can be "calculated" by statically unrolling a big loop that checks if each (lower bound, upper bound) pair is correct. But in Python we can just call `max` and `min`!
 
-With the least upper bound and the greatest lower bound in hand, one only needs to check if there is a value between them that is divisible by `m` (remember that `m*x` needs to satisfy all of these inequalities, not `x`) and the quantifier elimination is complete.
+With the least upper bound and the greatest lower bound in hand, one only needs to check if there is a value between them that is divisible by `m` (remember that `m*x` needs to satisfy all of these inequalities, not `x`). The resulting program looks somthing like this:
+
+```Python
+min(...) - max(...) > m or 0 < min(...) % m < max(...) % m
+```
+
 
 # The Evaluation
 
@@ -115,13 +120,13 @@ Compiler passes (even those for class projects) should not change the behavior o
 1. As I mentioned above, this is a static transformation of untyped Python code. There is no guarantee that all of the variables in the program are integers or even that `+` does what I expect. So the best we can hope for is that it is correct _for integer inputs_.
 2. If I found all of the bugs in my implementation with testing I think that might be the first recorded instance of that happening in all of human history.
 
-That being said, I did some testing! Because this pass operates on such a simple sub-language of Python, I built a random program generator and used those programs as my test inputs. I generated around 60 programs and when one of them failed (my pass changed the program behavior) I would whittle it down to a minimal failing example and keep that as its own test.
+That being said, I did some testing! Because this pass operates on such a simple sub-language of Python, I built a random program generator and used those programs as my test inputs. I generated around 60 programs and when one of them failed (my pass changed the program behavior) I would whittle it down to a minimal failing program and keep that as its own test. Of the 60 randomly generated programs, around 5 failed and became minimized tests with special names. One even failed repeatedly and I was forced to minimize it to 2 _different_ minimal failing programs!
 
 I found a lot of bugs this way, but the most frustrating one was a bug where my conjunctive normal form pass would create references to the same subtree from two different points in the AST. Then a follow-on pass would modify one of the subtrees and I would get spooky changes to portions of the AST that I was not expecting to be modifying.
 
 ### Performance
 
-I chose to test the performance of my pass by testing big batches of function invocations since the running time of individual functions is very short and I was worried that overhead caused by i/o, garbage collection, or other interpreter behaviors would cause too much noise.
+I chose to test the performance of my pass by testing big batches of function invocations since the running time of individual functions is very short and I was worried that overhead caused by i/o, garbage collection, or other interpreter behaviors would cause too much noise. Another benefit of batching is that it inherently averages running times over a large range of inputs (we will see soon that the running times of these programs can be _very_ sensitive to input size).
 
 I tested the performance improvement of my pass by taking my randomly generated test programs and running them with significantly more inputs than I tested on (I found that for testing, an input range of $[-10,10)$ was sufficient, but for performance testing I did $[-10 000,10 000)$). I also made sure to generate my inputs in a different process than the one the tested function ran in and to print out the result of each quantifier function to prevent the Python compiler from optimizing away any of the function's work. I collected my numbers using [hyperfine](https://github.com/sharkdp/hyperfine), the file numbers start at 11 because the first 10 randomly generated programs were generated with slightly more restrictive parameters, all numbers are the result of 15 runs and are reported as _mean (standard deviation)_ in milliseconds:
 
@@ -165,13 +170,24 @@ The pass correctly transforms this to:
 False
 ```
 
-I think it is clear why those two expressions would have very different runtimes for, say, `n=-10,000`. I also hope it is clear that the huge time savings in the first table are mostly the result of the input programs being randomly generated and silly.
+I think it is clear why those two expressions would have very different running times for, say, `n=-10,000` but have pretty similar running times for, say, `n=1`. I also hope it is clear that the huge time savings in the first table are mostly the result of the input programs being randomly generated and silly.
 
 ### Utility
 
 One final measure of a compiler pass is how applicable it is to code that people actually write. To measure that, I gathered a bunch of open source Python code. I didn't gather it in any principled way, I just grabbed a bunch from the [GitHub trending page](https://github.com/trending/python?since=daily) and from [this collection of Python projects](https://github.com/vinta/awesome-python). 
 
-According to [cloc](https://github.com/AlDanial/cloc), I searched ~1.68 million lines of Python code and found 0 lines that I could apply my quantifier elimination pass to. Possibly that number could be improved by expanding the pass (by re-including the $P_m$s, for example) but I suspect that people just don't write many Presburger Arithmetic quantifier expressions in their Python code.
+According to [cloc](https://github.com/AlDanial/cloc), I searched ~1.68 million lines of Python code and found 0 lines that I could apply my quantifier elimination pass to. I think there are at least 3 obvious ways to expand the applicability of this pass (many thanks to [Professor Adrian Sampson](https://www.cs.cornell.edu/~asampson/) for thinking to do a text search and finding some programs that the pass does not apply to but probably could):
+
+1. One obvious thing to do is to expand our arithmetic language. The [text](https://amedvedev.ccny.cuny.edu/mathA4400s16/vandenDries.pdf) that this algorithm comes from actually describes the algorithm for an expanded Presburger Arithmetic that includes a simplified `%` (modulus) operation, so that could be a good starting point. Though it is worth noting that quantifier elimination on full integer arithmetic is impossible, so this language expansion should be undertaken with care.
+2. Once there is support for limited modulus, there is also a straightforward way to support three-argument `range()` calls. Snippets like
+```Python
+any(... for x in range(0, n, 2))
+```
+can be transformed into snippets like
+```Python
+any(... and x % 2 == 0 for x in range(0, n))
+```
+3. Finally, the pass can be more generous with what is considered an integer. The pass (as written) only counts variables and integer constants as integers. But lots of other things in Python are known to be integers! `len()` is an obvious example of something that could be safely treated as an integer in this context. As are many "numerical" functions like `min()`, `max()`, and `abs()`.
 
 # Conclusion
 
