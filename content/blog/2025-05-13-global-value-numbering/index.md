@@ -1,5 +1,5 @@
 +++
-title = "Welcome to CS 6120!"
+title = "Global Value Numbering for Bril"
 [extra]
 bio = """
   Allen Wang is a CS M.Eng student at Cornell University. He's pretty tired right now.
