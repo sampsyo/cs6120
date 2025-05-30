@@ -1,0 +1,57 @@
++++
+title = Optimizing code with trigonometric functions"
+bio = """
+  Mariia Soroka is a second-year PhD student at Cornell working on differentiable rendering.
+"""
+name = "Mariia Soroka"
++++
+
+My project was based on Dr.Jit codebase. Here is the [paper](https://dl.acm.org/doi/10.1145/3528223.3530099) that describes the compiler. In short, Dr.Jit traces the program to compute an AST, performs some optimizations on this representation, then assembles either LLVM IR or PTX code depending on the used backend, and finally compiles it into a kernel. The LLVM IR or PTX code assembly is explicit in a sense that each Dr.Jit operation comes with a rule on how it should be translated to LLVM or PTX code. For example, `dr.sum` is mapped to LLVM using the following rule
+```
+case VarKind::Add:
+  fmt(jitc_is_float(v) ? "    $v = fadd $V, $v\n"
+                       : "    $v = add $V, $v\n",
+      v, a0, a1);
+    break;
+```
+
+My first goal was to familiarize myself with the internals of the codebase by implementing a simple optimization: replacing computation of $\sin^2(x)$ with $1 - \cos^2(x)$, if $\cos(x)$ is already computed elsewhere in the program.
+
+To accomplish this, I made modifications to both the [drjit](https://github.com/mariasoroka/drjit_CS6120) and [drjit-core](https://github.com/mariasoroka/drjit-core_CS6120) codebases. The implementation is straightforward: I examine the trace to identify the nodes where the optimization is applicable and edit the trace accordingly. It was not trivial, however, to navigate the codebase and to figure out which functions to use. For example, at first, I did not decrement the reference counters correctly, which led to variable leaks. This was resolved by using the appropriate function for reference counters.
+
+
+I first verified that my implementation is correct on several hand-crafted programs. Here is an example of one of them:
+```
+w = Float(1, 2)
+dr.make_opaque(w)
+cos = dr.cos(w)
+tmp_1 = 1 + cos**2
+sin = dr.sin(w)
+tmp_2 = 1 + dr.sin(w)**2
+tmp_3 = tmp_1 - tmp_2
+```
+
+Below is the trace of the following code snippet before and after the modification. Clearly, the optimization worked out and $\sin^2$ is now computed as $1 - \cos^2$. Note that $\sin$ node still appears in the trace because $\sin$ was also created as a separate variable. 
+
+
+<img src="./2025-05-13-Final_Project/graph_old.png" alt="drawing" height="300"/>
+<img src="./2025-05-13-Final_Project/graph_new.png" alt="drawing" height="300"/>
+
+To better test the optimization and evaluate the performance, I planned to render the three scenes shown in Fig. 6 of the Dr.Jit paper. However, I noticed that during rendering, the optimization was never invoked. To address this, I modified the renderer code to make it less efficient, ensuring that there will be nodes to which the optimization can be applied. I changed the way the microfacet normal distribution function is evaluated. The expression that should be computed is as follows:
+$$D(\mathbf{m}) = \frac{1}{\pi \alpha_x \alpha_y (\sin^2\theta (\frac{\cos^2\phi}{\alpha_x^2} + \frac{\sin^2\phi}{\alpha_y^2}) + \cos^2\theta)^2}, \ (1)$$
+where $\mathbf{m}$ is a unit vector: $\mathbf{m} = (\sin\theta \cos\phi, \sin\theta \sin\phi, \cos\theta)^T = (m_x, m_y, m_z)^T$.
+
+$D(m)$ can be efficiently evaluated without explicitly computing $\theta$ and $\phi$:
+
+$$D(\mathbf{m}) = \frac{1}{\pi \alpha_x \alpha_y ((\frac{m_x^2}{\alpha_x^2} + \frac{m_y^2}{\alpha_y^2}) + m_z)^2}. \ (2)$$
+
+This computation, however, does not trigger my optimization. Therefore, I replaced (2) in the Mitsuba 3 code with computation that explicitly evaluates $\theta$ and $\phi$ from the vector $\mathbf{m}$, and then computes expression (1).
+
+
+I performed my experiment on a machine with an Intel(R) Xeon(R) Silver 4214 CPU running Ubuntu 20.04 and an NVIDIA GeForce RTX 3090 GPU. I used Mitsuba 3 (version 3.6.4) and modified v1.0.5 version of Dr.Jit to render all the scenes. Each experiment was run five times to get the average execution times reported below. Each rendering used a relatively large number of samples per pixel (2048 spp) to ensure that the measured time is reliable.
+
+<img src="./2025-05-13-Final_Project/evaluation.png" alt="drawing" width="300"/>
+
+Well, my optimization did not improve the performance, but at least I know that the trace modification was correct since produced images were identical.
+
+The second part of the project was much less straightforward, and I was not able to figure it out. As described in [the project proposal](https://github.com/sampsyo/cs6120/issues/514#issue-2958547735), the idea was to trace functions that lack hardware support and cannot be represented by a single node into a separate trace, and then redirect the main AST to that newly created trace. I was unable to find a way to achieve this using the existing tools in the codebase. Implementing this optimization would require introducing a new type of node (e.g., `call`) and writing the corresponding PTX or LLVM IR code to support it.
