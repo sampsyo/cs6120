@@ -60,6 +60,10 @@ call an _abstract bug_ (for reasons what will become apparent).
 > <ins>Definition</ins> (_abstract bug_). An abstract bug in **VERIFY** exists
 > iff it does not faithfully implement its own theory. 
 
+Note that an _abstract bug_ is a stronger definition of bug. In particular, if
+an abstract bug exists in a verification tool, there may not exist concrete
+counterexamples $x$ such that **GUARANTEE(**_p(x)_**)** is violated.
+
 ## Abstract Testing of Floating-Point Software
 
 With a fancy new definition, let's hunt for bugs! Observe that many (but not
@@ -69,24 +73,36 @@ simplifying assumptions.
 For example, the "standard model of floating-point error" assumes that each
 floating-point operation $(op_{float} \ x \ y)$ can introduce up to $1+\epsilon$
 error. To be precise, for every operation, the following overapproximation (of
-the IEEE floating-point spec) holds for some unit round-off value $u$:
+the IEEE floating-point spec) holds for some unit round-off value $u$
+(determined by the float precision and rounding mode used):
 
-> $(op_{float} \ x \ y) = (op_{real} \ x \ y) * (1 + \epsilon)$
+> $\exists |\epsilon| \leq u, (op_{float} \ x \ y) = (op_{real} \ x \ y) * (1 +
+> \epsilon)$
 
-for $|\epsilon| <= u$. Different tools may use varying overapproximations, but
-the principle is the same: to tractably verify you (typically) need to
-overapproximate. The IEEE floating-point spec, by contrast, is a fully
-executable and deterministic spec.
+Different tools may use other overapproximations, but the principle is the same:
+to tractably verify you (typically) need to overapproximate in a way that admits
+multiple implementations. That is, the above overapproximate model is sound to
+verify against the IEEE floating-point semantics. It is _also_ sound to verify
+against a defective floating-point semantics where we add up to $u$ error at
+every single floating point operation.
 
-But how to test? Here's an idea: one can view an overapproximation as a bigger
-testing budget to smash the verification tool with. For floating-point
-verification, we can simply add $\epsilon$ error at every operation without
-worrying about whether the IEEE floating-point spec actually allows us to. In
-other words, the testing game is to find input $x$ and $\epsilon$-trace
-$\epsilon_1$, $\epsilon_2$, $\epsilon_3$ ... added at run-time such that we can violate
-**GUARANTEE**.
+So, how to test? Let's craft a deliberately defective implementation (that does
+not comply with the IEEE floating-point spec).
 
-That's my project, in a nutshell! [^1] 
+For floating-point verification, we can sample concrete inputs _and_
+opportunistically construct bad $\epsilon$s at every floating-point operation to
+violate the verification tool. Note that the IEEE floating point spec is fully
+deterministic (which would constrain our test space if we were testing things
+concretely), but our overapproximate, abstract error model is not (which lets us
+adversarially fish around for bad $\epsilon$s).
+
+In other words, our testing game is to find input $x$ and $\epsilon$-trace of
+distinct $\epsilon_1$, $\epsilon_2$, $\epsilon_3$ ... added at to each
+corresponding floating-point operation encountered at run-time such that we can
+violate **GUARANTEE**. 
+
+That's my project, in a nutshell! Every overapproximation provides a bigger
+testing budget to smash the verification tool with. [^1] 
 
 ```
 
@@ -147,15 +163,18 @@ and,
 - under an approximate semantics that adds a trace of $\epsilon$s at run-time.
 
 To evaluate, I selected a few benchmarks from the
-[FPBench](https://fpbench.org/benchmarks.html) I had already written a parser
+[FPBench](https://fpbench.org/benchmarks.html). I had already written a parser
 and could reuse infrastructure for another project. My weapon of choice was
 OCaml for similar practical considerations. [^3]
 
 
 ### Charts and Graphs
 Below is a log-scale violin plot showing the distribution of absolute error
-abstractly witnessed by my prototype tool. [^4] (_Aside: I think more people should use
-violin plots._) 
+abstractly witnessed by my prototype tool, broken down by benchmark program. The
+distribution comes from uniformly sampling from the program input space and
+using the corresponding $\epsilon$-trace for each program constructed via the
+backwards static analysis described above. [^4] (_Aside: I think more people
+should use violin plots._) 
 
 ![Violin plot of "Absolute error (abstractly) witnessed by FPBench
 benchmark".](/blog/sample-violins.svg)
