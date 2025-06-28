@@ -18,7 +18,7 @@ name = "Arnav Muthiayen"
 +++
 
 One of the largest challenges facing an optimizing compiler is the fact that multiple variables in a program may refer to the same underlying memory, known as aliasing. The possibility of aliasing results in many compiler optimizations becoming unsafe, resulting in the compiler being unable to apply many seemingly reasonable optimizations unless it is able to conclusively determine that two variables are in fact not aliases.
-This week’s paper, “Type-Based Alias Analysis” by Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss, proposes a method of using type information and other statically available information like field names in order to better find variable pairs that are guaranteed not to be aliases.
+This week’s paper, [“Type-Based Alias Analysis”](https://dl.acm.org/doi/10.1145/277650.277670) by Amer Diwan, Kathryn S. McKinley, and J. Eliot B. Moss, proposes a method of using type information and other statically available information like field names in order to better find variable pairs that are guaranteed not to be aliases.
 
 
 ## Background
@@ -31,7 +31,7 @@ bool myfn(int* a, int* b) {
 	return *a == *b;
 }
 ```
-It would be convenient if the compiler could optimize the return value to be the constant false. Especially if a and b were dead after this operation, the entire function could be inlined to simply be false. However, if the pointers a and b both refer to the same memory location, then the result would actually be true, since \*a and \*b would fetch the same value.
+It would be convenient if the compiler could optimize the return value to be the constant false. Especially if a and b were dead after this operation, the entire function could be inlined to simply be false. However, if the pointers a and b both refer to the same memory location, then the result would actually be true, since `*a` and `*b` would fetch the same value.
 For this reason, compiler optimizations depend upon alias analysis, where the compiler attempts to statically determine which variables could alias which others. Specifically, the compiler is generally looking for cases where two variables must not be aliases, as those are where opportunities for optimization typically arise.
 A naive approach to alias analysis could involve a simple dataflow analysis, checking for what possible memory locations a variable could point to. However, due to the conservative nature of this analysis, it necessarily results in a large number of false positives.
 
@@ -46,7 +46,7 @@ The authors show that their later analyses are within 2.5% of a theoretically pe
 ## Annotations, Rich Types, and Alias Analysis
 
 
-One of the aspects of alias analysis is that it underestimates the true count of aliasing in a program. In TBAA it might be the case that we write a function that may alias but that in the total usages of the function it never actually aliases. In this scenario, we lose the opportunity to optimize some code, but we accept this tradeoff in order to keep the analysis fast and correct. In particular, TBAA is really powerful as it only relies on language constructs to perform the analysis so it doesn’t require special modifications to the source code to improve the results of the alias analysis. But this same approach opens more doors for optimizations if the source language has a richer type system or if there is a way for programmers to provide hints to the compiler. An example is the restrict keyword in C, where the programmers inform the compiler there will be no aliasing between parameters: 
+One aspect of alias analysis is that it underestimates the true number of opportunities for optimization in a program. In TBAA, it might be the case that we write a function that may alias but that in the total usages of the function it never actually aliases. In this scenario, we lose the opportunity to optimize some code, but we accept this tradeoff in order to keep the analysis fast and correct. In particular, TBAA maintains the property of alias analysis in that it only relies on language constructs to perform the analysis, without requiring special modifications to the source code. But this same approach opens more doors for optimizations if the source language has a richer type system or if there is a way for programmers to provide hints to the compiler. An example is the restrict keyword in C, where the programmers inform the compiler there will be no aliasing between parameters: 
 ```C
 //source code
 bool myfn(int* restrict a, int* restrict b) {
@@ -63,7 +63,7 @@ bool myfn(int* restrict a, int* restrict b) {
 }
 ```
 
-In languages with rich type systems the type of the parameter might provide enough information to the compiler so that annotations are not necessary. For example, if we define a function in C++ that receives [unique pointers](https://en.cppreference.com/w/cpp/memory/unique_ptr), we can achieve the same optimization without the need for the use of a restrict keyword: 
+In languages with rich type systems the type of the parameter might provide enough information to the compiler so that annotations are not necessary. For example, if we define a function in C++ that receives [unique pointers](https://en.cppreference.com/w/cpp/memory/unique_ptr), we could theoretically achieve the same optimization without the need for the use of a restrict keyword: 
 
 ```C++
 //source code
@@ -99,7 +99,7 @@ So although the original paper did not consider annotations or richer type const
 
 ## Measuring an Upper Bound
 
-Despite the large number of compiler optimization techniques, it is often difficult to gauge how impactful an optimization will be in the performance of an arbitrary program; the most common approach is to use a set of benchmarks execute them a number of times in the original source  and in the optimized source do a pairwise comparison (usually in ratios) and aggregate the gains using the arithmetic or harmonic mean. This approach is not perfect, but makes it easy to compare different optimizations and is standard in literature. Diwan, McKinley and Moss used a completely different approach for TBAA, one that relies on establishing an upper bound.
+Despite the large number of compiler optimization techniques, it is often difficult to gauge how impactful an optimization will be in the performance of an arbitrary program; the most common approach is to use a set of benchmarks, execute them a number of times in the original source, and, in the optimized source, do a pairwise comparison (usually in ratios) and aggregate the gains using the arithmetic or harmonic mean. This approach is not perfect, but makes it easy to compare different optimizations and is standard in literature. Diwan, McKinley and Moss used a completely different approach for TBAA, one that relies on establishing an upper bound.
 
 The idea is to measure an upper bound: what is the maximum number of instructions that can be removed from a source program and measure how many of them were removed in the optimized source with different versions of alias analysis. With this approach in place, the authors are not only able to claim that x% of instructions were eliminated, but also that the alias analysis that is presented is within 2.5% of a perfect alias analysis algorithm! Their evaluation and methods are one of the key strengths of the paper and provide compelling evidence not just about the performance improvement, but also about how precise the analysis is.
 
