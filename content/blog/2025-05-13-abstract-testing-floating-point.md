@@ -234,10 +234,14 @@ is to use automatic differentiation. Future work could explore this further.
     details on other overapproximations a tool might use and tricks like
 [Sterbenz's lemma](https://en.wikipedia.org/wiki/Sterbenz_lemma) that complicate
 the picture somewhat.
-[^2]: A wrinkle occurs when terms can be shared. If a verification tool
-    overapproximates by reasoning about shared error terms, this algorithm still
-produces a worst-case $\epsilon$-trace. Otherwise, you might need to do a little
-searching to find the worst-case $\epsilon$-trace.
+[^2]: A wrinkle occurs when terms can be shared. If a verification tool cannot
+    reason about shared error terms, this algorithm still produces a worst-case
+$\epsilon$-trace. Otherwise, this one might need to do a little searching to
+find the worst-case $\epsilon$-trace. In particular, if error terms can be
+shared, we start to care about the constants in the floating-point expression.
+Concretely, `(x - 2x)` is quite different from `(2x - x)`; in the former we wish
+to minimize the error term in `x`, while in the latter we wish to maximize the
+error term in `x`. 
 [^3]: The implementation and evaulation is at:
     https://github.com/Athena-Types/numerics-playground.
 [^4]: To make the violin plot semi-legible and suitable for a blog post, some
