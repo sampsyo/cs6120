@@ -32,7 +32,6 @@ In the following blog post, I will:
 
 
 ## What is a bug?
-
 Consider a verification tool **VERIFY** to take some program *p(x)* and provide
 a **GUARANTEE** such that for all inputs *x*, **GUARANTEE(**_p(x)_**)** holds.
 At first blush, one might define a bug as follows: 
@@ -64,6 +63,31 @@ Note that an _abstract bug_ is a stronger definition of bug. In particular, if
 an abstract bug exists in a verification tool, there may not exist concrete
 counterexamples $x$ such that **GUARANTEE(**_p(x)_**)** is violated.
 
+## Interlude: Abstract Interpretation
+To make this more concrete, consider a verification tool that relies on abstract
+interpretation. To do abstract interpretation, we need the following three
+ingredients:
+
+1. A concrete domain 
+2. An abstract domain corresponding to the analysis you wish to perform
+3. A programming language syntax
+4. A programming language semantics
+5. Abstract transformers taking operations (from our programming language syntax
+   and semantics), defined over our concrete domain, to be over our abstract
+   domain 
+
+satisfying certain soundness conditions.
+
+A verifier (e.g. a sign analysis) will prove that for a program **p** and a
+particular programming language semantics (e.g. IMP), there does not exist any
+inputs **x** such executing **p(x)** under the semantics will violate the
+results of the analysis.
+
+The key idea we will exploit in this blog post is that there are many different
+semantics (ingredient no. 4) for which the *same* concrete domain (1), abstract
+domain (2), programming language syntax (3), and abstract transformer (5) are
+still sound for!
+
 ## Abstract Testing of Floating-Point Software
 
 With a fancy new definition, let's hunt for bugs! Observe that many (but not
@@ -87,7 +111,8 @@ against a defective floating-point semantics where we add up to $u$ error at
 every single floating point operation.
 
 So, how to test? Let's craft a deliberately defective implementation (that does
-not comply with the IEEE floating-point spec).
+not comply with the IEEE floating-point spec) that our verifier is still good
+for!
 
 For floating-point verification, we can sample concrete inputs _and_
 opportunistically construct bad $\epsilon$s at every floating-point operation to
@@ -185,23 +210,25 @@ and Daisy:
 
 | Name | Min. error sampled | Max. error sampled | FPTaylor Guarantee | Daisy Guarantee |
 |:----:|:-----------------:|:-----------------:|:-:|:-:|
-| rigidBody1 | 0.0 | 3.409494-13 | 2.948752e-13 | 2.948752e-13 |
-| rigidBody2 | 0.0 | 3.269484-11 | 3.574474e-11 | 3.606626e-11 |
-| kepler0 | 2.572675e-14 | 6.876940e-14 | 3.463896e-14 | 1.044053e-13|
-| kepler1 | 7.257717e-14 | 2.357817e-13 | 3.689493e-13 | 4.806242e-13 |
-| kepler2 | 5.341705e-13 | 1.628888e-12 | 2.199272e-12 | 2.464839e-12|
-| delta | 5.457664e-13 | 1.657179e-12 |2.197089e-12| 2.346965e-12 |
-| delta4 | 3.126935e-14 |  7.394990e-14 |7.676607e-14| 1.160113e-13|
+| delta | 5.20879e-13 | 1.60481e-12 | 2.197089e-12 | 2.346965e-12 |
+| delta4 | 3.11052e-14 | 6.98128e-14 | 7.676607e-14 | 1.160113e-13 |
+| kepler0 | 2.28324e-14 | **6.66749e-14** | 3.463896e-14 | 1.044053e-13 |
+| kepler1 | 6.96139e-14 | 2.21175e-13 | 3.689493e-13 | 4.806242e-13 |
+| kepler2 | 5.27134e-13 | 1.57429e-12 | 2.199272e-12 | 2.464839e-12 |
+| rigidBody1 | 1.11022e-16 | **3.38285e-13** | 2.948752e-13 | 2.948752e-13 |
+| rigidBody2 | 1.11022e-16 | 3.21759e-11 | 3.574474e-11 | 3.606626e-11 |
 
 As you can see, the maximum error sampled can get quite close to the guarantee
-provided by the various tools.
+provided by the various tools. Entries that are **bolded** indicate a potential
+bug, in either the verification tool under test (~thousands LOC) or the testing
+framework itself (a few hundred LOC).
 
-For future work, it would be cool to run this on more tools and benchmarks.
-Additionally, a question not addressed by this tool (and omitted blog post) is
-how to find a good input $x$. Currently, the testing tool uniformly samples from
-the input space. One technique I wrote in my initial proposal (but did not have
-the time to properly implement and evaluate) is to use automatic
-differentiation. Future work could explore this further.
+For future work, it would be cool to hunt down the bugs found and run this on
+more tools and benchmarks. Additionally, a question not addressed by this tool
+(and omitted in the blog post) is how to find a good input $x$. Currently, the
+testing tool uniformly samples from the input space. One technique I wrote in my
+initial proposal (but did not have the time to properly implement and evaluate)
+is to use automatic differentiation. Future work could explore this further.
 
 [^1]: For the sake of exposition and conceptual clarity, I am omitting various
     details on other overapproximations a tool might use and tricks like
