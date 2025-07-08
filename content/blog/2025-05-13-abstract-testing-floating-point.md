@@ -65,7 +65,7 @@ counterexamples $x$ such that **GUARANTEE(**_p(x)_**)** is violated.
 
 ## Interlude: Abstract Interpretation
 To make this more concrete, consider a verification tool that relies on abstract
-interpretation. To do abstract interpretation, we need the following three
+interpretation. To do abstract interpretation, we need the following five
 ingredients:
 
 1. A concrete domain 
@@ -86,7 +86,8 @@ results of the analysis.
 The key idea we will exploit in this blog post is that there are many different
 semantics (ingredient no. 4) for which the *same* concrete domain (1), abstract
 domain (2), programming language syntax (3), and abstract transformer (5) are
-still sound for!
+still sound for! We will now proceed to construct an exceedingly adversarial
+programming language semantics to test the verifier.
 
 ## Abstract Testing of Floating-Point Software
 
@@ -202,7 +203,7 @@ backwards static analysis described above. [^4] (_Aside: I think more people
 should use violin plots._) 
 
 ![Violin plot of "Absolute error (abstractly) witnessed by FPBench
-benchmark".](/blog/sample-violins.svg)
+benchmark".](../sample-violins.svg)
 
 Finally, here is a table showing the minimum and maximum error sampled on a few
 selected benchmarks along with the corresponding guarantees provided by FPTaylor
