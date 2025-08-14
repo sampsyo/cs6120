@@ -1,2 +1,6 @@
+# Ignore vim swap files
+*.swp
+*.swo
+
 .DS_Store
 public/
