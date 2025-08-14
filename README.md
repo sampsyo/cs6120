@@ -5,7 +5,7 @@ This is the [website][cs6120] for a new grad course at Cornell on compilers.
 It uses [Zola][].
 
 [zola]: https://www.getzola.org
-[cs6120]: https://www.cs.cornell.edu/courses/cs6120/2025sp/
+[cs6120]: https://www.cs.cornell.edu/courses/cs6120/2025fa/
 
 
 Adding Blog Posts

@@ -1,10 +1,10 @@
 on:
   push:
     branches:
-      - 2025sp
+      - 2025fa
   pull_request:
     branches:
-      - 2025sp
+      - 2025fa
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{github.event_name=='push' && github.ref=='refs/heads/2025sp'}}
+    if: ${{github.event_name=='push' && github.ref=='refs/heads/2025fa'}}
     steps:
       - name: Tailscale
         uses: tailscale/github-action@v2
@@ -44,7 +44,7 @@ jobs:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           DEPLOY_SRC: ./public/
-          DEPLOY_DEST: /courses/cs6120/2025sp/site
+          DEPLOY_DEST: /courses/cs6120/2025fa/site
         run: |
           echo "$DEPLOY_KEY" > pk
           echo "$DEPLOY_KNOWN_HOSTS" > kh
