@@ -1,111 +1,105 @@
 [[days]]
-date = "January 21"
+date = "August 26"
 month = true
 
 [[days]]
-date = "January 23"
+date = "August 28"
 
 [[days]]
-date = "January 28"
-
-[[days]]
-date = "January 30"
-
-[[days]]
-date = "February 4"
 month = true
+date = "September 2"
 
 [[days]]
-date = "February 6"
+date = "September 4"
 
 [[days]]
-date = "February 11"
+date = "September 9"
 
 [[days]]
-date = "February 13"
+date = "September 11"
 
 [[days]]
-date = "February 18"
+date = "September 16"
+
+[[days]]
+date = "September 18"
+
+[[days]]
+date = "September 23"
+
+[[days]]
+date = "September 25"
+
+[[days]]
+date = "September 30"
+
+[[days]]
+month = true
+date = "October 2"
+
+[[days]]
+date = "October 7"
+
+[[days]]
+date = "October 9"
+
+[[days]]
+date = "October 14"
 canceled = true
-event = "February break"
+event = "Fall break"
 
 [[days]]
-date = "February 20"
+date = "October 16"
 
 [[days]]
-date = "February 25"
+date = "October 21"
 
 [[days]]
-date = "February 27"
+date = "October 23"
 
 [[days]]
-date = "March 4"
+date = "October 28"
+
+[[days]]
+date = "October 30"
+notes = ["Due: [Project](../syllabus/#project) proposal."] # ???
+
+[[days]]
 month = true
+date = "November 4"
 
 [[days]]
-date = "March 6"
+date = "November 6"
 
 [[days]]
-date = "March 11"
+date = "November 11"
 
 [[days]]
-date = "March 13"
+date = "November 13"
 
 [[days]]
-date = "March 18"
+date = "November 18"
 
 [[days]]
-date = "March 20"
+date = "November 20"
 
 [[days]]
-date = "March 25"
+date = "November 25"
 
 [[days]]
-date = "March 27"
-notes = ["Due: [Project](../syllabus/#project) proposal."]
-
-[[days]]
-date = "April 1"
-month = true
+date = "November 27"
 canceled = true
-event = "Spring break"
+event = "Thanksgiving break"
 
 [[days]]
-date = "April 3"
-canceled = true
-event = "Spring break"
+date = "December 2"
 
 [[days]]
-date = "April 8"
+date = "December 4"
 
 [[days]]
-date = "April 10"
-
-[[days]]
-date = "April 15"
-
-[[days]]
-date = "April 17"
-
-[[days]]
-date = "April 22"
-
-[[days]]
-date = "April 24"
-
-[[days]]
-date = "April 29"
-
-[[days]]
-date = "May 1"
-month = true
-
-[[days]]
-date = "May 6"
-
-[[days]]
-date = "May 13"
-event = "Final project deadline (12pm)"
+date = "TBD"
+event = "Final project deadline"
 canceled = true
 notes = ["Due: [Project](../syllabus/#project)."]
 month = true

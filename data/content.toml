@@ -31,7 +31,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "Simon, Noah Schiff, Kabir Samsi, Allen"
+leader = "TBD"
 readings = ["ball-larus"]
 
 [[classes]]
@@ -42,7 +42,7 @@ lesson = 6
 
 [[classes]]
 title = "SSA"
-leader = "Neel, Dev Patel (dp673)"
+leader = "TBD"
 readings = ["ssa-construct"]
 
 
@@ -70,7 +70,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "Michael Xing, Gerardo Teruel (gg525), Arnav Muthiayen"
+leader = "TBD"
 readings = ["tbaa"]
 
 
@@ -81,12 +81,12 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "Ethan Gabizon, Parth Sarkar, Ernest Ng"
+leader = "TBD"
 readings = ["ugc"]
 
 [[classes]]
 title = "Fancy Memory Management"
-leader = "Bryant Park, David Han, Mariia Soroka, Lisa Li"
+leader = "TBD"
 readings = ["mesh"]
 
 
@@ -97,12 +97,12 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "Serena Duncan, and Ananya Goenka"
+leader = "TBD"
 readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "Ethan, Tean Lai (tml95)"
+leader = "TBD"
 readings = ["tracemonkey"]
 
 
@@ -110,7 +110,7 @@ readings = ["tracemonkey"]
 
 [[classes]]
 title = "Superoptimization"
-leader = "Mark Barbone, Zihan Li, Sam Breckenridge"
+leader = "TBD"
 readings = ["denali"]
 
 [[classes]]
@@ -121,5 +121,5 @@ lesson = 14
 
 [[classes]]
 title = "Interactive Verification"
-leader = "Edmund, Jonah Bernard, Mahmoud Elsharawy"
+leader = "TBD"
 readings = ["compcert"]
