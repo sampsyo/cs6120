@@ -7,7 +7,8 @@ template = "home.html"
 **Instructor:** [Adrian Sampson][adrian]  
 **When:** Tuesday and Thursday, 10:10–11:25am  
 **Where:** Gates 114 & Bloomberg 91  
-**Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)
+**Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)  
+**TA:** [Kei Imada][kei]
 
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
@@ -20,6 +21,7 @@ Anyone can follow along with [a self-guided version of the course][self-guided].
 If you do, please fill out [this feedback survey][form] when you're done.
 
 [adrian]: https://www.cs.cornell.edu/~asampson/
+[kei]: https://keikun555.github.io/
 [zulip]: https://cs6120.zulipchat.com
 [blog]: @/blog/_index.md
 [rss]: rss.xml
