@@ -5,10 +5,10 @@ template = "home.html"
 # CS 6120: Advanced Compilers
 
 **Instructor:** [Adrian Sampson][adrian]  
+**TA:** [Kei Imada][kei]  
 **When:** Tuesday and Thursday, 10:10–11:25am  
 **Where:** Gates 114 & Bloomberg 91  
-**Office hours:** by appointment (DM Adrian on [Zulip][] to find a time)  
-**TA:** [Kei Imada][kei]
+**Office hours:** by appointment (DM Adrian or Kei on [Zulip][] to find a time)
 
 Read & [subscribe][rss] to our [course blog][blog]!
 You can also clone the [source code][gh] for this course.
