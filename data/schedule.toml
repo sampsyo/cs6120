@@ -64,11 +64,11 @@ date = "October 28"
 
 [[days]]
 date = "October 30"
-notes = ["Due: [Project](../syllabus/#project) proposal."] # ???
 
 [[days]]
 month = true
 date = "November 4"
+notes = ["Due: [Project](../syllabus/#project) proposal."]
 
 [[days]]
 date = "November 6"
