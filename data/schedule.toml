@@ -4,6 +4,8 @@ month = true
 
 [[days]]
 date = "August 28"
+canceled = true
+event = "[Upstate PL Seminar](https://www.cs.cornell.edu/upstate-pl/)"
 
 [[days]]
 month = true

@@ -84,11 +84,6 @@ title = "GC & Reference Counting"
 leader = "TBD"
 readings = ["ugc"]
 
-[[classes]]
-title = "Fancy Memory Management"
-leader = "TBD"
-readings = ["mesh"]
-
 
 # Dynamic languages.
 
@@ -118,8 +113,3 @@ lesson = 13
 
 [[classes]]
 lesson = 14
-
-[[classes]]
-title = "Interactive Verification"
-leader = "TBD"
-readings = ["compcert"]
