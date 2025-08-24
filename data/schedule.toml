@@ -87,6 +87,8 @@ date = "November 20"
 
 [[days]]
 date = "November 25"
+canceled = true
+event = "Project work time"
 
 [[days]]
 date = "November 27"
