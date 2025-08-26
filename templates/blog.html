@@ -2,7 +2,7 @@
 {% block main %}
 <h1>
   {{ section.title }}
-  <a href="{{ get_url(path="rss.xml", trailing_slash=false) | safe }}">
+  <a href="{{ get_url(path="atom.xml", trailing_slash=false) | safe }}">
     <img src="../img/rss.svg" class="rss">
   </a>
 </h1>

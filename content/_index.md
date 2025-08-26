@@ -24,7 +24,7 @@ If you do, please fill out [this feedback survey][form] when you're done.
 [kei]: https://keikun555.github.io/
 [zulip]: https://cs6120.zulipchat.com
 [blog]: @/blog/_index.md
-[rss]: rss.xml
+[rss]: atom.xml
 [gh]: https://github.com/sampsyo/cs6120
 [blog2019]: https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/
 [blog2020]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
