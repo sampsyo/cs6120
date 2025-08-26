@@ -182,13 +182,13 @@ Due *one week after* the discussion day:
 
     Focus most of your writing on your own commentary: context, criticism, and discussion. To emphasize this focus, consider choosing a title for your blog post that is not the title of the paper---instead, it should reflect the main point *you want to make* about the paper.
 
-    If you need inspiration for the style of post to write, check out [last year's blog][blog2020]. But probably avoid reading posts about your paper, if they exist!
+    If you need inspiration for the style of post to write, check out [a previous semester's blog][blog2025sp]. But probably avoid reading posts about your paper, if they exist!
 * Publish the post to the [course GitHub repository][gh] by opening a pull request.
   The repository README has instructions.
 * When your PR is open, announce it on the appropriate GitHub Discussions thread to let other people take a look.
 
 [schedule]: @/schedule.md
-[blog2020]: https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/
+[blog2025sp]: https://www.cs.cornell.edu/courses/cs6120/2025sp/blog/
 [gh]: https://github.com/sampsyo/cs6120
 [gh-disc]: https://github.com/sampsyo/cs6120/discussions
 [gh-disc-reading]: https://github.com/sampsyo/cs6120/discussions/categories/reading
