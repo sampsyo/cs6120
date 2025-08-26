@@ -81,7 +81,7 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TBD"
+leader = "Jeffrey Qian"
 readings = ["ugc"]
 
 
