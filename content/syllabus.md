@@ -299,7 +299,7 @@ Write short answers to these two questions:
 2. Why do you want to take the course?
 
 Submit your responses as a one-page PDF to Adrian via [Zulip][].
-Please do this after the first class session, so you have some context about the course, and before the second (i.e., by the end of August 27, 2025).
+Please do this after the first class session, so you have some context about the course, and before the end of the day after the first class (i.e., by EOD August 27, 2025).
 If you miss that deadline, I would strongly prefer that you do not try to add the course.
 I will approve your application via Zulip.
 Then, in about 2 working days, the CIS registration office will send you a PIN to enroll.

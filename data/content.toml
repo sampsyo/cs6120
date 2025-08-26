@@ -31,7 +31,7 @@ lesson = 5
 
 [[classes]]
 title = "Profiling"
-leader = "TBD"
+leader = "Serena Zhang, Maggie Gao, Jacqueline Wen"
 readings = ["ball-larus"]
 
 [[classes]]
@@ -81,7 +81,7 @@ lesson = 11
 
 [[classes]]
 title = "GC & Reference Counting"
-leader = "TBD"
+leader = "Jeffrey Qian"
 readings = ["ugc"]
 
 
@@ -97,7 +97,7 @@ readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "TBD"
+leader = "Jeremy Ku-Benjet"
 readings = ["tracemonkey"]
 
 
@@ -105,7 +105,7 @@ readings = ["tracemonkey"]
 
 [[classes]]
 title = "Superoptimization"
-leader = "TBD"
+leader = "Thomas McFarland"
 readings = ["denali"]
 
 [[classes]]
