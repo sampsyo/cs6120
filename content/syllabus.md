@@ -214,7 +214,11 @@ The first deadline is the project proposal.
 You should also list the GitHub usernames of everyone in the group.
 After you send the PR, submit its URL to the "Project Proposal" assignment on [CMS][].
 
-The instructor will have feedback on how to approach your project.
+I will give you feedback on how to approach your project.
+I might also ask you to make changes or add details about your plan; please respond to these requests quickly.
+Once we have a plan, *please consider that a contract:*
+if you need to change the plan, let me know by commenting on your GitHub issue thread and we will work something out.
+I will grade your project based on how well it fulfills the plan we agreed on.
 
 [hc]: https://www.darpa.mil/work-with-us/heilmeier-catechism
 [proposal]: https://github.com/sampsyo/cs6120/issues/new?labels=proposal&template=project-proposal.md&title=Project+%5BNUMBER%5D+Proposal%3A+%5BTITLE%5D
