@@ -97,7 +97,7 @@ readings = ["self"]
 
 [[classes]]
 title = "Tracing"
-leader = "TBD"
+leader = "Jeremy Ku-Benjet"
 readings = ["tracemonkey"]
 
 
