@@ -3,4 +3,4 @@ You can subscribe to [posts on the blog][blog] with [RSS][].
 
 [cs6120]: https://www.cs.cornell.edu/courses/cs6120/2025fa/
 [blog]: https://www.cs.cornell.edu/courses/cs6120/2025fa/blog/
-[rss]: https://www.cs.cornell.edu/courses/cs6120/2025fa/rss.xml
+[rss]: https://www.cs.cornell.edu/courses/cs6120/2025fa/atom.xml
