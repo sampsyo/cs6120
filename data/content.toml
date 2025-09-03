@@ -42,7 +42,7 @@ lesson = 6
 
 [[classes]]
 title = "SSA"
-leader = "Nate Young"
+leader = "Nate Young, Amanda Wang, Jiale Lao, Ning Wang"
 readings = ["ssa-construct"]
 
 
@@ -53,7 +53,7 @@ lesson = 7
 
 [[classes]]
 title = "Automatic Verification"
-leader = "Nikil Shyamsunder"
+leader = "Nikil Shyamsunder, Shihan Fang, Joseph Maheshe, Ruolin Ye, I-Ting Tsai"
 readings = ["alive"]
 
 
@@ -92,7 +92,7 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "Jake, Tobi and Adnan (Cornell tech group)"
+leader = "Jake Hyun, Tobi Weinberg and Adnan Armouti (Cornell Tech)"
 readings = ["self"]
 
 [[classes]]
