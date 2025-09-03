@@ -42,7 +42,7 @@ lesson = 6
 
 [[classes]]
 title = "SSA"
-leader = "Nate Young, Jiale Lao, Ning Wang"
+leader = "Nate Young, Amanda Wang, Jiale Lao, Ning Wang"
 readings = ["ssa-construct"]
 
 
@@ -92,7 +92,7 @@ lesson = 12
 
 [[classes]]
 title = "Dynamic Languages"
-leader = "TBD"
+leader = "Jake Hyun"
 readings = ["self"]
 
 [[classes]]
