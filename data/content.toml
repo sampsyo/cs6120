@@ -105,7 +105,7 @@ readings = ["tracemonkey"]
 
 [[classes]]
 title = "Superoptimization"
-leader = "Thomas McFarland"
+leader = "Thomas McFarland, Vesal Bakhtazad"
 readings = ["denali"]
 
 [[classes]]
