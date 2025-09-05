@@ -70,7 +70,7 @@ lesson = 10
 
 [[classes]]
 title = "Alias-Based Optimization"
-leader = "TBD"
+leader = "Cynthia Shao, Jonathan Brown"
 readings = ["tbaa"]
 
 
