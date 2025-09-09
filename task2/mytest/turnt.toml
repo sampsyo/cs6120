@@ -1,6 +1,0 @@
-[commands]
-command = "bril2json < {filename} | brili {args}"
-
-[[test]]
-name = "multiply-until-100"
-file = "multiply_until_100.bril"
