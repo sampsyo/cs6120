@@ -1,0 +1,14 @@
+@main {
+  n: int = const 1;
+  ten: int = const 10;
+  hundred: int = const 100;
+
+.loop:
+  n: int = mul n ten;
+  keep: bool = lt n hundred;
+  br keep .loop .done;
+
+.done:
+  print n;
+  ret;
+}
