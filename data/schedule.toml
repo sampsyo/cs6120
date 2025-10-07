@@ -102,8 +102,8 @@ date = "December 2"
 date = "December 4"
 
 [[days]]
-date = "TBD"
-event = "Final project deadline"
+date = "December 16"
+event = "Final project [deadline](https://registrar.cornell.edu/exams/fall-final-exam-schedule), 4:30pm"
 canceled = true
 notes = ["Due: [Project](../syllabus/#project)."]
 month = true
