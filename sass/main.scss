@@ -1,6 +1,7 @@
 $main-color: rgb(179, 27, 27);
 $disabled-color: #666;
 $exception-color: #ccc;
+$warning-color: rgb(255, 142, 0);
 $max-width: 40rem;
 $max-width-wide: 60rem;
 
@@ -336,5 +337,26 @@ ul.simple {
     font-size: 0.8em;
     &:before { content: '['; }
     &:after { content: ']'; }
+  }
+}
+
+// Warning blocks. Borrowed from mdBook's stylesheet.
+.warning {
+  margin-left: 20px;
+  padding-left: 20px;
+  border-inline-start: 2px solid $warning-color;
+
+  &:before {
+    position: absolute;
+    width: 20px;
+    height: 28px;
+    margin-inline-start: -32px;
+
+    content: "ⓘ";
+    font-weight: bold;
+    font-size: 1.4rem;
+    text-align: center;
+    color: $warning-color;
+    background: white;
   }
 }
