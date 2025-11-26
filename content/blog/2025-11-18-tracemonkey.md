@@ -3,13 +3,14 @@ title = "Retracing The Tracing JIT"
 [extra]
 bio = """
   Jeremy Ku-Benjet 
-  Sunwoo Kim is a first-year ECE PhD student at Cornell. He's researching AI-assisted methods to design theoretically optimal computing systems.
+  Sunwoo Kim is pursuing PhD in Electrical and Computer Engineering at Cornell University. He's researching AI-assisted methods to design theoretically optimal computing systems.
 """
 [[extra.authors]]
 name = "TBD"
 link = "example.com"  # Links are optional.
 [[extra.authors]]
-name = "TBD"
+name = "Sunwoo Kim"
+link = "sunwookim028.github.io"
 +++
 
 ## Background and Significance
