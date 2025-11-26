@@ -33,7 +33,6 @@ The primary contribution of this paper was the efficient tracing mechanism imple
 If a guard fails, execution "side exits" back to the interpreter or to a different trace. If a side exit becomes hot, a new trace is recorded from that point. Divergent branches are recorded as branch traces, eventually forming a trace tree that covers multiple hot paths through the loop.
 
 ### The Nested Loop Solution
-
 A naive tracing JIT struggles with nested loops. If an inner loop has multiple paths, the outer loop might be recorded multiple times (once for every exit), leading to tail duplication and exploding code size.
 
 TraceMonkey introduced an algorithm to recognize inner loop headers. Instead of inlining the inner loop into the outer loop's trace, it treats the inner loop as a separate trace tree. The outer loop’s trace simply "calls" the inner loop’s trace. This modular composition prevents exponential trace growth.
@@ -70,8 +69,8 @@ TraceMonkey's eager speculation sometimes really pays off, clear in a couple of 
 In our class discussion, a common question was whether TraceMonkey—or tracing JITs in general—are still used. To answer this, we have to look at the spectrum of compilation granularity.
 
 - Method-based JITs: Operating at the opposite end of the spectrum, these compile entire functions at once (e.g., Google’s V8, Apple’s SquirrelFish Extreme). They allow for traditional static optimizations but require complex analysis for dynamic typing.
-- Tracing JITs: These focus on specific paths. Their critical weakness is control flow divergence. To cover a loop with many branches, a tracer must record a new branch trace for every divergent path, leading to code cache explosion.
+- Tracing JITs: These focus on specific paths. Their critical weakness is control flow divergence. To cover a loop with many branches, a tracer must record a new branch trace for every divergent path, leading to code cache explosion with nested loops.
 
-TraceMonkey attempted to "blacklist" loops that frequently aborted, but real-world web workloads proved to be highly branchy rather than type-stable. This violated the core assumptions that make tracing efficient.
+TraceMonkey attempted to "blacklist" loops that frequently tracing failed, but real-world web workloads proved to not always fail. They were branchy rather than type-stable, but tracing all of these branches was not justifying the completion cost. This violated the core assumptions that make tracing efficient.
 
 Modern JITs eventually adopted a tiered approach. While TraceMonkey's recording phase blocked execution (running at ~1/200th interpreter speed), modern engines use up to four tiers of optimization to balance startup time with peak performance. They use background threads for recompilation as well, as mentioned in this paper as a future work.
