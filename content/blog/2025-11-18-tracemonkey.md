@@ -13,8 +13,11 @@ name = "TBD"
 
 ## Background and Significance
 As dynamic languages like JavaScript became ubiquitous in client-side web programming, executing them efficiently became a critical challenge for browser vendors. The lack of static types meant that ahead-of-time compilers were forced to emit slow, generic code, while static analysis proved too expensive for the interactive constraints of the web.
+
 Virtual machines (VMs) eventually adopted mixed-mode execution, jumping back and forth between an interpreter and a Just-In-Time (JIT) compiler. While traditional JITs operated at the granularity of functions (methods), **TraceMonkey**-the system proposed in this paper—focused on the program path during runtime, crossing function boundaries.
+
 TraceMonkey identified hot loop traces at runtime and recorded instructions as they were executed. This allowed the VM to generate type-specialized machine code for subsequent loop iterations. By doing so, the system could specialize code aggressively and achieve function inlining implicitly.
+
 Although TraceMonkey was eventually discontinued as web workloads shifted toward patterns less favorable to tracing, it remains historically significant. It was the first production tracing JIT in a major browser (Firefox) and pioneered the tracing paradigm in the wild.
 
 ## Key Ideas & Contributions
