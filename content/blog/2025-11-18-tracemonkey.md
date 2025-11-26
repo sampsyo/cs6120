@@ -1,8 +1,9 @@
 +++
-title = "TBD"
+title = "Retracing The Tracing JIT"
 [extra]
 bio = """
-  
+  Jeremy Ku-Benjet 
+  Sunwoo Kim is a first-year ECE PhD student at Cornell. He's researching AI-assisted methods to design theoretically optimal computing systems.
 """
 [[extra.authors]]
 name = "TBD"
@@ -64,7 +65,7 @@ An immediate reading of TraceMonkey's implementation brings to mind, if only by 
 
 With this difference on what is being speculated, we'd argue speculation in processors and speculation in TraceMonkey are orthogonal processes, meaning the scary security implications of speculatively executing code, but also the fun parallelism and cheaper cost of a branch missprediction don't apply.
 
-### How Bad Are Misspredictions Anyway?
+### How Bad Are Mispredictions Anyway?
 As mentioned above, traces are great, but returning from them back to interpreted code can be quite costly. Upon a guard failure it requires copying all of the data modified during trace execution to the interpreter's structures and then returning to running the program through the interpreter. Given this, the (performance) tradeoff of speculation can be simplified to be between the extra cost of recording and returning from the trace and the time saved. This is a worthwhile trade off if the compiler saves more time than it looses to these extra costs. The thing to notice is both of these costs grow significantly when TraceMonkey misspredicts a branch or type: the code must exit and then it will likely start another trace. TraceMonkey's trace trees stitch together traces which help mitigate runtime penalties from these misspredictions, but mitigations don't make these penalties go away.
 
 A point of comparison is with the [speculation in WebKit's JavaScriptCore](https://webkit.org/blog/10308/speculation-in-javascriptcore/) JIT. This isn't a perfect comparison as while both of these JITs are speculating, JavaScriptCore seems to do more onerous computation during it's compilation and acts on functions instead of traces, which JavaScriptCore seems more eager to throw away than TraceMonkey, causing a higher cost of misspredicts. However, the drastic differences between the two compilers' philosophies towards speculation still makes this useful.
