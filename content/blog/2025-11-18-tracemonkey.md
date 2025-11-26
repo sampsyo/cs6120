@@ -49,8 +49,9 @@ A way to view the problems presented above is there is too low a bar for classif
 ## The Spectrum of JITs
 ### Why Couldn’t TraceMonkey Survive?
 In our class discussion, a common question was whether TraceMonkey—or tracing JITs in general—are still used. To answer this, we have to look at the spectrum of compilation granularity.
-• Method-based JITs: Operating at the opposite end of the spectrum, these compile entire functions at once (e.g., Google’s V8, Apple’s SquirrelFish Extreme). They allow for traditional static optimizations but require complex analysis for dynamic typing.
-• Tracing JITs: These focus on specific paths. Their critical weakness is control flow divergence. To cover a loop with many branches, a tracer must record a new branch trace for every divergent path, leading to code cache explosion.
+
+- Method-based JITs: Operating at the opposite end of the spectrum, these compile entire functions at once (e.g., Google’s V8, Apple’s SquirrelFish Extreme). They allow for traditional static optimizations but require complex analysis for dynamic typing.
+- Tracing JITs: These focus on specific paths. Their critical weakness is control flow divergence. To cover a loop with many branches, a tracer must record a new branch trace for every divergent path, leading to code cache explosion.
 
 TraceMonkey attempted to "blacklist" loops that frequently aborted, but real-world web workloads proved to be highly branchy rather than type-stable. This violated the core assumptions that make tracing efficient.
 
