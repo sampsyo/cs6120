@@ -23,14 +23,14 @@ Although TraceMonkey was eventually discontinued as web workloads shifted toward
 ## Key Ideas & Contributions
 The primary contribution of this paper was the efficient tracing mechanism implemented in TraceMonkey. It handled deep nested loops effectively and demonstrated valid speedups (2x–20x) over the baseline SpiderMonkey interpreter on the SunSpider benchmark.
 
-How it Works
+**How it Works:**
 1. Interpretation: TraceMonkey starts as a bytecode interpreter.
 2. Recording: It operates at the granularity of individual loops. When a loop becomes "hot," the system enters recording mode.
 3. LIR Generation: A sequence of operations is recorded in a Static Single Assignment (SSA) Low-Level IR (LIR).
 4. Guards: Runtime checks—known as guards—are inserted before branches and type specializations.
 If a guard fails, execution "side exits" back to the interpreter or to a different trace. If a side exit becomes hot, a new trace is recorded from that point. Divergent branches are recorded as branch traces, eventually forming a trace tree that covers multiple hot paths through the loop.
 
-###The Nested Loop Solution
+### The Nested Loop Solution
 
 A naive tracing JIT struggles with nested loops. If an inner loop has multiple paths, the outer loop might be recorded multiple times (once for every exit), leading to tail duplication and exploding code size.
 
