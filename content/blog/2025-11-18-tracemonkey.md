@@ -21,11 +21,20 @@ TraceMonkey identified hot loop traces at runtime and recorded instructions as t
 Although TraceMonkey was eventually discontinued as web workloads shifted toward patterns less favorable to tracing, it remains historically significant. It was the first production tracing JIT in a major browser (Firefox) and pioneered the tracing paradigm in the wild.
 
 ## Key Ideas & Contributions
-The key contribution of this paper was an efficient tracing mechanism implemented in TraceMonkey, that handles deep nested loops efficiently and validates to be effective on the SunSpider benchmark suite, reporting 2x-20x speedups over the baseline SpiderMonkey interpreter. 
+The primary contribution of this paper was the efficient tracing mechanism implemented in TraceMonkey. It handled deep nested loops effectively and demonstrated valid speedups (2x–20x) over the baseline SpiderMonkey interpreter on the SunSpider benchmark.
 
-TraceMonkey starts in a bytecode interpreter. It operates at the granularity of individual loops, and when a loop becomes hot, the system enters a recording mode. Sequence of operations are recorded in a SSA form low-level IR (LIR), and runtime checks – guards – are inserted before branches and type specializations. If a guard fails, execution *side exits* to back to the interpreter or to a different trace, which are recorded when such side exit becomes hot as well. Branch divergences are recorded as branch traces, forming a *trace tree* that covers multiple hot paths through the loop.
+How it Works
+1. Interpretation: TraceMonkey starts as a bytecode interpreter.
+2. Recording: It operates at the granularity of individual loops. When a loop becomes "hot," the system enters recording mode.
+3. LIR Generation: A sequence of operations is recorded in a Static Single Assignment (SSA) Low-Level IR (LIR).
+4. Guards: Runtime checks—known as guards—are inserted before branches and type specializations.
+If a guard fails, execution "side exits" back to the interpreter or to a different trace. If a side exit becomes hot, a new trace is recorded from that point. Divergent branches are recorded as branch traces, eventually forming a trace tree that covers multiple hot paths through the loop.
 
-A naive tracing JIT struggles with nested loops. If an inner loop has multiple paths, the outer loop will be recorded multiple times, once for every exit, leading to *tail duplication* which explodes the code size. TraceMonkey introduces an algorithm to recognize an inner loop header, and treating the inner loop as a separate trace tree, rather than inlining it. Outer loop’s trace can now simply “call” the inner loop’s trace, and this modular composition prevents exponential trace growth.
+###The Nested Loop Solution
+
+A naive tracing JIT struggles with nested loops. If an inner loop has multiple paths, the outer loop might be recorded multiple times (once for every exit), leading to tail duplication and exploding code size.
+
+TraceMonkey introduced an algorithm to recognize inner loop headers. Instead of inlining the inner loop into the outer loop's trace, it treats the inner loop as a separate trace tree. The outer loop’s trace simply "calls" the inner loop’s trace. This modular composition prevents exponential trace growth.
 
 
 ## Diamonds in Loops
