@@ -46,17 +46,15 @@ Now consider if there were multiple of these diamonds sequenced. This might be t
 
 A way to view the problems presented above is there is too low a bar for classifying control flow edges as hot. The first example shows wanting for a better criterion when branch conditions are stable and the second example shows the same when branch conditions are unstable. These cases are showing up due to an overeagerness for TraceMonkey to *speculate* a value's type and start compiling a trace.
 
-## Spectrum
+## The Spectrum of JITs
 ### Why Couldn’t TraceMonkey Survive?
-During our class discussion, many asked if TraceMonkey—or tracing JITs in general—were still in use, and if not, why. To understand this, we must view TraceMonkey on the spectrum of JITs through the lens of compilation granularity—how much code the compiler optimizes at one time.
+In our class discussion, a common question was whether TraceMonkey—or tracing JITs in general—are still used. To answer this, we have to look at the spectrum of compilation granularity.
+• Method-based JITs: Operating at the opposite end of the spectrum, these compile entire functions at once (e.g., Google’s V8, Apple’s SquirrelFish Extreme). They allow for traditional static optimizations but require complex analysis for dynamic typing.
+• Tracing JITs: These focus on specific paths. Their critical weakness is control flow divergence. To cover a loop with many branches, a tracer must record a new branch trace for every divergent path, leading to code cache explosion.
 
-On the opposite end of the spectrum from TraceMonkey are method-based JITs. These operate at a coarser granularity, compiling entire functions at once. While this approach allows for traditional static optimizations, it often requires complex analysis to handle dynamic typing effectively. Contemporaries to TraceMonkey included Google’s V8 and Apple’s SquirrelFish Extreme, which used method-based techniques like inline threading and call threading. As a middle ground between tracing and methods, the authors also noted region-based JITs (like those used in Java), which optimize specific subgraphs of the program
+TraceMonkey attempted to "blacklist" loops that frequently aborted, but real-world web workloads proved to be highly branchy rather than type-stable. This violated the core assumptions that make tracing efficient.
 
-A critical weakness of the tracing mechanism is control flow divergence. Because a tracer must record a specific path through a loop, it struggles when that loop contains many different branches. To cover the loop completely, the tracer must record a new branch trace for every divergent path, potentially leading to tail duplication and code cache explosion.
-
-TraceMonkey attempts to manage this by "blacklisting" loops that frequently abort or fail to complete a trace. However, real-world workloads proved to be highly branchy rather than type-stable, violating the core assumptions that make tracing efficient.
-
-In contrast, method-based JITs eventually mitigated their complexity weaknesses through tiered compilation and background processing. While TraceMonkey's recording phase blocked execution (running at ~1/200th the speed of the interpreter) , the authors acknowledged that offloading compilation to background threads was a necessary future optimization to remain competitive with the parallelism and robustness of method-based engines. Modern JITs implement up to four tiers of compiler optimization, enabling them to balance fast startup times with high peak performance.
+Modern JITs eventually adopted a tiered approach. While TraceMonkey's recording phase blocked execution (running at ~1/200th interpreter speed), modern engines use up to four tiers of optimization to balance startup time with peak performance. They use background threads for recompilation as well, as mentioned in this paper as a future work.
 
 
 ## Speculation
