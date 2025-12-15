@@ -35,9 +35,11 @@ Given these profiles and a target multi-GPU environment, TorchSplit formulates r
 
 Finally, TorchSplit exports each selected component as an independent serialized PyTorch module, along with a context file that describes the global dataflow graph and execution plan. At serving time, a runtime loads only the components required for each replica. The system integrates with Ray Serve and uses. GPU allocations derived from the ILP solver. 
 
+You can find our code [here](https://github.com/jeffreyqdd/TorchSplit/) and [here](https://github.com/az275/torchsplit_ray_deployment/).
+
 ## Evaluation
 
-We ran experiments on one Perlmutter node with 4 40GB NVIDIA A100 GPUs. We used the HuggingFace food101 image classification dataset; each item consists of an image and a classification label which is converted to a text prompt. This image, text pair forms the input to the CLIP model. We deployed our models on Ray Serve. 
+We ran experiments on one Perlmutter node with 4 40GB NVIDIA A100 GPUs. We used the [HuggingFace food101](https://huggingface.co/datasets/ethz/food101) image classification dataset; each item consists of an image and a classification label which is converted to a text prompt. This image, text pair forms the input to the CLIP model. We deployed our models on Ray Serve. 
 
 We measure the performance of a monolithic deployment of the CLIP model as our baseline. Specifically, this configuration places one copy of the full CLIP model on each of the 4 GPUs; this is the naive way of replicating across available resources, and is standard for model inference. 
 
