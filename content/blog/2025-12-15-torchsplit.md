@@ -61,7 +61,7 @@ The componentized deployment also achieves much lower latencies at higher send r
 
 Finally, we found that the componentized deployment achieves better GPU resource utilization. We queried GPU utilization % and memory usage statistics for each GPU (using nvidia-smi) every 100ms while the program was running. The monolithic deployment averaged about 25% utilization and 1215 MiB memory; the componentized one attained 46% utilization and 5100 MiB memory. There’s definitely still a lot of room for improvement here; this goes back to optimizing the allocation. 
 
-Future work
+## Future Work
 
 There are a lot of things we can do to further improve performance; we’ll talk about a couple which we touched on previously. 
 
@@ -69,7 +69,7 @@ First, we can do a better job of allocating components to GPUs. This would invol
 
 Stage to stage handoffs introduce overheads in a componentized deployment which do not exist for a monolithic application, so minimizing them is important. Ray stage to stage handoffs are done via TCP; this is slow, and different model serving platforms may offer the opportunity to use RDMA. Depending on the hardware platform, NVLink might also be possible. 
 
-GenAI Statement
+## GenAI Statement
 
 We used ChatGPT to generate the Python plotting scripts. It’s quite good at this.
 
