@@ -33,11 +33,13 @@ Once the model has been decomposed into components, TorchSplit profiles each com
 
 Given these profiles and a target multi-GPU environment, TorchSplit formulates resource allocation as an optimization problem. Each GPU can be partitioned into memory slices e.g. [8,8,8,8,8] GB slices for a 40 GB A100 GPU, each of which can host a replica of a component if the slice is large enough. The optimizer selects one memory layout per GPU and assigns component replicas to slices; the objective is to find the allocation, subject to resource constraints, which maximizes the minimum throughput across all pipeline components. The result is a concrete deployment plan that specifies how many replicas of each component to run and how GPU memory should be allocated. This ILP problem is formulated and solved using Gurobi via the gurobipy Python API. 
 
-Finally, TorchSplit exports each selected component as an independent serialized PyTorch module, along with a context file that describes the global dataflow graph and execution plan. At serving time, a runtime loads only the components required for each replica. The system integrates with Ray Serve and uses. GPU allocations derived from the ILP solver. 
+Finally, TorchSplit exports each selected component as an independent serialized PyTorch module, along with a context file that describes the global dataflow graph and execution plan. At serving time, a runtime loads only the components required for each replica. The system integrates with Ray Serve and uses GPU allocations derived from the ILP solver. 
 
 You can find our code [here](https://github.com/jeffreyqdd/TorchSplit/) and [here](https://github.com/az275/torchsplit_ray_deployment/).
 
 ## Evaluation
+
+We performed our evaluation on the [CLIP](https://github.com/openai/CLIP) model, a multimodal vision and language model which is popular for image classification tasks. TorchSplit partitions the full CLIP model into 3 components: a vision encoder, text encoder, and merge step, which we label A, B, and C. A and B can run in parallel, while the paired outputs from both are the inputs to C. 
 
 We ran experiments on one Perlmutter node with 4 40GB NVIDIA A100 GPUs. We used the [HuggingFace food101](https://huggingface.co/datasets/ethz/food101) image classification dataset; each item consists of an image and a classification label which is converted to a text prompt. This image, text pair forms the input to the CLIP model. We deployed our models on Ray Serve. 
 
@@ -47,7 +49,7 @@ The deployment configuration for the split CLIP model is somewhat more complicat
 
 The allocation that this yields has 9 copies of component A, 8 copies of component B, and 3 copies of component C; intuitively, we can validate that this seems reasonable, since our profiling results showed that component C has the highest throughput. Ray allows us to manually configure model deployments by specifying the number of replicas and GPU resources for each component; we assigned each copy of each component 0.2 GPUs, per our assumption above that 8GB is sufficient. 
 
-We measure end-to-end latency, throughput, and GPU utilization across a few different send rates. We run each experiment for 5 seconds (5 * qps queries). Latency is the time elapsed between when a client sends a query and when it receives the response; throughput is calculated as the total number of queries divided by the total time elapsed between when the first query is sent and the last response is received. 
+We measure end-to-end latency, throughput, and GPU utilization across a few different send rates. We run each experiment for 5 seconds (5 * qps queries). We do not currently have batching on the server side, and process one query at a time. Latency is the time elapsed between when a client sends a query and when it receives the response; throughput is calculated as the total number of queries divided by the total time elapsed between when the first query is sent and the last response is received. 
 
 <img src="./2025-12-15-torchsplit/throughput_vs_send_rate.png" alt="throughput vs send rate" width="300"/>
 
@@ -59,8 +61,16 @@ The componentized deployment also achieves much lower latencies at higher send r
 
 Finally, we found that the componentized deployment achieves better GPU resource utilization. We queried GPU utilization % and memory usage statistics for each GPU (using nvidia-smi) every 100ms while the program was running. The monolithic deployment averaged about 25% utilization and 1215 MiB memory; the componentized one attained 46% utilization and 5100 MiB memory. There’s definitely still a lot of room for improvement here; this goes back to optimizing the allocation. 
 
-## Future Work
+Future work
 
-There are a lot of things we can do to further improve performance. As mentioned previously, we can do a better job of allocating components to GPUs. This would involve doing more thorough profiling; since many ML models scale well with batching, benchmarking throughput and GPU utilization at different batch sizes would allow us to determine the optimal max batch size and specify inputs to the ILP based on that.  MIG partitioning and finer grained GPU profiling could also help us get to better resource utilization and performance.
+There are a lot of things we can do to further improve performance; we’ll talk about a couple which we touched on previously. 
+
+First, we can do a better job of allocating components to GPUs. This would involve incorporating more information from the profiling step into the allocation problem. In particular, we should consider batching; many ML models scale well with batching, so specifying inputs to the ILP based on throughput and GPU utilization at different batch sizes could generate a better allocation. MIG partitioning and finer grained GPU profiling could also help us get to better resource utilization and performance. 
 
 Stage to stage handoffs introduce overheads in a componentized deployment which do not exist for a monolithic application, so minimizing them is important. Ray stage to stage handoffs are done via TCP; this is slow, and different model serving platforms may offer the opportunity to use RDMA. Depending on the hardware platform, NVLink might also be possible. 
+
+GenAI Statement
+
+We used ChatGPT to generate the Python plotting scripts. It’s quite good at this.
+
+We also used ChatGPT to help diagnose issues with the Ray deployment; this involved pasting the error messages from the Ray logs along with a brief description of the problem/context. It’s not so good at this; it was sometimes helpful and sometimes completely useless. 
