@@ -25,6 +25,8 @@ By design, LEL only targets **scalar** expressions with simple function headers 
 
 # Implementation
 I will detail the implementation in this section. I will first introduce the datasets I use, explain the components and compare what I proposed vs. what's actually implemented, and then detail how I implemented each component.
+
+My code is open sourced at [link](https://github.com/YoruCathy/cs6120_final_project).
 ## Dataset
 ### A tiny hand-written set
 A curated suite of 24 hand-written LEL functions covering arithmetic, powers, fractions, zero-argument functions, conditional expressions, and calls. 
@@ -145,6 +147,11 @@ The main categories are:
 Overall, the failures are dominated by front-end issues (LaTeX constructs and MiTeX normalization) rather than bugs in the core compiler. Handling all the corner cases of real-world LaTeX—custom macros, operators, array/matrix syntax, and Typst’s own normalization quirks is an extremely tedious engineering problem. Fully solving this would require a substantial amount of additional front-end work and careful case-by-case normalization, which is well beyond the scope of a single course project.
 
 # Hardest part
+The hardest part of this project was not the LLVM backend, but making the front-end survive real LaTeX in the wild. In theory, LEL only needs a tiny, clean subset of math (function headers + arithmetic + simple conditionals). In practice, every step of getting from a paper's equation to that nice little subset was painful: MiTeX normalization introduces its own macros (mitexsqrt, mitexarray, lr(...)), arXiv sources are full of custom commands, arrays, matrices, integrals, and decorated identifiers, and Typst's output format doesn't line up neatly with my very simple identifier and expression grammar. A huge amount of time went into massaging and filtering equations, chasing down weird corner cases, and deciding whether to extend the grammar or just reject a construct. I have to make some pivots against the original proposal but I managed to comeup with a decent amount of featured and a thorough evaluation.
+
+# Star?
+I think I deserve a star for the implementation and evaluation.
+
 # GenAI usage
 I used ChatGPT and Copilot throughout this project. 
 I used GPT to:
