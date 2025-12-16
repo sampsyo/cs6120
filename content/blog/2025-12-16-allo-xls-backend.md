@@ -66,7 +66,7 @@ XLS organizes computation as communicating processes based on Kahn process netwo
 
 Rather than attempt general lowering from arbitrary Allo programs to explicit state machines (an intractably hard problem), we adopt a pattern-matching approach that specifically recognizes systolic array structures in MLIR and generates corresponding XLS grid implementations. We extracted metadata from the MLIR that drives a builder. The builder constructs DSLX proc ASTs for the PE and for the systolic grid that is then serialized.
 
-To see the generated XLS, see this link: TODO
+To see the generated XLS, see this link: https://github.com/Nikil-Shyamsunder/allo-xls-backend/tree/main/allo/backend/xls/examples/systolic
 
 ### Meta-Systolic Arrays (Method 2)
 
