@@ -26,7 +26,7 @@ This work was done with Joseph Maheshe, Jifeng Wu, Jenny Lee from ECE6775 projec
 My specific contributions were in suggesting the frontend syntax, implementing the MLIR to HLS backend and writing and running stateful scalar and tensor arithmetic accelerators.
 
 # Design and Implementation
-<img src="./2025-12-15-stateful-allo/overview.png" alt="allo to mlir to hls" width="310"/>
+<img src="./2025-12-16-stateful-allo/overview.png" alt="allo to mlir to hls" width="310"/>
 
 ```python
 # A kernel that accumulates values across invocations
