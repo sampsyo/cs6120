@@ -200,6 +200,19 @@ Our research partners explored an alternative compilation approach using LLM-bas
 
 Both Claude Opus 4.5 and GPT-generated correct code for the simple gemm examples eventually. In this case, XLS's unrolling passes completely normalized all high-level variations. However, the agent was unable to generate correct systolic arrays in XLS given an Allo input. We were able to develop a compiler pass that was faster, had broader scope, and higher accuracy than the agentic system build with the same development timeline. 
 
+We also developed a randomized differential testing framework using XLS's QuickCheck infrastructure to validate equivalence between our compiler-generated code and LLM-written implementations under diverse inputs. For each benchmark, we constructed differential test harnesses between the compiler output and references written by LLMs.
+```rust
+#[quickcheck(test_count=5)]
+fn prop_gemm_equivalence(A: s32[32][32], B: s32[32][32]) -> bool {
+    let result_compiler = allo_gemm_compiler(A, B);
+    let result_reference = allo_gemm_reference(A, B);
+    result_compiler == result_reference
+}
+```
+
+The XLS interpreter automatically generates randomized 32×32 integer matrices as inputs, executes both implementations, and verifies bitwise equality of outputs. This provides substantially greater input space coverage than hand-crafted test cases. Our framework successfully validates the `simple`, `split_outer`, and `split_both_merge` benchmarks, with all random trials passing. The `split_inner` and `split_both` benchmarks currently fail differential testing, correctly finding bugs, we realized, in our LLM’s implementations!
+
 ## GenAI Statement
 
 We used Claude to generate shell scripts and testing scripts, which it's quite good at! We also used Claude to diagnose DSLX errors and search the XLS code base to see what kind of flags to use when performing each lowering pass from DSLX to Verilog, particularly when debugging the procs. We also used Claude during the preliminary Agentic research to generate DSLX examples of the vanilla GEMM, which it was suprisingly good at doing!
+
