@@ -27,6 +27,8 @@ My specific contributions were in suggesting the frontend syntax, implementing t
 
 # Design and Implementation
 <img src="./2025-12-16-stateful-allo/overview.png" alt="allo to mlir to hls" width="310"/>
+This is the overview of our compilation flow.
+We'll use this scalar accumulator example to explain each step.
 
 ```python
 # A kernel that accumulates values across invocations
@@ -36,6 +38,7 @@ def stateful_kernel(x: int32) -> int32:
     acc = acc + x
     return acc
 ```
+In the frontend, adding the `stateful` qualifier specifies that the variable is a stateful one.
 
 ```mlir
 module {
@@ -52,6 +55,7 @@ module {
   }
 }
 ```
+They are then translated into global variables in IR, marked with a naming pattern `_stateful`.
 
 ```c++
 void stateful_kernel(
@@ -69,16 +73,43 @@ void stateful_kernel(
   *v1 = __stateful_stateful_kernel_acc_1;    // L11
 }
 ```
-
-# Hardest Parts and Future Work
+Then they are translated into static variables in the backend.
+HLS codegen emits static keyword for such marked stateful variables.
 
 # Additional Evaluation
+By measuring execution time, we discovered that the overhead of copying the state in host adds ~20% overhead.
 
-What was the goal?
-What did you do? (Include both the design and the implementation.)
-What were the hardest parts to get right?
-Were you successful? (Report rigorously on your empirical evaluation.)
+Also, we demonstrated a programmable accelerator design here.
 
+```python
+import allo
+from allo.ir.types import int32, stateful, uint8
 
-my [fork](https://github.com/sunwookim028/allo)
-Here's a [video](https://youtu.be/2dKNX0L-iG8?si=Jlyv5rDRoa-c0X9h)
+MEM_SIZE = 4
+OP_H2D = 0    # memcpy from host to accelerator (device)
+OP_D2H = 1    # memcpy from accelerator to accelerator (device)
+OP_ADD = 2    # compute addition on-chip
+OP_MUL = 3    # compute multiplication on-chip
+
+def int32_add(op1: int32, op2: int32) -> int32:
+    return op1 + op2
+
+def int32_mul(op1: int32, op2: int32) -> int32:
+    return op1 * op2
+
+def arith_processor(op: uint8, inval: int32, addr: uint8) -> int32:
+    mem: stateful(int32[MEM_SIZE]) = 0
+    retval: int32
+    if op == OP_H2D:
+        mem[addr] = inval
+        retval = 99 # random value
+    if op == OP_D2H:
+        retval = mem[addr]
+    if op == OP_ADD:
+        mem[addr] = int32_add(mem[addr], mem[addr + 1])
+        retval = mem[addr]
+    if op == OP_MUL:
+        mem[addr] = int32_mul(mem[addr], mem[addr + 1])
+        retval = mem[addr]
+    return retval
+```
