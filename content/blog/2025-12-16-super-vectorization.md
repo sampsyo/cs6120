@@ -1,6 +1,6 @@
 +++
 title = "Predicated SSA and SLP vectorization"
-[[extra]]
+[extra]
 bio = """
   Thomas is a undergraduate in the early M.Eng. program
 """
