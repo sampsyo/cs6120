@@ -27,7 +27,8 @@ My specific contributions were in suggesting the frontend syntax, implementing t
 
 # Design and Implementation
 <img src="./2025-12-16-stateful-allo/overview.png" alt="allo to mlir to hls" width="310"/>
-```
+
+```python
 # A kernel that accumulates values across invocations
 def stateful_kernel(x: int32) -> int32:
     # 'acc' retains its value between calls
@@ -35,7 +36,8 @@ def stateful_kernel(x: int32) -> int32:
     acc = acc + x
     return acc
 ```
-```
+
+```mlir
 module {
   // Global storage (persistent)
   memref.global "private" @__stateful_stateful_kernel_acc_1 : memref<i32> = dense<0>
@@ -51,7 +53,7 @@ module {
 }
 ```
 
-```
+```c++
 void stateful_kernel(
   int32_t v0,
   int32_t *v1
