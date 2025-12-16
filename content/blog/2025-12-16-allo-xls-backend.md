@@ -214,5 +214,5 @@ The XLS interpreter automatically generates randomized 32×32 integer matrices a
 
 ## GenAI Statement
 
-We used Claude to generate shell scripts and testing scripts, which it's quite good at! We also used Claude to diagnose DSLX errors and search the XLS code base to see what kind of flags to use when performing each lowering pass from DSLX to Verilog, particularly when debugging the procs. We also used Claude during the preliminary Agentic research to generate DSLX examples of the vanilla GEMM, which it was suprisingly good at doing!
+We used Claude to generate shell scripts and testing scripts, which it's quite good at! We also used Claude to diagnose DSLX errors and search the XLS code base to see what kind of flags to use when performing each lowering pass from DSLX to Verilog, particularly when debugging the procs. We used Claude in writing up our compiler passes, but it proved quite poor at doing this. We also used Claude during the preliminary Agentic research to generate DSLX examples of the vanilla GEMM, which it was suprisingly good at doing!
 
