@@ -1,5 +1,5 @@
 +++
-title = "From Allo to XLS: Bridging Hardware Accelerator DSLs Through Traditional Compilation"
+title = "From Allo to XLS: Bridging Hardware Accelerator DSLs Through Traditional Compilation to ASIC Backends"
 
 [extra]
 latex = false
