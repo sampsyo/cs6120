@@ -6,7 +6,6 @@ bio = """
 """
 [[extra.authors]]
 name = "Nathaniel Young"
-link = "https://www.cs.cornell.edu/~asampson/"  # Links are optional.
 [[extra.authors]]
 name = "Amanda Wang"
 +++
