@@ -27,17 +27,17 @@ In order to see how we designed these programs, let’s consider how to think ab
 
 Here's some pseudocode for an untiled matrix multiplication:
 
-    for m in [0, M):
-        for n in [0, N):
-            for k in [0, K):
+    for m in [0, 1024):
+        for n in [0, 1024):
+            for k in [0, 1024):
                 C[m, n] += A[m, k] * B[k, n]
 
 And here's a tiled one:
 
-    for m0 in [0, M/128):
-        for n0 in [0, N/128):
+    for m0 in [0, 1024/128):
+        for n0 in [0, 1024/128):
             # --- Blocking Level for C: inside here, C remains in cache ---
-            for k in [0, K):
+            for k in [0, 1024):
                 # --- Blocking Level for B: inside here, B remains in cache ---
                 for m1 in [0, 128):
                     # --- Blocking Level for A: inside here, A remains in cache ---
@@ -46,10 +46,10 @@ And here's a tiled one:
 
 The code above has blocking levels indicated with comments. If we were on a device with explicit data movement, we’d replace them with data movement commands, like so:
 
-    for m0 in [0, M/128):
-        for n0 in [0, N/128):
+    for m0 in [0, 1024/128):
+        for n0 in [0, 1024/128):
             C_local = zeros(128,128)
-            for k in [0, K):
+            for k in [0, 1024):
                 load B[k:k+1, n0*128:(n0+1)*128-1] as B_local
                 for m1 in [0, 128):
                     load A[m0*128+m1:m0*128+m1+1, k:k+1] as A_local
@@ -100,30 +100,31 @@ Constraint programs in CP-SAT are fairly difficult to debug, since if the progra
 
 # Success
 
-We evaluated our project on some real-world tensor operations against -O3 without vectorization or loop unrolling. We follow the evaluation criteria used in Orojenesis by generating some C code with dummy values, which models a chain of 6 einsums (Q_proj, QK, QKV, final_proj, ffn_0, ffn_1) from an inference pass through a GPT-style block. Notice that the output of each einsum is fed as input to the next, allowing for loop fusion. To vary the sizes of these operations, we adjusted the corresponding "sequence length" and "model dimensions" used to generate the einsums in the test code, and used a spread of different sizes: (`seq`, `dim`) = (`32, 128`), (`64`, `256`), (`128`, `512`), (`256`, `1024`). We refer to them as `tiny`, `small`, `med`, and `large`, respectively.
+We evaluated our project on some real-world tensor operations against -O3 without vectorization or loop unrolling. We follow the evaluation criteria used in Orojenesis by generating some C code with dummy values, which models a chain of 3 einsums (Q_proj, QK, QKV) from an inference pass through a GPT-style block. Notice that the output of each einsum is fed as input to the next, allowing for loop fusion. To vary the sizes of these operations, we adjusted the corresponding "sequence length" and "model dimensions" used to generate the einsums in the test code, and used a spread of different sizes: (`seq`, `dim`) = (`32, 128`), (`64`, `256`), (`128`, `512`), (`1024`, `4096`). We refer to them as `tiny`, `small`, `med`, and `large`, respectively. Note that the dimensions under `large` actually correspond to realistic dimensions used in the [Cerebras GPT-3-6.7B](https://huggingface.co/cerebras/Cerebras-GPT-6.7B) block.
 
-More concretely, we used the "full-tree" approach to decide the optimal tiling and fusion for the input chain, and then generated C code with accordingly tiled loops. For each input size, we ran our optimization with three different capacities to generate three separate optimized programs. To gauge how well our optimizer fared against code compiled with standard optimizations, we timed both the einsum-computation parts of our solver-optimized test code (compiled with -O0) and naive test code compiled with -O3 (with vectorization and loop unrolling disabled). The table below gives the time elapsed for each test size + optimization option, averaged over 10 runs.
+More concretely, we used the "full-tree" approach to decide the optimal tiling and fusion for the input chain, and then generated C code with accordingly tiled loops. For each input size, we ran our optimization with capacities `4*1024`, `8*1024`, `16*1024` (in number of floats) to generate three separate optimized programs. To gauge how well our optimizer fared against code compiled with standard optimizations, we timed our solver-optimized test code and naive test code, both compiled with -O3 with vectorization and loop unrolling disabled. The table below gives the time elapsed for each test size + optimization option, averaged over 5 runs.
 
 size | option | capacity | avg_time_sec
 -----|--------|----------|-------------
-tiny |unopt   |N/A       |0.000393
-tiny |opt     |8*1024    |0.0234826
-tiny |opt     |16*1024   |0.0061932
-tiny |opt     |32*1024   |0.0073882
-small|unopt   |N/A       |0.0060496000000000005
-small|opt     |32*1024   |0.09035200000000002
-small|opt     |64*1024   |0.1224278
-small|opt     |132*1024  |0.0943785
-med  |unopt   |N/A       |0.0316933
-med  |opt     |64*1024   |0.9528055
-med  |opt     |132*1024  |0.9094186000000001
-med  |opt     |256*1024  |1.1171062000000003
-large|unopt   |N/A       |0.2754281
-large|opt     |256*1024  |7.333855799999999
-large|opt     |512*1024  |8.9736737
-large|opt     |1024*1024 |9.022648
+tiny |unopt |N/A|0.0008058
+tiny |opt |4096|0.0003706
+tiny |opt |8192|0.00047799999999999996
+tiny |opt |16384|0.0003878
+small|unopt |N/A|0.0067888
+small|opt |4096|0.004105
+small|opt |8192|0.0030004
+small|opt |16384|0.0029158
+med  |unopt |N/A|0.0358932
+med  |opt |4096|0.028004
+med  |opt |8192|0.025999
+med  |opt |16384|0.028292400000000002
+large |unopt |N/A|62.1979504
+large |opt |4096|11.396286800000002
+large |opt |8192|17.026373
+large |opt |16384|92.80004540000002
 
-Our optimized code compiled with -O0 consistently underperformed the naive code compiled with -O3, but this is probably not a very fair comparison. For instance, compiling our code with -O1 reduced the average times to < 1e-7 across the board, and could also be a reasonable comparison. One thing to note is that while our optimized C program does already tile the loops, it doesn't directly fuse them. Although the loops in the program are optimized to be fuseable, we ran out of time and instead wrote the program to execute the loops separately for simplicity. 
+
+Our optimized code compiled with -O3 consistently outperformed the naive code compiled with -O3, which we consider a success. The exception is the large size tiled to capacity `16*1024`, which performed worse than the unoptimized code. We're not sure why this is, but we suspect that this could be approaching the cache size of the architecture we were running on, which for some cores is 64k, corresponding to 16k floats. One thing to note is that while our optimized C program does already tile the loops to fuseable shapes, it doesn't directly fuse them. We also experimented with manually fusing the code, but found that the times didn't change, suggesting that -O3 was probably fusing them automatically, as expected.
 
 We initially also wanted to evaluate against Polly, since it seemed like the more appropriate, conventional comparison for loop tiling and fusion. The plan was to also benchmark against naive code that was compiled with -polly, which is LLVM's polyhedral optimizer for data-locality and loop optimizations. However, getting Polly to run on our generated code turned out to be nontrivial, and we eventually put it aside.
 
