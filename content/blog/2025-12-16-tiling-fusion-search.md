@@ -100,6 +100,35 @@ Constraint programs in CP-SAT are fairly difficult to debug, since if the progra
 
 # Success
 
+We evaluated our project on some real-world tensor operations against -O3 without vectorization or loop unrolling. We follow the evaluation criteria used in Orojenesis by generating some C code with dummy values, which models a chain of 6 einsums (Q_proj, QK, QKV, final_proj, ffn_0, ffn_1) from an inference pass through a GPT-style block. Notice that the output of each einsum is fed as input to the next, allowing for loop fusion. To vary the sizes of these operations, we adjusted the corresponding "sequence length" and "model dimensions" used to generate the einsums in the test code, and used a spread of different sizes: (`seq`, `dim`) = (`32, 128`), (`64`, `256`), (`128`, `512`), (`256`, `1024`). We refer to them as `tiny`, `small`, `med`, and `large`, respectively.
+
+More concretely, we used the "full-tree" approach to decide the optimal tiling and fusion for the input chain, and then generated C code with accordingly tiled loops. For each input size, we ran our optimization with three different capacities to generate three separate optimized programs. To gauge how well our optimizer fared against code compiled with standard optimizations, we timed both the einsum-computation parts of our solver-optimized test code (compiled with -O0) and naive test code compiled with -O3 (with vectorization and loop unrolling disabled). The table below gives the time elapsed for each test size + optimization option, averaged over 10 runs.
+
+size | option | capacity | avg_time_sec
+-----|--------|----------|-------------
+tiny |unopt   |N/A       |0.000393
+tiny |opt     |8*1024    |0.0234826
+tiny |opt     |16*1024   |0.0061932
+tiny |opt     |32*1024   |0.0073882
+small|unopt   |N/A       |0.0060496000000000005
+small|opt     |32*1024   |0.09035200000000002
+small|opt     |64*1024   |0.1224278
+small|opt     |132*1024  |0.0943785
+med  |unopt   |N/A       |0.0316933
+med  |opt     |64*1024   |0.9528055
+med  |opt     |132*1024  |0.9094186000000001
+med  |opt     |256*1024  |1.1171062000000003
+large|unopt   |N/A       |0.2754281
+large|opt     |256*1024  |7.333855799999999
+large|opt     |512*1024  |8.9736737
+large|opt     |1024*1024 |9.022648
+
+Our optimized code compiled with -O0 consistently underperformed the naive code compiled with -O3, but this is probably not a very fair comparison. For instance, compiling our code with -O1 reduced the average times to < 1e-7 across the board, and could also be a reasonable comparison. One thing to note is that while our optimized C program does already tile the loops, it doesn't directly fuse them. Although the loops in the program are optimized to be fuseable, we ran out of time and instead wrote the program to execute the loops separately for simplicity. 
+
+We initially also wanted to evaluate against Polly, since it seemed like the more appropriate, conventional comparison for loop tiling and fusion. The plan was to also benchmark against naive code that was compiled with -polly, which is LLVM's polyhedral optimizer for data-locality and loop optimizations. However, getting Polly to run on our generated code turned out to be nontrivial, and we eventually put it aside.
+
 # Use of AI
 
 We used Github Copilot fairly extensively in creating the CP-SAT programs; we would write the variables and constraints in plain English in a comment at the beginning of the function, and then try to get Copilot to create them in actual code later on. It worked well enough to be useful, but Copilot did make plenty of mistakes. In one instance, when the comment gave a constraint with the form "A implies B and C", it would only ever create constraints which effectively said "A and B imply C"; no amount of clarification with extra comments seemed to fix this.
+
+We also used AI fairly extensively for generating test C code from einsums and from the optimizer. It was useful for the former, and much less useful for the latter. Nudging the LLM to produce code that properly tiled the loops turned out to be way more of a time sink than restarting and only letting it produce small modular bits of code.
