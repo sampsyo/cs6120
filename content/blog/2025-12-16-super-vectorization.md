@@ -50,9 +50,7 @@ vec_y = vec_mul(vec_c, vec_d)
 
 In ["All You Need Is Superword-Level Parallelism,"](https://dspace.mit.edu/bitstream/handle/1721.1/146343/3519939.3523701.pdf?isAllowed=y&sequence=1) Chen et. al. outline a simple principle: if the compiler can reorder instructions freely and easily determine which instructions can be packed together, the same SLP algorithm which only works in basic blocks suddenly can generalize across a whole function (or, with inlining, a who program). But, LLVM's native CFG based IR does not allow this: moving instructions is inherently tricky, and can easily result in the whole program becoming invalid.
 
-The authors solve this by introducing **Predicated SSA**, which when combined with an SLP algorithm they call **Super Vectorization**. Predicated SSA solves the issue of a CFG via removing the CFG. Instead, a function is one list of straight line code, composed entirely of loops and instructions. To ensure data and control dependencies remain, each instruction or loop has an associated predicate: the code only runs if the predicate is satisfied. Thus, while data dependencies still have to be respect, control dependencies are made irrelevant, turned into a simply equality check
-
-Visualizing CFG vs. Predicated SSA:
+The authors solve this by introducing **Predicated SSA**, which when combined with an SLP algorithm they call **Super Vectorization**. Predicated SSA solves the issue of a CFG via removing the CFG. Instead, a function is one list of straight line code, composed entirely of loops and instructions. To ensure data and control dependencies remain, each instruction or loop has an associated predicate: the code only runs if the predicate is satisfied. Thus, while data dependencies still have to be respected, control dependencies are made irrelevant, turned into a simply equality check
 
 **Traditional CFG:**
 ```
