@@ -17,19 +17,50 @@ In this blog post, we explore the idea that multimodal models are not monolithic
 
 To address this challenge, we present TorchSplit, an end-to-end system that automatically decomposes PyTorch multimodal models into parallelizable components and optimizes their deployment across multi-GPU hardware. TorchSplit combines static dataflow analysis, profiling under memory constraints, and optimization-based resource allocation, and integrates with a production serving framework to execute the resulting deployment plan. The goal of TorchSplit is not to change model accuracy or architecture, but to improve serving throughput and latency by better leveraging existing hardware.
 
-This post reports on the design, implementation, and evaluation of TorchSplit. We describe how the system extracts safe-to-split components from PyTorch models, profiles and allocates GPU resources to those components, and executes them in a distributed serving environment using Ray Serve. We then evaluate TorchSplit on a real multimodal model and show that componentized serving can significantly outperform a traditional monolithic deployment under high load.
+This post reports on the design, implementation, and evaluation of TorchSplit. We describe how the system extracts safe-to-split components from PyTorch models, profiles and allocates GPU resources to those components, and executes them in a distributed serving environment using Ray Serve. We then evaluate TorchSplit on a real multimodal model [(CLIP)](https://github.com/openai/CLIP.git) and show that componentized serving can significantly outperform a traditional monolithic deployment under high load.
 
 ## Implementation
-
+### Architecture Overview
 <img src="./2025-12-15-torchsplit/architecture_diagram.png" alt="architecture diagram" width="300"/>
 
-TorchSplit is implemented as a tool that takes a PyTorch model as input and produces a componentized serving configuration. The process begins by tracing the model’s forward pass using Torch FX, which converts the execution into FX graph intermediate representation (IR). This is a graph IR, each node corresponds to a specific (op)eration and edges represent the dataflow between operations through targets (variable names).  Because Torch FX cannot trace control flow with fake tensors, the user must provide concrete tensors with known dimensions. Torch FX can represent control flow using phi nodes. From this traced representation, TorchSplit constructs an internal directed acyclic graph (DAG) in which nodes represent values and edges represent dataflow. 
+TorchSplit is implemented as a tool that takes a PyTorch model as input and produces a componentized serving configuration. The overall architecture consists of three main modules: the **SplitClient**, the **Profiler and Optimizer**, and the **Runtime Environment**.
 
-To determine which parts of the model can be safely separated, TorchSplit analyzes the graph to identify Single Entry Single Exit (SESE) regions, defined by two nodes, A and B. To form a SESE region, A must dominate B (All paths from entry to B must go through A), and B must postdominate A (All paths from A to exit must go through B). In a dataflow graph, this property ensures that the interior of the region has no incoming edges from outside the region, allowing it to be extracted as an independent component with A acting as the input boundary and B as the output boundary.
+1. **SplitClient** - Provides a user-facing interface for defining models and generates input arguments for tracing and profiling.
+2. **Profiler and Optimizer** - Performs dataflow analysis, runtime profiling, and solves an ILP allocation to generate an optimized execution plan.
+3. **Runtime Environment** - Loads the execution plan and dispatches execution across the components.
+
+### SplitClient: Model Tracing and Graph Generation 
+The process begins by tracing the model’s forward pass using [Torch FX](https://docs.pytorch.org/docs/stable/fx.html), which converts the execution into FX graph intermediate representation (IR). This is a graph IR: each node corresponds to a specific (op)eration and edges represent the dataflow between operations through targets (variable names).
+
+Initially, we planned to use proxy tensors (tensors with no dimensions) for tracing because they do not require a dataset or concrete inputs. However, we discovered that this approach does not support models with control flow (e.g., if/else statements). Depending on the IR export backend, tracing either fails with a `RuntimeError` or produces a layer-by-layer trace of a single execution path. As a result, we shifted toward using concrete tensors with known dimensions for tracing, which allows conditional values to be represented using phi nodes.
+
+From this trace representation, TorchSplit constructs an internal directed acyclic graph (DAG) where nodes represent values and edges represent an op's dependencies. Although the resulting DAG represents the dataflow rather than control flow, the phi nodes preserve information about where values used downstream may originate from. This allows TorchSplit to analyze data dependencies across all possible branches, rather than only the path taken for a specific input. While this functionality is still under development, it will allow TorchSplit to determine whether the bodies of if/else blocks can be emitted as separate components. This is designed to support models with conditional branching in the future.
+
+In the SplitClient, users can define the model and provide example inputs as such:
+```python
+class ClipClient(SplitClient):
+    def __init__(self):
+        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+    def get_model(self):
+        return self.model
+
+    def get_benchmarks(self, batch_size: int):
+        # --- omitted code ---
+        for model_args, model_kwargs in concrete_inputs:
+            yield model_args, model_kwargs
+```
+
+### Profile and Optimizer: Graph Decomposition, Profiling, and ILP-based Allocation
+
+To determine which parts of the model can be safely separated, TorchSplit analyzes the graph to identify Single Entry Single Exit (SESE) regions, defined by two nodes, A and B. To form a SESE region, A must dominate B (All paths from entry to B must go through A), and B must postdominate A (All paths from A to exit must go through B). In a dataflow graph, this property ensures that the interior of the region has no incoming edges from outside the region, allowing it to be extracted as an independent component with A acting as the input boundary and B as the output boundary. When exporting the final code, the TorchSplit sets A as the input node and B as the output node in the transformed FX graph module.
 
 We compute dominators and post-dominators using the Lengauer–Tarjan algorithm and enumerate all O(n^2) candidate node pairs to identify valid SESE regions. Since many such regions may exist, the system greedily selects the largest disjoint regions, which typically correspond to meaningful model components such as modality-specific encoders. The remaining nodes form smaller coordination regions that handle data routing between components.
 
-Once the model has been decomposed into components, TorchSplit profiles each component independently to understand how its performance scales with available GPU memory. Using PyTorch’s profiler and NVIDIA’s APIs, the system measures execution time, throughput, and memory usage across a range of batch sizes while explicitly capping the memory available to each process. This produces a function for each component that maps memory availability to achievable throughput, enabling TorchSplit to reason about trade-offs among replication, memory slices, and overall system performance.
+Once the model has been decomposed into components, TorchSplit profiles each component independently to characterize its performance under varying GPU memory constraints. For isolated profiling, the system replays the component execution in topological order. In the case of the CLIP model, TorchSplit identifies three components: A (vision encoder), B (text encoder), and C (merge step), with a linear execution order A, B, then C. Using the concrete inputs specified in the SplitClient, the profiler executes the forward pass of component A and records its output A′, followed by the forward pass of component B to obtain B′. The forward pass of component C is then executed using A′ and B′ as inputs. To avoid unnecessary GPU memory measurements, the intermediate tensors A′ and B′ are briefly paged to DRAM and transferred back to the GPU only when required for profiling component C.
+
+To cap the memory, we use PyTorch’s [cuda API](https://docs.pytorch.org/docs/stable/generated/torch.cuda.memory.set_per_process_memory_fraction.html) to set the maximum memory available to the memory allocator. We do this for 1, 2, 4, 8, 10, 20, and 40 GB of memory (the target GPU is an A100 with 40GB of memory). The reason we picked these sizes is because they evenly divide 40GB, which makes it easier to allocate memory slices later on. For each memory size, we measure achievable throughput in terms of queries per second, qps, calculated from multiplying batch size by batches per second. We kept batch size fixed at 1 because of reasons mentioned later in the Future Work section. We also saw from this profiling step that 8GB appears to be sufficient for all components (More on this in the Evaluation section).
 
 Given these profiles and a target multi-GPU environment, TorchSplit formulates resource allocation as an optimization problem. Each GPU can be partitioned into memory slices e.g. [8,8,8,8,8] GB slices for a 40 GB A100 GPU, each of which can host a replica of a component if the slice is large enough. The optimizer selects one memory layout per GPU and assigns component replicas to slices; the objective is to find the allocation, subject to resource constraints, which maximizes the minimum throughput across all pipeline components. The result is a concrete deployment plan that specifies how many replicas of each component to run and how GPU memory should be allocated. This ILP problem is formulated and solved using Gurobi via the [gurobipy Python API](https://docs.gurobi.com/projects/optimizer/en/current/reference/python.html). 
 
@@ -61,11 +92,20 @@ The componentized deployment also achieves much lower latencies at higher send r
 
 Finally, we found that the componentized deployment achieves better GPU resource utilization. We queried GPU utilization % and memory usage statistics for each GPU (using nvidia-smi) every 100ms while the program was running. The monolithic deployment averaged about 25% utilization and 1215 MiB memory; the componentized one attained 46% utilization and 5100 MiB memory. There’s definitely still a lot of room for improvement here; this goes back to optimizing the allocation. 
 
+Disregarding the time spent profiling, TorchSplit takes about 7.7 seconds on CLIP which has 943 nodes. The major components of this are:
+1. Torch FX Graph Export: 2.77s
+2. Dominance Analysis and SESE Extraction: 2.65s
+3. Export: 0.51s 
+
+The rest of the the execution is spent on Python module imports. This was obtained via (py-spy)[https://github.com/benfred/py-spy], a sampling-based Python profiler. The ILP solver was run separately, and the time is negligible since the problem size is very small.
+
 ## Future Work
 
 There are a lot of things we can do to further improve performance; we’ll talk about a couple which we touched on previously. 
 
-First, we can do a better job of allocating components to GPUs. This would involve incorporating more information from the profiling step into the allocation problem. In particular, we should support batching; many ML models scale well with batching, so specifying inputs to the ILP based on throughput and GPU utilization at different batch sizes could generate a better allocation. [Multi-instance GPU partitioning](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) -- partitioning a single GPU into isolated instances to eliminate interference between models running on the same GPU -- and finer grained GPU profiling could also help us get to better resource utilization and performance. 
+First, we can do a better job of allocating components to GPUs. This would involve incorporating more information from the profiling step into the allocation problem. In particular, we should support batching; many ML models scale well with batching, so specifying inputs to the ILP based on throughput and GPU utilization at different batch sizes could generate a better allocation. Batching is difficult because Torch FX yields static graphs (fixed to a single batch size), so we would either need to export multiple graphs at different sizes or modify the graph to support variable batch sizes.
+
+[Multi-instance GPU partitioning](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) -- partitioning a single GPU into isolated instances to eliminate interference between models running on the same GPU -- and finer grained GPU profiling could also help us get to better resource utilization and performance. 
 
 Stage to stage handoffs introduce overheads in a componentized deployment which do not exist for a monolithic application, so minimizing them is important. Ray stage to stage handoffs are done via TCP; this is slow, and different model serving platforms may offer the opportunity to use RDMA. Depending on the hardware platform, NVLink might also be possible. 
 
