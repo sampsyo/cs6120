@@ -97,7 +97,7 @@ Disregarding the time spent profiling, TorchSplit takes about 7.7 seconds on CLI
 2. Dominance Analysis and SESE Extraction: 2.65s
 3. Export: 0.51s 
 
-The rest of the the execution is spent on Python module imports. This was obtained via (py-spy)[https://github.com/benfred/py-spy], a sampling-based Python profiler. The ILP solver was run separately, and the time is negligible since the problem size is very small.
+The rest of the the execution is spent on Python module imports. This was obtained via [py-spy](https://github.com/benfred/py-spy), a sampling-based Python profiler. The ILP solver was run separately, and the time is negligible since the problem size is very small.
 
 ## Future Work
 
