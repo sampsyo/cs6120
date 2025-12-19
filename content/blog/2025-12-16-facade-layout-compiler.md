@@ -190,7 +190,7 @@ row 6: E
 row 6: S S D D S S W W W W S
 row 7: S S D D S S W W W W S 
 ```
-![Facade 1](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/facade_1.svg)
+![Facade 1](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_1/facade_1.svg)
 
 Version 2:
 ```
@@ -202,7 +202,7 @@ row 5: E E W E S*2 W E E S W
 row 6: W S E E W E S W S E E
 row 7: D*2 E D E E D E D*2 E
 ```
-![Facade 2](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_2/facade_2.svg)
+![Facade 2](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_2/facade_2.svg)
 
 Version 3:
 ```
@@ -216,7 +216,7 @@ row 7: E C E S S S E C E
 row 8: E E E S S S 
 row 9: E D D E E E D D E
 ```
-![Facade 3](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_3/facade_3.svg)
+![Facade 3](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_3/facade_3.svg)
 
 Version 4:
 ```
@@ -227,7 +227,7 @@ row 4: W S S S C C S W*2 S W
 row 5: E S*4 C C S S S 
 row 6: E D D S*3 C S D D 
 ```
-![Facde 4](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/facade_4.svg)
+![Facde 4](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_4/facade_4.svg)
 
 Version 5:
 ```
@@ -240,7 +240,7 @@ row 6: e*0 E*1 S*11 E*1
 row 7: E*0 E*1 W*2 S*3 W*1 S*3 W*2 E*1
 row 8: E*0 D*2 S*1 E*1 S*1 D*3 S*1 e*1 s*1 d*2
 ```
-![Facade 5](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_5/facade_5.svg)
+![Facade 5](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_5/facade_5.svg)
 
 ---
 
@@ -355,30 +355,30 @@ The results were correct most of the time. The model understood the general layo
 **Facade Example 1:**
 
 PNG output:
-![PNG output](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/facade_1.png)
+![PNG output](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_1/facade_1.png)
 
 Modernist-style:
-![Modernist-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Modernist-style.png)
+![Modernist-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_1/Modernist-style.png)
 
 Biophilic-style:
-![Biophilic-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Biophilic-style.png)
+![Biophilic-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_1/Biophilic-style.png)
 
 Postmodern-style:
-![Postmodern-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Postmodern-style.png)
+![Postmodern-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_1/Postmodern-style.png)
 
 **Facade Example 2:**
 
 PNG output:
-![PNG output](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/facade_4.png)
+![PNG output](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_4/facade_4.png)
 
 Bauhaus-style:
-![Bauhaus-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Bauhaus-style.png)
+![Bauhaus-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_4/Bauhaus-style.png)
 
 Neo-Futurist-style:
-![Neo-Futurist-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Neo-Futurist-style.png)
+![Neo-Futurist-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/refs/heads/main/example/facade_4/Neo-Futurist-style.png)
 
 Post-and-Beam Modern-style:
-![Post-and-Beam Modern-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Post-and-Beam%20Modern-style.png)
+![Post-and-Beam Modern-style](https://raw.githubusercontent.com/itingtsai/Facade_Layout_Compiler/main/example/facade_4/Post-and-Beam%20Modern-style.png)
 
 ### Qualitative Validation
 
