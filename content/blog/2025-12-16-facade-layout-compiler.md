@@ -56,7 +56,7 @@ row 5: E E E D D E E E
 
 This grid-based representation provides a clear correspondence between source-level specification and spatial layout. The choice of single-character symbols was deliberate: it enables the compact syntax feature (described below) while remaining visually scannable.
 
-(The row numbers aren’t strictly needed right now since the rows could just be inferred by order, but I was thinking that this would keep the language flexible for future extensions where it might be useful to refer to specific rows (e.g., changing row heights or other row-level attributes).)
+The row numbers aren’t strictly needed since the rows could just be inferred by order, but I was thinking that this would keep the language flexible for future extensions where it might be useful to refer to specific rows (e.g., changing row heights or other row-level attributes).
 
 ### Expressiveness and Usability Features
 
@@ -180,18 +180,66 @@ For environments that don't support SVG, the compiler can produce PNG output via
 **Example Facades:**
 
 Version 1:
+```
+row 1: E E E E E E E E C E E 
+row 2: S S S S S S S S C S S 
+row 3: S S W W S S S W W S S 
+row 4: S S W W S S S W W S S 
+row 5: S S S S S S S S S S S 
+row 6: E 
+row 6: S S D D S S W W W W S
+row 7: S S D D S S W W W W S 
+```
 ![Facade 1](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/facade_1.svg)
 
 Version 2:
+```
+row 1: E W S E*2 W W E S W E
+row 2: W E W S E E S W E*3
+row 3: E S E W*2 S E E W S E
+row 4: S W S S E W E S E W E
+row 5: E E W E S*2 W E E S W
+row 6: W S E E W E S W S E E
+row 7: D*2 E D E E D E D*2 E
+```
 ![Facade 2](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_2/facade_2.svg)
 
 Version 3:
+```
+row 1: E C E S E S E C E
+row 2: E C E W E W E C 
+row 3: E C E W E W E C 
+row 4: E C E W W W E C E
+row 5: E C E W E W E C E
+row 6: E C E W E W E C 
+row 7: E C E S S S E C E
+row 8: E E E S S S 
+row 9: E D D E E E D D E
+```
 ![Facade 3](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_3/facade_3.svg)
 
 Version 4:
+```
+row 1: E E C E*2 
+row 2: W W C C W W W W W W W
+row 3: W S S C*2 S S S W S W
+row 4: W S S S C C S W*2 S W
+row 5: E S*4 C C S S S 
+row 6: E D D S*3 C S D D 
+```
 ![Facde 4](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/facade_4.svg)
 
 Version 5:
+```
+row 1: E*1 C*1 E*4 C*1 E*4 c*1 e*1
+row 2: E*1 C*1 S*1 W*3 C*1 W*3 S*1 c*1 E*1
+row 3: E*1 C*1 S*1 W*1 S*1 W*1 C*1 W*1 S*1 W*1 S*1 C*1 E*1
+row 4: E*1 C*1 S*1 W*1 S*1 W*1 C*1 W*1 S*1 W*1 S*1 C*1 e*1
+row 5: E*1 C*1 S*1 W*3 C*1 W*3 S*1 C*1 E*1
+row 6: e*0 E*1 S*11 E*1
+row 7: E*0 E*1 W*2 S*3 W*1 S*3 W*2 E*1
+row 8: E*0 D*2 S*1 E*1 S*1 D*3 S*1 e*1 s*1 d*2
+```
 ![Facade 5](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_5/facade_5.svg)
 
 ---
