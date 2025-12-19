@@ -1,5 +1,5 @@
 +++
-title = "Facade Layout Compiler (# 618)"
+title = "Facade Layout Compiler"
 [extra]
 bio = """
   I-Ting Tsai is a CS PhD student at Cornell University.
@@ -7,8 +7,6 @@ bio = """
 [[extra.authors]]
 name = "I-Ting Tsai"
 +++
-
-# Experience Report: Facade Layout Compiler
 
 [Source Code](https://github.com/itingtsai/Facade_Layout_Compiler)
 
@@ -24,7 +22,7 @@ This project directly mirrors a traditional compiler pipeline—lexical analysis
 
 ## Alignment with Proposal
 
-My original proposal outlined three key deliverables:
+My [original proposal](https://github.com/sampsyo/cs6120/issues/618#issue-3592227093) outlined three key deliverables:
 
 1. **Custom DSL for facade specification:** Implemented with support for row declarations, repeat expressions, compact syntax, comments, and rule declarations
 2. **Static rule enforcement:** Distinct semantic checks with error/warning classification
@@ -35,8 +33,6 @@ The scope evolved slightly during implementation. More details are described in 
 ---
 
 ## What did you do?
-
-The complete implementation is available in [facade_compiler.py](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/facade_compiler.py)
 
 ### DSL Design
 
@@ -60,6 +56,8 @@ row 5: E E E D D E E E
 
 This grid-based representation provides a clear correspondence between source-level specification and spatial layout. The choice of single-character symbols was deliberate: it enables the compact syntax feature (described below) while remaining visually scannable.
 
+(The row numbers aren’t strictly needed right now since the rows could just be inferred by order, but I was thinking that this would keep the language flexible for future extensions where it might be useful to refer to specific rows (e.g., changing row heights or other row-level attributes).)
+
 ### Expressiveness and Usability Features
 
 To balance expressiveness with simplicity, the DSL supports several usability-oriented features:
@@ -80,13 +78,7 @@ To balance expressiveness with simplicity, the DSL supports several usability-or
 
 ### Design Rationale
 
-The DSL intentionally avoids geometric coordinates, numeric dimensions, or continuous values. By focusing on symbolic structure, the language:
-
-- Simplifies parsing and semantic analysis
-- Enables clear error reporting at the language level
-- Allows the same IR to be reused for multiple back-end targets (SVG, JSON, or potentially image generation prompts)
-
-The grammar is regular and unambiguous, making it amenable to simple hand-written parsing without requiring a parser generator.
+The DSL intentionally avoids geometric coordinates, numeric dimensions, or continuous values. By symbolic structure, the facade is described with a small set of symbols laid out on a grid, indicating relationships such as two windows sitting next to each other, without specifying exact dimensions or coordinates.
 
 ---
 
@@ -96,53 +88,43 @@ The grammar is regular and unambiguous, making it amenable to simple hand-writte
 
 I implemented a hand-written lexer that performs character-level scanning. The lexer maintains source location tracking (line and column) for error reporting.
 
-**Token types recognized:**
-
-- Keywords: `row`, `rule`
-- Symbols: `E`, `W`, `S`, `D`, `C`
-- Integers (for row numbers and repeat counts)
-- Punctuation: `:` (colon), `*` (multiply for repeats)
-- Identifiers (for rule names and symbol sequences)
-
-**Key design decisions:**
-
 - **Invalid character detection:** The lexer explicitly rejects characters not in the DSL's alphabet (punctuation, Unicode, emoji). This catches input errors immediately rather than propagating malformed tokens to the parser.
 
 - **Negative number handling:** Rather than tokenizing `-` as a separate operator, the lexer detects the pattern `-[digit]` and reports "Negative numbers not allowed" directly. This provides clearer error messages than a generic parse error.
 
-- **Symbol sequence recognition:** When the lexer encounters a multi-character word like `EWCWE`, it checks if all characters are valid symbols. If so, it emits a single `IDENTIFIER` token that the parser later expands. This enables compact syntax without complicating the grammar.
+- **Symbol sequence recognition:** When the lexer encounters a multi-character word like `EWCWE`, it checks if all characters are valid symbols. If so, it emits a single `IDENTIFIER` token that the parser later expands.
 
-- **Error handling:** Lexical errors are reported but do not prevent continued scanning. This allows the compiler to report multiple errors in a single pass, improving the user experience during iterative development.
+- **Error handling:** Lexical errors are reported but do not prevent continued scanning. This allows the compiler to report multiple errors in a single pass.
 
 ### Parser Implementation
 
-The parser is a hand-written top-down predictive parser that consumes the token stream and constructs an AST consisting of:
+The parser is a hand-written top-down parser that consumes the token stream and constructs an AST consisting of:
 
-- **Program:** The root node containing rules and rows
-- **RuleDecl:** A rule declaration with name and value(s)
-- **RowDecl:** A row with its number and list of cells
-- **Cell:** A single symbol at a source location
-- **RepeatExpr:** A symbol with a repeat count
+- **program:** The root node containing rules and rows
+- **rule_decl:** A rule declaration with name and value(s)
+- **row_decl:** A row with its number and list of cells
+- **cell:** A single symbol at a source location
+- **repeat_expr:** A symbol with a repeat count
 
 **Grammar (EBNF):**
 
 ```
 program     ::= rule_decl* row_decl+
 rule_decl   ::= 'rule' IDENTIFIER ':' rule_value+
+rule_value  ::= INTEGER | IDENTIFIER
 row_decl    ::= 'row' INTEGER ':' cell+
-cell        ::= SYMBOL | repeat_expr | symbol_sequence
+cell        ::= SYMBOL | repeat_expr
 repeat_expr ::= SYMBOL '*' INTEGER
+SYMBOL      ::= 'E' | 'W' | 'S' | 'D' | 'C'
 ```
 
 **Note on Grammar Classification:** This grammar is regular, and the structure is purely sequential without nesting. The language could equivalently be expressed as a regular expression:
 
 ```
-(rule IDENTIFIER : value+)* (row INTEGER : (SYMBOL | SYMBOL * INTEGER)+)+
+(rule IDENTIFIER : rule_value+)* (row INTEGER : (SYMBOL | SYMBOL '*' INTEGER)+)+
 ```
 
-**Note on Parser Classification:** The parser follows a top-down, predictive parsing strategy with one function per major grammar production (`parse()`, `parse_rule()`, `parse_row()`, `parse_cells()`). It is not strictly a recursive-descent parser because no function calls itself—the grammar's repetition operators (`*` and `+`) are implemented with iterative `while` loops rather than recursive calls. This iterative approach is natural for a regular grammar where recursion is unnecessary. The parser uses single-token lookahead via `check()` to predict which production to apply, making it a predictive parser.
-
-**Key design decisions:**
+**Note on Parser Classification:** The parser follows a top-down parsing strategy with one function per major grammar production (`parse()`, `parse_rule()`, `parse_row()`, `parse_cells()`). It is not strictly a recursive-descent parser because no function calls itself—the grammar's repetition operators (`*` and `+`) are implemented with iterative `while` loops rather than recursive calls. This iterative approach is natural for a regular grammar where recursion is unnecessary. The parser uses single-token lookahead via `check()` to predict which production to apply, making it a predictive parser.
 
 - **Error recovery:** When a syntax error is detected (e.g., missing colon), the parser calls `sync_to_row()` to skip tokens until the next `row` keyword. This prevents cascading errors and allows multiple independent errors to be reported.
 
@@ -160,63 +142,16 @@ The semantic analyzer transforms the parsed AST into a normalized grid represent
 
 ### Grid Construction and Normalization
 
-**Step 1: Build initial grid**
-
-The analyzer iterates over row declarations (sorted by row number) and populates a 2D array. If row numbers have gaps (e.g., rows 1, 3, 5 are specified), intermediate rows are initialized as empty lists.
-
-**Step 2: Normalize grid dimensions**
-
-After construction, the grid may be jagged (rows of different lengths). The normalizer:
-
-- Computes the maximum row width
-- Pads shorter rows with `E` (empty) cells
-- Records which cells were auto-filled in metadata
-
-This guarantees a rectangular grid for all downstream processing.
+The analyzer builds a 2D grid from row declarations, filling any gaps in row numbering with empty rows and padding shorter rows with `E` cells to ensure a rectangular grid. Auto-filled cells are tracked in metadata to distinguish compiler-inferred content from explicit specification.
 
 ### Architectural Rule Checks
 
-#### Door Rule
+- **Door Rule (error):** Door cells in each column must form a contiguous vertical segment extending to the ground floor.
+- **Chimney Rule (error):** Each connected component of chimney cells (using 4-connectivity flood-fill) must reach the top row.
+- **Window Spacing Rule (warning):** If `min_window_spacing` is declared, adjacent windows in each row must meet the minimum horizontal distance.
+- **Symmetry Detection (warning):** Rows that differ from their horizontal mirror are flagged as asymmetric.
 
-Doors have strict placement requirements that mirror real-world construction:
-
-- All door cells in a column must form a contiguous vertical segment
-- The segment must extend to the ground floor (bottom row)
-
-The implementation:
-
-1. Groups door cells by column
-2. For each column, verifies the bottom row is included
-3. Checks for gaps by ensuring consecutive row indices differ by exactly 1
-
-Violations produce errors because a floating or disconnected door is structurally invalid.
-
-#### Chimney Rule
-
-Chimneys present a more complex connectivity problem:
-
-- Chimney cells may form arbitrary connected components (including diagonal patterns via 4-connectivity)
-- Each component must connect to the roof (top row)
-
-The implementation uses flood-fill to identify connected components. For each component, the analyzer checks if any cell has row index 0 (top row). Components that don't reach the roof produce errors.
-
-#### Window Spacing Rule
-
-If the rule `min_window_spacing` is declared, the analyzer checks horizontal distances between adjacent windows in each row. Unlike door and chimney rules, spacing violations produce warnings only rather than errors, because tight window spacing may be intentional in some architectural styles.
-
-#### Symmetry Detection
-
-The analyzer compares each row with its horizontal mirror. Asymmetric rows produce warnings to inform the designer of potential stylistic inconsistency. This is informational rather than prescriptive.
-
-### Error Classification
-
-I deliberately distinguished between errors (fatal violations) and warnings (stylistic concerns):
-
-- **Error:** Structurally invalid facade. Compilation halts; no output generated.
-- **Warning:** Stylistic issue or optional constraint violation. Compilation continues; warning recorded in output.
-- **Info:** Informational message (e.g., auto-fill notification). No effect on compilation.
-
-This classification prevents the compiler from being overly restrictive while still catching genuine architectural errors.
+Structural violations (doors, chimneys) produce errors and halt compilation, while stylistic concerns (spacing, symmetry) produce warnings only.
 
 ---
 
@@ -242,51 +177,47 @@ The SVG generator produces a visual representation where each cell is rendered a
 
 For environments that don't support SVG, the compiler can produce PNG output via CairoSVG.
 
+**Example Facades:**
+
+Version 1:
+![Facade 1](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/facade_1.svg)
+
+Version 2:
+![Facade 2](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_2/facade_2.svg)
+
+Version 3:
+![Facade 3](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_3/facade_3.svg)
+
+Version 4:
+![Facde 4](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/facade_4.svg)
+
+Version 5:
+![Facade 5](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_5/facade_5.svg)
+
 ---
 
 ## What were the hardest parts to get right?
 
-### 1. Separating Syntax Errors from Semantic Errors
+### 1. Error Classification
 
-The distinction between lexical, syntactic, and semantic errors was initially blurry. For example:
-
-- Is `@` an invalid character (lexical) or an invalid symbol (semantic)?
-- Is `row 1: X E E` a syntax error or a semantic error?
-
-I resolved this by establishing boundaries:
-
-- **Lexical errors:** Characters not in the DSL's alphabet (punctuation, Unicode, emoji)
-- **Syntax errors:** Malformed constructs (missing colons, invalid repeat expressions, missing row numbers)
-- **Semantic errors:** Valid syntax with invalid meaning (floating doors, disconnected chimneys, invalid symbol letters like `X`)
-
-The key insight was that `X` is a valid identifier syntactically but not a valid symbol semantically. The parser accepts it and emits a semantic error during cell processing.
+I classified errors by compiler phase: lexical errors for invalid characters (e.g., `@`, emoji), syntax errors for malformed constructs (e.g., missing colons), and semantic errors for valid syntax with invalid meaning (e.g., floating doors, unknown symbols like `X`).
 
 ### 2. Chimney Connectivity Analysis
 
-Initially, I tried a simple positional check (e.g., chimney cells must be on the top row). This failed for common patterns like diagonal chimneys:
+Initially, I tried a simple positional check (e.g., chimney cells must be on the top row). This failed for common patterns where chimneys are connected and continuous to reach the ground:
 
 ```
 row 1: C E E
-row 2: C C E
-row 3: E C C
-row 4: E E C
+row 2: C C S
+row 3: S C C
+row 4: S S C
 ```
 
-This chimney is valid. It connects to the roof through a diagonal path. The flood-fill approach correctly handles this by treating chimneys as connected components rather than isolated cells.
+This chimney is valid. It connects to the top through a diagonal path. The flood-fill approach correctly handles this by treating chimneys as connected components rather than isolated cells.
 
 A subtle bug emerged with multiple chimney components: the algorithm must check each component independently, not just verify that some chimney reaches the roof.
 
-### 3. Zero-Count Repeat Expressions
-
-The expression `E*0` presented an interesting design decision. Options:
-
-1. Treat as syntax error (reject)
-2. Treat as single cell (emit one `E`)
-3. Treat as zero cells (emit nothing)
-
-I chose option 3 because it's the most mathematically consistent interpretation and enables useful patterns like conditional exclusion. The implementation simply doesn't add any cell to the AST when count is 0.
-
-### 4. Normalization Without Hiding Bugs
+### 3. Normalization Without Hiding Bugs
 
 Auto-filling rows and padding widths improved usability but introduced a risk: it could mask user errors. If a user forgets a cell, the compiler silently adds an empty cell, which potentially hiding bugs.
 
@@ -298,16 +229,9 @@ I addressed this by:
 
 This makes compiler intervention visible without treating it as an error.
 
-### 5. Error Recovery and Multiple Error Reporting
+### 4. Error Recovery and Multiple Error Reporting
 
-Fixing one error often revealed another, requiring multiple compile-fix cycles.
-
-I implemented error recovery in both the lexer and parser:
-
-- **Lexer:** Reports invalid characters but continues scanning
-- **Parser:** Uses `sync_to_row()` to skip to the next row declaration after errors
-
-This required careful state management to ensure the compiler doesn't report spurious follow-on errors while still catching genuine independent errors.
+I implemented basic error recovery so the compiler can report multiple errors in a single pass: the lexer reports invalid characters but continues scanning, and the parser skips to the next `row` keyword after encountering a syntax error.
 
 ### 6. Comprehensive Test Coverage
 
@@ -328,8 +252,6 @@ I used an LLM as a test ideation tool: after implementing a feature, I asked it 
 ### Quantitative Evaluation
 
 The testing results printout is available in [test.txt](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/test/test.txt)
-
-Comprehensive testing is hard. There is no existing benchmark. After implementing and validating each new rule, I use an LLM for test ideation (e.g., "Give me edge cases to test user inputs containing characters outside the defined DSL elements.") and then manually determine and verify the expected behavior. This approach helped broaden test coverage to corner cases that I wouldn't have considered. The categorized test suite made it easy to verify that each feature worked in isolation and in combination.
 
 ### Test Suite Composition
 
@@ -359,11 +281,7 @@ The test suite comprises 146 facade programs organized into 22 categories:
 | Combo | 4 | Feature combinations |
 | ZeroRepeat | 9 | Zero-count repeat expressions |
 
-All 146 tests pass, demonstrating:
-
-- **Functional correctness:** The compiler accepts valid programs and rejects invalid ones
-- **Rule enforcement precision:** Architectural constraints are enforced exactly as specified
-- **Robustness:** The compiler handles syntactic variations, malformed input, and edge cases gracefully
+All 146 tests pass.
 
 ### Stress Test Results
 
@@ -378,12 +296,6 @@ The compiler handles extreme inputs without issues:
 
 I output 5 facade examples (json, svg, png) together with image gen visualizations which are available in the [example folder](https://github.com/itingtsai/Facade_Layout_Compiler/tree/main/example).
 
-Beyond automated testing, I validated output quality through visual inspection:
-
-- **SVG correctness:** Generated SVGs accurately represent the input grid with correct colors and positioning
-- **Error message quality:** Error messages include source locations and actionable hints
-- **Warning appropriateness:** Symmetry and spacing warnings provide useful feedback without blocking compilation
-
 ### Additional Experiment
 
 I conducted an experiment using an image generation model (Nano Banana) to produce photorealistic facade images from compiled layouts. The workflow:
@@ -395,6 +307,34 @@ I conducted an experiment using an image generation model (Nano Banana) to produ
 **Text prompt format:** *Generate a [-style] facade of a [low-rise/mid-rise/high-rise] building based on this image, where W = window, D = door, S = spacing, E = empty, and C = chimney.*
 
 The results were correct most of the time. The model understood the general layout but sometimes struggled with precise spatial positioning. This suggests the compiled output could serve as input for generative design, though current models may need additional guidance.
+
+**Facade Example 1:**
+
+PNG output:
+![PNG output](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/facade_1.png)
+
+Modernist-style:
+![Modernist-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Modernist-style.png)
+
+Biophilic-style:
+![Biophilic-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Biophilic-style.png)
+
+Postmodern-style:
+![Postmodern-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_1/Postmodern-style.png)
+
+**Facade Example 2:**
+
+PNG output:
+![PNG output](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/facade_4.png)
+
+Bauhaus-style:
+![Bauhaus-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Bauhaus-style.png)
+
+Neo-Futurist-style:
+![Neo-Futurist-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Neo-Futurist-style.png)
+
+Post-and-Beam Modern-style:
+![Post-and-Beam Modern-style](https://github.com/itingtsai/Facade_Layout_Compiler/blob/main/example/facade_4/Post-and-Beam%20Modern-style.png)
 
 ---
 
