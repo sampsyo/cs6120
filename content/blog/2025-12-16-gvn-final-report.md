@@ -19,6 +19,8 @@ This project implements **Global Value Numbering (GVN)** for Bril, following the
 
 A central theme of this project is that, in Bril, implementing GVN is inseparable from dealing with SSA engineering costs. While GVN itself removes redundancy, naïve SSA conversion can introduce significant overhead through phi nodes and copy instructions. A large portion of our effort therefore focused on making SSA practical enough that GVN’s benefits dominate its costs.
 
+All code for this project can be found at [this repository](https://github.com/adnan-armouti/cs6120/tree/main/final_project). Some components have been recycled (and extended) from previous class assignments.
+
 ## 1. Overview of the GVN Approach
 
 We implement the **dominator-tree value numbering with tables (DVNT)** variant of GVN. The algorithm traverses the dominator tree in depth-first order while maintaining a scoped table that maps canonicalized expressions to value numbers. Expressions computed in a block are visible to its dominated descendants but not to siblings, ensuring that table membership corresponds to dominance-based availability.
