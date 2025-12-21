@@ -18,7 +18,7 @@ I then modified Miri. Rust does not currently have a set of aliasing rules. Miri
 
 Running both of these implementation, I found the surprising result that Miri detected far more aliases than Rupta did. As an example, testing on the arena allocator [bumpalo](https://github.com/fitzgen/bumpalo) lead to rupta finding 31 possible aliases and Miri finding 1000. I suspect this is due to a similar reason to why my addition to Rupta overestimates possible aliases: Miri keeps track of all references pointing to a given memory location even if they have no chance of aliasing each other. This problem may be exasterbated by Miri working dynamically, which means repeat calls to the same function aliasing some allocation will add different items to the stack.
 
-**Success?**: Upfront, this project failed. After seeing the discrepency in these metrics, I found their comparison was not meaningful. At best, they measured the same thing, serving as proxies for the amount of aliasing in a given Rust project. However, I don't know how to make a convicing argument for this as it's possible for a project with many short immutable lived aliases pairs (the kind not breaking optimizations) look similar by these metrics to a project with long lived aliases between many pointers. A proper metric for measuring aliasing in the context of optimization would require some way to know if the aliases detected were important towards optimizations. That is, it would require using the aliases found by Rupta to fuel an optimization and comparing that to a similar optimization fueled by a profiling run of Miri.
+**Success?**: Being upfront, this project failed. After seeing the discrepency in these metrics, I found their comparison was not meaningful. At best, they measured the same thing, serving as proxies for the amount of aliasing in a given Rust project. However, I don't know how to make a convicing argument for this as it's possible for a project with many short immutable lived aliases pairs (the kind not breaking optimizations) look similar by these metrics to a project with long lived aliases between many pointers. A proper metric for measuring aliasing in the context of optimization would require some way to know if the aliases detected were important towards optimizations. That is, it would require using the aliases found by Rupta to fuel an optimization and comparing that to a similar optimization fueled by a profiling run of Miri.
 
 To my knowledge, `rustc` doesn't perform any complicated alias analysis, meaning preforming an evaluation of this sort would require writing such an analysis. I didn't have time to do that.  However, even if I did have time, it likely would not be fruitful. This is because Rust's aliasing rules don't lead to complicated cases when it comes to optimizing code. In reality, it is effectively a binary where some pointers and references must be treated like C pointers with very few aliasing guarentees, and others are given extremely strong aliasing guarentees, making mutable aliases, the type prevention optimizations undefined behavior. This can be cleanly lowered to LLVM by simply choosing when to add the `noalias` tag when lowering from MIR. LLVM then can perform alias analysis.
 
@@ -60,7 +60,7 @@ int b = foo(&a, &a);
 ```
 And, it becomes valid to optimize `foo` to `foo_opt`. Yay! By letting this hard to optimize and hard to check at compile time cases be undefined behavior, language designers leave room for compiler designers to make code go faster.
 
-Examples of annotations to make mutable aliasing undefined also occur at the IR level. LLVM's [noalias](https://llvm.org/docs/LangRef.html#noalias) is a very similar keyword to `restrict`. `restrict` actually gets compiled down to `noalias` when using `clang`. When using `-O1` or higher, it even optimizes `foo` to `foo_opt` (unrelated parts of the output removed for clarity):
+Examples of annotations to make mutable aliasing undefined also occur at the IR level. LLVM's [noalias](https://llvm.org/docs/LangRef.html#noalias) is a very similar keyword to `restrict`. `restrict` actually gets compiled down to `noalias` when using `clang`. When using `-O1` or higher, `clang` even optimizes `foo` to `foo_opt` (unrelated parts of the LLVM output removed for clarity):
 ```llvm
 define i32 @foo(ptr noalias %0, ptr %1) #0 {
   store i32 4120, ptr %0, align 4
@@ -76,17 +76,16 @@ These optimizations, and in general simpler reasoning about the correctness of c
 let x = 1;
 let shared_ref1 = &x;
 let shared_ref2 = &x;
-let _ = &shared_ref1;
+let _ = &shared_ref1; // Some valid reads
 let _ = &shared_ref2;
 let _ = &shared_ref1;
-*shared_ref1 = 2; // Rejected as shared reference `shared_ref1` Cannot be mutated.
+*shared_ref1 = 2;     // Rejected as shared reference `shared_ref1` cannot be mutated.
 
 // Mutable references
 let x = 1;
 let mut_ref1 = &mut x;
-let mut_ref2 = &mut x;
-*mut_ref2 = 2;
-let _ *mut_ref1; // Rejected as `mut_ref2` was modified previously.
+let _mut_ref2 = &mut x;
+let _ *mut_ref1;      // Rejected as `x` was borrowed a second time making _mut_ref2.
 ```
 
 The extra information attached to references gives the compiler significant extra information to prove things about the program. For example consider rewriting `foo`: 
@@ -107,8 +106,24 @@ define i32 @foo(ptr noalias %0, ptr noalias %1) #0 {
 ```
 This is the same LLVM output that the C code compiles to when using `restrict` (with an added `noalias` on `y` because it is also an `&mut`). It turns out this reasoning can be extrapolated, letting [most reference be marked as](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273) `noalias`. Though, a better way of saying this is the langauge's aliasing rules make sure not to preclude letting these optimizations occur.
 
-These restrictions to alias still do exist
-
+## When Aliasing Occurs
+Despite it being nice to not have to worry about mutable aliases, there are cases in which these guarentees cannot be easily applied. The most simple example is Rust's raw pointers. Raw pointers must exist, for example when doing FFI with C. To work raw pointers have to be C-like pointers, able to alias and be untracked by the compiler as `rustc` has no way to track what goes on in `C` code:
+```rust
+let x = 1;
+let r1 = &mut x as *mut i32;
+let r2 = &mut x as *mut i32;
+let _ = unsafe { *r1 }; // Unsafe block required to dereference raw pointer `r1`
+```
+The compiler does not reject the above even though it is effectively the same thing as what happened using just mutable references as there is no guarentee on `*mut` not aliasing other `*mut`. One notable thing which pops up in this example is an [unsafe block](https://doc.rust-lang.org/nomicon/what-unsafe-does.html). This makes sense, as using raw pointers it becomes very easy to invoke undefined behavior. Consider the following code passing aliasing mutable references into the `foo` from above:
+```rust
+let x = 1;
+let r1 = &mut x as *mut i32;
+let r2 = &mut x as *mut i32;
+unsafe {
+  foo(&mut *r1, &mut *r2);
+}
+```
+Mutable refer
 
 It's worth noting these rules do not preclude all mutable aliasing. Scanning a couple Rust projects we can see
 
