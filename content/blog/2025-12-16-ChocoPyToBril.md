@@ -1,11 +1,3 @@
-+++
-title = "ChocoPy-To-Bril: Translating ChocoPy to Bril"
-[extra]
-latex = false
-bio = """
-  Jonathan Brown is an undergraduate in Advanced Compilers, majoring in Computer Science
-"""
-+++
 ### What was the goal
 The goal was to implement a frontend that translates ChocoPy to Bril, utilizing an existing ChocoPy parser and generate correct Bril code for a representative subset of the language. Features that I would cover concerning ChocoPy's language will be:
 - Types: Integers, Booleans
