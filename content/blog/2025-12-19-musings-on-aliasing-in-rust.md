@@ -9,6 +9,21 @@ name = "Jeremy Ku-Benjet"
 +++
 
 # Musings on Aliasing in Rust for Optimization
+## Experience Report
+**Goal**: I planned to evaluate how well static analysis can do in finding aliasing pointers in the context of performance optimization by comparing the results of [Rupta's](https://github.com/rustanlys/rupta) static analysis to logs of Miri running on various Rust projects. Specifically I wanted to compare the number of aliasing pointers found by Rupta at compile time to the number of aliasing pointers found by miri when run on various Rust project's tests. If these numbers were similar, it would suggest Rust is particularly well suited for alias analysis. If they are significantly different, it would suggest either alias analysis is hard in Rust, more similar to C for example, or more effort could be spent to leverage Rust's aliasing guarentees.
+
+**What I Did**: I first implemented finding possible aliases using Rupta. Rupta performs a context sensitive analysis analysis to dump the memory locations, represented by MIR variables, that any pointer or reference can point to. To find the pointers which have a chance at aliasing each other, I reversed this relation, i.e. I dumped a map from memory locations to pointers. It is possible to do a better job at pointer analysis here. Simply reversing this relation does not take into account pointers which go out of scope before others are created. Verifying on small hand created tests this modification seemed to work. It's hard to verify the code on larger projects, but the numbers intutively seemed reasonable. Spot checking the functions which were noted to have lots of aliases also seemed reasonable.
+
+I then modified Miri. Rust does not currently have a set of aliasing rules. Miri implements multiple models of aliasing rules, but the most popular is called [stacked borrows](https://github.com/rust-lang/unsafe-code-guidelines/blob/5854f2adf2081edaeabd77d1241365a5f6b4332a/wip/stacked-borrows.md). In short, for each memory location, Miri keeps track of a stack of items. Each item represents a pointer with different properties. There are then rules for when items are pushed and poped off the stack based on what references are created pointing to a given memory location and what operations are performed on these pointers. I recorded various metrics on stack sizes, in particular number of consecutive items of the same type and the total maximum stack sizes.
+
+Running both of these implementation, I found the surprising result that Miri detected far more aliases than Rupta did. As an example, testing on the arena allocator [bumpalo](https://github.com/fitzgen/bumpalo) lead to rupta finding 31 possible aliases and Miri finding 1000. I suspect this is due to a similar reason to why my addition to Rupta overestimates possible aliases: Miri keeps track of all references pointing to a given memory location even if they have no chance of aliasing each other. This problem may be exasterbated by Miri working dynamically, which means repeat calls to the same function aliasing some allocation will add different items to the stack.
+
+**Success?**: Upfront, this project failed. After seeing the discrepency in these metrics, I found their comparison was not meaningful. At best, they measured the same thing, serving as proxies for the amount of aliasing in a given Rust project. However, I don't know how to make a convicing argument for this as it's possible for a project with many short immutable lived aliases pairs (the kind not breaking optimizations) look similar by these metrics to a project with long lived aliases between many pointers. A proper metric for measuring aliasing in the context of optimization would require some way to know if the aliases detected were important towards optimizations. That is, it would require using the aliases found by Rupta to fuel an optimization and comparing that to a similar optimization fueled by a profiling run of Miri.
+
+To my knowledge, `rustc` doesn't perform any complicated alias analysis, meaning preforming an evaluation of this sort would require writing such an analysis. I didn't have time to do that.  However, even if I did have time, it likely would not be fruitful. This is because Rust's aliasing rules don't lead to complicated cases when it comes to optimizing code. In reality, it is effectively a binary where some pointers and references must be treated like C pointers with very few aliasing guarentees, and others are given extremely strong aliasing guarentees, making mutable aliases, the type prevention optimizations undefined behavior. This can be cleanly lowered to LLVM by simply choosing when to add the `noalias` tag when lowering from MIR. LLVM then can perform alias analysis.
+
+**What Now**: This report is embarrisingly light on fun implementations and emperical data, though the paragraph above hopefully explains the reason for the latter. The majority of time on this project went towards understanding alising in Rust, which is surprisingly complicated and ill defined. Given this, I'd like to conclude with some musings on aliasing. Much of these thoughts will already be common knowledge, though I'll try to bring an interesting throughline through them.
+
 ## Optimization using Aliasing
 Compilers care about aliasing. Consider the following example C code[^1]:
 ```c
@@ -55,7 +70,7 @@ define i32 @foo(ptr noalias %0, ptr %1) #0 {
 ```
 
 ## Aliasing in Rust
-The optimizations and, in general, simpler reasoning about the correctness of code[^3] are motivations for Rust's strict aliasing rules. It's worth reviewing the big ideas of these rules (the precise rules are really complicated, see [The Rustnomicon](https://doc.rust-lang.org/nomicon/ownership.html) on ownership for more detail). In addition to C-like pointers, Rust has *references*. These are values which identify a memory location, like pointers, but unlike pointers the compiler enforces rules about their use. There are two types, immutable or shared references, `&`, and mutable references `&mut`. The compiler makes sure shared references are never mutated and makes sure mutable references pointing to a location are never read or written to after another reference pointing to that same location is read or written to. The difference can be seen in the example below:
+These optimizations, and in general simpler reasoning about the correctness of code[^3], are motivations for Rust's strict aliasing rules. It's worth restating the big ideas of these rules (the precise rules are complicated and currently undecided upon, though a popular model is [stacked borrows](https://github.com/rust-lang/unsafe-code-guidelines/blob/5854f2adf2081edaeabd77d1241365a5f6b4332a/wip/stacked-borrows.md)). In addition to C-like pointers, Rust has *references*. These are values which identify a memory location, like pointers, but unlike pointers the compiler enforces rules about their use. There are two types, immutable or shared references, `&`, and mutable references `&mut`. The compiler makes sure shared references are never mutated and makes sure mutable references pointing to a location are never read or written to after another reference pointing to that same location is read or written to. The difference can be seen in the example below:
 ```rust
 // Shared references
 let x = 1;
@@ -90,6 +105,15 @@ define i32 @foo(ptr noalias %0, ptr noalias %1) #0 {
   ret i32 4120
 }
 ```
+This is the same LLVM output that the C code compiles to when using `restrict` (with an added `noalias` on `y` because it is also an `&mut`). It turns out this reasoning can be extrapolated, letting [most reference be marked as](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273) `noalias`. Though, a better way of saying this is the langauge's aliasing rules make sure not to preclude letting these optimizations occur.
+
+These restrictions to alias still do exist
+
+
+It's worth noting these rules do not preclude all mutable aliasing. Scanning a couple Rust projects we can see
+
+There are cases for which aliases 
+The cases in which a `noalias` cannot be inserted are mainly to do with unsafe code[^4].
 
 TODO: POINT OUT THE CODE AND SHOW NOALIAS IS ALWAYS A THING EXCEPT FOR THE WEIRD INTERIOR MUTABILITY PINNING THING, THOUGH MAYBE IGNORE THAT FOR NOW. THEN SHOW SOME NUMBERS WHICH SHOW THAT ALIASING STILL IS A THING BY RUNNING BUMPALO AND AHO-COSICK AND MAYBE A COUPLE OTHER THINGS. CONCLUDE WITH SAYING ALIASING IS A THING AND HAS TO BE BUT WITH STRICT ALIASING RULES WE CAN STILL GET STRONG GUARENTEES.
 
@@ -104,3 +128,4 @@ TODO: The argument I want to make is there is significant aliasing going on in r
 [^1]: I'm taking this example from the [Stacked Borrows paper](https://dl.acm.org/doi/10.1145/3371109) which uses it to show a similar thing, though with different exposition.
 [^2]: An interesting corrolary of this is that at compile time it's possible for pointers of the same type to have to be treated differently depending on how they were created. In other words, pointers have some extra data attached to them the compiler has to keep track of. This is sometimes called *provenance*. Ralf Jung has [two good](https://www.ralfj.de/blog/2018/07/24/pointers-and-bytes.html) [articles on this](https://www.ralfj.de/blog/2020/12/14/provenance.html) arguing for it's existance. In some languages, for example Rust, provenance is in this interesting position where [it is not yet fully specified, but it still has to be reasoned about](https://doc.rust-lang.org/std/ptr/index.html#provenance).
 [^3]: It's hard to give an nice self contained argument about this, but hopefully it should make sense with some thinking if you aren't already convinced. Another place to start is how this makes it easier to not do data races.
+[^4]: [Painfully there is another case documented here](https://github.com/rust-lang/rust/issues/63818). This is roughly to do with 
