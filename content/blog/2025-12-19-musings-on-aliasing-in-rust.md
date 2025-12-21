@@ -106,7 +106,7 @@ define i32 @foo(ptr noalias %0, ptr noalias %1) #0 {
 ```
 This is the same LLVM output that the C code compiles to when using `restrict` (with an added `noalias` on `y` because it is also an `&mut`). It turns out this reasoning can be extrapolated, letting [most reference be marked as](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273) `noalias`. Though, a better way of saying this is the langauge's aliasing rules make sure not to preclude letting these optimizations occur.
 
-## When Aliasing Occurs
+## When Mutable Aliasing Occurs
 Despite it being nice to not have to worry about mutable aliases, there are cases in which these guarentees cannot be easily applied. The most simple example is Rust's raw pointers. Raw pointers must exist, for example when doing FFI with C. To work raw pointers have to be C-like pointers, able to alias and be untracked by the compiler as `rustc` has no way to track what goes on in `C` code:
 ```rust
 let x = 1;
@@ -118,12 +118,20 @@ The compiler does not reject the above even though it is effectively the same th
 ```rust
 let x = 1;
 let r1 = &mut x as *mut i32;
-let r2 = &mut x as *mut i32;
 unsafe {
-  foo(&mut *r1, &mut *r2);
+  foo(&mut *r1, &mut x);
 }
 ```
-Mutable refer
+`r1` and `&mut x` alias so making mutable references from them creates aliasing mutable references. This leads to undefined behavior, manifesting in an incorrect result when when calling `foo` as it gets optimized to `foo_opt` because it's args are `noalias`. Another way too look at this is `rustc` cannot attach `noalias` to the args of  `bar(x: *mut i32, y: *mut i32)` in the emitted llvm.
+
+Though, passing around raw pointers is probably unlikely to occur in most Rust code as dereferencing them is unsafe. It's more likely a safe abstraction allowing mutating shared references, *interior mutability* would be used. In Rust these are called `Cell`s. A function `bar` on two possibly aliasing mutable references is contrived, so a practical example of using this is creating a struct which you want shared references to but [whose operations cache themselves, requiring mutating some internal field](https://doc.rust-lang.org/std/cell/#implementation-details-of-logically-immutable-methods). The various `Cell`s are built off of the [primitive](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html) `UnsafeCell`. `UnsafeCell`s provide a method `get()` which gets mutable aliases to it's interior data. For example:
+```rust
+let x: &UnsafeCell<i32> = &4120.into();
+let r1 = x.get();
+let r2 = x.get();
+// r1 and r2 are aliasing *mut i32s
+```
+The super power of `UnsafeCell` in the above is it is perfectly defined behavior to call `x.get()` and use the mutable aliases to shared memory it returns. However, with mutable alias to its memory, `&UnsafeCell` looses the ability to be treated like a normal shared reference and the compiler builds in special support for it. As with the above raw pointers, one way this manefest is when `&UnsafeCell` (or any of it's derivatives like `Cell` or `RefCell`) is used as a function arg, it cannot be annotated with `noalias` when compiled to LLVM.
 
 It's worth noting these rules do not preclude all mutable aliasing. Scanning a couple Rust projects we can see
 
