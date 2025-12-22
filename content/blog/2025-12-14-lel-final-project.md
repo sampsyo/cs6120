@@ -17,7 +17,7 @@ LaTeX is a common language for writing professional documents like academic pape
 # Problem Statement
 This project asks: *can we automatically turn real LaTeX equations into executable code via a small compiler?*  
 I build a pipeline that:
-- normalizes LaTeX math from real sources (using MiTeX),
+- normalizes LaTeX math from real sources (using [MiTeX](https://github.com/mitex-rs/mitex)),
 - parses a LaTex Equation Language (LEL) supporting arithmetic, conditionals, and function calls, and
 - compiles each accepted equation to LLVM IR and checks it against a reference evaluator.
 
