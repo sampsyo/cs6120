@@ -26,7 +26,7 @@ By design, LEL only targets **scalar** expressions with simple function headers 
 # Implementation
 I will detail the implementation in this section. I will first introduce the datasets I use, explain the components and compare what I proposed vs. what's actually implemented, and then detail how I implemented each component.
 
-My code is open sourced at [link](https://github.com/YoruCathy/cs6120_final_project).
+My code is [open source on GitHub](https://github.com/YoruCathy/cs6120_final_project).
 ## Dataset
 ### A tiny hand-written set
 A curated suite of 24 hand-written LEL functions covering arithmetic, powers, fractions, zero-argument functions, conditional expressions, and calls. 
