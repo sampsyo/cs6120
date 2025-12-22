@@ -38,7 +38,7 @@ The newly vectorized loop executes approximately four times faster! However, thi
 
 ### Superword Level Parallelism (SLP)
 
-[Superword level parallelism (SLP)](https://dl.acm.org/doi/10.1145/358438.349320), offers a solution to the latter: via grouping of instructions in straight line code by their operation, different instructions can be interleaved such that entire basic blocks can be vectorized. Indeed, with loop unrolling this can achieve the same level of parallelism as classic loop parallelism. In theory there is no limit to this parallelism, but practically SLP rarely expands beyond a single basic block. This arises becauase of the complexity from reordering in a CFG. Thus, optimizations in nearby code is severly limited, even if this would achieve large boosts to speed.
+[Superword level parallelism (SLP)](https://dl.acm.org/doi/10.1145/358438.349320) offers a solution to the latter: via grouping of instructions in straight line code by their operation, different instructions can be interleaved such that entire basic blocks can be vectorized. Indeed, with loop unrolling this can achieve the same level of parallelism as classic loop parallelism. In theory there is no limit to this parallelism, but practically SLP rarely expands beyond a single basic block. This arises becauase of the complexity from reordering in a CFG. Thus, optimizations in nearby code is severly limited, even if this would achieve large boosts to speed.
 
 Example of SLP grouping:
 
