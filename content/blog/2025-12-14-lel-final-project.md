@@ -31,12 +31,12 @@ My code is [open source on GitHub](https://github.com/YoruCathy/cs6120_final_pro
 ### A tiny hand-written set
 A curated suite of 24 hand-written LEL functions covering arithmetic, powers, fractions, zero-argument functions, conditional expressions, and calls. 
 ### Hugging face latex-formulas dataset 
-`latex-formulas` is a large-scale dataset of images paired with corresponding LaTeX equations. I downloaded the cleaned Parquet shards from the Hugging Face [dataset](https://huggingface.co/datasets/OleehyO/latex-formulas/tree/main/cleaned_formulas)`latex-formulas` and extracted the `latex_formula` column to build a text-only corpus. This gives me 552,339 distinct equations.
+`latex-formulas` is a large-scale dataset of images paired with corresponding LaTeX equations. I downloaded the cleaned Parquet shards from the Hugging Face [dataset](https://huggingface.co/datasets/OleehyO/latex-formulas/tree/main/cleaned_formulas) `latex-formulas` and extracted the `latex_formula` column to build a text-only corpus. This gives me 552,339 distinct equations.
 ### Equations from ArXiv
 For the arXiv part of the evaluation, I built a corpus by querying the cs.RO (robotics) category for 2,989 papers, downloading their LaTeX source tarballs, and scanning all .tex files for math environments such as equation and align. Each extracted equation is stored as a JSONL record containing the arXiv ID, source file path, environment type, and raw LaTeX string. This gives me a realistic set of 42,896 in-the-wild equations.
 
 ## Components Implemented
-I tried my best to implement most of the components in the proposal but have to pivot on some of the festures. I summarize the components as follows:
+I tried my best to implement most of the components in [the proposal](https://github.com/sampsyo/cs6120/issues/610) but have to pivot on some of the festures. I summarize the components as follows:
 ### Fully achieved
 - **LEL language design** for:
   - arithmetic expressions
@@ -77,14 +77,14 @@ For each LEL function that passes parsing and is supported by the reference eval
 
 # Evaluation
 I evaluate LEL as a compiler rather than just a parser: for every accepted equation I generate LLVM IR, compile it with llc/clang, and link it against an auto-generated C test driver that calls the function on a small grid of inputs and checks the result against a Python reference evaluator over the same AST (within a fixed floating-point tolerance). 
-I evaluated on two aspests. First, the performance (speed). 
+I evaluated on two aspects. First, the performance (speed). 
 
 And second, the correctness.
 I run this pipeline on three corpora: (1) a tiny hand-written suite of 24 LEL functions, where all 22 non-recursive functions pass end-to-end; (2) a large sample from the Hugging Face latex-formulas dataset, where 360 MiTeX-normalized equations match the LEL shape and 119 of them pass the full pipeline; and (3) an arXiv robotics corpus, where 33 equations match the LEL subset and 9 compile and validate successfully. In all cases, failures are classified as parse errors, runtime errors in the reference semantics (e.g., division by zero or unknown symbols), or unsupported recursion.
 
 In this section, I will first summary the overall result, and then dive deeper into the result on each dataset, and finally analyze the failure mode.
 ## Result overview
-### Correstness
+### Correctness
 | Corpus                     | Raw equations | MiTeX OK → Typst | LEL-parsable | End-to-end OK |
 |----------------------------|--------------:|-----------------:|-------------:|--------------:|
 | Hand-written test suite    |            24 |               24 |           22 |           22  |
@@ -149,8 +149,6 @@ Overall, the failures are dominated by front-end issues (LaTeX constructs and Mi
 # Hardest part
 The hardest part of this project was not the LLVM backend, but making the front-end survive real LaTeX in the wild. In theory, LEL only needs a tiny, clean subset of math (function headers + arithmetic + simple conditionals). In practice, every step of getting from a paper's equation to that nice little subset was painful: MiTeX normalization introduces its own macros (mitexsqrt, mitexarray, lr(...)), arXiv sources are full of custom commands, arrays, matrices, integrals, and decorated identifiers, and Typst's output format doesn't line up neatly with my very simple identifier and expression grammar. A huge amount of time went into massaging and filtering equations, chasing down weird corner cases, and deciding whether to extend the grammar or just reject a construct. I have to make some pivots against the original proposal but I managed to comeup with a decent amount of featured and a thorough evaluation.
 
-# Star?
-I think I deserve a star for the implementation and evaluation.
 
 # GenAI usage
 I used ChatGPT and Copilot throughout this project. 
@@ -163,5 +161,5 @@ I used GPT to:
 - Write the readme for the code repo
   
 I used Copilot to:
-- Completet the code with the inline plugin
+- Complete the code with the inline plugin
 - Debug when there are issues.
