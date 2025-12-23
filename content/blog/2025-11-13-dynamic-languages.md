@@ -13,10 +13,6 @@ name = "Tobi Weinberg"
 name = "Adnan Armouti"
 +++
 
-# When Prototypes Learned to Run Fast: SELF and the Birth of Adaptive Optimization
-
-*By Jake Hyun, Tobi Weinberg, and Adnan Armouti*
-
 ## Introduction: The Core Contribution of SELF
 
 The SELF paper is often misunderstood as focusing purely on language design (prototypes, dynamic typing). Its true contribution lies in being one of the earliest successful attempts to take a **maximally flexible language model and make it fast** using **adaptive optimization**.
