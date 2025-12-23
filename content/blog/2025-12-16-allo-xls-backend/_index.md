@@ -15,9 +15,7 @@ name = "Cynthia Shao"
 name = "Nikil Shyamsunder"
 +++
 
-## What's the Goal?
-
-Hardware accelerator design increasingly relies on portable compilation flows that can target diverse backends without extensive manual retargeting. This project explores building a compilation pathway from Allo, a Pythonic MLIR-based hardware accelerator DSL, to Google's XLS hardware synthesis ASIC backend. 
+Hardware accelerator design increasingly relies on portable compilation flows that can target diverse backends without extensive manual retargeting. This project explores building a compilation pathway from [Allo](https://github.com/cornell-zhang/allo), a Pythonic [MLIR](https://mlir.llvm.org/)-based hardware accelerator DSL, to [Google's XLS hardware synthesis](https://google.github.io/xls/) ASIC backend. 
 
 Our compiler implements lowering passes from Allo's intermediate representation to both DSLX (XLS's Rust-inspired hardware DSL) and XLS IR.
 
@@ -40,7 +38,7 @@ We originally wanted to commit to supporting: static loop nests, reductions, sim
 
 ## Implementation
 
-The full implementation is open source at [https://github.com/Nikil-Shyamsunder/allo-xls-backend/blob/main/allo/backend/xls/README.md]. 
+The full implementation is open source [here](https://github.com/Nikil-Shyamsunder/allo-xls-backend/blob/main/allo/backend/xls/README.md).
 
 ### Feedforward Function Lowering (Source to DSLX)
 
@@ -66,13 +64,12 @@ XLS organizes computation as communicating processes based on Kahn process netwo
 
 Rather than attempt general lowering from arbitrary Allo programs to explicit state machines (an intractably hard problem), we adopt a pattern-matching approach that specifically recognizes systolic array structures in MLIR and generates corresponding XLS grid implementations. We extracted metadata from the MLIR that drives a builder. The builder constructs DSLX proc ASTs for the PE and for the systolic grid that is then serialized.
 
-To see the generated XLS, see this link: https://github.com/Nikil-Shyamsunder/allo-xls-backend/tree/main/allo/backend/xls/examples/systolic
+You can [see the generated XLS](https://github.com/Nikil-Shyamsunder/allo-xls-backend/tree/main/allo/backend/xls/examples/systolic) for one systolic array.
 
 ### Meta-Systolic Arrays (Method 2)
 
-Beyond the basic pattern-matching approach for library-style systolic arrays, we developed a lowering strategy for systolic arrays expressed using Allo's metaprogramming constructs. However, the key challenge is that Allo's `meta_if` constructs are compiled away before we see them—by the time our compiler receives the MLIR, the conditional code generation has already happened.
+Beyond the basic pattern-matching approach for library-style systolic arrays, we developed a lowering strategy for systolic arrays expressed using Allo's metaprogramming constructs:
 
-When Allo compiles a dataflow kernel like:
 ```python
 @df.kernel(mapping=[P0, P1])
 def gemm(A, B, C):
@@ -88,9 +85,9 @@ def gemm(A, B, C):
         ...
 ```
 
-The resulting MLIR contains separate functions for each grid position: `gemm_0_0`, `gemm_0_1`, `gemm_1_0`, `gemm_1_1`, etc. Each function has different code depending on which `meta_if` branch was selected for that `(i, j)` coordinate at compile time. The challenge of this approach was that we had to reverse-engineer the spatial structure and PE types from this unrolled representation by analyzing the behavior of each generated function.
+We chose to implement this at the MLIR level. However, in hindsight a source-to-source transformation may have been easier. The key challenge is that Allo's `meta_if` constructs are compiled away before we see them; by the time our compiler receives the MLIR, the conditional code generation has already happened. The resulting MLIR contains separate functions for each grid position: `gemm_0_0`, `gemm_0_1`, `gemm_1_0`, `gemm_1_1`, etc. Each function has different code depending on which `meta_if` branch was selected for that `(i, j)` coordinate at compile time. Thus, we have to pattern match the spatial structure and PE types from this unrolled representation by analyzing the behavior of each generated function.
 
-To solve this, we utilized pattern matching using `SystolicDetector.is_metaif_systolic()` method by searching for multiple `gemm_i_j` functions, functions containing multiply-accumulate logic (interior PEs), and functions with only loads or stream operations (edge handlers). A meta-if systolic array is detected when there are ≥4 `gemm_i_j` functions and at least one contains MAC computation. The `MetaIfSystolicTranslator` analyzes each unrolled function to classify its role (MAC PEs, input loaders, and drain PEs). From the function names, we extract grid dimensions. We also extract the K loop bound from interior PE functions. Once we have this metadata, we plug this into the builder from Method 1.
+We built the `SystolicDetector.is_metaif_systolic()` method by searching for multiple `gemm_i_j` functions, functions containing multiply-accumulate logic (interior PEs), and functions with only loads or stream operations (edge handlers). A meta-if systolic array is detected when there are ≥4 `gemm_i_j` functions and at least one contains MAC computation. The `MetaIfSystolicTranslator` analyzes each unrolled function to classify its role (MAC PEs, input loaders, and drain PEs). From the function names, we extract grid dimensions. We also extract the K loop bound from interior PE functions. Once we have this metadata, we plug this into the builder from Method 1.
 
 ## Challenges
 
@@ -181,7 +178,7 @@ For 2×2 matrices, combinational designs dominate, at least with our XLS systoli
 
 2. Extending Pattern Coverage: the current systolic array pattern matcher could be extended to recognize other regular structures, or generalized to handle more complex systolic layouts and massage them into `proc`s. 
 
-3. Choosing between `fn`s and `proc`s : Currently, our `fn` passes and our `proc` passes our disjoint. It would be nice if a user could specify what they want to lower into pure dataflow `fn`s vs. what they want to be a proc. Perhaps we could allow a pre-codegen flag in the MLIR that a user can specify to make this decision. Or we can use loop trip count analysis to decide between unrolling and proc-based iteration.
+3. Choosing between `fn`s and `proc`s : Currently, our `fn` passes and our `proc` passes our disjoint. It would be nice if a user could specify what they want to lower into pure dataflow `fn`s vs. what they want to be a proc. Perhaps we could allow a pre-codegen flag in the MLIR that a user can specify to make this decision. Or we can use loop trip count analysis to decide between unrolling and proc-based iteration. Or we could try to turn everything into `fn`s and only use `proc`s when that's not possible: (for example, loops with dynamic trip counts). 
 
 5.  Automated Design Space Exploration: The meta-systolic system demonstrates automated variant generation, but we could extend this to use synthesis results to guide further generation (iterative optimization)
 
