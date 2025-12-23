@@ -104,7 +104,7 @@ Getting systolic arrays to compile through XLS's full pipeline (DSLX → IR → 
 
 Setting up cycle-accurate simulation required building a complete testbench infrastructure. We created generic design under test (DUT) files for Verilator, and scripts to run the Verilator test file under different matrix sizes and codegen with different pipeline stages. We additionally implemented cycle-by-cycle output checking, and added scripts to generate CSVs to output the cycles in a digestible manner. For systolic arrays, this was particularly complex because we needed to feed matrix data into edge channels following the correct protocol, respect valid/ready handshaking on FIFO channels, collect results at the right time after K iterations complete, and verify correctness despite cycle-level timing variations. Getting the timing right required careful analysis of the generated Verilog to understand XLS's channel implementation and synchronization behavior.
 
-## Did It Work?
+## Evaluation
 
 ### Function Lowering: Correctness Results
 
