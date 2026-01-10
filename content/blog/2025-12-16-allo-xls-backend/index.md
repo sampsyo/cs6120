@@ -47,7 +47,7 @@ DSLX functions served as our initial compilation target, providing a high-level 
 Our lowering pass implements an AST-mediated translation in two phases. First, the `MlirToDslxLowerer` class walks the MLIR function body, dispatching each operation to specialized lowering methods that construct an intermediate abstract syntax tree. A `CodegenContext` object tracks MLIR-to-AST value bindings, memref shapes, and loop nesting structure. Only after the entire function transforms into AST form do we recursively generate the serialized DSLX.
 
 Below is a visualization of an example flow from Allo MLIR excerpt through to AST, which emits DSLX code via a serializer.
-<img src="./2025-12-16-allo-xls-backend/mlir-dslx-flow.png" alt="mlir dslx flow diagram" width="310"/>
+<img src="./mlir-dslx-flow.png" alt="mlir dslx flow diagram" width="310"/>
 
 ### XLS IR Lowering
 
@@ -126,7 +126,7 @@ Both the library-style systolic lowering and the meta-systolic system successful
 
 Our systolic array lowering was also synthesizable.
 
-<img src="./2025-12-16-allo-xls-backend/manual_gemm_pnr.png" alt="manual_gemm_pnr diagram" width="300"/> <img src="./2025-12-16-allo-xls-backend/systolic_2x2_pnr.png" alt="systolic_2x2_pnr diagram" width="310"/>
+<img src="./manual_gemm_pnr.png" alt="manual_gemm_pnr diagram" width="300"/> <img src="./systolic_2x2_pnr.png" alt="systolic_2x2_pnr diagram" width="310"/>
 
 Above are schematics of final place and route for the manually compiled vanilla 2x2 uint32 gemm and the 2x2 uint32 manually compiled systolic design from the Allo library. 
 
