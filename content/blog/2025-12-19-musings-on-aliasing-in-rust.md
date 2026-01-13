@@ -84,7 +84,7 @@ let _ = &shared_ref1;
 let x = 1;
 let mut_ref1 = &mut x;
 let _mut_ref2 = &mut x;
-let _ *mut_ref1;      // Rejected as `x` was borrowed a second time making _mut_ref2.
+let _ = *mut_ref1;      // Rejected as `x` was borrowed a second time making _mut_ref2.
 ```
 
 The extra information attached to references gives the compiler significant extra information to prove things about the program. For example consider rewriting `foo`: 
@@ -106,7 +106,7 @@ define i32 @foo(ptr noalias %0, ptr noalias %1) #0 {
 This is the same LLVM output that the C code compiles to when using `restrict` (with an added `noalias` on `y` because it is also an `&mut`). It turns out this reasoning can be extrapolated, letting [most reference be marked as](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273) `noalias`. Though, a better way of saying this is the langauge's aliasing rules make sure not to preclude letting these optimizations occur.
 
 ## When Mutable Aliasing Occurs
-Despite it being nice to not have to worry about mutable aliases, there are cases in which these guarentees cannot be easily applied. The most simple example is Rust's raw pointers. Raw pointers must exist, for example when doing FFI with C. To work raw pointers have to be C-like pointers, able to alias and be untracked by the compiler as `rustc` has no way to track what goes on in `C` code:
+Despite it being nice to not have to worry about mutable aliases, there are cases in which these guarentees cannot be easily applied. The most simple example is Rust's raw pointers. Raw pointers must exist, for example when doing FFI with C. To work raw pointers have to be C-like pointers, able to alias and be untracked by the compiler as `rustc` has no way to track what goes on in C code:
 ```rust
 let x = 1;
 let r1 = &mut x as *mut i32;
@@ -121,7 +121,7 @@ unsafe {
   foo(&mut *r1, &mut x);
 }
 ```
-`r1` and `&mut x` alias so making mutable references from them creates aliasing mutable references. This leads to undefined behavior, manifesting in an incorrect result when when calling `foo` as it gets optimized to `foo_opt` because it's args are `noalias`. Another way too look at this is `rustc` cannot attach `noalias` to the args of  `bar(x: *mut i32, y: *mut i32)` in the emitted llvm.
+`r1` and `&mut x` alias so making mutable references from them creates aliasing mutable references. This leads to undefined behavior, manifesting in an incorrect result when when calling `foo` as it gets optimized to `foo_opt` because it's args are `noalias`. Another way too look at this is `rustc` cannot attach `noalias` to the args of  `bar(x: *mut i32, y: *mut i32)` in the emitted LLVM.
 
 Though, passing around raw pointers is probably unlikely to occur in most Rust code as dereferencing them is unsafe. It's more likely a safe abstraction allowing mutating shared references, *interior mutability* would be used. In Rust these are called `Cell`s. A function `bar` on two possibly aliasing mutable references is contrived, so a practical example of using this is creating a struct which you want shared references to but [whose operations cache themselves, requiring mutating some internal field](https://doc.rust-lang.org/std/cell/#implementation-details-of-logically-immutable-methods). The various `Cell`s are built off of the [primitive](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html) `UnsafeCell`. `UnsafeCell`s provide a method `get()` which gets mutable aliases to it's interior data. For example:
 ```rust
@@ -130,9 +130,9 @@ let r1 = x.get();
 let r2 = x.get();
 // r1 and r2 are aliasing *mut i32s
 ```
-The super power of `UnsafeCell` in the above is it is perfectly defined behavior to call `x.get()` and use the mutable aliases to shared memory it returns. However, with mutable alias to its memory, `&UnsafeCell` looses the ability to be treated like a normal shared reference and the compiler builds in special support for it. As with the above raw pointers, one way this manefest is when `&UnsafeCell` (or any of it's derivatives like `Cell` or `RefCell`) is used as a function arg, it cannot be annotated with `noalias` when compiled to LLVM.
+The super power of `UnsafeCell` in the above is it is perfectly defined behavior to call `x.get()` and use the mutable aliases to shared memory it returns. However, with mutable alias to its memory, `&UnsafeCell` looses the ability to be treated like a normal shared reference and the compiler builds in special support for it. As with the above raw pointers, one way this manefests is when `&UnsafeCell` (or any of its derivatives like `Cell` or `RefCell`) is used as a function arg, it cannot be annotated with `noalias` when compiled to LLVM.
 
-The interesting thing about `Cell`s and especially `RefCell`s is they end up forcing the compiler to treat them as possibly having mutable aliases despite them being safe types. Looking at [Rust's abi code (same link as above)](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273), there are only two other cases in which `noalias` doesn't annotate function args:
+The interesting thing about `Cell`s and especially `RefCell`s is they end up forcing the compiler to treat them as possibly having mutable aliases despite them being safe types. Looking at [Rust's ABI code (same link as above)](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273), there are only two other cases in which `noalias` doesn't annotate function args:
 ```rust
 let no_alias = match kind {
    PointerKind::SharedRef { frozen } => frozen, // frozen == true implies SharedRef is not an `UnsafeCell`
@@ -142,8 +142,8 @@ let no_alias = match kind {
 ```
 The first case is simple. If `global` is `false`, `Box`s don't use Rust's default global allocator and instead using a [custom allocator](https://doc.rust-lang.org/beta/alloc/alloc/trait.Allocator.html). As allocators return `NonNull<T: PointeeSized>` which look to have similar aliasing guarentees to `*mut T`, that is having none, this implies `Box` can't have strong aliasing guarentees either. Finally, there is the case one of the mutable references (`Box` and `&mut`) doesn't implement isn't `unpin`. The reason for this looks to be a [poor interaction (bug?)](https://github.com/rust-lang/Miri/issues/3796#issuecomment-2299177277) between `Pin` and Rust's async/await.
 
-Looking at these three case, there are limited ways mutable aliases can make their way into safe Rust code. Considering it's (in my experience so far) rare to change `Box`s allocator and the interaction with async/await seems [more like a bug being worked on](https://github.com/rust-lang/rust/issues/125735), these rules lets the programmer limit their view of mutable aliases to thinking about `Cell`s. Their effectively "choke points" where mutable aliases hide. They `Cell`s exist, but anecdotally, I find them to be a vast minority of pointers. So, I find it cool to see the reasoning and potential performance penalty constained so much. 
+Looking at these three case, there are limited ways mutable aliases can make their way into safe Rust code. Considering it's (in my experience so far) rare to change `Box`s allocator and the interaction with async/await seems [more like a bug being worked on](https://github.com/rust-lang/rust/issues/125735), these rules lets the programmer limit their view of mutable aliases to thinking about `Cell`s. They're effectively "choke points" where mutable aliases hide. They `Cell`s exist, but anecdotally, I find them to be a tiny minority of pointers. So, I find it cool to see the reasoning and potential performance penalty constained so much. 
 
 [^1]: I'm taking this example from the [Stacked Borrows paper](https://dl.acm.org/doi/10.1145/3371109) which uses it to show a similar thing, though with different exposition.
-[^2]: An interesting corrolary of this is that at compile time it's possible for pointers of the same type to have to be treated differently depending on how they were created. In other words, pointers have some extra data attached to them the compiler has to keep track of. This is sometimes called *provenance*. Ralf Jung has [two good](https://www.ralfj.de/blog/2018/07/24/pointers-and-bytes.html) [articles on this](https://www.ralfj.de/blog/2020/12/14/provenance.html) arguing for it's existance. In some languages, for example Rust, provenance is in this interesting position where [it is not yet fully specified, but it still has to be reasoned about](https://doc.rust-lang.org/std/ptr/index.html#provenance).
+[^2]: An interesting corrolary of this is that at compile time it's possible for pointers of the same type to have to be treated differently depending on how they were created. In other words, pointers have some extra data attached to them the compiler has to keep track of. This is sometimes called *provenance*. Ralf Jung has [two good](https://www.ralfj.de/blog/2018/07/24/pointers-and-bytes.html) [articles on this](https://www.ralfj.de/blog/2020/12/14/provenance.html) arguing for its existance. In some languages, for example Rust, provenance is in this interesting position where [it is not yet fully specified, but it still has to be reasoned about](https://doc.rust-lang.org/std/ptr/index.html#provenance).
 [^3]: It's hard to give an nice self contained argument about this, but hopefully it should make sense with some thinking if you aren't already convinced. Another place to start is how this makes it easier to not do data races.
