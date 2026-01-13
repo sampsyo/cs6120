@@ -130,7 +130,7 @@ let r1 = x.get();
 let r2 = x.get();
 // r1 and r2 are aliasing *mut i32s
 ```
-The super power of `UnsafeCell` in the above is it is perfectly defined behavior to call `x.get()` and use the mutable aliases to shared memory it returns. However, with mutable alias to its memory, `&UnsafeCell` looses the ability to be treated like a normal shared reference and the compiler builds in special support for it. As with the above raw pointers, one way this manefests is when `&UnsafeCell` (or any of its derivatives like `Cell` or `RefCell`) is used as a function arg, it cannot be annotated with `noalias` when compiled to LLVM.
+The super power of `UnsafeCell` in the above is it is perfectly defined behavior to call `x.get()` and use the mutable aliases to shared memory it returns. However, with mutable alias to its memory, `&UnsafeCell` loses the ability to be treated like a normal shared reference and the compiler builds in special support for it. As with the above raw pointers, one way this manifests is when `&UnsafeCell` (or any of its derivatives like `Cell` or `RefCell`) is used as a function arg, it cannot be annotated with `noalias` when compiled to LLVM.
 
 The interesting thing about `Cell`s and especially `RefCell`s is they end up forcing the compiler to treat them as possibly having mutable aliases despite them being safe types. Looking at [Rust's ABI code (same link as above)](https://github.com/rust-lang/rust/blob/cb79c42008b970269f6a06b257e5f04b93f24d03/compiler/rustc_ty_utils/src/abi.rs#L273), there are only two other cases in which `noalias` doesn't annotate function args:
 ```rust
