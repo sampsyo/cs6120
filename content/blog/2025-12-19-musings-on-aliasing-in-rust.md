@@ -1,5 +1,5 @@
 +++
-title = "Musings on Aliasing in Rust for Optimization"
+title = "Aliasing in Rust for Optimization"
 [extra]
 bio = """
   Jeremy Ku-Benjet is a MS student at Cornell University.
@@ -21,8 +21,7 @@ Running both of these implementation, I found the surprising result that Miri de
 
 To my knowledge, `rustc` doesn't perform any complicated alias analysis, meaning preforming an evaluation of this sort would require writing such an analysis. I didn't have time to do that.  However, even if I did have time, it likely would not be fruitful. This is because Rust's aliasing rules don't lead to complicated cases when it comes to optimizing code. In reality, it is effectively a binary where some pointers and references must be treated like C pointers with very few aliasing guarentees, and others are given extremely strong aliasing guarentees, making mutable aliases, the type preventing optimizations, undefined behavior. This can be cleanly lowered to LLVM by simply choosing when to add the `noalias` tag when lowering from MIR. LLVM then incorporate these assumptions in its alias analysis..
 
-**What Now**: This report is embarrisingly light on fun implementations and emperical data, though the paragraph above hopefully explains the reason for the latter. The majority of time on this project went towards understanding alising in Rust, which is surprisingly complicated and ill defined. Given this, I'd like to conclude with some musings on aliasing. Much of these thoughts will already be common knowledge, though I'll try to bring an interesting throughline through them.
-
+**What Now**: This report is embarrisingly light on fun implementations and emperical data, though the paragraph above hopefully explains the reason for the latter. The majority of time on this project went towards understanding alising in Rust, which is surprisingly complicated and ill defined. Given this, I'd like to conclude with some exposition of some already well understood information I don't think I've see all compiled into one place as I have here.
 ## Optimization using Aliasing
 Compilers care about aliasing. Consider the following example C code[^1]:
 ```c
