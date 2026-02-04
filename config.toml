@@ -10,7 +10,7 @@ title = "CS 6120"
 smart_punctuation = true
 
 [markdown.highlighting]
-theme = "subway-madrid"
+theme = "base16-ocean-dark"
 
 [extra]
 favicon = "/img/favicon.ico"
