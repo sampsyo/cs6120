@@ -9,9 +9,6 @@ title = "CS 6120"
 [markdown]
 smart_punctuation = true
 
-[markdown.highlighting]
-theme = "base16-ocean-dark"
-
 [extra]
 favicon = "/img/favicon.ico"
 bigicon = "/img/favicon152.png"
