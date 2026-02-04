@@ -8,7 +8,9 @@ title = "CS 6120"
 
 [markdown]
 smart_punctuation = true
-highlighting = true
+
+[markdown.highlighting]
+theme = "subway-madrid"
 
 [extra]
 favicon = "/img/favicon.ico"
