@@ -8,7 +8,7 @@ title = "CS 6120"
 
 [markdown]
 smart_punctuation = true
-highlight_code = true
+highlighting = true
 highlight_theme = "subway-madrid"
 
 [extra]
